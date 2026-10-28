@@ -1,0 +1,31 @@
+﻿numero,sigla,original,federacao,efetiva,bloco,escore
+10,REPUBLICANOS,Direita,,Direita,D,2
+11,PP,Direita,104 — UNIÃO/PP,Centro-direita,D,1
+12,PDT,Centro-esquerda,,Centro-esquerda,E,-1
+13,PT,Esquerda,101 — PT/PCdoB/PV,Esquerda,E,-2
+14,MISSÃO,Direita,,Direita,D,2
+15,MDB,Centro,,Centro,C,0
+16,PSTU,Esquerda,,Esquerda,E,-2
+18,REDE,Centro-esquerda,102 — PSOL/REDE,Esquerda,E,-2
+20,PODE,Direita,,Direita,D,2
+21,PCB,Esquerda,,Esquerda,E,-2
+22,PL,Direita,,Direita,D,2
+23,CIDADANIA,Centro,100 — PSDB/CIDADANIA,Centro-direita,D,1
+25,PRD,Centro-direita,103 — PRD/SOLIDARIEDADE,Centro-direita,D,1
+27,DC,Direita,,Direita,D,2
+28,PRTB,Direita,,Direita,D,2
+29,PCO,Esquerda,,Esquerda,E,-2
+30,NOVO,Direita,,Direita,D,2
+33,MOBILIZA,Centro-direita,,Centro-direita,D,1
+35,DEMOCRATA,Centro-direita,,Centro-direita,D,1
+36,AGIR,Centro-direita,,Centro-direita,D,1
+40,PSB,Centro-esquerda,,Centro-esquerda,E,-1
+43,PV,Centro,101 — PT/PCdoB/PV,Esquerda,E,-2
+44,UNIÃO,Centro-direita,104 — UNIÃO/PP,Centro-direita,D,1
+45,PSDB,Centro-direita,100 — PSDB/CIDADANIA,Centro-direita,D,1
+50,PSOL,Esquerda,102 — PSOL/REDE,Esquerda,E,-2
+55,PSD,Centro-direita,,Centro-direita,D,1
+65,PCdoB,Esquerda,101 — PT/PCdoB/PV,Esquerda,E,-2
+70,AVANTE,Centro-direita,,Centro-direita,D,1
+77,SOLIDARIEDADE,Centro,103 — PRD/SOLIDARIEDADE,Centro-direita,D,1
+80,UP,Esquerda,,Esquerda,E,-2
