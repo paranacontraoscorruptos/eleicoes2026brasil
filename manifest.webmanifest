@@ -1,0 +1,25 @@
+{
+  "name": "Auditoria BU 2026",
+  "short_name": "Auditoria BU",
+  "description": "Auditoria estatística independente dos Boletins de Urna das Eleições 2026, com dados públicos do TSE. Não é site oficial do TSE.",
+  "lang": "pt-BR",
+  "id": "./",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050c08",
+  "theme_color": "#050c08",
+  "categories": ["news", "education", "utilities"],
+  "icons": [
+    { "src": "site/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "site/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "site/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "site/img/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Consultar minha seção", "url": "./#/secao", "icons": [{ "src": "site/img/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Mapa do Brasil", "url": "./#/mapa", "icons": [{ "src": "site/img/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Conferir boletim impresso", "url": "./#/boletim", "icons": [{ "src": "site/img/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

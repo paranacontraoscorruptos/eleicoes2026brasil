@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>Auditoria BU 2026 · Atualizações</title>
+  <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/</link>
+  <atom:link href="https://paranacontraoscorruptos.github.io/eleicoes2026brasil/feed.xml" rel="self" type="application/rss+xml"/>
+  <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
+  <language>pt-BR</language>
+  <lastBuildDate>Thu, 29 Oct 2026 12:59:00 -0300</lastBuildDate>
+  <item>
+    <title>Novas ferramentas e consultas</title>
+    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/mapa</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-5</guid>
+    <pubDate>Thu, 29 Oct 2026 12:59:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Mapa do Brasil, páginas de cada estado e município, lista das seções marcadas com planilha, gráficos dos testes, glossário, conferência de arquivos (SHA-512) e do boletim impresso (QR Code), seções salvas, busca, compartilhar, imagem para redes, versão para impressão, acessibilidade (tamanho do texto, alto contraste, Libras e voz no bot) e app instalável.</description>
+  </item>
+  <item>
+    <title>Grupo do Telegram</title>
+    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-4</guid>
+    <pubDate>Wed, 28 Oct 2026 12:58:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Link para entrar no grupo na página inicial, no rodapé e no bot, com o passo a passo para quem ainda não tem Telegram.</description>
+  </item>
+  <item>
+    <title>Site no ar</title>
+    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/secao</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-3</guid>
+    <pubDate>Wed, 28 Oct 2026 12:57:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Consulta de seção, os 15 testes explicados, resultados dos dois turnos, passo a passo para replicar, downloads com SHA-512 e bot de dúvidas em português, inglês e espanhol.</description>
+  </item>
+  <item>
+    <title>Relatório Técnico do 2º turno</title>
+    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/turno/2</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-2</guid>
+    <pubDate>Wed, 28 Oct 2026 12:56:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>Análise das 499.207 seções do 2º turno (25/10/2026) com o motor v2.1.0. Relatórios em português, inglês e espanhol e dados para download.</description>
+  </item>
+  <item>
+    <title>Relatório Técnico do 1º turno</title>
+    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/turno/1</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-24-1</guid>
+    <pubDate>Sat, 24 Oct 2026 12:55:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>Análise das 499.206 seções do 1º turno (04/10/2026) com o motor v2.1.0. Relatórios em português, inglês e espanhol e dados para download.</description>
+  </item>
+</channel>
+</rss>

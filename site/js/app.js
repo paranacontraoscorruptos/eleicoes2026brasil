@@ -125,6 +125,28 @@
       check: '<path d="m5 12 4.5 4.5L19 7"/>',
       alert: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4m0 3v.01"/>',
       tg: '<path fill="currentColor" stroke="none" d="M2.9 10.9 19.6 4.4c.8-.3 1.5.2 1.2 1.4l-2.8 13.4c-.2 1-.8 1.2-1.6.7l-4.3-3.2-2.1 2c-.2.2-.4.4-.9.4l.3-4.4 8-7.2c.3-.3-.1-.5-.5-.2l-9.9 6.2-4.2-1.3c-.9-.3-.9-.9.1-1.3z"/>',
+      map: '<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14m6-12v14"/>',
+      pin: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+      list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/>',
+      book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/>',
+      hash: '<path d="M10 3 8 21m8-18-2 18M4 8.5h16M3.5 15.5h16"/>',
+      qr: '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 14h2M14 18h2v2M18 18h2v2"/>',
+      star: '<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/>',
+      starf: '<path fill="currentColor" d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/>',
+      bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+      share: '<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1m-7.6 6.5 7.6 4.1"/>',
+      print: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+      image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
+      phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+      a11y: '<path d="M3 19 8.5 5h1L15 19M5 14.5h8"/><path d="M16 19l3-8 3 8m-5-2.5h4"/>',
+      mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
+      speaker: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+      stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
+      camera: '<path d="M4 8h3l1.5-2.5h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>',
+      upload: '<path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 19h14"/>',
+      trash: '<path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+      link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4L11.5 6M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.5-1.4"/>',
+      rss: '<path d="M5 19a1 1 0 1 0 0-.01M5 11a8 8 0 0 1 8 8M5 4.5A14.5 14.5 0 0 1 19.5 19"/>',
     }[n];
     return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
   }
@@ -143,6 +165,15 @@
 
   function tabela(cab, linhas, cls) {
     return `<div class="table-wrap"><table class="${cls || ""}"><thead><tr>${cab.map((c) => `<th scope="col">${c}</th>`).join("")}</tr></thead><tbody>${linhas.map((l) => `<tr>${l.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+
+  // Ações da página: compartilhar, gerar imagem para redes (quando há cartão) e imprimir/PDF
+  function acoes(img, extra) {
+    const L = t();
+    return `<div class="pg-acoes">${extra || ""}
+      <button class="btn btn-sm" type="button" data-share>${icone("share")} ${esc(L.sh_btn)}</button>
+      ${img ? `<button class="btn btn-sm" type="button" data-img>${icone("image")} ${esc(L.im_btn)}</button>` : ""}
+      <button class="btn btn-sm btn-ghost" type="button" data-print>${icone("print")} ${esc(L.pr_btn)}</button></div>`;
   }
 
   function copiar(txt) { return `<button class="btn-copy" type="button" data-copy="${esc(txt)}" aria-label="${esc(t().copy)}">${icone("copy")}<span>${esc(t().copy)}</span></button>`; }
@@ -197,6 +228,14 @@
     const cands = P2.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96");
     const val = cands.reduce((a, c) => a + c.votos, 0);
     const br = P2.candidatos.find((c) => c.nr === "95"), nu = P2.candidatos.find((c) => c.nr === "96");
+    state.cartao = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: L.hero_title,
+      linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
+        [L.st_aptos, nf(P2.aptos)], [L.st_comp, `${nf(P2.comparecimento)} (${pct(P2.comparecimento / P2.aptos)})`]] };
+    const ferr = MAIS.filter(([k]) => k !== "saved").map(([k, h], i) => {
+      const [tit, desc] = L.pg2[k];
+      return `<a class="page-card spot tilt${i % 3 === 1 ? " y" : ""}" href="${h}"><span class="pc-ico">${icone(ICO_MAIS[k])}</span>
+        <span class="pc-title">${esc(tit)}</span><span class="pc-desc">${esc(desc)}</span><span class="pc-go">${esc(L.pg_open)} ${icone("arrow")}</span></a>`;
+    }).join("");
     const pres = barras(cands.map((c) => ({ rotulo: `${titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: `${pct(c.votos / val)}`,
       dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}\n${titulo(c.nome)} (${c.nr})` })));
     return `
@@ -211,6 +250,7 @@
           <a class="btn btn-primary btn-lg" href="#/secao">${icone("search")} ${esc(L.cta_lookup)}</a>
           <a class="btn btn-ghost btn-lg" href="#/downloads">${icone("download")} ${esc(L.cta_downloads)}</a>
         </div>
+        ${acoes(true)}
       </div>
       <div class="hero-visual" aria-hidden="true">
         <div class="hero-ring"></div><div class="hero-ring r2"></div>
@@ -227,6 +267,9 @@
     </section>
     <section aria-labelledby="h-pages"><h2 id="h-pages">${esc(L.explore_title)}</h2><p class="sec-sub">${esc(L.explore_sub)}</p>
       <div class="pages">${cards}</div>
+    </section>
+    <section aria-labelledby="h-tools"><h2 id="h-tools">${esc(L.tools_title)}</h2><p class="sec-sub">${esc(L.tools_sub)}</p>
+      <div class="pages pages-tools">${ferr}</div>
     </section>
     <section class="grid2">
       <div class="card pres-home"><h2>${esc(L.home_pres_title)}</h2><p class="small muted">${esc(L.home_pres_sub)}</p>${pres}
@@ -333,9 +376,11 @@
       emissao: esc(T.cab.emissao), versao: esc(R.motor.versao), dur: esc(T.cab.duracao) });
     const rel = ["PT", "EN", "ES"].map((lg) => { const p = `${PASTA}/resultados-${n}turno/Relatorio_Tecnico_Auditoria_Eleicoes_2026_${lg}.md`;
       return `<a class="btn" href="${p}" download>${icone("download")} ${esc(L.report_lang[lg])}</a>`; }).join("");
+    state.cartao = { kicker: L.roundDate[n], titulo: `${L.round(n)} · ${L.cd_pres}`, linhas: cands.slice(0, 4).map((c) => [`${titulo(c.nome)} (${c.nr})`, `${nf(c.votos)} (${pct(c.votos / val)})`])
+      .concat([[L.blank, nf(br.votos)], [L.null_, nf(nu.votos)], [L.r_flagged, `${nf(T.secoes_sinalizadas)} (${pct(T.secoes_sinalizadas / T.entrada.secoes)})`]]) };
     return `
     <header class="page-head"><p class="kicker">${esc(L.roundDate[n])}</p><h1>${esc(L.round(n))}</h1>
-      <p class="muted">${esc(L.r_processed(nf(T.entrada.linhas), nf(T.entrada.secoes), nf(T.entrada.boletins)))}</p></header>
+      <p class="muted">${esc(L.r_processed(nf(T.entrada.linhas), nf(T.entrada.secoes), nf(T.entrada.boletins)))}</p>${acoes(true)}</header>
     <div class="tiles">
       ${tile(T.secoes_sinalizadas, L.r_flagged, L.tip_sinal, "flag", `(${pct(T.secoes_sinalizadas / T.entrada.secoes)})`)}
       ${tile(P.aptos, L.st_aptos, L.tip_aptos, "users")}
@@ -371,10 +416,11 @@
             <h3>${esc(L.f_crit)}</h3><p>${esc(tx.criterio)}</p>
             <h3>${esc(L.f_lim)}</h3><p>${esc(tx.limites)}</p>
             <p class="btn-row"><button class="btn btn-bot btn-sm" type="button" data-ask="${esc(L.ask_test(numTeste(tid)))}">${icone("chat")} ${esc(L.f_ask)}</button>
+            <a class="btn btn-sm" href="#/graficos/${tid}">${icone("chart")} ${esc(L.f_chart)}</a> <a class="btn btn-sm btn-ghost" href="#/lista?teste=${tid}">${icone("list")} ${esc(L.f_list)}</a>
             <span class="small">${icone("code")} ${esc(L.f_code)}: ${codigo}</span></p>
           </div></details></article>`;
     }).join("");
-    return `<header class="page-head"><h1>${esc(L.tests_title)}</h1><p class="lead">${esc(L.tests_sub)}</p>
+    return `<header class="page-head"><h1>${esc(L.tests_title)}</h1><p class="lead">${esc(L.tests_sub)}</p>${acoes(false)}
       <ul class="legend inline">${L.legend.map(([c, nm]) => `<li>${chip(c, nm)}</li>`).join("")}<li class="muted small">${esc(L.th_anom)} / ${esc(L.th_info)}</li></ul></header>
       <div class="tests">${cards}</div>${botCta(true)}`;
   }
@@ -397,6 +443,7 @@
     return `<header class="page-head"><h1>${esc(L.lk_title)}</h1><p class="lead">${esc(L.lk_sub)}</p></header>
       <section class="card">${formSecao(false, uf, z, s)}</section>
       <p class="note small">${esc(L.lk_privacy)}</p>
+      <div id="lk-saved"></div>
       <div id="lk-result" aria-live="polite"></div>${botCta(true)}`;
   }
 
@@ -475,8 +522,25 @@
       } else fl = `<p>${chip("green", L.lk_noflags)}</p>`;
       return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}</section>`;
     }).join("");
-    return `<h2 class="lk-head">${esc(d.uf)} · ${esc(titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}</h2>${turnos}
-      <p class="small">${esc(L.lk_check)} <a href="${TSE_RESULTADOS}" target="_blank" rel="noopener">resultados.tse.jus.br</a>.</p>`;
+    const nomeMun = titulo(d.mun[1]);
+    const cart = [];
+    [2, 1].forEach((n) => {
+      const tv = rec[n]; if (!tv) return;
+      const { v, nomes } = votosTurno(n, tv);
+      const cs = Object.keys(v).filter((nr) => nr !== "95" && nr !== "96" && v[nr] > 0).sort((a, b) => v[b] - v[a]).slice(0, n === 1 ? 3 : 2);
+      const f = flags[String(n)];
+      cart.push([L.round(n), `${L.lk_comp} ${nf(tv[1])} / ${nf(tv[0])}`]);
+      cs.forEach((nr) => cart.push([`  ${titulo(nomes[nr])} (${nr})`, nf(v[nr])]));
+      const ts = f && f.o.length ? [...new Set(f.o.map((o) => numTeste(o[0])))] : [];
+      cart.push([`  ${L.lk_flags}`, ts.length ? L.cd_tests(ts.join(", "), ts.length) : L.cd_none]);
+    });
+    state.cartao = { kicker: `${d.uf} · ${nomeMun}`, titulo: `${L.th_zone} ${d.z} · ${L.th_section} ${d.s}`, linhas: cart };
+    const extra = `<button class="btn btn-sm" type="button" data-save="${esc(JSON.stringify({ uf: d.uf, z: d.z, s: d.s, m: nomeMun }))}">${icone("star")} <span>${esc(L.sv_save)}</span></button>`;
+    return `<h2 class="lk-head">${esc(d.uf)} · <a href="#/uf/${d.uf}/${esc(d.mun[0])}">${esc(nomeMun)}</a> · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}</h2>
+      ${acoes(true, extra)}${turnos}
+      <p class="small">${esc(L.lk_check)} <a href="${TSE_RESULTADOS}" target="_blank" rel="noopener">resultados.tse.jus.br</a>.</p>
+      <div class="btn-row lk-more"><a class="btn btn-sm" href="#/boletim?uf=${d.uf}&z=${d.z}&s=${d.s}">${icone("qr")} ${esc(L.lk_ballot)}</a>
+        <button class="btn btn-sm btn-ghost" type="button" data-report="${esc(`${d.uf} · ${nomeMun} · ${L.th_zone} ${d.z} · ${L.th_section} ${d.s}`)}">${icone("alert")} ${esc(L.rep_btn)}</button></div>`;
   }
 
   function paginaReplicar() {
@@ -485,7 +549,7 @@
     const hashes = [["Windows (Prompt)", "certutil -hashfile auditoria_eleicoes_2026.py SHA512"], ["Windows (PowerShell)", "Get-FileHash auditoria_eleicoes_2026.py -Algorithm SHA512"],
       ["Linux", "sha512sum auditoria_eleicoes_2026.py"], ["macOS", "shasum -a 512 auditoria_eleicoes_2026.py"]];
     const vals = [1, 2].map((n) => { const T = R.turnos[n]; return [esc(L.round(n)), `<code class="wrap">${esc(T.cab.nucleo_sha256)}</code>`, `<code class="wrap">${esc(T.cab.manifesto_sha512)}</code>`]; });
-    return `<header class="page-head"><h1>${esc(L.rp_title)}</h1><p class="lead">${esc(L.rp_sub)}</p></header>
+    return `<header class="page-head"><h1>${esc(L.rp_title)}</h1><p class="lead">${esc(L.rp_sub)}</p>${acoes(false)}</header>
       <ol class="steps">${passos}</ol>
       <section class="card"><h2>${esc(L.rp_links)}</h2><ul class="plain">
         <li><a href="${TSE_PORTAL}" target="_blank" rel="noopener">${esc(L.rp_portal)}</a></li>
@@ -507,7 +571,7 @@
     };
     const grupo = (tit, itens) => `<section><h2>${esc(tit)}</h2>${tabela([L.th_file, L.th_size, L.th_sha, ""], itens.map(linha), "dl")}</section>`;
     const ord = (a, b) => (a.nome.includes("/") - b.nome.includes("/")) || a.nome.localeCompare(b.nome);
-    return `<header class="page-head"><h1>${esc(L.dl_title)}</h1><p class="lead">${esc(L.dl_sub)}</p></header>
+    return `<header class="page-head"><h1>${esc(L.dl_title)}</h1><p class="lead">${esc(L.dl_sub)}</p>${acoes(false)}</header>
       <section class="card dl-all"><a class="btn btn-primary btn-lg" href="${ZIP}">${icone("download")} ${esc(L.dl_all)}</a><p class="small muted">${esc(L.dl_all_note)}</p></section>
       ${grupo(L.dl_code, R.downloads.filter((d) => d.turno === 0))}
       ${[1, 2].map((n) => grupo(L.dl_round(n), R.downloads.filter((d) => d.turno === n).sort(ord))).join("")}
@@ -517,7 +581,7 @@
 
   function paginaLimitacoes() {
     const L = t();
-    return `<header class="page-head"><h1>${esc(L.lm_title)}</h1></header>
+    return `<header class="page-head"><h1>${esc(L.lm_title)}</h1>${acoes(false)}</header>
       <div class="grid2">
         <section class="card"><h2>${esc(L.lm_proves_title)}</h2><ul class="checks">${L.lm_proves.map((x) => `<li>${x}</li>`).join("")}</ul></section>
         <section class="card"><h2>${esc(L.lm_not_title)}</h2><ul class="crosses">${L.lm_not.map((x) => `<li>${x}</li>`).join("")}</ul></section>
@@ -530,37 +594,44 @@
   // --- roteamento ------------------------------------------------------------------
   function rota() {
     const h = (location.hash || "#/").replace(/^#/, "");
-    const p = h.split("/").filter(Boolean);
-    return p;
+    const [cam, q] = h.split("?");
+    state.query = new URLSearchParams(q || "");
+    return cam.split("/").filter(Boolean).map(decodeURIComponent);
   }
 
   async function render() {
     const L = t(), p = rota(), main = $("#main");
-    let html, ativo = "home", tit = L.hero_title;
+    let html, ativo = "home", tit = L.hero_title, pg = null;
+    state.cartao = null;
     if (p[0] === "turno" && (p[1] === "1" || p[1] === "2")) { html = paginaTurno(p[1]); ativo = "r" + p[1]; tit = L.round(+p[1]); }
     else if (p[0] === "testes") { html = paginaTestes(p[1]); ativo = "tests"; tit = L.tests_title; }
     else if (p[0] === "secao") { html = paginaSecao(p[1], p[2], p[3]); ativo = "lookup"; tit = L.lk_title; }
     else if (p[0] === "replicar") { html = paginaReplicar(); ativo = "replicate"; tit = L.rp_title; }
     else if (p[0] === "downloads") { html = paginaDownloads(); ativo = "downloads"; tit = L.dl_title; }
     else if (p[0] === "limitacoes") { html = paginaLimitacoes(); ativo = "limits"; tit = L.lm_title; }
+    else if (paginas[p[0]]) { pg = paginas[p[0]]; html = pg.html(p); ativo = pg.ativo || p[0]; tit = pg.titulo(p); }
     else html = paginaInicio();
     main.innerHTML = html;
     main.classList.remove("page-enter"); void main.offsetWidth; main.classList.add("page-enter");
     document.title = (ativo === "home" ? "" : tit + " · ") + L.brand;
     $$(".nav a").forEach((a) => a.setAttribute("aria-current", a.dataset.nav === ativo ? "page" : "false"));
+    const mais = $(".nav-more"); if (mais) mais.classList.toggle("cur", MAIS.some(([k]) => k === ativo));
+    fecharMais();
     indicador();
     fecharMenu();
     if (p[0] === "testes" && p[1]) { const el = document.getElementById(p[1]); if (el) el.scrollIntoView({ block: "start" }); }
     else window.scrollTo({ top: 0, behavior: "instant" });
     efeitos(main);
     if (p[0] === "secao") await iniciarSecao(p[1], p[2], p[3]);
+    if (pg && pg.iniciar) await pg.iniciar(p);
+    document.dispatchEvent(new CustomEvent("pagina", { detail: { rota: p, titulo: tit } }));
   }
 
   async function iniciarSecao(uf, z, s) {
     const form = $("form[data-lookup]:not(.compact)");
     if (!form) return;
     const selUf = form.elements.uf, selMun = form.elements.mun, dl = $("#lk-zonas");
-    if (!state.muns) { try { state.muns = await json("site/data/municipios.json"); } catch (e) { state.muns = {}; } }
+    await municipios();
     const encherMun = () => {
       const m = state.muns[selUf.value] || {};
       const itens = Object.entries(m).sort((a, b) => a[1][0].localeCompare(b[1][0], "pt"));
@@ -583,6 +654,7 @@
       box.innerHTML = `<p class="muted">${esc(t().lk_loading)}</p>`;
       const d = await consultarSecao(uf, z, s);
       box.innerHTML = htmlSecao(d);
+      if (d.rec) document.dispatchEvent(new CustomEvent("secao", { detail: { uf: d.uf, z: d.z, s: d.s, m: titulo(d.mun[1]) } }));
     }
   }
 
@@ -594,17 +666,31 @@
   }
 
   const PAGINAS = [["home", "#/"], ["r1", "#/turno/1"], ["r2", "#/turno/2"], ["tests", "#/testes"], ["lookup", "#/secao"], ["replicate", "#/replicar"], ["downloads", "#/downloads"], ["limits", "#/limitacoes"]];
+  const ICO_MAIS = { map: "map", states: "pin", list: "list", charts: "chart", glossary: "book", verify: "hash", ballot: "qr", saved: "star", updates: "bell" };
+  // Páginas do menu "Mais" (ferramentas e consultas)
+  const MAIS = [["map", "#/mapa"], ["states", "#/uf"], ["list", "#/lista"], ["charts", "#/graficos"], ["glossary", "#/glossario"], ["verify", "#/conferir"],
+    ["ballot", "#/boletim"], ["saved", "#/salvas"], ["updates", "#/atualizacoes"]];
+
+  function fecharMais() {
+    const m = $(".nav-more");
+    if (m) { m.classList.remove("open"); $("button", m).setAttribute("aria-expanded", "false"); }
+  }
 
   function montarCabecalho() {
     const L = t();
     marca();
     $("#badge").textContent = L.badge;
     $("#nav").innerHTML = '<span class="nav-hover" aria-hidden="true"></span><span class="nav-ind" aria-hidden="true"></span>'
-      + PAGINAS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${i}">${esc(L.nav[k])}</a>`).join("");
+      + PAGINAS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${i}">${esc(L.nav[k])}</a>`).join("")
+      + `<div class="nav-more" style="--i:${PAGINAS.length}"><button type="button" aria-expanded="false" aria-controls="nav-sub">${esc(L.nav.more)} <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="nav-sub" id="nav-sub"><span class="nav-sub-t">${esc(L.nav.more_title)}</span>${MAIS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${PAGINAS.length + i + 1}">${icone(ICO_MAIS[k])}<span>${esc(L.nav[k])}</span></a>`).join("")}</div></div>
+        <button class="nav-a11y" type="button" data-a11y>${icone("a11y")} ${esc(L.ax_title)}</button>`;
     $("#lang").innerHTML = LANGS.map((l) => `<button type="button" data-lang="${l}" aria-pressed="${l === state.lang}">${l}</button>`).join("");
     $("#lang").setAttribute("aria-label", L.lang);
     $("#theme-btn").setAttribute("aria-label", L.theme); $("#theme-btn").title = L.theme;
     $("#menu-btn").setAttribute("aria-label", L.menu);
+    $("#search-btn").innerHTML = icone("search"); $("#search-btn").setAttribute("aria-label", L.sr_open); $("#search-btn").title = L.sr_open + " ( / )";
+    $("#a11y-btn").innerHTML = icone("a11y"); $("#a11y-btn").setAttribute("aria-label", L.ax_open); $("#a11y-btn").title = L.ax_open;
     iconeTema();
     montarRodape();
     document.documentElement.lang = { PT: "pt-BR", EN: "en", ES: "es" }[state.lang];
@@ -621,12 +707,20 @@
           <p>${esc(L.ft_tagline)}</p><p class="small muted">${esc(L.ft_disclaimer)}</p>
         </div>
         <nav class="foot-col" aria-label="${esc(L.ft_nav)}"><h3>${esc(L.ft_nav)}</h3><ul>${PAGINAS.map(([k, h]) => `<li><a href="${h}">${esc(L.nav[k])}</a></li>`).join("")}</ul></nav>
+        <nav class="foot-col" aria-label="${esc(L.nav.more_title)}"><h3>${esc(L.nav.more_title)}</h3><ul>${MAIS.map(([k, h]) => `<li><a href="${h}">${esc(L.nav[k])}</a></li>`).join("")}</ul></nav>
         <div class="foot-col"><h3>${esc(L.ft_data)}</h3><ul>
           <li><a href="#/downloads">${esc(L.nav.downloads)}</a></li><li><a href="#/replicar">${esc(L.nav.replicate)}</a></li>
-          <li>${ext(TSE_PORTAL, L.ft_tse_portal)}</li><li>${ext(TSE_RESULTADOS, L.ft_tse_res)}</li></ul></div>
+          <li>${ext(TSE_PORTAL, L.ft_tse_portal)}</li><li>${ext(TSE_RESULTADOS, L.ft_tse_res)}</li>
+          <li><a href="feed.xml">${esc(L.ft_feed)}</a></li></ul></div>
         <div class="foot-col"><h3>${esc(L.ft_author)}</h3><ul>
           ${A ? `<li><b>${esc(A.nome)}</b></li><li>${ext(`https://www.instagram.com/${A.instagram.replace("@", "")}/`, "Instagram " + A.instagram)}</li>` : ""}
           <li><button class="btn btn-bot btn-sm" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button></li></ul></div>
+      </div>
+      <div class="foot-tools">
+        <button class="btn btn-sm btn-ghost" type="button" data-install>${icone("phone")} ${esc(L.app_install)}</button>
+        <button class="btn btn-sm btn-ghost" type="button" data-a11y>${icone("a11y")} ${esc(L.ax_title)}</button>
+        <button class="btn btn-sm btn-ghost" type="button" data-report>${icone("alert")} ${esc(L.rep_site)}</button>
+        <button class="btn btn-sm btn-ghost" type="button" data-share>${icone("share")} ${esc(L.sh_site)}</button>
       </div>
       <div class="foot-bottom">
         <span class="made"><img src="site/img/bandeira.svg" alt="" width="22" height="15">${esc(L.ft_made)}</span>
@@ -662,9 +756,11 @@
     const ind = $("#nav " + sel);
     if (!ind) return;
     if (!a || getComputedStyle(ind).display === "none") { ind.classList.remove("on"); return; }
-    ind.style.left = a.offsetLeft + "px"; ind.style.width = a.offsetWidth + "px"; ind.classList.add("on");
+    // posição relativa ao menu (o botão "Mais" fica dentro de outro contêiner)
+    const nav = $("#nav"), rn = nav.getBoundingClientRect(), ra = a.getBoundingClientRect();
+    ind.style.left = (ra.left - rn.left - nav.clientLeft) + "px"; ind.style.width = ra.width + "px"; ind.classList.add("on");
   }
-  function indicador() { moverInd(".nav-ind", $('.nav a[aria-current="page"]')); }
+  function indicador() { moverInd(".nav-ind", $('.nav > a[aria-current="page"]') || $(".nav-more.cur > button")); }
 
   // Dica flutuante (mouse e teclado): 1ª linha em destaque, demais abaixo
   function dicas() {
@@ -894,7 +990,7 @@
     rolar();
     // menu: destaque que acompanha o mouse
     const nav = $("#nav");
-    nav.addEventListener("mouseover", (e) => { const a = e.target.closest("a"); if (a) moverInd(".nav-hover", a); });
+    nav.addEventListener("mouseover", (e) => { const a = e.target.closest(".nav > a, .nav-more > button"); if (a) moverInd(".nav-hover", a); });
     nav.addEventListener("mouseleave", () => moverInd(".nav-hover", null));
     window.addEventListener("resize", indicador, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(indicador);
@@ -932,6 +1028,9 @@
       if (e.target.closest("#theme-btn")) { tema(true); return; }
       if (e.target.closest("#menu-btn")) { const o = document.body.classList.toggle("menu-open"); $("#menu-btn").setAttribute("aria-expanded", String(o)); $("#menu-btn").innerHTML = icone(o ? "close" : "menu"); return; }
       if (e.target.closest("[data-top]")) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+      const mb = e.target.closest(".nav-more > button");
+      if (mb) { const m = mb.parentElement, o = !m.classList.contains("open"); m.classList.toggle("open", o); mb.setAttribute("aria-expanded", String(o)); return; }
+      if (!e.target.closest(".nav-more")) fecharMais();
       const ob = e.target.closest("[data-open-bot]"); if (ob && window.BOT) { window.BOT.abrir(); return; }
       const ask = e.target.closest("[data-ask]"); if (ask && window.BOT) { window.BOT.abrir(ask.dataset.ask); return; }
       const cp = e.target.closest("[data-copy]");
@@ -958,7 +1057,7 @@
       const alvo = `#/secao/${uf}/${z}/${s}`;
       if (location.hash === alvo) render(); else location.hash = alvo;
     });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharMenu(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { fecharMenu(); fecharMais(); } });
     window.addEventListener("hashchange", render);
   }
 
@@ -980,6 +1079,13 @@
     if (window.BOT) window.BOT.iniciar(state.lang);
   }
 
-  window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, consultarSecao, votosTurno, icone };
+  async function municipios() {
+    if (!state.muns) { try { state.muns = await json("site/data/municipios.json"); } catch (e) { state.muns = {}; } }
+    return state.muns;
+  }
+
+  const paginas = {};
+  window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, consultarSecao, votosTurno, icone, json, tabela, tile, barras, chip, chipStatus,
+    status, botCta, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
   document.addEventListener("DOMContentLoaded", iniciar);
 })();

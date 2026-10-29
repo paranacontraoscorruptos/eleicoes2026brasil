@@ -156,6 +156,52 @@
   // --- interface ------------------------------------------------------------------
   const L = () => window.I18N[B.lang];
   let el = {};
+  // Voz: ouvir as respostas (síntese do navegador) e perguntar falando (reconhecimento de voz, quando existe)
+  const VOZ = { PT: "pt-BR", EN: "en-US", ES: "es-ES" };
+  const Reconhecer = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const podeFalar = "speechSynthesis" in window && typeof window.SpeechSynthesisUtterance === "function";
+  let ouvindo = null, falando = null;
+
+  function pararFala() {
+    if (podeFalar) window.speechSynthesis.cancel();
+    if (falando) { falando.classList.remove("on"); falando.innerHTML = window.APP.icone("speaker"); falando.setAttribute("aria-label", L().bot_listen); falando = null; }
+  }
+  function falar(b) {
+    if (falando === b) { pararFala(); return; }
+    pararFala();
+    const m = b.closest(".msg").cloneNode(true);
+    m.querySelectorAll("button, .msg-src, .msg-rel, .chips, .code").forEach((x) => x.remove());
+    const txt = m.textContent.replace(/\s+/g, " ").trim();
+    if (!txt) return;
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = VOZ[B.lang];
+    const v = window.speechSynthesis.getVoices().find((x) => x.lang && x.lang.replace("_", "-").toLowerCase().startsWith(VOZ[B.lang].slice(0, 2).toLowerCase()));
+    if (v) u.voice = v;
+    u.onend = u.onerror = () => { if (falando === b) pararFala(); };
+    falando = b; b.classList.add("on"); b.innerHTML = window.APP.icone("stop"); b.setAttribute("aria-label", L().bot_stop);
+    window.speechSynthesis.speak(u);
+  }
+  function microfone() {
+    const T = L();
+    if (ouvindo) { ouvindo.stop(); return; }
+    const r = new Reconhecer();
+    r.lang = VOZ[B.lang]; r.interimResults = true; r.maxAlternatives = 1;
+    const mic = el.mic, antes = el.inp.placeholder;
+    let final = "";
+    r.onresult = (e) => {
+      let txt = "";
+      for (let i = 0; i < e.results.length; i++) { txt += e.results[i][0].transcript; if (e.results[i].isFinal) final = txt; }
+      el.inp.value = txt;
+    };
+    r.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") msg(`<p>${window.APP.esc(T.bot_mic_denied)}</p>`, "bot"); };
+    r.onend = () => {
+      ouvindo = null; mic.classList.remove("on"); mic.setAttribute("aria-pressed", "false"); el.inp.placeholder = antes;
+      const v = (final || el.inp.value).trim();
+      if (v) { el.inp.value = ""; perguntar(v); }
+    };
+    ouvindo = r; mic.classList.add("on"); mic.setAttribute("aria-pressed", "true"); el.inp.placeholder = T.bot_mic_on;
+    try { r.start(); } catch (e) { ouvindo = null; mic.classList.remove("on"); }
+  }
 
   function criar() {
     const ic = window.APP.icone;
@@ -172,14 +218,17 @@
       <div class="bot-log" role="log" aria-live="polite"></div>
       <form class="bot-form" autocomplete="off"><label class="sr-only" for="bot-in"></label>
         <input id="bot-in" type="text" maxlength="300" enterkeyhint="send">
+        ${Reconhecer ? `<button type="button" class="bot-mic" aria-pressed="false">${ic("mic")}</button>` : ""}
         <button type="submit" class="bot-send">${ic("send")}</button></form>`;
     document.body.append(bub, lan, pan);
-    el = { lan, bub, pan, log: pan.querySelector(".bot-log"), form: pan.querySelector(".bot-form"), inp: pan.querySelector("#bot-in"), x: pan.querySelector(".bot-x") };
+    el = { lan, bub, pan, log: pan.querySelector(".bot-log"), form: pan.querySelector(".bot-form"), inp: pan.querySelector("#bot-in"), x: pan.querySelector(".bot-x"), mic: pan.querySelector(".bot-mic") };
+    if (el.mic) el.mic.addEventListener("click", microfone);
     lan.addEventListener("click", () => (B.aberto ? fechar() : abrir()));
     el.x.addEventListener("click", fechar);
     el.form.addEventListener("submit", (e) => { e.preventDefault(); const v = el.inp.value.trim(); if (v) { el.inp.value = ""; perguntar(v); } });
     pan.addEventListener("keydown", (e) => { if (e.key === "Escape") fechar(); });
     el.log.addEventListener("click", (e) => {
+      const fa = e.target.closest(".msg-speak"); if (fa) { falar(fa); return; }
       const c = e.target.closest("[data-q]"); if (c) { perguntar(c.dataset.q); return; }
       const i = e.target.closest("[data-id]"); if (i) { mostrarEntrada(B.byId[i.dataset.id], true); return; }
       const g = e.target.closest("[data-go]"); if (g) { location.hash = g.dataset.go; if (window.matchMedia("(max-width: 640px)").matches) fechar(); }
@@ -203,6 +252,7 @@
     el.pan.querySelector("label[for=bot-in]").textContent = T.bot_ph;
     el.inp.placeholder = T.bot_ph;
     el.pan.querySelector(".bot-send").setAttribute("aria-label", T.bot_send);
+    if (el.mic) { el.mic.setAttribute("aria-label", T.bot_mic); el.mic.title = T.bot_mic; }
     el.bub.innerHTML = `<p>${T.bubble}</p><div class="bubble-actions"><button type="button" class="btn btn-bot btn-sm bubble-go">${window.APP.esc(T.bubble_btn)}</button></div>
       <button type="button" class="bubble-x" aria-label="${window.APP.esc(T.bubble_close)}">${window.APP.icone("close")}</button>`;
   }
@@ -221,6 +271,7 @@
     const d = document.createElement("div");
     d.className = "msg msg-" + quem;
     d.innerHTML = html;
+    if (quem === "bot" && podeFalar) d.insertAdjacentHTML("beforeend", `<button type="button" class="msg-speak" aria-label="${window.APP.esc(L().bot_listen)}" title="${window.APP.esc(L().bot_listen)}">${window.APP.icone("speaker")}</button>`);
     el.log.appendChild(d);
     // Resposta longa: mostra o começo dela; pergunta: rola até o fim
     el.log.scrollTop = quem === "bot" ? Math.max(0, d.offsetTop - el.log.offsetTop - 12) : el.log.scrollHeight;
@@ -342,6 +393,7 @@
   }
 
   function fechar() {
+    pararFala(); if (ouvindo) ouvindo.abort();
     B.aberto = false; el.pan.hidden = true; document.body.classList.remove("bot-open");
     el.lan.setAttribute("aria-expanded", "false"); el.lan.focus();
   }
@@ -366,6 +418,7 @@
     },
     idioma(lang) {
       if (!B.iniciado || lang === B.lang) return;
+      pararFala();
       B.lang = lang; stopSet = new Set(STOP[lang]); B.kb = null; B.idx = null;
       textos(); saudacao();
       if (B.aberto) carregar().catch(() => {});
