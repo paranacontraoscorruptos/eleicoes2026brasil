@@ -1,27 +1,31 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Auditoria BU 2026</title>
 <meta name="description" content="Auditoria estatística independente dos Boletins de Urna das Eleições Gerais de 2026, com dados públicos do TSE, código aberto e assistente de dúvidas.">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#050c08">
 <meta property="og:title" content="Auditoria estatística dos Boletins de Urna — Eleições 2026">
 <meta property="og:description" content="Análise independente de todas as seções do 1º e do 2º turno, com dados públicos do TSE.">
 <meta property="og:type" content="website">
 <link rel="icon" href="site/img/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="site/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="site/css/style.css">
 <script>
-  try { var t = localStorage.getItem("theme"); if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+  try { if (localStorage.getItem("theme") === "light") document.documentElement.setAttribute("data-theme", "light"); } catch (e) {}
+  if (!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) && "IntersectionObserver" in window) document.documentElement.classList.add("anim");
 </script>
 </head>
 <body>
 <a class="skip" href="#main">Pular para o conteúdo</a>
-<header class="site-head">
+<header class="site-head" id="site-head">
+  <div class="flag-stripe" aria-hidden="true"></div>
   <div class="head-in">
     <a class="brand" href="#/">
-      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9m5.3 10V5m5.4 14v-7M20 19v-4"/></svg></span>
-      <span id="brand-name">Auditoria BU 2026</span>
+      <img class="brand-flag" src="site/img/bandeira.svg" alt="" width="38" height="27">
+      <span class="brand-txt"><span id="brand-name">Auditoria BU 2026</span><span class="brand-sub" id="brand-sub">Eleições Brasil 2026</span></span>
     </a>
     <nav class="nav" id="nav" aria-label="Principal"></nav>
     <div class="head-tools">
@@ -30,10 +34,11 @@
       <button class="icon-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
   </div>
+  <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
 </header>
 <div class="badge-bar" id="badge">Análise independente · não é site oficial do TSE</div>
 <main id="main" tabindex="-1"><p class="muted">Carregando…</p></main>
-<footer class="site-foot"><div id="footer"></div></footer>
+<footer class="site-foot" id="footer"></footer>
 <noscript><p style="padding:16px">Este site precisa de JavaScript. Os arquivos estão na pasta auditoria-eleicoes-2026-Brasil do repositório.</p></noscript>
 <script src="site/js/i18n.js"></script>
 <script src="site/js/app.js"></script>

@@ -12,6 +12,7 @@
   const LANGS = ["PT", "EN", "ES"];
 
   const state = { lang: "PT", R: null, extra: null, muns: null, zonas: {} };
+  const ANIM = document.documentElement.classList.contains("anim");
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -80,6 +81,21 @@
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
       close: '<path d="M6 6l12 12M18 6 6 18"/>',
       send: '<path d="M4 12 20 4l-6 16-2.5-6.5z"/>',
+      grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+      flask: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>',
+      flag: '<path d="M5 21V4m0 0h11l-2 4 2 4H5"/>',
+      users: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M15.5 5.2a3 3 0 0 1 0 5.6M17 13.6a5 5 0 0 1 3.5 5.4"/>',
+      vote: '<path d="M4 12h16v8H4z"/><path d="M8 12V5h8v7"/><path d="m10 8.5 1.5 1.5 3-3"/>',
+      file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+      chart: '<path d="M4 20V10m5.3 10V5m5.4 15v-7M20 20v-4"/>',
+      terminal: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/>',
+      shield: '<path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6z"/><path d="M12 8v4m0 3.5v.01"/>',
+      arrow: '<path d="M5 12h14m-5-5 5 5-5 5"/>',
+      insta: '<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17" cy="7" r=".8" fill="currentColor"/>',
+      moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+      up: '<path d="M12 19V5m-6 6 6-6 6 6"/>',
+      check: '<path d="m5 12 4.5 4.5L19 7"/>',
+      alert: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4m0 3v.01"/>',
     }[n];
     return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
   }
@@ -87,10 +103,12 @@
   function barras(linhas, opts) {
     // linhas: [{rotulo, valor, texto, dica}]
     const max = Math.max(...linhas.map((l) => l.valor), 1e-9);
-    return `<div class="bars" role="list">` + linhas.map((l) =>
-      `<div class="bar-row" role="listitem" tabindex="0" data-tip="${esc(l.dica)}">
+    // espaço reservado para o rótulo do valor, para a barra maior não ser cortada
+    const res = Math.round(Math.min(170, 16 + Math.max(...linhas.map((l) => String(l.texto).length)) * 7.4));
+    return `<div class="bars" role="list" style="--res:${res}px">` + linhas.map((l, i) =>
+      `<div class="bar-row" role="listitem" tabindex="0" data-tip="${esc(l.dica)}" style="--i:${Math.min(i, 30)}">
         <span class="bar-label">${esc(l.rotulo)}</span>
-        <span class="bar-track"><span class="bar" style="width:${(100 * l.valor / max).toFixed(2)}%"></span><span class="bar-value">${esc(l.texto)}</span></span>
+        <span class="bar-track"><span class="bar" style="--f:${(l.valor / max).toFixed(4)}"></span><span class="bar-value">${esc(l.texto)}</span></span>
       </div>`).join("") + `</div>` + (opts && opts.nota ? `<p class="small muted">${opts.nota}</p>` : "");
   }
 
@@ -102,46 +120,103 @@
   function blocoCodigo(cmd) { return `<div class="code"><pre><code>${esc(cmd)}</code></pre>${copiar(cmd)}</div>`; }
 
   // --- páginas ---------------------------------------------------------------------
+  // Número com contagem animada, ícone e dica flutuante
+  function tile(v, rotulo, dica, ic, extra) {
+    return `<div class="tile spot" tabindex="0" data-tip="${esc(dica)}"><div class="tile-top">${icone(ic)}<span class="tile-i" aria-hidden="true">i</span></div>
+      <div class="tile-v"><span data-count="${v}">${nf(v)}</span>${extra ? ` <small>${extra}</small>` : ""}</div><div class="tile-l">${esc(rotulo)}</div></div>`;
+  }
+
+  function miniTestes(T) {
+    const L = t();
+    return `<span class="round-chips">${T.testes.map((x) => `<span class="mini mini-${status(x)}" data-tip="${esc(`${numTeste(x.id)}. ${nomeTeste(x.id)}\n${L.th_anom}: ${nf(x.sinal)} · ${L.th_info}: ${nf(x.info)}`)}">${numTeste(x.id)}</span>`).join("")}</span>`;
+  }
+
   function paginaInicio() {
-    const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"];
-    const d = { bol: nf(T1.entrada.boletins + T2.entrada.boletins), s1: nf(T1.secoes_sinalizadas), p1: pct(T1.secoes_sinalizadas / T1.entrada.secoes),
-      s2: nf(T2.secoes_sinalizadas), p2: pct(T2.secoes_sinalizadas / T2.entrada.secoes), c1: nf(T1.convergentes.length) };
-    const arit = T2.testes.filter((x) => x.id === "T01" || x.id === "T02").reduce((a, x) => a + x.sinal, 0);
-    const tiles = [[nf(T2.entrada.secoes), L.st_secoes], ["15", L.st_testes], [`${nf(T2.secoes_sinalizadas)} <small>(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})</small>`, L.st_sinal],
-      [nf(T2.convergentes.length), L.st_conv], [nf(arit), L.st_arit]];
+    const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"], P2 = T2.presidente;
     const A = R.autor;
+    const tiles = [
+      tile(T2.entrada.secoes, L.st_secoes, L.tip_secoes(nf(T2.entrada.linhas)), "grid"),
+      tile(15, L.st_testes, L.tip_testes, "flask"),
+      tile(T2.secoes_sinalizadas, L.st_sinal, L.tip_sinal, "flag", `(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`),
+      tile(P2.aptos, L.st_aptos, L.tip_aptos, "users"),
+      tile(P2.comparecimento, L.st_comp, L.tip_comp(nf(P2.comparecimento), nf(P2.aptos - P2.comparecimento)), "vote", `(${pct(P2.comparecimento / P2.aptos)})`),
+      tile(T2.entrada.boletins, L.st_bol, L.tip_bol, "file"),
+    ].join("");
+    const comOcorr = (T) => T.testes.filter((x) => x.sinal > 0 || x.info > 0).length;
+    const totDl = R.downloads.reduce((a, d) => a + d.bytes, 0);
+    const pag = [
+      { k: "r1", href: "#/turno/1", ic: "chart", m: L.round_card(1, nf(T1.secoes_sinalizadas), pct(T1.secoes_sinalizadas / T1.entrada.secoes)), x: miniTestes(T1),
+        tip: L.tip_round(nf(T1.entrada.linhas), nf(T1.entrada.secoes), nf(T1.entrada.boletins), T1.cab.emissao) },
+      { k: "r2", href: "#/turno/2", ic: "chart", m: L.round_card(2, nf(T2.secoes_sinalizadas), pct(T2.secoes_sinalizadas / T2.entrada.secoes)), x: miniTestes(T2),
+        tip: L.tip_round(nf(T2.entrada.linhas), nf(T2.entrada.secoes), nf(T2.entrada.boletins), T2.cab.emissao) },
+      { k: "tests", href: "#/testes", ic: "flask", m: L.m_tests, tip: L.tip_tests(comOcorr(T1), comOcorr(T2)) },
+      { k: "lookup", href: "#/secao", ic: "search", m: L.m_lookup(nf(T2.entrada.secoes)), tip: L.tip_lookup, y: true },
+      { k: "replicate", href: "#/replicar", ic: "terminal", m: L.m_replicate, tip: L.tip_replicate(T2.cab.nucleo_sha256.slice(0, 16)) },
+      { k: "downloads", href: "#/downloads", ic: "download", m: L.m_downloads(nf(R.downloads.length), tamanho(totDl)), tip: L.tip_downloads(nf(R.downloads.length), tamanho(totDl)) },
+      { k: "limits", href: "#/limitacoes", ic: "shield", m: L.m_limits, tip: L.tip_limits },
+      { k: "bot", ic: "chat", m: L.m_bot, tip: L.tip_bot, y: true, bot: true },
+    ];
+    const cards = pag.map((c, i) => {
+      const [tit, desc] = L.pg[c.k];
+      const dentro = `<span class="pc-num" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><span class="pc-ico">${icone(c.ic)}</span>
+        <span class="pc-title">${esc(tit)}</span><span class="pc-desc">${esc(desc)}</span>${c.x || ""}<span class="pc-metric">${esc(c.m)}</span>
+        <span class="pc-go">${esc(c.bot ? L.pg_ask : L.pg_open)} ${icone("arrow")}</span>`;
+      const cls = `page-card spot tilt${c.y ? " y" : ""}`;
+      return c.bot ? `<button class="${cls}" type="button" data-open-bot data-tip="${esc(c.tip)}">${dentro}</button>`
+        : `<a class="${cls}" href="${c.href}" data-tip="${esc(c.tip)}">${dentro}</a>`;
+    }).join("");
+    const cands = P2.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96");
+    const val = cands.reduce((a, c) => a + c.votos, 0);
+    const br = P2.candidatos.find((c) => c.nr === "95"), nu = P2.candidatos.find((c) => c.nr === "96");
+    const pres = barras(cands.map((c) => ({ rotulo: `${titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: `${pct(c.votos / val)}`,
+      dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}\n${titulo(c.nome)} (${c.nr})` })));
+    const ini = A.nome.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
     return `
     <section class="hero">
-      <p class="kicker">${esc(L.hero_kicker)}</p>
-      <h1>${esc(L.hero_title)}</h1>
-      <p class="lead">${esc(L.hero_sub)}</p>
-      <div class="hero-actions">
-        <button class="btn btn-bot btn-lg" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button>
-        <a class="btn btn-lg" href="#/secao">${icone("search")} ${esc(L.cta_lookup)}</a>
-        <a class="btn btn-ghost btn-lg" href="#/downloads">${icone("download")} ${esc(L.cta_downloads)}</a>
+      <canvas class="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-txt">
+        <p class="kicker" data-scramble>${esc(L.hero_kicker)}</p>
+        <h1 data-type>${esc(L.hero_title)}</h1>
+        <p class="lead">${esc(L.hero_sub)}</p>
+        <div class="hero-actions">
+          <button class="btn btn-bot btn-lg" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button>
+          <a class="btn btn-primary btn-lg" href="#/secao">${icone("search")} ${esc(L.cta_lookup)}</a>
+          <a class="btn btn-ghost btn-lg" href="#/downloads">${icone("download")} ${esc(L.cta_downloads)}</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-ring"></div><div class="hero-ring r2"></div>
+        <div class="hero-flag"><img src="site/img/bandeira.svg" alt="" width="400" height="280"></div>
+        <div class="float-chip c1"><span class="fc-ico">${icone("grid")}</span><span><b>${nf(T2.entrada.secoes)}</b>${esc(L.hero_chip_sec)}</span></div>
+        <div class="float-chip c2 y"><span class="fc-ico">${icone("flask")}</span><span><b>15</b>${esc(L.hero_chip_tests)}</span></div>
+        <div class="float-chip c3"><span class="fc-ico">${icone("check")}</span><span><b>2</b>${esc(L.hero_chip_rounds)}</span></div>
       </div>
     </section>
     ${botCta(false)}
-    <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2>
-      <div class="tiles">${tiles.map(([v, l]) => `<div class="tile"><div class="tile-v">${v}</div><div class="tile-l">${esc(l)}</div></div>`).join("")}</div>
+    <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
+      <div class="tiles tiles-3">${tiles}</div>
     </section>
-    <section class="card" aria-labelledby="h-found"><h2 id="h-found">${esc(L.found_title)}</h2>
-      <ul class="checks">${L.found(d).map((x) => `<li>${x}</li>`).join("")}</ul>
-      <p class="note">${esc(L.found_note)}</p>
+    <section aria-labelledby="h-pages"><h2 id="h-pages">${esc(L.explore_title)}</h2><p class="sec-sub">${esc(L.explore_sub)}</p>
+      <div class="pages">${cards}</div>
     </section>
-    <section aria-labelledby="h-rounds"><h2 id="h-rounds">${esc(L.rounds_title)}</h2>
-      <div class="grid2">${[1, 2].map((n) => { const T = R.turnos[n]; return `<a class="round-card" href="#/turno/${n}">
-        <span class="round-n">${esc(L.round(n))}</span><span class="round-d">${esc(L.roundDate[n])}</span>
-        <span class="round-s">${esc(L.round_card(n, nf(T.secoes_sinalizadas), pct(T.secoes_sinalizadas / T.entrada.secoes)))}</span>
-        <span class="round-chips">${T.testes.map((x) => `<span class="mini mini-${status(x)}" title="${esc(numTeste(x.id) + ". " + nomeTeste(x.id))}">${numTeste(x.id)}</span>`).join("")}</span></a>`; }).join("")}</div>
+    <section class="grid2">
+      <div class="card pres-home"><h2>${esc(L.home_pres_title)}</h2><p class="small muted">${esc(L.home_pres_sub)}</p>${pres}
+        <p class="small muted">${esc(L.blank)}: ${nf(br.votos)} · ${esc(L.null_)}: ${nf(nu.votos)}</p>
+        <a class="btn btn-sm" href="#/turno/2">${esc(L.home_pres_more)} ${icone("arrow")}</a></div>
+      <div class="card"><h2>${esc(L.tl_title)}</h2>
+        <ol class="timeline">${L.tl.map(([d, x], i) => `<li${i % 2 ? ' class="y"' : ""}><time>${esc(d)}</time><span>${esc(x)}</span></li>`).join("")}</ol></div>
     </section>
     <section class="card" aria-labelledby="h-lk"><h2 id="h-lk">${esc(L.lookup_cta_title)}</h2><p>${esc(L.lookup_cta_text)}</p>${formSecao(true)}</section>
     <section aria-labelledby="h-leg"><h2 id="h-leg">${esc(L.legend_title)}</h2>
       <ul class="legend">${L.legend.map(([c, n, d]) => `<li>${chip(c, n)} <span class="muted">${esc(d)}</span></li>`).join("")}</ul>
     </section>
-    <section class="card author" aria-labelledby="h-au"><h2 id="h-au">${esc(L.author_title)}</h2>
-      <p class="author-name">${esc(A.nome)}</p>
-      <p><span class="muted">${esc(L.author_spec)}:</span> ${esc(A.especialidade[state.lang])}<br><span class="muted">${esc(L.author_place)}:</span> ${esc(A.local[state.lang])}<br>Instagram: <a href="https://www.instagram.com/${esc(A.instagram.replace("@", ""))}/" rel="noopener" target="_blank">${esc(A.instagram)}</a></p>
+    <section class="card author" aria-labelledby="h-au">
+      <div class="avatar" aria-hidden="true">${esc(ini)}</div>
+      <div class="author-body"><h2 id="h-au">${esc(L.author_title)}</h2>
+        <p class="author-name">${esc(A.nome)}</p>
+        <p><span class="muted">${esc(L.author_spec)}:</span> ${esc(A.especialidade[state.lang])}<br><span class="muted">${esc(L.author_place)}:</span> ${esc(A.local[state.lang])}</p>
+        <p><a class="btn btn-sm" href="https://www.instagram.com/${esc(A.instagram.replace("@", ""))}/" rel="noopener" target="_blank">${icone("insta")} ${esc(A.instagram)}</a></p>
+      </div>
     </section>`;
   }
 
@@ -152,19 +227,20 @@
     const val = cands.reduce((a, c) => a + c.votos, 0);
     const br = P.candidatos.find((c) => c.nr === "95"), nu = P.candidatos.find((c) => c.nr === "96");
     const pres = barras(cands.map((c) => ({ rotulo: `${titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: `${nf(c.votos)} · ${pct(c.votos / val)}`,
-      dica: `${titulo(c.nome)}: ${nf(c.votos)} (${pct(c.votos / val)} ${L.valid})` })),
+      dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}\n${titulo(c.nome)} (${c.nr})` })),
       { nota: `${esc(L.blank)}: ${nf(br.votos)} · ${esc(L.null_)}: ${nf(nu.votos)}. ${esc(L.r_pres_note(nf(P.comparecimento), nf(P.aptos), pct(P.comparecimento / P.aptos)))}` });
     const testes = tabela([L.th_test, L.th_units, L.th_anom, L.th_info, L.th_raw, L.th_rate, L.th_status],
       T.testes.map((x) => [`<a href="#/testes/${x.id}">${numTeste(x.id)}. ${esc(nomeTeste(x.id))}</a>`, nf(x.unidades || 0), nf(x.sinal), nf(x.info),
         x.brutos == null ? "—" : nf(x.brutos), x.unidades ? pct(x.sinal / x.unidades, 3) : "—", chipStatus(x)]), "num-cols");
     const ufs = T.uf.slice().sort((a, b) => b.sinal / b.secoes - a.sinal / a.secoes);
     const ufBar = barras(ufs.map((u) => ({ rotulo: u.uf, valor: u.sinal / u.secoes, texto: pct(u.sinal / u.secoes),
-      dica: `${ufNome(u.uf)}: ${nf(u.sinal)} / ${nf(u.secoes)} (${pct(u.sinal / u.secoes)})` })));
+      dica: `${pct(u.sinal / u.secoes)}\n${ufNome(u.uf)}: ${nf(u.sinal)} / ${nf(u.secoes)} ${L.th_sections.toLowerCase()}` })));
     const ufTab = tabela([L.th_uf, L.th_sections, L.th_flagged, L.th_pct], ufs.map((u) => [`${u.uf} – ${esc(ufNome(u.uf))}`, nf(u.secoes), nf(u.sinal), pct(u.sinal / u.secoes)]), "num-cols");
+    // Sem seções convergentes (2º turno), a seção não aparece
     const conv = T.convergentes.length
-      ? tabela(["UF", L.th_mun, L.th_zone, L.th_section, L.th_tests], T.convergentes.map((c) => [c.uf, esc(titulo(c.mun)), c.zona,
-        `<a href="#/secao/${c.uf}/${c.zona}/${c.secao}">${c.secao}</a>`, c.testes.split(",").map((x) => `<a href="#/testes/${x}">${numTeste(x)}</a>`).join(", ")]))
-      : `<p>${esc(L.r_conv_none)}</p>`;
+      ? `<section><h2>${esc(L.r_conv_title)}</h2><p class="small muted">${esc(L.r_conv_sub)}</p>${tabela(["UF", L.th_mun, L.th_zone, L.th_section, L.th_tests], T.convergentes.map((c) => [c.uf, esc(titulo(c.mun)), c.zona,
+        `<a href="#/secao/${c.uf}/${c.zona}/${c.secao}">${c.secao}</a>`, c.testes.split(",").map((x) => `<a href="#/testes/${x}">${numTeste(x)}</a>`).join(", ")]))}</section>`
+      : "";
     const un = T.unanimidade.filter((u) => u.uf === "BR");
     const unTab = tabela([L.th_cand, L.th_100, L.th_improv], un.map((u) => [`${esc(titulo(u.nome))} (${u.nr})`, nf(u.secoes), nf(u.improv)]), "num-cols");
     const insp = T.klimek.filter((k) => k.insp).map((k) => `${esc(ufRotulo(k.uf))} (${esc(titulo(k.nome))})`).join(", ") || "—";
@@ -180,15 +256,15 @@
     <header class="page-head"><p class="kicker">${esc(L.roundDate[n])}</p><h1>${esc(L.round(n))}</h1>
       <p class="muted">${esc(L.r_processed(nf(T.entrada.linhas), nf(T.entrada.secoes), nf(T.entrada.boletins)))}</p></header>
     <div class="tiles">
-      <div class="tile"><div class="tile-v">${nf(T.secoes_sinalizadas)} <small>(${pct(T.secoes_sinalizadas / T.entrada.secoes)})</small></div><div class="tile-l">${esc(L.r_flagged)}</div></div>
-      <div class="tile"><div class="tile-v">${nf(T.convergentes.length)}</div><div class="tile-l">${esc(L.r_conv)}</div></div>
-      <div class="tile"><div class="tile-v">${nf(T.testes.filter((x) => x.id === "T01" || x.id === "T02").reduce((a, x) => a + x.sinal, 0))}</div><div class="tile-l">${esc(L.st_arit)}</div></div>
+      ${tile(T.secoes_sinalizadas, L.r_flagged, L.tip_sinal, "flag", `(${pct(T.secoes_sinalizadas / T.entrada.secoes)})`)}
+      ${tile(P.aptos, L.st_aptos, L.tip_aptos, "users")}
+      ${tile(P.comparecimento, L.st_comp, L.tip_comp(nf(P.comparecimento), nf(P.aptos - P.comparecimento)), "vote", `(${pct(P.comparecimento / P.aptos)})`)}
     </div>
     <section class="card"><h2>${esc(L.r_pres_title)}</h2>${pres}</section>
     <section><h2>${esc(L.r_tests_title)}</h2>${testes}</section>
     <section class="card"><div class="h-row"><h2>${esc(L.r_uf_title)}</h2><button class="btn btn-sm btn-ghost" type="button" data-toggle-view="uf">${esc(L.show_table)}</button></div>
       <p class="small muted">${esc(L.r_uf_sub)}</p><div data-view="uf-chart">${ufBar}</div><div data-view="uf-table" hidden>${ufTab}</div></section>
-    <section><h2>${esc(L.r_conv_title)}</h2><p class="small muted">${esc(L.r_conv_sub)}</p>${conv}</section>
+    ${conv}
     <section><h2>${esc(L.r_un_title)}</h2>${unTab}</section>
     <section><h2>${esc(L.r_klimek_title)}</h2><p>${esc(L.r_klimek_sub)} <b>${insp}</b></p>
       <div class="figs">${lider.map((c) => fig(c.nr, "brasil", L.r_klimek_br(titulo(c.nome)))).join("")}${lider.map((c) => fig(c.nr, "por_uf", L.r_klimek_uf(titulo(c.nome)))).join("")}</div></section>
@@ -388,11 +464,14 @@
     else if (p[0] === "limitacoes") { html = paginaLimitacoes(); ativo = "limits"; tit = L.lm_title; }
     else html = paginaInicio();
     main.innerHTML = html;
+    main.classList.remove("page-enter"); void main.offsetWidth; main.classList.add("page-enter");
     document.title = (ativo === "home" ? "" : tit + " · ") + L.brand;
     $$(".nav a").forEach((a) => a.setAttribute("aria-current", a.dataset.nav === ativo ? "page" : "false"));
+    indicador();
     fecharMenu();
     if (p[0] === "testes" && p[1]) { const el = document.getElementById(p[1]); if (el) el.scrollIntoView({ block: "start" }); }
-    else window.scrollTo(0, 0);
+    else window.scrollTo({ top: 0, behavior: "instant" });
+    efeitos(main);
     if (p[0] === "secao") await iniciarSecao(p[1], p[2], p[3]);
   }
 
@@ -427,22 +506,52 @@
   }
 
   // --- interface global ---------------------------------------------------------
-  function fecharMenu() { document.body.classList.remove("menu-open"); const b = $("#menu-btn"); if (b) b.setAttribute("aria-expanded", "false"); }
+  function fecharMenu() {
+    const b = $("#menu-btn");
+    if (document.body.classList.contains("menu-open") && b) b.innerHTML = icone("menu");
+    document.body.classList.remove("menu-open"); if (b) b.setAttribute("aria-expanded", "false");
+  }
+
+  const PAGINAS = [["home", "#/"], ["r1", "#/turno/1"], ["r2", "#/turno/2"], ["tests", "#/testes"], ["lookup", "#/secao"], ["replicate", "#/replicar"], ["downloads", "#/downloads"], ["limits", "#/limitacoes"]];
 
   function montarCabecalho() {
     const L = t();
     $("#brand-name").textContent = L.brand;
+    $("#brand-sub").textContent = L.brand_sub;
     $("#badge").textContent = L.badge;
-    const itens = [["home", "#/"], ["r1", "#/turno/1"], ["r2", "#/turno/2"], ["tests", "#/testes"], ["lookup", "#/secao"], ["replicate", "#/replicar"], ["downloads", "#/downloads"], ["limits", "#/limitacoes"]];
-    $("#nav").innerHTML = itens.map(([k, h]) => `<a href="${h}" data-nav="${k}">${esc(L.nav[k])}</a>`).join("");
+    $("#nav").innerHTML = '<span class="nav-hover" aria-hidden="true"></span><span class="nav-ind" aria-hidden="true"></span>'
+      + PAGINAS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${i}">${esc(L.nav[k])}</a>`).join("");
     $("#lang").innerHTML = LANGS.map((l) => `<button type="button" data-lang="${l}" aria-pressed="${l === state.lang}">${l}</button>`).join("");
     $("#lang").setAttribute("aria-label", L.lang);
     $("#theme-btn").setAttribute("aria-label", L.theme); $("#theme-btn").title = L.theme;
     $("#menu-btn").setAttribute("aria-label", L.menu);
-    const A = state.R ? state.R.autor : null;
-    $("#footer").innerHTML = `<p>${esc(L.ft_disclaimer)}</p>
-      <p>${A ? `${esc(L.ft_author)}: ${esc(A.nome)} · Instagram <a href="https://www.instagram.com/${esc(A.instagram.replace("@", ""))}/" target="_blank" rel="noopener">${esc(A.instagram)}</a> · ` : ""}<a href="${REPO}" target="_blank" rel="noopener">${esc(L.ft_repo)}</a></p>`;
+    iconeTema();
+    montarRodape();
     document.documentElement.lang = { PT: "pt-BR", EN: "en", ES: "es" }[state.lang];
+  }
+
+  function montarRodape() {
+    const L = t(), R = state.R, A = R ? R.autor : null;
+    const ext = (h, txt) => `<a href="${h}" target="_blank" rel="noopener">${esc(txt)}</a>`;
+    $("#footer").innerHTML = `<div class="flag-stripe" aria-hidden="true"></div>
+      <div class="foot-in">
+        <div class="foot-brand">
+          <a class="brand" href="#/"><img class="brand-flag" src="site/img/bandeira.svg" alt="" width="38" height="27"><span class="brand-txt"><span class="fb-name">${esc(L.brand)}</span><span class="brand-sub">${esc(L.brand_sub)}</span></span></a>
+          <p>${esc(L.ft_tagline)}</p><p class="small muted">${esc(L.ft_disclaimer)}</p>
+        </div>
+        <nav class="foot-col" aria-label="${esc(L.ft_nav)}"><h3>${esc(L.ft_nav)}</h3><ul>${PAGINAS.map(([k, h]) => `<li><a href="${h}">${esc(L.nav[k])}</a></li>`).join("")}</ul></nav>
+        <div class="foot-col"><h3>${esc(L.ft_data)}</h3><ul>
+          <li><a href="#/downloads">${esc(L.nav.downloads)}</a></li><li><a href="#/replicar">${esc(L.nav.replicate)}</a></li>
+          <li>${ext(TSE_PORTAL, L.ft_tse_portal)}</li><li>${ext(TSE_RESULTADOS, L.ft_tse_res)}</li></ul></div>
+        <div class="foot-col"><h3>${esc(L.ft_author)}</h3><ul>
+          ${A ? `<li><b>${esc(A.nome)}</b></li><li>${ext(`https://www.instagram.com/${A.instagram.replace("@", "")}/`, "Instagram " + A.instagram)}</li>` : ""}
+          <li><button class="btn btn-bot btn-sm" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button></li></ul></div>
+      </div>
+      <div class="foot-bottom">
+        <span class="made"><img src="site/img/bandeira.svg" alt="" width="22" height="15">${esc(L.ft_made)}</span>
+        ${R ? `<span>${esc(L.ft_reports(R.turnos["1"].cab.emissao, R.turnos["2"].cab.emissao))}</span>` : ""}
+        <button class="to-top" type="button" data-top>${icone("up")} ${esc(L.ft_top)}</button>
+      </div>`;
   }
 
   function definirIdioma(l) {
@@ -452,33 +561,221 @@
     if (window.BOT) window.BOT.idioma(l);
   }
 
+  // Tema escuro por padrão; o claro fica salvo só se o visitante escolher
+  function iconeTema() {
+    const escuro = document.documentElement.getAttribute("data-theme") !== "light";
+    $("#theme-btn").innerHTML = icone(escuro ? "sun" : "moon");
+  }
   function tema(alternar) {
     const raiz = document.documentElement;
-    let atual = raiz.getAttribute("data-theme");
-    if (!atual) atual = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    if (alternar) { atual = atual === "dark" ? "light" : "dark"; raiz.setAttribute("data-theme", atual); guardar("theme", atual); }
+    let atual = raiz.getAttribute("data-theme") === "light" ? "light" : "dark";
+    if (alternar) atual = atual === "dark" ? "light" : "dark";
+    raiz.setAttribute("data-theme", atual);
+    if (alternar) guardar("theme", atual);
+    const m = $('meta[name="theme-color"]'); if (m) m.content = atual === "dark" ? "#050c08" : "#f3f7f1";
+    iconeTema();
   }
 
-  // Dica flutuante para barras (mouse e teclado)
+  // Indicador deslizante do menu
+  function moverInd(sel, a) {
+    const ind = $("#nav " + sel);
+    if (!ind) return;
+    if (!a || getComputedStyle(ind).display === "none") { ind.classList.remove("on"); return; }
+    ind.style.left = a.offsetLeft + "px"; ind.style.width = a.offsetWidth + "px"; ind.classList.add("on");
+  }
+  function indicador() { moverInd(".nav-ind", $('.nav a[aria-current="page"]')); }
+
+  // Dica flutuante (mouse e teclado): 1ª linha em destaque, demais abaixo
   function dicas() {
     const tip = document.createElement("div");
     tip.className = "tip"; tip.setAttribute("role", "tooltip"); tip.hidden = true;
     document.body.appendChild(tip);
-    const mostrar = (el, x, y) => { tip.textContent = el.dataset.tip; tip.hidden = false;
-      const r = tip.getBoundingClientRect(); let left = x + 12, top = y - r.height - 10;
-      if (left + r.width > window.innerWidth - 8) left = window.innerWidth - r.width - 8; if (top < 8) top = y + 16;
-      tip.style.left = left + "px"; tip.style.top = top + "px"; };
-    document.addEventListener("mousemove", (e) => { const el = e.target.closest("[data-tip]"); if (el) mostrar(el, e.clientX, e.clientY); else tip.hidden = true; });
-    document.addEventListener("focusin", (e) => { const el = e.target.closest("[data-tip]"); if (el) { const r = el.getBoundingClientRect(); mostrar(el, r.left + r.width / 2, r.top); } });
-    document.addEventListener("focusout", () => { tip.hidden = true; });
-    window.addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
+    let atual = null;
+    const encher = (el) => {
+      if (atual === el) return;
+      atual = el; tip.textContent = "";
+      const linhas = el.dataset.tip.split("\n");
+      const s = document.createElement("strong"); s.textContent = linhas[0]; tip.appendChild(s);
+      linhas.slice(1).forEach((l) => { const d = document.createElement("div"); d.textContent = l; tip.appendChild(d); });
+      tip.hidden = false;
+    };
+    const posicionar = (x, y) => {
+      const r = tip.getBoundingClientRect(); let left = x + 14, top = y - r.height - 12;
+      if (left + r.width > window.innerWidth - 8) left = Math.max(8, x - r.width - 14);
+      if (top < 8) top = y + 18;
+      tip.style.left = left + "px"; tip.style.top = top + "px";
+    };
+    const esconder = () => { tip.hidden = true; atual = null; };
+    document.addEventListener("mousemove", (e) => { const el = e.target.closest("[data-tip]"); if (el) { encher(el); posicionar(e.clientX, e.clientY); } else if (atual) esconder(); });
+    document.addEventListener("focusin", (e) => { const el = e.target.closest("[data-tip]"); if (el) { encher(el); const r = el.getBoundingClientRect(); posicionar(r.left + Math.min(r.width / 2, 120), r.top); } });
+    document.addEventListener("focusout", esconder);
+    window.addEventListener("scroll", esconder, { passive: true });
+  }
+
+  // --- efeitos --------------------------------------------------------------------
+  const SEL_RV = ".card, .tile, .page-card, .test-card, figure, .table-wrap, .bot-cta, .bot-band, .steps > li, .legend > li, main section > h2, main section > .sec-sub, .h-row, main > section > p, .btn-row, .page-head > p, .page-head > ul";
+  let obs = null;
+
+  function revelar(el) {
+    el.classList.add("in");
+    if (el.classList.contains("rv")) {
+      // depois de entrar, devolve as transições próprias do elemento (inclina, sobe)
+      const d = parseInt(el.style.getPropertyValue("--d") || "0", 10);
+      setTimeout(() => { el.classList.remove("rv", "rv-l", "rv-s", "in"); el.style.removeProperty("--d"); }, 760 + d * 70);
+    }
+    $$("[data-count]", el).concat(el.matches("[data-count]") ? [el] : []).forEach(contar);
+  }
+
+  function efeitos(raiz) {
+    $$("h1[data-type], .page-head h1", raiz).forEach(digitar);
+    $$("[data-scramble], .page-head .kicker", raiz).forEach(embaralhar);
+    const cv = $(".hero-canvas", raiz); if (cv && ANIM) particulas(cv);
+    if (!ANIM) return;
+    if (obs) obs.disconnect();
+    obs = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) { obs.unobserve(en.target); revelar(en.target); } }), { rootMargin: "0px 0px -6% 0px" });
+    $$(SEL_RV, raiz).forEach((el) => {
+      if (el.parentElement.closest(".rv")) return;
+      let i = 0, irm = el.previousElementSibling;
+      while (irm && i < 8) { if (irm.classList.contains("rv")) i++; irm = irm.previousElementSibling; }
+      el.classList.add("rv"); if (el.matches("h2, .h-row")) el.classList.add("rv-l");
+      if (el.matches(".tile, .page-card")) el.classList.add("rv-s");
+      el.style.setProperty("--d", i);
+      obs.observe(el);
+    });
+    $$(".bars, .timeline", raiz).forEach((el) => obs.observe(el));
+    $$("[data-count]", raiz).forEach((el) => { if (!el.closest(".rv")) obs.observe(el); });
+  }
+
+  // Título escrito letra por letra (o texto completo fica para leitores de tela)
+  function digitar(h) {
+    const txt = h.textContent.trim();
+    if (!txt || !ANIM) return;
+    h.classList.add("tw-on");
+    h.innerHTML = `<span class="sr-only">${esc(txt)}</span><span class="tw" aria-hidden="true"><span class="tw-ghost">${esc(txt)}</span><span class="tw-live"></span></span>`;
+    const live = $(".tw-live", h), passo = Math.max(16, Math.min(40, 1200 / txt.length));
+    let i = 0;
+    const tick = () => { i++; live.textContent = txt.slice(0, i); if (i < txt.length) setTimeout(tick, passo); else h.classList.add("tw-done"); };
+    setTimeout(tick, 200);
+  }
+
+  // Texto que "decodifica" (efeito tecnológico nos rótulos)
+  function embaralhar(el) {
+    const txt = el.textContent.trim();
+    if (!txt || !ANIM) return;
+    el.innerHTML = `<span class="sr-only">${esc(txt)}</span><span aria-hidden="true"></span>`;
+    const vis = el.lastElementChild, cs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+<>/";
+    let q = 0;
+    const tick = () => {
+      q += 1;
+      const n = Math.floor(q * txt.length / 26);
+      vis.textContent = txt.split("").map((c, k) => (k < n || c === " " ? c : cs[Math.floor(Math.random() * cs.length)])).join("");
+      if (n < txt.length) setTimeout(tick, 34); else vis.textContent = txt;
+    };
+    tick();
+  }
+
+  // Contagem animada até o valor final
+  function contar(el) {
+    const alvo = Number(el.dataset.count);
+    if (!(alvo > 0) || el.dataset.contado) return;
+    el.dataset.contado = "1";
+    const t0 = performance.now(), dur = 1500;
+    const passo = (agora) => { const k = Math.min(1, (agora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = nf(Math.round(alvo * e)); if (k < 1) requestAnimationFrame(passo); };
+    requestAnimationFrame(passo);
+  }
+
+  // Rede de pontos verde e amarela no topo da página inicial
+  function particulas(cv) {
+    const ctx = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
+    let w = 0, h = 0, pts = [], vis = true, raf = 0;
+    const mouse = { x: -999, y: -999 };
+    const tam = () => {
+      const r = cv.getBoundingClientRect(); w = r.width; h = r.height;
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.max(18, Math.min(70, Math.round(w * h / 11000)));
+      pts = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4, r: Math.random() * 1.6 + .7, am: Math.random() < .3 }));
+    };
+    const quadro = () => {
+      if (!cv.isConnected) { raf = 0; return; }
+      const claro = document.documentElement.getAttribute("data-theme") === "light";
+      const g = claro ? "0,135,58" : "31,195,95", y = claro ? "190,140,0" : "255,212,0";
+      ctx.clearRect(0, 0, w, h);
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+      }
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i];
+        for (let j = i + 1; j < pts.length; j++) {
+          const b = pts[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+          if (d2 < 14400) { ctx.strokeStyle = `rgba(${a.am ? y : g},${(.22 * (1 - Math.sqrt(d2) / 120)).toFixed(3)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+        }
+        const mx = a.x - mouse.x, my = a.y - mouse.y, md = mx * mx + my * my;
+        if (md < 32400) { ctx.strokeStyle = `rgba(${y},${(.45 * (1 - Math.sqrt(md) / 180)).toFixed(3)})`; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke(); }
+        ctx.fillStyle = `rgba(${a.am ? y : g},.85)`; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.2832); ctx.fill();
+      }
+      raf = vis && !document.hidden ? requestAnimationFrame(quadro) : 0;
+    };
+    const iniciarLoop = () => { if (!raf && vis && cv.isConnected) raf = requestAnimationFrame(quadro); };
+    tam(); iniciarLoop();
+    new IntersectionObserver((e) => { vis = e[0].isIntersecting; iniciarLoop(); }).observe(cv);
+    const hero = cv.parentElement;
+    hero.addEventListener("pointermove", (e) => { const r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; }, { passive: true });
+    hero.addEventListener("pointerleave", () => { mouse.x = mouse.y = -999; });
+    window.addEventListener("resize", () => { if (cv.isConnected) tam(); }, { passive: true });
+    document.addEventListener("visibilitychange", iniciarLoop);
+  }
+
+  function efeitosGlobais() {
+    // cabeçalho compacto e barra de progresso da leitura
+    const head = $("#site-head"), barra = $("#progress-bar");
+    let pend = false;
+    const rolar = () => { pend = false; const y = window.scrollY, h = document.documentElement.scrollHeight - window.innerHeight;
+      head.classList.toggle("scrolled", y > 8); barra.style.transform = `scaleX(${h > 0 ? Math.min(1, y / h) : 0})`; };
+    window.addEventListener("scroll", () => { if (!pend) { pend = true; requestAnimationFrame(rolar); } }, { passive: true });
+    rolar();
+    // menu: destaque que acompanha o mouse
+    const nav = $("#nav");
+    nav.addEventListener("mouseover", (e) => { const a = e.target.closest("a"); if (a) moverInd(".nav-hover", a); });
+    nav.addEventListener("mouseleave", () => moverInd(".nav-hover", null));
+    window.addEventListener("resize", indicador, { passive: true });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(indicador);
+    if (!ANIM) return;
+    // brilho que segue o mouse, inclinação 3D e bandeira que acompanha o ponteiro
+    document.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse") return;
+      const el = e.target.closest(".spot");
+      if (el) {
+        const r = el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+        el.style.setProperty("--mx", x + "px"); el.style.setProperty("--my", y + "px");
+        if (el.classList.contains("tilt") && !el.classList.contains("rv")) el.style.transform = `perspective(900px) rotateX(${((y / r.height) - .5) * -7}deg) rotateY(${((x / r.width) - .5) * 7}deg) translateY(-5px)`;
+      }
+      const hv = e.target.closest(".hero");
+      const fl = hv && $(".hero-flag", hv);
+      if (fl) { const r = hv.getBoundingClientRect(); fl.style.transform = `rotateY(${((e.clientX - r.left) / r.width - .5) * 16}deg) rotateX(${((e.clientY - r.top) / r.height - .5) * -12}deg)`; }
+    }, { passive: true });
+    document.addEventListener("pointerout", (e) => {
+      const el = e.target.closest(".tilt"); if (el && !el.contains(e.relatedTarget)) el.style.transform = "";
+      const hv = e.target.closest(".hero"); if (hv && !hv.contains(e.relatedTarget)) { const fl = $(".hero-flag", hv); if (fl) fl.style.transform = ""; }
+    });
+    // ondinha ao clicar
+    document.addEventListener("pointerdown", (e) => {
+      const b = e.target.closest(".btn, .page-card");
+      if (!b) return;
+      const r = b.getBoundingClientRect(), s = document.createElement("span");
+      s.className = "ripple"; s.style.left = (e.clientX - r.left) + "px"; s.style.top = (e.clientY - r.top) + "px";
+      b.appendChild(s); setTimeout(() => s.remove(), 650);
+    });
   }
 
   function eventos() {
     document.addEventListener("click", async (e) => {
       const lg = e.target.closest("[data-lang]"); if (lg) { definirIdioma(lg.dataset.lang); return; }
       if (e.target.closest("#theme-btn")) { tema(true); return; }
-      if (e.target.closest("#menu-btn")) { const o = document.body.classList.toggle("menu-open"); $("#menu-btn").setAttribute("aria-expanded", String(o)); return; }
+      if (e.target.closest("#menu-btn")) { const o = document.body.classList.toggle("menu-open"); $("#menu-btn").setAttribute("aria-expanded", String(o)); $("#menu-btn").innerHTML = icone(o ? "close" : "menu"); return; }
+      if (e.target.closest("[data-top]")) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
       const ob = e.target.closest("[data-open-bot]"); if (ob && window.BOT) { window.BOT.abrir(); return; }
       const ask = e.target.closest("[data-ask]"); if (ask && window.BOT) { window.BOT.abrir(ask.dataset.ask); return; }
       const cp = e.target.closest("[data-copy]");
@@ -491,7 +788,9 @@
         const k = tg.dataset.toggleView, ch = $(`[data-view="${k}-chart"]`), tb = $(`[data-view="${k}-table"]`);
         const mostrarTabela = !ch.hidden; ch.hidden = mostrarTabela; tb.hidden = !mostrarTabela;
         tg.textContent = mostrarTabela ? t().show_chart : t().show_table;
+        return;
       }
+      if (document.body.classList.contains("menu-open") && !e.target.closest("#nav")) fecharMenu();
     });
     document.addEventListener("submit", (e) => {
       const f = e.target.closest("form[data-lookup]");
@@ -511,9 +810,9 @@
     const salvo = ler("lang");
     const nav = (navigator.language || "pt").slice(0, 2).toLowerCase();
     state.lang = LANGS.includes(salvo) ? salvo : nav === "en" ? "EN" : nav === "es" ? "ES" : "PT";
-    const th = ler("theme"); if (th === "dark" || th === "light") document.documentElement.setAttribute("data-theme", th);
+    tema(false);
     montarCabecalho();
-    eventos(); dicas();
+    eventos(); dicas(); efeitosGlobais();
     try {
       [state.R, state.extra] = await Promise.all([json("site/data/resumo.json"), json("site/data/testes_extra.json")]);
     } catch (e) {
