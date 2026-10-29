@@ -23,7 +23,7 @@ window.I18N = {
     tip_comp: (c, a) => `${c} votaram\n${a} faltaram`,
     tip_bol: "Boletins seção–cargo\nCada boletim é uma seção × um cargo",
     stats_sub: "Passe o mouse sobre os números para ver os detalhes.",
-    hero_chip_sec: "seções no 2º turno", hero_chip_tests: "testes aplicados", hero_chip_rounds: "turnos auditados",
+    hero_chip_sec: "seções no 2º turno", hero_chip_tests: "testes aplicados", hero_chip_rounds: "turnos auditados", lens_title: "PONTOS FORA DA CURVA",
     explore_title: "Explore a auditoria",
     explore_sub: "Tudo o que foi analisado, página por página. Passe o mouse sobre um card para ver um resumo.",
     pg: {
@@ -228,7 +228,7 @@ window.I18N = {
     tip_comp: (c, a) => `${c} voted\n${a} did not vote`,
     tip_bol: "Section–office reports\nEach report is one section × one office",
     stats_sub: "Hover over the numbers for details.",
-    hero_chip_sec: "sections in the 2nd round", hero_chip_tests: "tests applied", hero_chip_rounds: "rounds audited",
+    hero_chip_sec: "sections in the 2nd round", hero_chip_tests: "tests applied", hero_chip_rounds: "rounds audited", lens_title: "OUTLIER DETECTION",
     explore_title: "Explore the audit",
     explore_sub: "Everything that was analyzed, page by page. Hover over a card for a summary.",
     pg: {
@@ -425,7 +425,7 @@ window.I18N = {
     tip_comp: (c, a) => `${c} votaron\n${a} no votaron`,
     tip_bol: "Boletines sección–cargo\nCada boletín es una sección × un cargo",
     stats_sub: "Pase el mouse sobre los números para ver los detalles.",
-    hero_chip_sec: "secciones en la 2.ª vuelta", hero_chip_tests: "pruebas aplicadas", hero_chip_rounds: "vueltas auditadas",
+    hero_chip_sec: "secciones en la 2.ª vuelta", hero_chip_tests: "pruebas aplicadas", hero_chip_rounds: "vueltas auditadas", lens_title: "PUNTOS FUERA DE LA CURVA",
     explore_title: "Explore la auditoría",
     explore_sub: "Todo lo que se analizó, página por página. Pase el mouse sobre una tarjeta para ver un resumen.",
     pg: {

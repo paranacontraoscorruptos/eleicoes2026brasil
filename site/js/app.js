@@ -170,7 +170,6 @@
     const br = P2.candidatos.find((c) => c.nr === "95"), nu = P2.candidatos.find((c) => c.nr === "96");
     const pres = barras(cands.map((c) => ({ rotulo: `${titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: `${pct(c.votos / val)}`,
       dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}\n${titulo(c.nome)} (${c.nr})` })));
-    const ini = A.nome.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
     return `
     <section class="hero">
       <canvas class="hero-canvas" aria-hidden="true"></canvas>
@@ -186,7 +185,7 @@
       </div>
       <div class="hero-visual" aria-hidden="true">
         <div class="hero-ring"></div><div class="hero-ring r2"></div>
-        <div class="hero-flag"><img src="site/img/bandeira.svg" alt="" width="400" height="280"></div>
+        <div class="hero-lens">${lente()}</div>
         <div class="float-chip c1"><span class="fc-ico">${icone("grid")}</span><span><b>${nf(T2.entrada.secoes)}</b>${esc(L.hero_chip_sec)}</span></div>
         <div class="float-chip c2 y"><span class="fc-ico">${icone("flask")}</span><span><b>15</b>${esc(L.hero_chip_tests)}</span></div>
         <div class="float-chip c3"><span class="fc-ico">${icone("check")}</span><span><b>2</b>${esc(L.hero_chip_rounds)}</span></div>
@@ -211,13 +210,65 @@
       <ul class="legend">${L.legend.map(([c, n, d]) => `<li>${chip(c, n)} <span class="muted">${esc(d)}</span></li>`).join("")}</ul>
     </section>
     <section class="card author" aria-labelledby="h-au">
-      <div class="avatar" aria-hidden="true">${esc(ini)}</div>
+      <div class="avatar"><img src="site/img/autor.jpg" alt="" width="96" height="96" loading="lazy" decoding="async"></div>
       <div class="author-body"><h2 id="h-au">${esc(L.author_title)}</h2>
         <p class="author-name">${esc(A.nome)}</p>
         <p><span class="muted">${esc(L.author_spec)}:</span> ${esc(A.especialidade[state.lang])}<br><span class="muted">${esc(L.author_place)}:</span> ${esc(A.local[state.lang])}</p>
         <p><a class="btn btn-sm" href="https://www.instagram.com/${esc(A.instagram.replace("@", ""))}/" rel="noopener" target="_blank">${icone("insta")} ${esc(A.instagram)}</a></p>
       </div>
     </section>`;
+  }
+
+  // Lente de análise no topo: curva normal, limiar do z robusto e pontos fora da curva (esquema ilustrativo)
+  function lente() {
+    const L = t(), Pm = state.R.parametros, cx = 200, base = 245, s = 30, zl = Pm.LIMIAR_Z_ROBUSTO;
+    const dec = (x) => (state.lang === "EN" ? String(x) : String(x).replace(".", ","));
+    const c1 = (v) => v.toFixed(1);
+    let curva = "", marcas = "", grade = "", pts = "";
+    for (let x = 56; x <= 344; x += 4) { const z = (x - cx) / s; curva += `${x === 56 ? "M" : "L"}${x} ${c1(base - 118 * Math.exp(-z * z / 2))}`; }
+    for (let i = 0; i < 72; i++) {
+      const a = i * Math.PI / 36, r2 = i % 6 ? 172 : 162;
+      marcas += `M${c1(200 + 180 * Math.cos(a))} ${c1(200 + 180 * Math.sin(a))}L${c1(200 + r2 * Math.cos(a))} ${c1(200 + r2 * Math.sin(a))}`;
+    }
+    for (let k = 32; k < 400; k += 24) grade += `M${k} 0V400M0 ${k}H400`;
+    let sd = 11;
+    const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 56; i++) {
+      const z = Math.max(-2.9, Math.min(2.9, Math.sqrt(-2 * Math.log(rnd())) * Math.cos(2 * Math.PI * rnd())));
+      pts += `<circle cx="${c1(cx + z * s)}" cy="${c1(262 + rnd() * 30)}" r="2.6"/>`;
+    }
+    const xa = cx - zl * s, xb = cx + zl * s, fora = [[cx - 3.9 * s, 271], [cx + 4.3 * s, 282]];
+    let eixo = "";
+    for (let k = -4; k <= 4; k++) eixo += `M${cx + k * s} ${base}v${k ? 5 : 8}`;
+    const [ox, oy] = fora[1];
+    const mira = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => `M${ox + a * 13} ${oy + b * 13 - b * 6}v${b * 6}h${-a * 6}`).join("");
+    return `<svg viewBox="0 0 400 400" focusable="false">
+      <defs>
+        <radialGradient id="ln-g" cx="40%" cy="32%" r="75%"><stop offset="0" class="ln-g0"/><stop offset="1" class="ln-g1"/></radialGradient>
+        <linearGradient id="ln-a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="ln-a0"/><stop offset="1" class="ln-a1"/></linearGradient>
+        <linearGradient id="ln-s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="ln-s0"/><stop offset="1" class="ln-s1"/></linearGradient>
+        <clipPath id="ln-c"><circle cx="200" cy="200" r="176"/></clipPath>
+      </defs>
+      <circle class="ln-bg" cx="200" cy="200" r="180"/>
+      <g clip-path="url(#ln-c)">
+        <path class="ln-grid" d="${grade}"/>
+        <rect class="ln-zone" x="40" y="118" width="${xa - 40}" height="182"/><rect class="ln-zone" x="${xb}" y="118" width="${360 - xb}" height="182"/>
+        <path class="ln-lim" d="M${xa} 118V300M${xb} 118V300"/>
+        <path class="ln-area" d="${curva}L344 ${base}L56 ${base}Z"/>
+        <path class="ln-curve" pathLength="1" d="${curva}"/>
+        <path class="ln-axis" d="M48 ${base}H352${eixo}"/>
+        <g class="ln-dots">${pts}</g>
+        ${fora.map(([x, y], i) => `<circle class="ln-ring" style="animation-delay:${i * -1}s" cx="${x}" cy="${y}" r="5"/><circle class="ln-out" cx="${x}" cy="${y}" r="3.6"/>`).join("")}
+        <path class="ln-mira" d="${mira}"/>
+        <g class="ln-scan"><rect x="-40" y="64" width="40" height="272" fill="url(#ln-s)"/><path d="M0 64V336"/></g>
+      </g>
+      <path class="ln-ticks" d="${marcas}"/>
+      <text class="ln-t1" x="200" y="84" text-anchor="middle">${esc(L.lens_title)}</text>
+      <text class="ln-t2" x="200" y="104" text-anchor="middle">z = (x − med) / (${dec(1.4826)} · MAD)</text>
+      <text class="ln-t3" x="${xa - 4}" y="132" text-anchor="end">−${dec(zl)}</text><text class="ln-t3" x="${xb + 4}" y="132">+${dec(zl)}</text>
+      <text class="ln-t3" x="${ox + 15}" y="${oy - 20}" text-anchor="end">z = ${dec(4.3)}</text>
+      <text class="ln-t4" x="200" y="322" text-anchor="middle">FDR Benjamini–Hochberg · q = ${dec(Pm.ALFA_FDR)}</text>
+    </svg>`;
   }
 
   function paginaTurno(n) {
@@ -516,8 +567,7 @@
 
   function montarCabecalho() {
     const L = t();
-    $("#brand-name").textContent = L.brand;
-    $("#brand-sub").textContent = L.brand_sub;
+    marca();
     $("#badge").textContent = L.badge;
     $("#nav").innerHTML = '<span class="nav-hover" aria-hidden="true"></span><span class="nav-ind" aria-hidden="true"></span>'
       + PAGINAS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${i}">${esc(L.nav[k])}</a>`).join("");
@@ -629,7 +679,7 @@
   function efeitos(raiz) {
     $$("h1[data-type], .page-head h1", raiz).forEach(digitar);
     $$("[data-scramble], .page-head .kicker", raiz).forEach(embaralhar);
-    const cv = $(".hero-canvas", raiz); if (cv && ANIM) particulas(cv);
+    const cv = $(".hero-canvas", raiz); if (cv && ANIM) formulas(cv);
     if (!ANIM) return;
     if (obs) obs.disconnect();
     obs = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) { obs.unobserve(en.target); revelar(en.target); } }), { rootMargin: "0px 0px -6% 0px" });
@@ -685,36 +735,80 @@
     requestAnimationFrame(passo);
   }
 
-  // Rede de pontos verde e amarela no topo da página inicial
-  function particulas(cv) {
+  // Fundo do topo: fórmulas e números da análise forense flutuando sobre papel milimetrado.
+  // Perto do ponteiro aparece uma mira e o que estiver sob a lente acende.
+  function formulas(cv) {
     const ctx = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
-    let w = 0, h = 0, pts = [], vis = true, raf = 0;
+    const R = state.R, Pm = R.parametros, T2 = R.turnos["2"], en = state.lang === "EN";
+    const dec = (x) => (en ? String(x) : String(x).replace(".", ","));
+    const hash = T2.cab.manifesto_sha512;
+    const textos = [
+      `z = (x − med) / ${dec(1.4826)}·MAD`, "MAD = med|xᵢ − med(x)|", "p₍ᵢ₎ ≤ (i / m) · q", "X ~ BetaBin(n, α, β)",
+      "E[X] = n·α / (α + β)", "ρ = 1 / (α + β + 1)", "χ² = Σ (O − E)² / E", "P(d₂) = Σ log₁₀(1 + 1/(10k + d₂))",
+      `E[d₂] ≈ ${dec(4.187)}`, "r = cov(X, Y) / σₓσᵧ", "N(μ, σ²)", "F(x) = P(X ≤ x)", "IQR = Q₃ − Q₁", "H₀ : μ = μ₀",
+      `|z| > ${dec(Pm.LIMIAR_Z_ROBUSTO)}`, `q = ${dec(Pm.ALFA_FDR)}`, "θ₋ᵢ (LOO)", "Σ vᵢ = N", "√n", "σ²", "Δ%", "∑", "χ²",
+      `SHA-512 ${hash.slice(0, 16)}…`, hash.slice(16, 32), hash.slice(64, 80),
+      nf(T2.entrada.secoes), nf(T2.entrada.boletins), nf(T2.entrada.linhas), dec(1.4826), dec(0.301), "0x" + hash.slice(100, 108)
+    ];
+    let w = 0, h = 0, itens = [], vis = true, raf = 0, t0 = performance.now();
     const mouse = { x: -999, y: -999 };
+    const novo = (y) => {
+      const z = Math.random() * .7 + .3;
+      return { s: textos[Math.floor(Math.random() * textos.length)], x: Math.random() * w, y: y == null ? Math.random() * h : y,
+        z, vy: -(.06 + z * .22), f: Math.round(10 + z * 7), fase: Math.random() * 6.28 };
+    };
     const tam = () => {
       const r = cv.getBoundingClientRect(); w = r.width; h = r.height;
       cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = Math.max(18, Math.min(70, Math.round(w * h / 11000)));
-      pts = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4, r: Math.random() * 1.6 + .7, am: Math.random() < .3 }));
+      const n = Math.max(14, Math.min(46, Math.round(w * h / 15000)));
+      itens = Array.from({ length: n }, () => novo());
     };
-    const quadro = () => {
+    const quadro = (agora) => {
       if (!cv.isConnected) { raf = 0; return; }
       const claro = document.documentElement.getAttribute("data-theme") === "light";
-      const g = claro ? "0,135,58" : "31,195,95", y = claro ? "190,140,0" : "255,212,0";
+      const g = claro ? "0,135,58" : "31,195,95", y = claro ? "176,124,0" : "255,212,0";
+      const tt = (agora - t0) / 1000, varre = ((tt / 7) % 1.25) * h;
       ctx.clearRect(0, 0, w, h);
-      for (const p of pts) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > w) p.vx *= -1;
-        if (p.y < 0 || p.y > h) p.vy *= -1;
+      // papel milimetrado
+      ctx.beginPath();
+      for (let x = 0; x < w; x += 28) { ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, h); }
+      for (let k = 0; k < h; k += 28) { ctx.moveTo(0, k + .5); ctx.lineTo(w, k + .5); }
+      ctx.strokeStyle = `rgba(${g},${claro ? .07 : .06})`; ctx.lineWidth = 1; ctx.stroke();
+      // faixa de varredura
+      if (varre < h) {
+        const gr = ctx.createLinearGradient(0, varre - 60, 0, varre);
+        gr.addColorStop(0, `rgba(${y},0)`); gr.addColorStop(1, `rgba(${y},${claro ? .08 : .06})`);
+        ctx.fillStyle = gr; ctx.fillRect(0, varre - 60, w, 60);
+        ctx.fillStyle = `rgba(${y},.28)`; ctx.fillRect(0, varre, w, 1);
       }
-      for (let i = 0; i < pts.length; i++) {
-        const a = pts[i];
-        for (let j = i + 1; j < pts.length; j++) {
-          const b = pts[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
-          if (d2 < 14400) { ctx.strokeStyle = `rgba(${a.am ? y : g},${(.22 * (1 - Math.sqrt(d2) / 120)).toFixed(3)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
-        }
-        const mx = a.x - mouse.x, my = a.y - mouse.y, md = mx * mx + my * my;
-        if (md < 32400) { ctx.strokeStyle = `rgba(${y},${(.45 * (1 - Math.sqrt(md) / 180)).toFixed(3)})`; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke(); }
-        ctx.fillStyle = `rgba(${a.am ? y : g},.85)`; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.2832); ctx.fill();
+      ctx.textBaseline = "middle";
+      for (let i = 0; i < itens.length; i++) {
+        const p = itens[i];
+        p.y += p.vy;
+        if (p.y < -20) { itens[i] = novo(h + 20); continue; }
+        const x = p.x + Math.sin(tt * .4 + p.fase) * 6;
+        const dx = x - mouse.x, dy = p.y - mouse.y, perto = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / 170);
+        const na = Math.max(0, 1 - Math.abs(p.y - varre) / 50);
+        const borda = Math.min(1, p.y / 60, (h - p.y) / 60);
+        // mais apagado atrás do título, à esquerda
+        let a = (.1 + p.z * .2) * (claro ? .7 : 1) * (.3 + .7 * Math.min(1, x / (w * .75))) * Math.max(0, borda);
+        a = Math.min(1, a + perto * .75 + na * .3);
+        ctx.font = `500 ${p.f}px ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace`;
+        ctx.fillStyle = `rgba(${perto > .2 || na > .3 ? y : g},${a.toFixed(3)})`;
+        ctx.fillText(p.s, x, p.y);
+      }
+      // mira no ponteiro
+      if (mouse.x > -500) {
+        const mx = mouse.x, my = mouse.y;
+        ctx.strokeStyle = `rgba(${y},.55)`; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(mx, my, 46, 0, 6.2832); ctx.stroke();
+        ctx.beginPath();
+        [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([a, b]) => { ctx.moveTo(mx + a * 38, my + b * 38); ctx.lineTo(mx + a * 56, my + b * 56); });
+        ctx.stroke();
+        ctx.fillStyle = `rgba(${y},.9)`; ctx.beginPath(); ctx.arc(mx, my, 2, 0, 6.2832); ctx.fill();
+        ctx.font = '600 11px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+        const z = (mx / w) * 8 - 4;
+        ctx.fillText(`z = ${(z < 0 ? "−" : "+") + dec(Math.abs(z).toFixed(2))}`, mx + 54, my - 40);
       }
       raf = vis && !document.hidden ? requestAnimationFrame(quadro) : 0;
     };
@@ -722,10 +816,41 @@
     tam(); iniciarLoop();
     new IntersectionObserver((e) => { vis = e[0].isIntersecting; iniciarLoop(); }).observe(cv);
     const hero = cv.parentElement;
-    hero.addEventListener("pointermove", (e) => { const r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; }, { passive: true });
+    hero.addEventListener("pointermove", (e) => { if (e.pointerType !== "mouse") return; const r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; }, { passive: true });
     hero.addEventListener("pointerleave", () => { mouse.x = mouse.y = -999; });
     window.addEventListener("resize", () => { if (cv.isConnected) tam(); }, { passive: true });
     document.addEventListener("visibilitychange", iniciarLoop);
+  }
+
+  // Nome no topo: escreve, espera, apaga e escreve de novo
+  let marcaVez = 0, marcaTxt = "";
+  function marca() {
+    const L = t();
+    if (marcaTxt === L.brand + "|" + L.brand_sub) return;
+    marcaTxt = L.brand + "|" + L.brand_sub;
+    const vez = ++marcaVez;
+    const linhas = [[$("#brand-name"), L.brand], [$("#brand-sub"), L.brand_sub]];
+    if (!ANIM) { linhas.forEach(([el, s]) => { el.textContent = s; }); return; }
+    const vivos = linhas.map(([el, s]) => {
+      el.innerHTML = `<span class="sr-only">${esc(s)}</span><span class="tw" aria-hidden="true"><span class="tw-ghost">${esc(s)}</span><span class="tw-live"></span></span>`;
+      return [$(".tw-live", el), s];
+    });
+    const cursor = (k) => vivos.forEach(([v], i) => v.classList.toggle("cur", i === k));
+    const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+    (async () => {
+      while (vez === marcaVez) {
+        for (let k = 0; k < 2; k++) {
+          const [v, s] = vivos[k]; cursor(k);
+          for (let i = 1; i <= s.length; i++) { if (vez !== marcaVez) return; v.textContent = s.slice(0, i); await esperar(k ? 45 : 85); }
+        }
+        await esperar(5000);
+        for (let k = 1; k >= 0; k--) {
+          const [v, s] = vivos[k]; cursor(k);
+          for (let i = s.length - 1; i >= 0; i--) { if (vez !== marcaVez) return; v.textContent = s.slice(0, i); await esperar(28); }
+        }
+        await esperar(500);
+      }
+    })();
   }
 
   function efeitosGlobais() {
@@ -743,7 +868,7 @@
     window.addEventListener("resize", indicador, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(indicador);
     if (!ANIM) return;
-    // brilho que segue o mouse, inclinação 3D e bandeira que acompanha o ponteiro
+    // brilho que segue o mouse, inclinação 3D e lente que acompanha o ponteiro
     document.addEventListener("pointermove", (e) => {
       if (e.pointerType !== "mouse") return;
       const el = e.target.closest(".spot");
@@ -753,12 +878,12 @@
         if (el.classList.contains("tilt") && !el.classList.contains("rv")) el.style.transform = `perspective(900px) rotateX(${((y / r.height) - .5) * -7}deg) rotateY(${((x / r.width) - .5) * 7}deg) translateY(-5px)`;
       }
       const hv = e.target.closest(".hero");
-      const fl = hv && $(".hero-flag", hv);
+      const fl = hv && $(".hero-lens", hv);
       if (fl) { const r = hv.getBoundingClientRect(); fl.style.transform = `rotateY(${((e.clientX - r.left) / r.width - .5) * 16}deg) rotateX(${((e.clientY - r.top) / r.height - .5) * -12}deg)`; }
     }, { passive: true });
     document.addEventListener("pointerout", (e) => {
       const el = e.target.closest(".tilt"); if (el && !el.contains(e.relatedTarget)) el.style.transform = "";
-      const hv = e.target.closest(".hero"); if (hv && !hv.contains(e.relatedTarget)) { const fl = $(".hero-flag", hv); if (fl) fl.style.transform = ""; }
+      const hv = e.target.closest(".hero"); if (hv && !hv.contains(e.relatedTarget)) { const fl = $(".hero-lens", hv); if (fl) fl.style.transform = ""; }
     });
     // ondinha ao clicar
     document.addEventListener("pointerdown", (e) => {
