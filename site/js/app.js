@@ -879,19 +879,19 @@
     };
     const quadro = (agora) => {
       if (!cv.isConnected) { raf = 0; return; }
-      const claro = document.documentElement.getAttribute("data-theme") === "light";
-      const g = claro ? "0,135,58" : "31,195,95", y = claro ? "176,124,0" : "255,212,0";
+      // o topo fica escuro nos dois temas, então as cores são sempre as do tema escuro
+      const g = "31,195,95", y = "255,212,0";
       const tt = (agora - t0) / 1000, varre = ((tt / 7) % 1.25) * h;
       ctx.clearRect(0, 0, w, h);
       // papel milimetrado
       ctx.beginPath();
       for (let x = 0; x < w; x += 28) { ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, h); }
       for (let k = 0; k < h; k += 28) { ctx.moveTo(0, k + .5); ctx.lineTo(w, k + .5); }
-      ctx.strokeStyle = `rgba(${g},${claro ? .07 : .06})`; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = `rgba(${g},.06)`; ctx.lineWidth = 1; ctx.stroke();
       // faixa de varredura
       if (varre < h) {
         const gr = ctx.createLinearGradient(0, varre - 60, 0, varre);
-        gr.addColorStop(0, `rgba(${y},0)`); gr.addColorStop(1, `rgba(${y},${claro ? .08 : .06})`);
+        gr.addColorStop(0, `rgba(${y},0)`); gr.addColorStop(1, `rgba(${y},.06)`);
         ctx.fillStyle = gr; ctx.fillRect(0, varre - 60, w, 60);
         ctx.fillStyle = `rgba(${y},.28)`; ctx.fillRect(0, varre, w, 1);
       }
@@ -905,7 +905,7 @@
         const na = Math.max(0, 1 - Math.abs(p.y - varre) / 50);
         const borda = Math.min(1, p.y / 60, (h - p.y) / 60);
         // mais apagado atrás do título, à esquerda
-        let a = (.1 + p.z * .2) * (claro ? .7 : 1) * (.3 + .7 * Math.min(1, x / (w * .75))) * Math.max(0, borda);
+        let a = (.1 + p.z * .2) * (.3 + .7 * Math.min(1, x / (w * .75))) * Math.max(0, borda);
         a = Math.min(1, a + perto * .75 + na * .3);
         ctx.font = `500 ${p.f}px ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace`;
         ctx.fillStyle = `rgba(${perto > .2 || na > .3 ? y : g},${a.toFixed(3)})`;

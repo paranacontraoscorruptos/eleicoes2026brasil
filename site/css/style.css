@@ -309,6 +309,22 @@ td .btn-copy { position: static; margin-top: 4px; }
   .float-chip.c3 { display: none; }
 }
 @media (max-width: 560px) { .hero-actions .btn { width: 100%; } }
+/* No tema claro, o topo da página inicial continua escuro para manter visíveis o fundo animado e a lente */
+@media screen {
+  :root[data-theme="light"]:not([data-contrast="alto"]) .hero {
+    color-scheme: dark; isolation: isolate; color: var(--ink);
+    --bg: #050c08; --surface: #0c1811; --surface-2: #122219; --surface-3: #183022; --glass: rgba(10, 22, 15, .72);
+    --ink: #eef6f0; --ink-2: #b8ccbf; --muted: #86a091; --line: #1d3527; --line-2: #2a4a37; --grid: rgba(255, 255, 255, .035);
+    --accent: #1fc35f; --accent-hover: #43d97d; --accent-ink: #03140a; --accent-soft: rgba(31, 195, 95, .13);
+    --yellow: #ffd400; --yellow-text: #ffd84d; --yellow-soft: rgba(255, 212, 0, .12); --blue: #3d63dd; --tg-text: #5cc0f2;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 10px 30px -8px rgba(0, 0, 0, .55);
+    --glow: 0 0 0 1px rgba(31, 195, 95, .35), 0 14px 40px -12px rgba(31, 195, 95, .45);
+    --glow-y: 0 0 0 1px rgba(255, 212, 0, .4), 0 14px 40px -12px rgba(255, 212, 0, .4);
+    --gy: linear-gradient(120deg, #1fc35f, #ffd400);
+    /* faixa escura de ponta a ponta, do fim da barra de aviso até o fim do topo */
+    border-image: radial-gradient(1400px 640px at 50% 0%, #0b2214, #050c08 72%) fill 0 / 0 / 28px 100vmax 0;
+  }
+}
 
 /* --- grupo do Telegram ------------------------------------------------------------------ */
 /* azul escurecido para o texto branco do botão passar de 4,5:1 */
