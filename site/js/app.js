@@ -614,9 +614,7 @@
     main.innerHTML = html;
     main.classList.remove("page-enter"); void main.offsetWidth; main.classList.add("page-enter");
     document.title = (ativo === "home" ? "" : tit + " · ") + L.brand;
-    $$(".nav a").forEach((a) => a.setAttribute("aria-current", a.dataset.nav === ativo ? "page" : "false"));
-    const mais = $(".nav-more"); if (mais) mais.classList.toggle("cur", MAIS.some(([k]) => k === ativo));
-    fecharMais();
+    $$(".nav a, .nav2 a").forEach((a) => a.setAttribute("aria-current", a.dataset.nav === ativo ? "page" : "false"));
     indicador();
     fecharMenu();
     if (p[0] === "testes" && p[1]) { const el = document.getElementById(p[1]); if (el) el.scrollIntoView({ block: "start" }); }
@@ -671,20 +669,17 @@
   const MAIS = [["map", "#/mapa"], ["states", "#/uf"], ["list", "#/lista"], ["charts", "#/graficos"], ["glossary", "#/glossario"], ["verify", "#/conferir"],
     ["ballot", "#/boletim"], ["saved", "#/salvas"], ["updates", "#/atualizacoes"]];
 
-  function fecharMais() {
-    const m = $(".nav-more");
-    if (m) { m.classList.remove("open"); $("button", m).setAttribute("aria-expanded", "false"); }
-  }
-
   function montarCabecalho() {
     const L = t();
     marca();
     $("#badge").textContent = L.badge;
     $("#nav").innerHTML = '<span class="nav-hover" aria-hidden="true"></span><span class="nav-ind" aria-hidden="true"></span>'
       + PAGINAS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${i}">${esc(L.nav[k])}</a>`).join("")
-      + `<div class="nav-more" style="--i:${PAGINAS.length}"><button type="button" aria-expanded="false" aria-controls="nav-sub">${esc(L.nav.more)} <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="nav-sub" id="nav-sub"><span class="nav-sub-t">${esc(L.nav.more_title)}</span>${MAIS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${PAGINAS.length + i + 1}">${icone(ICO_MAIS[k])}<span>${esc(L.nav[k])}</span></a>`).join("")}</div></div>
+      // no celular as ferramentas ficam no menu lateral; no computador, na segunda fileira (#nav2)
+      + `<div class="nav-more" style="--i:${PAGINAS.length}"><div class="nav-sub" id="nav-sub"><span class="nav-sub-t">${esc(L.nav.more_title)}</span>${MAIS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${PAGINAS.length + i + 1}">${icone(ICO_MAIS[k])}<span>${esc(L.nav[k])}</span></a>`).join("")}</div></div>
         <button class="nav-a11y" type="button" data-a11y>${icone("a11y")} ${esc(L.ax_title)}</button>`;
+    $("#nav2").setAttribute("aria-label", L.nav.more_title);
+    $("#nav2").innerHTML = `<div class="nav2-in">${MAIS.map(([k, h]) => `<a href="${h}" data-nav="${k}">${icone(ICO_MAIS[k])}<span>${esc(L.nav[k])}</span></a>`).join("")}</div>`;
     $("#lang").innerHTML = LANGS.map((l) => `<button type="button" data-lang="${l}" aria-pressed="${l === state.lang}">${l}</button>`).join("");
     $("#lang").setAttribute("aria-label", L.lang);
     $("#theme-btn").setAttribute("aria-label", L.theme); $("#theme-btn").title = L.theme;
@@ -711,7 +706,7 @@
         <div class="foot-col"><h3>${esc(L.ft_data)}</h3><ul>
           <li><a href="#/downloads">${esc(L.nav.downloads)}</a></li><li><a href="#/replicar">${esc(L.nav.replicate)}</a></li>
           <li>${ext(TSE_PORTAL, L.ft_tse_portal)}</li><li>${ext(TSE_RESULTADOS, L.ft_tse_res)}</li>
-          <li><a href="feed.xml">${esc(L.ft_feed)}</a></li></ul></div>
+          <li><a href="feed.xml" data-feed>${esc(L.ft_feed)}</a></li></ul></div>
         <div class="foot-col"><h3>${esc(L.ft_author)}</h3><ul>
           ${A ? `<li><b>${esc(A.nome)}</b></li><li>${ext(`https://www.instagram.com/${A.instagram.replace("@", "")}/`, "Instagram " + A.instagram)}</li>` : ""}
           <li><button class="btn btn-bot btn-sm" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button></li></ul></div>
@@ -756,11 +751,11 @@
     const ind = $("#nav " + sel);
     if (!ind) return;
     if (!a || getComputedStyle(ind).display === "none") { ind.classList.remove("on"); return; }
-    // posição relativa ao menu (o botão "Mais" fica dentro de outro contêiner)
+    // posição relativa ao menu
     const nav = $("#nav"), rn = nav.getBoundingClientRect(), ra = a.getBoundingClientRect();
     ind.style.left = (ra.left - rn.left - nav.clientLeft) + "px"; ind.style.width = ra.width + "px"; ind.classList.add("on");
   }
-  function indicador() { moverInd(".nav-ind", $('.nav > a[aria-current="page"]') || $(".nav-more.cur > button")); }
+  function indicador() { moverInd(".nav-ind", $('.nav > a[aria-current="page"]')); }
 
   // Dica flutuante (mouse e teclado): 1ª linha em destaque, demais abaixo
   function dicas() {
@@ -990,7 +985,7 @@
     rolar();
     // menu: destaque que acompanha o mouse
     const nav = $("#nav");
-    nav.addEventListener("mouseover", (e) => { const a = e.target.closest(".nav > a, .nav-more > button"); if (a) moverInd(".nav-hover", a); });
+    nav.addEventListener("mouseover", (e) => { const a = e.target.closest(".nav > a"); if (a) moverInd(".nav-hover", a); });
     nav.addEventListener("mouseleave", () => moverInd(".nav-hover", null));
     window.addEventListener("resize", indicador, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(indicador);
@@ -1028,9 +1023,6 @@
       if (e.target.closest("#theme-btn")) { tema(true); return; }
       if (e.target.closest("#menu-btn")) { const o = document.body.classList.toggle("menu-open"); $("#menu-btn").setAttribute("aria-expanded", String(o)); $("#menu-btn").innerHTML = icone(o ? "close" : "menu"); return; }
       if (e.target.closest("[data-top]")) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
-      const mb = e.target.closest(".nav-more > button");
-      if (mb) { const m = mb.parentElement, o = !m.classList.contains("open"); m.classList.toggle("open", o); mb.setAttribute("aria-expanded", String(o)); return; }
-      if (!e.target.closest(".nav-more")) fecharMais();
       const ob = e.target.closest("[data-open-bot]"); if (ob && window.BOT) { window.BOT.abrir(); return; }
       const ask = e.target.closest("[data-ask]"); if (ask && window.BOT) { window.BOT.abrir(ask.dataset.ask); return; }
       const cp = e.target.closest("[data-copy]");
@@ -1057,7 +1049,7 @@
       const alvo = `#/secao/${uf}/${z}/${s}`;
       if (location.hash === alvo) render(); else location.hash = alvo;
     });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { fecharMenu(); fecharMais(); } });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharMenu(); });
     window.addEventListener("hashchange", render);
   }
 

@@ -20,7 +20,7 @@
   const nomeCat = (c) => { const x = R().categorias[c]; return x ? x[A.state.lang] : c.replace(/_/g, " "); };
   const ufsLista = () => Object.keys(window.UF_NOMES).sort();
   const secoesUf = (n, uf) => (R().turnos[n].uf.find((u) => u.uf === uf) || { secoes: 0 }).secoes;
-  const testesSecao = () => R().turnos["1"].testes.map((x) => x.id).filter((id) => id !== "T13" && id !== "T14" && id !== "T15");
+  const testesTodos = () => R().turnos["1"].testes.map((x) => x.id);
   const carregando = () => `<p class="muted">${esc(t().lk_loading)}</p>`;
   const erroDados = (e) => `<p class="alert">${esc(t().x_err)} (${esc(e.message)})</p>`;
   function cabecalho(tit, sub, img, extra) {
@@ -30,8 +30,41 @@
     return `<label><span>${esc(rotulo)}</span><select name="${nome}">${opcoes.map(([v, txt]) => `<option value="${esc(v)}"${String(v) === String(atual) ? " selected" : ""}>${esc(txt)}</option>`).join("")}</select></label>`;
   }
   const opTurno = (ambos) => (ambos ? [["", t().x_both]] : []).concat([["2", t().round(2)], ["1", t().round(1)]]);
-  const opTeste = (todos) => (todos ? [["", todos]] : []).concat(testesSecao().map((id) => [id, `${A.numTeste(id)}. ${A.nomeTeste(id)}`]));
+  const opTeste = (todos) => (todos ? [["", todos]] : []).concat(testesTodos().map((id) => [id, `${A.numTeste(id)}. ${A.nomeTeste(id)}${estadual(id) ? ` (${t().est_short})` : ""}`]));
   const opNivel = () => [["", t().x_all_lv], ["a", t().lv_a], ["i", t().lv_i]];
+
+  // --- testes 13, 14 e 15: feitos por estado (todas as seções do estado juntas), por candidato e cargo ----------
+  // Não têm resultado por seção; quando dão sinal, o relatório registra o estado (ou BR, o agregado nacional).
+  const ESTADUAIS = { T13: ["mebane", "segundo_digito"], T14: ["beber", "ultimo_digito"], T15: ["klimek", "klimek"] };
+  const estadual = (id) => id in ESTADUAIS;
+  function analisesEstado(n, id) {
+    return R().turnos[n][ESTADUAIS[id][0]].map((r) => ({ id, n: +n, uf: r.uf, cargo: r.cargo || 1, nr: r.nr, nome: r.nome, r,
+      nivel: id === "T15" ? (r.insp ? "i" : "") : r.sinal ? "a" : "" }));
+  }
+  // Mesmo formato de ocorrencias.json; município, zona e seção vazios e o detalhe da análise na 9ª posição
+  function ocorrenciasEstado() {
+    const out = [];
+    ["1", "2"].forEach((n) => Object.keys(ESTADUAIS).forEach((id) => analisesEstado(n, id).forEach((x) => {
+      if (x.nivel) out.push([x.uf, null, null, null, x.n, id, x.nivel, ESTADUAIS[id][1], x]);
+    })));
+    return out;
+  }
+  const nomeUf = (uf) => (uf === "BR" ? t().est_br : A.ufNome(uf));
+  const CARGOS = () => { const L = t(); return { 1: L.cd_pres, 3: L.cd_gov, 5: L.cd_sen, 6: L.cd_df, 7: L.cd_de }; };
+  const analiseTxt = (x) => `${A.titulo(x.nome)} (${x.nr}) · ${CARGOS()[x.cargo] || x.cargo}`;
+  // Medida e referência de cada análise, como na tabela do relatório
+  function analiseValores(x) {
+    const r = x.r;
+    if (x.id === "T15") return [nf(r.secoes), `${nf(r.obs)} / ${A.dec(r.esp.toFixed(2))}`, r.razao == null ? "—" : A.dec(r.razao.toFixed(2))];
+    return [nf(r.n), A.dec(r.chi2.toFixed(2)), A.dec(r.q.toPrecision(3))];
+  }
+  const chipAnalise = (x) => (x.nivel === "a" ? chip("red", t().lv_a) : x.nivel === "i" ? chip("amber", t().lv_i) : chip("green", t().est_ok));
+  // Tabela com todas as análises (com e sem sinal) de um teste por estado
+  function tabelaAnalises(ls, comTurno) {
+    const L = t(), id = ls.length ? ls[0].id : "T13";
+    const cab = (comTurno ? [L.x_round] : []).concat([L.th_uf, L.th_cand + " · " + L.th_cargo].concat(id === "T15" ? [L.th_sections, L.est_th_corner, L.gr_kl_raz] : ["n", "χ²", "q"]), [L.est_th_res]);
+    return tabela(cab, ls.map((x) => (comTurno ? [x.n + "º"] : []).concat([x.uf === "BR" ? `<b>${esc(nomeUf("BR"))}</b>` : `<a href="#/uf/${x.uf}">${x.uf}</a>`, esc(analiseTxt(x))], analiseValores(x), [chipAnalise(x)])), "num-cols");
+  }
 
   // --- cores sequenciais (5 classes: zero + 4 faixas por quantil dos valores positivos) ---------------------
   function classes(vals) {
@@ -53,22 +86,55 @@
 
   // --- gráficos SVG redesenhados na largura do contêiner --------------------------------------------------------
   const desenhos = new Map();
-  let ro = null;
+  let ro = null, obsG = null;
+  const vistos = new Set(); // gráficos que já entraram na tela (não animam de novo ao mudar a largura)
   function grafico(id, fn) {
     desenhos.set(id, fn);
     return `<div class="chart" id="ch-${id}"></div>`;
   }
+  // Ao entrar na tela (e a cada troca de filtro) as barras crescem e os números contam junto
+  function pintar(el, html, animar) {
+    el.innerHTML = html;
+    if (!document.documentElement.classList.contains("anim") || !animar || !obsG) return;
+    clearTimeout(el._fim);
+    el.classList.remove("gr-in");
+    el.classList.add("gr-anim");
+    if (vistos.has(el.id)) { void el.offsetWidth; requestAnimationFrame(() => entrar(el)); } else obsG.observe(el);
+  }
+  function entrar(el) {
+    vistos.add(el.id);
+    el.classList.add("gr-in");
+    $$("[data-n]", el).forEach(contarSvg);
+    el._fim = setTimeout(() => el.classList.remove("gr-anim", "gr-in"), 2400);
+  }
+  function contarSvg(tx) {
+    const alvo = Number(tx.dataset.n), d = Number(tx.dataset.d || 0), fim = tx.textContent;
+    if (!(alvo > 0)) return;
+    const atraso = Number(tx.dataset.atraso || 0), dur = 1000, t0 = performance.now() + atraso;
+    const fmt = (x) => (d ? A.dec(x.toFixed(d)) : nf(Math.round(x)));
+    tx.textContent = fmt(0);
+    const passo = (agora) => {
+      const k = Math.max(0, Math.min(1, (agora - t0) / dur)), e = 1 - Math.pow(1 - k, 3);
+      tx.textContent = k < 1 ? fmt(alvo * e) : fim;
+      if (k < 1) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  }
   function desenharTodos() {
     if (ro) ro.disconnect();
+    if (obsG) obsG.disconnect();
+    obsG = "IntersectionObserver" in window ? new IntersectionObserver((ents) => ents.forEach((en) => {
+      if (en.isIntersecting) { obsG.unobserve(en.target); entrar(en.target); }
+    }), { rootMargin: "0px 0px -12% 0px" }) : null;
     ro = new ResizeObserver((ents) => ents.forEach((en) => {
       const id = en.target.id.slice(3), fn = desenhos.get(id), w = Math.round(en.contentRect.width);
-      if (fn && w > 0 && en.target.dataset.w !== String(w)) { en.target.dataset.w = w; en.target.innerHTML = fn(w); }
+      if (fn && w > 0 && en.target.dataset.w !== String(w)) { en.target.dataset.w = w; pintar(en.target, fn(w), !vistos.has(en.target.id)); }
     }));
     desenhos.forEach((fn, id) => { const el = document.getElementById("ch-" + id); if (el) ro.observe(el); });
   }
   function redesenhar(id) {
     const el = document.getElementById("ch-" + id), fn = desenhos.get(id);
-    if (el && fn) el.innerHTML = fn(el.clientWidth || 600);
+    if (el && fn) pintar(el, fn(el.clientWidth || 600), true);
   }
 
   // Histograma de barras verticais. bins: [{v, rot, dica}]; linhas: [{i, rot}] (posição em índice de faixa)
@@ -79,7 +145,7 @@
     // barra muito maior que as outras é cortada para as demais aparecerem
     const corte = ord[0] > ord[1] * 6 && ord[1] > 0 ? ord[1] * 1.25 : null;
     const max = corte || ord[0] || 1;
-    const bw = iw / o.bins.length;
+    const bw = iw / o.bins.length, passo = Math.min(14, 700 / o.bins.length);
     const y = (v) => mt + ih - Math.min(ih, (v / max) * ih);
     let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(o.titulo)}">`;
     for (let k = 0; k <= 4; k++) {
@@ -89,9 +155,9 @@
     o.bins.forEach((b, i) => {
       const x = ml + i * bw, yy = y(b.v), alto = mt + ih - yy;
       const cortada = corte && b.v > corte;
-      s += `<g class="gr-bin${b.foco ? " foco" : ""}" tabindex="-1" data-tip="${esc(b.dica)}"><rect class="gr-hit" x="${x}" y="${mt}" width="${bw}" height="${ih}"/>`;
+      s += `<g class="gr-bin${b.foco ? " foco" : ""}" tabindex="-1" data-tip="${esc(b.dica)}" style="--t:${Math.round(i * passo)}ms"><rect class="gr-hit" x="${x}" y="${mt}" width="${bw}" height="${ih}"/>`;
       if (b.v > 0) s += `<rect class="gr-bar" x="${x + Math.min(1, bw * 0.15)}" y="${yy}" width="${Math.max(1, bw - Math.min(2, bw * 0.3))}" height="${Math.max(1, alto)}" rx="${Math.min(3, bw / 3)}"/>`;
-      if (cortada) s += `<path class="gr-cut" d="M${x - 2} ${mt + 10}l${bw / 2 + 2} -5l${bw / 2 + 2} 5"/><text class="gr-val" x="${x + bw / 2}" y="${mt - 8}" text-anchor="${i > o.bins.length * 0.7 ? "end" : "middle"}">${esc(nf(b.v))}</text>`;
+      if (cortada) s += `<path class="gr-cut" d="M${x - 2} ${mt + 10}l${bw / 2 + 2} -5l${bw / 2 + 2} 5"/><text class="gr-val" x="${x + bw / 2}" y="${mt - 8}" text-anchor="${i > o.bins.length * 0.7 ? "end" : "middle"}" data-n="${b.v}" data-atraso="${Math.round(i * passo)}">${esc(nf(b.v))}</text>`;
       s += "</g>";
     });
     (o.linhas || []).forEach((l, k) => {
@@ -125,7 +191,7 @@
       s += `<text class="gr-ax gr-lab" x="${ml - 8}" y="${yy + 4}" text-anchor="end">${esc(g.rot)}</text><line class="gr-row" x1="${ml}" x2="${ml + iw}" y1="${yy}" y2="${yy}"/>`;
       g.pts.forEach((p, k) => {
         const dy = g.pts.length > 1 ? (k - (g.pts.length - 1) / 2) * 5 : 0;
-        s += `<circle class="gr-pt${p.marca ? " marca" : ""} c${p.cor || 0}" cx="${x(p.v)}" cy="${yy + dy}" r="5" tabindex="-1" data-tip="${esc(p.dica)}"/>`;
+        s += `<circle class="gr-pt${p.marca ? " marca" : ""} c${p.cor || 0}" cx="${x(p.v)}" cy="${yy + dy}" r="5" tabindex="-1" data-tip="${esc(p.dica)}" style="--t:${i * 45 + k * 90}ms"/>`;
       });
     });
     if (o.eixoX) s += `<text class="gr-ax gr-ax-t" x="${w / 2}" y="${h - 4}" text-anchor="middle">${esc(o.eixoX)}</text>`;
@@ -139,12 +205,12 @@
     const max = Math.max(...o.linhas.map((l) => l.a + l.i), 1e-9);
     let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(o.titulo)}">`;
     o.linhas.forEach((l, i) => {
-      const y = mt + i * lh, wa = (l.a / max) * iw, wi = (l.i / max) * iw;
-      s += `<g class="gr-hrow" tabindex="-1" data-tip="${esc(l.dica)}"><rect class="gr-hit" x="0" y="${y}" width="${w}" height="${lh}"/>
-        <text class="gr-ax gr-lab" x="${ml - 8}" y="${y + lh / 2 + 4}" text-anchor="end">${esc(l.rot)}</text>`;
+      const y = mt + i * lh, wa = (l.a / max) * iw, wi = (l.i / max) * iw, atraso = Math.min(i, 30) * 35;
+      s += `<g class="gr-hrow" tabindex="-1" data-tip="${esc(l.dica)}" style="--t:${atraso}ms"><rect class="gr-hit" x="0" y="${y}" width="${w}" height="${lh}"/>
+        <text class="gr-ax gr-lab" x="${ml - 8}" y="${y + lh / 2 + 4}" text-anchor="end">${esc(l.rot)}</text><g class="gr-hb" style="transform-origin:${ml}px ${y}px">`;
       if (wa > 0) s += `<rect class="gr-a" x="${ml}" y="${y + 4}" width="${Math.max(2, wa)}" height="${lh - 8}" rx="3"/>`;
       if (wi > 0) s += `<rect class="gr-i" x="${ml + wa + (wa > 0 ? 2 : 0)}" y="${y + 4}" width="${Math.max(2, wi)}" height="${lh - 8}" rx="3"/>`;
-      s += `<text class="gr-ax" x="${ml + wa + wi + 8}" y="${y + lh / 2 + 4}">${esc(l.txt)}</text></g>`;
+      s += `</g><text class="gr-ax gr-hv" x="${ml + wa + wi + 8}" y="${y + lh / 2 + 4}" style="--dx:${(wa + wi).toFixed(1)}px"${l.n != null ? ` data-n="${l.n}" data-d="${l.d || 0}" data-atraso="${atraso}"` : ""}>${esc(l.txt)}</text></g>`;
     });
     return s + "</svg>";
   }
@@ -153,6 +219,12 @@
   // Mapa do Brasil
   // ===================================================================================================
   function medidaUf(oc, n, teste, nivel) {
+    if (estadual(teste)) {
+      // teste por estado: análises (candidato × cargo) com sinal, sobre o total de análises do estado
+      const est = {};
+      analisesEstado(n, teste).forEach((x) => { const e = (est[x.uf] = est[x.uf] || { k: 0, tot: 0 }); e.tot++; if (x.nivel && (!nivel || x.nivel === nivel)) e.k++; });
+      return Object.fromEntries(ufsLista().concat("BR").map((uf) => { const e = est[uf] || { k: 0, tot: 0 }; return [uf, { k: e.k, tot: e.tot, v: e.k }]; }));
+    }
     const sec = {};
     oc.forEach((r) => {
       if (String(r[4]) !== n || (teste && r[5] !== teste) || (nivel && r[6] !== nivel)) return;
@@ -181,22 +253,30 @@
       try { [M, oc] = await Promise.all([dado("site/data/mapa.json"), ocorrencias()]); } catch (e) { $("#mapa").innerHTML = erroDados(e); return; }
       const f = $('form[data-filtro="mapa"]');
       const pinta = () => {
-        const n = f.elements.t.value, teste = f.elements.teste.value, nivel = f.elements.nivel.value;
+        const n = f.elements.t.value, teste = f.elements.teste.value, nivel = f.elements.nivel.value, est = estadual(teste);
         history.replaceState(null, "", `#/mapa?t=${n}${teste ? "&teste=" + teste : ""}&nivel=${nivel}`);
         const med = medidaUf(oc, n, teste, nivel);
-        const { cls, faixas } = classes(Object.values(med).map((x) => x.v));
-        const fmt = (v) => pct(v, 3);
-        const dica = (uf) => { const m = med[uf]; return `${A.ufNome(uf)} (${uf})\n${L.mp_tip(nf(m.k), nf(m.tot), fmt(m.v))}\n${L.mp_click}`; };
+        const { cls, faixas } = classes(ufsLista().map((uf) => med[uf].v));
+        const fmt = est ? (v) => nf(v) : (v) => pct(v, 3);
+        const tip = (m) => (est ? L.est_tip(nf(m.k), nf(m.tot)) : L.mp_tip(nf(m.k), nf(m.tot), fmt(m.v)));
+        const dica = (uf) => `${A.ufNome(uf)} (${uf})\n${tip(med[uf])}\n${L.mp_click}`;
         const paths = Object.entries(M.uf).map(([uf, d]) => `<a href="#/uf/${uf}" class="mp-uf q${cls(med[uf].v)}" data-tip="${esc(dica(uf))}" aria-label="${esc(`${A.ufNome(uf)}: ${fmt(med[uf].v)}`)}"><path d="${d}"/></a>`).join("");
         const zz = med.ZZ;
         $("#mapa").innerHTML = `<svg viewBox="0 0 ${M.vb[0]} ${M.vb[1]}" role="group" aria-label="${esc(L.mp_title)}">${paths}</svg>
           <a href="#/uf/ZZ" class="mp-zz q${cls(zz.v)}" data-tip="${esc(dica("ZZ"))}"><span class="sw q${cls(zz.v)}"></span>${esc(A.ufNome("ZZ"))}: ${esc(fmt(zz.v))}</a>`;
-        $("#mapa-leg").innerHTML = `<p class="small"><b>${esc(L.mp_leg(teste ? `${A.numTeste(teste)}. ${A.nomeTeste(teste)}` : L.x_all_tests, nivel ? (nivel === "a" ? L.lv_a : L.lv_i) : L.x_all_lv))}</b></p>` + legendaSeq(faixas, fmt);
-        $("#mapa-nota").textContent = L.mp_note;
-        const linhas = ufsLista().map((uf) => med[uf]).map((m, i) => [ufsLista()[i], m]).sort((a, b) => b[1].v - a[1].v);
-        $("#mapa-tab").innerHTML = tabela([L.th_uf, L.th_sections, L.mp_th_k, "%"], linhas.map(([uf, m]) => [`<a href="#/uf/${uf}">${uf} – ${esc(A.ufNome(uf))}</a>`, nf(m.tot), nf(m.k), fmt(m.v)]), "num-cols");
+        const nomeT = teste ? `${A.numTeste(teste)}. ${A.nomeTeste(teste)}` : L.x_all_tests, nomeN = nivel ? (nivel === "a" ? L.lv_a : L.lv_i) : L.x_all_lv;
+        $("#mapa-leg").innerHTML = `<p class="small"><b>${esc(est ? L.est_leg(nomeT, nomeN) : L.mp_leg(nomeT, nomeN))}</b></p>` + legendaSeq(faixas, fmt)
+          + (est ? `<p class="small est-br">${esc(L.est_br_tot(tip(med.BR)))}</p>` : "");
+        $("#mapa-nota").innerHTML = est ? `${esc(L.est_note_map)} <a href="#/lista?t=${n}&teste=${teste}">${esc(L.est_see_all)}</a>` : `${esc(L.mp_note)} ${esc(L.mp_note_est)}`;
+        const linhas = ufsLista().map((uf) => [uf, med[uf]]).sort((a, b) => b[1].v - a[1].v);
+        $("#mapa-tab").innerHTML = tabela([L.th_uf, est ? L.est_th_an : L.th_sections, est ? L.est_th_k : L.mp_th_k].concat(est ? [] : ["%"]),
+          linhas.map(([uf, m]) => [`<a href="#/uf/${uf}">${uf} – ${esc(A.ufNome(uf))}</a>`, nf(m.tot), nf(m.k)].concat(est ? [] : [fmt(m.v)])), "num-cols");
       };
-      f.addEventListener("change", pinta);
+      f.addEventListener("change", (e) => {
+        // os testes por estado só geram um tipo (13 e 14: anomalia; 15: informativo): mostra os dois
+        if (e.target.name === "teste" && estadual(e.target.value)) f.elements.nivel.value = "";
+        pinta();
+      });
       pinta();
     },
   };
@@ -225,15 +305,23 @@
       + A.barras(cands.slice(0, 6).map((nr) => ({ rotulo: `${A.titulo(nomes[nr])} (${nr})`, valor: v[nr], texto: `${nf(v[nr])} · ${pct(v[nr] / val)}`, dica: `${nf(v[nr])} · ${pct(v[nr] / val)} ${L.valid}\n${A.titulo(nomes[nr])} (${nr})` })),
         { nota: `${esc(L.blank)}: ${nf(v["95"] || 0)} · ${esc(L.null_)}: ${nf(v["96"] || 0)}` });
   }
-  function testesLocal(oc) {
+  // Tabela dos 15 testes de um estado ou município. Testes 1 a 12: ocorrências nas seções do local;
+  // testes 13 a 15: resultado do estado inteiro (análises candidato × cargo com sinal / total de análises).
+  function testesLocal(oc, uf, noMun) {
     const L = t(), cont = {};
     oc.forEach((r) => { const k = r[5] + "/" + r[4]; cont[k] = cont[k] || [0, 0]; cont[k][r[6] === "a" ? 0 : 1]++; });
-    const linhas = testesSecao().map((id) => {
-      const c1 = cont[id + "/1"] || [0, 0], c2 = cont[id + "/2"] || [0, 0];
-      const c = (x) => chip(x[0] ? "red" : x[1] ? "amber" : "green", `${nf(x[0])} / ${nf(x[1])}`);
-      return [`<a href="#/testes/${id}">${A.numTeste(id)}. ${esc(A.nomeTeste(id))}</a>`, c(c1), c(c2)];
+    const c = (x, extra) => chip(x[0] ? "red" : x[1] ? "amber" : "green", `${nf(x[0])} / ${nf(x[1])}`) + (extra ? ` <span class="small muted">${esc(extra)}</span>` : "");
+    const linhas = testesTodos().map((id) => {
+      const nome = `<a href="#/testes/${id}">${A.numTeste(id)}. ${esc(A.nomeTeste(id))}</a>`;
+      if (!estadual(id)) return [nome, c(cont[id + "/1"] || [0, 0]), c(cont[id + "/2"] || [0, 0])];
+      const res = (n) => {
+        const ls = analisesEstado(n, id).filter((x) => x.uf === uf);
+        return c([ls.filter((x) => x.nivel === "a").length, ls.filter((x) => x.nivel === "i").length], L.est_of(nf(ls.length)));
+      };
+      return [`${nome} <a class="tag" href="#/lista?uf=${uf}&teste=${id}" data-tip="${esc(L.est_tag_tip)}">${esc(noMun ? L.est_tag_uf(uf) : L.est_tag)}</a>`, res("1"), res("2")];
     });
-    return tabela([L.th_test, `${L.round(1)} (${L.th_anom} / ${L.th_info})`, `${L.round(2)} (${L.th_anom} / ${L.th_info})`], linhas);
+    return tabela([L.th_test, `${L.round(1)} (${L.th_anom} / ${L.th_info})`, `${L.round(2)} (${L.th_anom} / ${L.th_info})`], linhas)
+      + `<p class="small muted">${esc(noMun ? L.est_note_mun : L.est_note_uf)}</p>`;
   }
 
   function paginaUfIndice() {
@@ -277,7 +365,7 @@
       <section class="grid2"><div class="card"><h2>${esc(L.round(2))} · ${esc(L.cd_pres)}</h2>${blocoVotos(2, tot[2])}</div><div class="card"><h2>${esc(L.round(1))} · ${esc(L.cd_pres)}</h2>${blocoVotos(1, tot[1])}</div></section>
       ${uf === "ZZ" ? "" : `<section class="card"><div class="h-row"><h2>${esc(L.uf_map_title)}</h2><form class="filters inline" data-filtro="ufmapa">${seletor("t", L.x_round, opTurno(false), "2")}</form></div>
         <p class="small muted">${esc(L.uf_map_sub)}</p><div class="map-wrap"><div class="map map-uf" id="uf-mapa">${carregando()}</div><div class="map-side" id="uf-mapa-leg"></div></div></section>`}
-      <section><h2>${esc(L.uf_tests_title)}</h2><p class="small muted">${esc(L.uf_tests_sub)}</p>${testesLocal(ocUf)}
+      <section><h2>${esc(L.uf_tests_title)}</h2><p class="small muted">${esc(L.uf_tests_sub)}</p>${testesLocal(ocUf, uf, false)}
         <p class="btn-row"><a class="btn btn-sm" href="#/lista?uf=${uf}">${icone("list")} ${esc(L.uf_see_list)}</a><a class="btn btn-sm btn-ghost" href="#/secao/${uf}">${icone("search")} ${esc(L.cta_lookup)}</a></p></section>
       <section><div class="h-row"><h2>${esc(L.uf_mun_title)}</h2><label class="mini-search">${icone("search")}<input type="search" id="mun-q" placeholder="${esc(L.uf_mun_ph)}" aria-label="${esc(L.uf_mun_ph)}"></label></div>
         <div id="mun-tab"></div></section>`;
@@ -332,6 +420,7 @@
       <div class="tiles">${A.tile(m[0], L.st_secoes, L.uf_tip_sec, "grid")}${A.tile(m[1].length, L.mu_zones, m[1].join(", "), "pin")}
         ${A.tile(k(1), `${L.r_flagged} · ${L.round(1)}`, L.tip_sinal, "flag")}${A.tile(k(2), `${L.r_flagged} · ${L.round(2)}`, L.tip_sinal, "flag")}</div>
       <section class="grid2"><div class="card"><h2>${esc(L.round(2))} · ${esc(L.cd_pres)}</h2>${blocoVotos(2, tot[2])}</div><div class="card"><h2>${esc(L.round(1))} · ${esc(L.cd_pres)}</h2>${blocoVotos(1, tot[1])}</div></section>
+      <section><h2>${esc(L.mu_tests_title)}</h2><p class="small muted">${esc(L.mu_tests_sub)}</p>${testesLocal(ocM, uf, true)}</section>
       <section><h2>${esc(L.mu_oc_title)}</h2>${linhasOc.length ? tabela([L.x_round, L.th_zone, L.th_section, L.th_test, "", L.li_cat], linhasOc) : `<p>${chip("green", L.mu_oc_none)}</p>`}</section>
       <section><div class="h-row"><h2>${esc(L.mu_sec_title)}</h2><button class="btn btn-sm" type="button" id="mu-load">${icone("list")} ${esc(L.mu_sec_btn(nf(m[0])))}</button></div><div id="mu-secs"></div></section>`;
     A.efeitos($("#mun-body"));
@@ -407,16 +496,20 @@
           <button class="btn btn-sm btn-ghost" type="reset">${esc(L.li_clear)}</button>
         </form></section>
         <div class="h-row li-head"><p id="li-res" class="li-res" aria-live="polite"></p><button class="btn btn-sm" type="button" id="li-csv">${icone("download")} ${esc(L.li_csv)}</button></div>
-        <div id="li-tab">${carregando()}</div>
+        <div id="li-tab">${carregando()}</div><div id="li-est"></div>
         <p class="small muted">${esc(L.li_note)}</p>${A.botCta(true)}`;
     },
     async iniciar() {
       const L = t(), q = A.state.query;
       let oc, muns;
       try { [oc, muns] = await Promise.all([ocorrencias(), A.municipios()]); } catch (e) { $("#li-tab").innerHTML = erroDados(e); return; }
+      // seções (testes 1 a 12) + resultados por estado com sinal (testes 13 a 15), como em secoes_sinalizadas.csv
+      oc = oc.concat(ocorrenciasEstado());
       const f = $('form[data-filtro="lista"]');
       let ord = { k: q.get("ord") || "", d: 1 }, filtradas = [];
-      const nomeMun = (uf, cod) => A.titulo(((muns[uf] || {})[cod] || [cod])[0]);
+      const nomeMun = (uf, cod) => (cod == null ? "" : A.titulo(((muns[uf] || {})[cod] || [cod])[0]));
+      const cat = (r) => nomeCat(r[7]) + (r[8] ? ` · ${analiseTxt(r[8])}` : "");
+      const num = (x) => (x == null ? -1 : x);
       const encherMun = (sel) => {
         const m = muns[f.elements.uf.value] || {};
         f.elements.mun.innerHTML = `<option value="">${esc(L.lk_mun_all)}</option>` + Object.entries(m).sort((a, b) => a[1][0].localeCompare(b[1][0], "pt"))
@@ -424,26 +517,34 @@
         f.elements.mun.disabled = !f.elements.uf.value;
       };
       encherMun(q.get("mun") || "");
-      const COLS = [["t", L.x_round, (r) => r[4]], ["uf", L.th_uf, (r) => r[0]], ["mun", L.th_mun, (r) => nomeMun(r[0], r[1])], ["z", L.th_zone, (r) => r[2]], ["s", L.th_section, (r) => r[3]],
-        ["teste", L.th_test, (r) => r[5]], ["nivel", L.x_level, (r) => r[6]], ["cat", L.li_cat, (r) => nomeCat(r[7])]];
+      const COLS = [["t", L.x_round, (r) => r[4]], ["uf", L.th_uf, (r) => r[0]], ["mun", L.th_mun, (r) => nomeMun(r[0], r[1])], ["z", L.th_zone, (r) => num(r[2])], ["s", L.th_section, (r) => num(r[3])],
+        ["teste", L.th_test, (r) => r[5]], ["nivel", L.x_level, (r) => r[6]], ["cat", L.li_cat, cat]];
       const aplicar = () => {
         const v = Object.fromEntries(["t", "uf", "mun", "z", "teste", "nivel"].map((k) => [k, f.elements[k].value.trim()]));
         const qs = Object.entries(v).filter(([, x]) => x).map(([k, x]) => `${k}=${encodeURIComponent(x)}`).join("&");
         history.replaceState(null, "", "#/lista" + (qs ? "?" + qs : ""));
         filtradas = oc.filter((r) => (!v.t || String(r[4]) === v.t) && (!v.uf || r[0] === v.uf) && (!v.mun || r[1] === v.mun) && (!v.z || String(r[2]) === String(parseInt(v.z, 10)))
           && (!v.teste || r[5] === v.teste) && (!v.nivel || r[6] === v.nivel));
+        // teste por estado escolhido: todas as análises do teste (com e sem sinal), por turno e estado
+        const ae = estadual(v.teste) ? ["1", "2"].filter((n) => !v.t || n === v.t).flatMap((n) => analisesEstado(n, v.teste)).filter((x) => !v.uf || x.uf === v.uf) : [];
+        $("#li-est").innerHTML = ae.length ? `<section class="card li-est"><h2>${esc(L.est_all_title(A.numTeste(v.teste), A.nomeTeste(v.teste)))}</h2>
+          <p class="small muted">${esc(L.est_all_sub)} <a href="#/graficos/${v.teste}">${esc(L.est_see_chart)}</a></p>${tabelaAnalises(ae, true)}</section>` : "";
         if (ord.k) {
           const get = COLS.find((c) => c[0] === ord.k)[2];
           filtradas = filtradas.slice().sort((a, b) => { const x = get(a), y = get(b); return (typeof x === "number" ? x - y : String(x).localeCompare(String(y), "pt")) * ord.d; });
         }
-        const secs = new Set(filtradas.map((r) => r[4] + r[0] + r[2] + "/" + r[3])).size;
-        $("#li-res").innerHTML = L.li_res(nf(filtradas.length), nf(secs));
+        const deSecao = filtradas.filter((r) => r[3] != null);
+        const secs = new Set(deSecao.map((r) => r[4] + r[0] + r[2] + "/" + r[3])).size;
+        const nEst = filtradas.length - deSecao.length;
+        $("#li-res").innerHTML = !deSecao.length && nEst ? L.li_res_so_est(nf(nEst)) : L.li_res(nf(deSecao.length), nf(secs)) + (nEst ? L.li_res_est(nf(nEst)) : "");
         $("#li-csv").disabled = !filtradas.length;
         paginar($("#li-tab"), filtradas, 50, (ls) => {
           const cab = COLS.map(([k, nm]) => `<button type="button" class="th-sort" data-ord="${k}" aria-label="${esc(L.li_sort(nm))}">${esc(nm)}${ord.k === k ? (ord.d > 0 ? " ▲" : " ▼") : ""}</button>`);
-          return ls.length ? tabela(cab, ls.map((r) => [r[4] + "º", r[0], `<a href="#/uf/${r[0]}/${r[1]}">${esc(nomeMun(r[0], r[1]))}</a>`, r[2], `<a href="#/secao/${r[0]}/${r[2]}/${r[3]}">${r[3]}</a>`,
-            `<a href="#/testes/${r[5]}" data-tip="${esc(A.nomeTeste(r[5]))}">${A.numTeste(r[5])}</a>`, chip(r[6] === "a" ? "red" : "amber", r[6] === "a" ? L.lv_a : L.lv_i), esc(nomeCat(r[7]))]), "li-table")
-            : `<p class="alert">${esc(L.li_none)}</p>`;
+          return ls.length ? tabela(cab, ls.map((r) => [r[4] + "º", r[0]].concat(r[3] == null
+            ? [`<span class="muted">${esc(r[0] === "BR" ? L.est_whole_br : L.est_whole)}</span>`, "—", "—"]
+            : [`<a href="#/uf/${r[0]}/${r[1]}">${esc(nomeMun(r[0], r[1]))}</a>`, r[2], `<a href="#/secao/${r[0]}/${r[2]}/${r[3]}">${r[3]}</a>`],
+            [`<a href="#/testes/${r[5]}" data-tip="${esc(A.nomeTeste(r[5]))}">${A.numTeste(r[5])}</a>`, chip(r[6] === "a" ? "red" : "amber", r[6] === "a" ? L.lv_a : L.lv_i), esc(cat(r))])), "li-table")
+            : `<p class="alert">${esc(estadual(v.teste) ? L.est_none(A.numTeste(v.teste)) : L.li_none)}</p>`;
         });
       };
       f.addEventListener("change", (e) => { if (e.target.name === "uf") encherMun(""); aplicar(); });
@@ -456,9 +557,9 @@
         aplicar();
       });
       $("#li-csv").addEventListener("click", () => {
-        const cab = ["turno", "uf", "municipio", "codigo_municipio_tse", "zona", "secao", "teste", "nome_teste", "nivel", "categoria"];
+        const cab = ["turno", "uf", "municipio", "codigo_municipio_tse", "zona", "secao", "teste", "nome_teste", "nivel", "categoria", "detalhe"];
         const q2 = (x) => `"${String(x).replace(/"/g, '""')}"`;
-        const linhas = filtradas.map((r) => [r[4], r[0], nomeMun(r[0], r[1]), r[1], r[2], r[3], r[5], A.nomeTeste(r[5]), r[6] === "a" ? L.lv_a : L.lv_i, nomeCat(r[7])].map(q2).join(";"));
+        const linhas = filtradas.map((r) => [r[4], r[0], nomeMun(r[0], r[1]), r[1] ?? "", r[2] ?? "", r[3] ?? "", r[5], A.nomeTeste(r[5]), r[6] === "a" ? L.lv_a : L.lv_i, nomeCat(r[7]), r[8] ? analiseTxt(r[8]) : ""].map(q2).join(";"));
         const blob = new Blob(["﻿" + [cab.join(";")].concat(linhas).join("\r\n")], { type: "text/csv;charset=utf-8" });
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ocorrencias_filtradas.csv";
         document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
@@ -478,6 +579,7 @@
     html() {
       const L = t();
       desenhos.clear();
+      vistos.clear();
       const bloco = (id, tit, sub, controles, extra) => `<section class="card gr-card" id="g-${id}"><div class="h-row"><h2>${esc(tit)}</h2>${controles || ""}</div>
         <p class="small muted">${sub}</p><div data-view="${id}-chart">${grafico(id, () => "")}</div><div data-view="${id}-table" hidden id="tab-${id}"></div>
         <div class="h-row"><p class="small muted gr-src">${esc(extra || "")}</p><button class="btn btn-sm btn-ghost" type="button" data-toggle-view="${id}">${esc(L.show_table)}</button></div></section>`;
@@ -501,17 +603,35 @@
       const val = (nome, campo) => $(`form[data-g="${nome}"]`).elements[campo].value;
       const tabelaEm = (id, cab, linhas) => { $("#tab-" + id).innerHTML = tabela(cab, linhas, "num-cols"); };
 
+      const ocEst = ocorrenciasEstado();
       desenhos.set("oc", (w) => {
-        const n = val("oc", "t"), teste = val("oc", "teste"), porMil = val("oc", "m") === "r";
-        const cont = {};
-        oc.forEach((r) => { if (String(r[4]) !== n || (teste && r[5] !== teste)) return; cont[r[0]] = cont[r[0]] || { a: 0, i: 0 }; cont[r[0]][r[6] === "a" ? "a" : "i"]++; });
+        const n = val("oc", "t"), teste = val("oc", "teste"), est = estadual(teste);
+        // teste por estado: conta análises (candidato × cargo) com sinal; "a cada 1.000 seções" não se aplica
+        const selM = $('form[data-g="oc"]').elements.m;
+        selM.disabled = est;
+        const porMil = !est && selM.value === "r";
+        const cont = {}, soma = (uf, nivel) => { cont[uf] = cont[uf] || { a: 0, i: 0 }; cont[uf][nivel === "a" ? "a" : "i"]++; };
+        if (!est) oc.forEach((r) => { if (String(r[4]) === n && (!teste || r[5] === teste)) soma(r[0], r[6]); });
+        // resultados por estado com sinal (testes 13 a 15); o agregado nacional (BR) vai na nota
+        ocEst.forEach((r) => { if (String(r[4]) === n && (!teste || r[5] === teste) && r[0] !== "BR") soma(r[0], r[6]); });
+        const an = {};
+        if (est) analisesEstado(n, teste).forEach((x) => { an[x.uf] = (an[x.uf] || 0) + 1; });
         const linhas = ufsLista().map((uf) => {
           const c = cont[uf] || { a: 0, i: 0 }, sec = secoesUf(n, uf) || 1, k = porMil ? 1000 / sec : 1;
           const fmt = (x) => (porMil ? A.dec((x * k).toFixed(2)) : nf(x));
-          return { rot: uf, a: c.a * k, i: c.i * k, txt: fmt(c.a + c.i), dica: `${A.ufNome(uf)} (${uf})\n${L.lv_a}: ${nf(c.a)} · ${L.lv_i}: ${nf(c.i)}\n${L.gr_per1000}: ${A.dec(((c.a + c.i) * 1000 / sec).toFixed(2))}` , c, sec };
-        }).sort((x, y) => y.a + y.i - (x.a + x.i));
-        tabelaEm("oc", [L.th_uf, L.th_sections, L.lv_a, L.lv_i, L.gr_per1000], linhas.map((l) => [`${l.rot} – ${esc(A.ufNome(l.rot))}`, nf(l.sec), nf(l.c.a), nf(l.c.i), A.dec(((l.c.a + l.c.i) * 1000 / l.sec).toFixed(2))]));
-        return `<ul class="legend inline gr-leg"><li>${chip("red", L.lv_a)}</li><li>${chip("amber", L.lv_i)}</li></ul>` + barrasEmp(w, { titulo: L.gr_oc_title, linhas });
+          const dica = est ? `${A.ufNome(uf)} (${uf})\n${L.est_tip(nf(c.a + c.i), nf(an[uf] || 0))}`
+            : `${A.ufNome(uf)} (${uf})\n${L.lv_a}: ${nf(c.a)} · ${L.lv_i}: ${nf(c.i)}\n${L.gr_per1000}: ${A.dec(((c.a + c.i) * 1000 / sec).toFixed(2))}`;
+          return { rot: uf, a: c.a * k, i: c.i * k, txt: fmt(c.a + c.i), n: (c.a + c.i) * k, d: porMil ? 2 : 0, dica, c, sec };
+        }).sort((x, y) => y.a + y.i - (x.a + x.i) || x.rot.localeCompare(y.rot));
+        if (est) {
+          tabelaEm("oc", [L.th_uf, L.est_th_an, L.lv_a, L.lv_i], linhas.map((l) => [`${l.rot} – ${esc(A.ufNome(l.rot))}`, nf(an[l.rot] || 0), nf(l.c.a), nf(l.c.i)]));
+        } else {
+          tabelaEm("oc", [L.th_uf, L.th_sections, L.lv_a, L.lv_i, L.gr_per1000], linhas.map((l) => [`${l.rot} – ${esc(A.ufNome(l.rot))}`, nf(l.sec), nf(l.c.a), nf(l.c.i), A.dec(((l.c.a + l.c.i) * 1000 / l.sec).toFixed(2))]));
+        }
+        const br = ocEst.filter((r) => String(r[4]) === n && (!teste || r[5] === teste) && r[0] === "BR").length;
+        const nota = est ? L.est_note_chart(nf(br), nf(an.BR || 0)) : !teste && br ? L.est_note_all(nf(br)) : "";
+        return `<ul class="legend inline gr-leg"><li>${chip("red", L.lv_a)}</li><li>${chip("amber", L.lv_i)}</li></ul>`
+          + (nota ? `<p class="small muted gr-nota">${esc(nota)}</p>` : "") + barrasEmp(w, { titulo: L.gr_oc_title, linhas });
       });
 
       desenhos.set("T11", (w) => {
@@ -942,7 +1062,7 @@
     titulo: () => t().up_title,
     html() {
       const L = t();
-      return `${cabecalho(L.up_title, L.up_sub, false, `<a class="btn btn-sm" href="feed.xml">${icone("rss")} ${esc(L.up_rss)}</a><a class="btn btn-sm btn-tg" href="${A.TELEGRAM}" target="_blank" rel="noopener">${icone("tg")} ${esc(L.tg_btn)}</a>`)}
+      return `${cabecalho(L.up_title, L.up_sub, false, `<a class="btn btn-sm" href="feed.xml" data-feed>${icone("rss")} ${esc(L.up_rss)}</a><a class="btn btn-sm btn-tg" href="${A.TELEGRAM}" target="_blank" rel="noopener">${icone("tg")} ${esc(L.tg_btn)}</a>`)}
         <div id="up-list">${carregando()}</div>${A.botCta(true)}`;
     },
     async iniciar() {

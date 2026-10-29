@@ -57,6 +57,21 @@
     });
   }
 
+  // --- assinar o feed (RSS): o arquivo é para leitores de RSS; aqui vai a explicação e os atalhos -------------
+  function assinarFeed() {
+    const L = t(), url = URL_SITE + "feed.xml", u = encodeURIComponent(url);
+    const d = janela(L.fd_title, `<p>${esc(L.fd_intro)}</p>
+      <ol class="fd-passos">${L.fd_steps.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
+      <div class="sh-link"><input type="text" readonly value="${esc(url)}" aria-label="${esc(L.fd_addr)}"><button class="btn btn-primary" type="button" data-cp>${icone("link")} ${esc(L.fd_copy)}</button></div>
+      <div class="sh-grid fd-apps"><a class="btn" href="https://feedly.com/i/subscription/feed/${u}" target="_blank" rel="noopener">${icone("rss")} ${esc(L.fd_open("Feedly"))}</a>
+        <a class="btn" href="https://www.inoreader.com/?add_feed=${u}" target="_blank" rel="noopener">${icone("rss")} ${esc(L.fd_open("Inoreader"))}</a></div>
+      <p class="small muted">${esc(L.fd_tg)} <a href="${A.TELEGRAM}" target="_blank" rel="noopener">${esc(L.fd_tg_link)}</a></p>`);
+    d.querySelector("[data-cp]").addEventListener("click", async (e) => {
+      const ok = await copiarTexto(url);
+      e.currentTarget.lastChild.textContent = " " + (ok ? L.copied : L.fd_copy);
+    });
+  }
+
   // --- imagem para redes sociais (canvas 1080 × 1350) ----------------------------------------------------------
   function quebrar(ctx, txt, larg) {
     const ps = String(txt).split(" "), linhas = [];
@@ -377,6 +392,7 @@
   document.addEventListener("click", (e) => {
     const sh = e.target.closest("[data-share]"); if (sh) { compartilhar(sh.closest(".foot-tools") != null); return; }
     if (e.target.closest("[data-img]")) { gerarImagem(); return; }
+    if (e.target.closest("[data-feed]")) { e.preventDefault(); assinarFeed(); return; }
     if (e.target.closest("[data-print]")) { window.print(); return; }
     const rp = e.target.closest("[data-report]"); if (rp) { avisarErro(rp.dataset.report || ""); return; }
     const sv = e.target.closest("[data-save]");
