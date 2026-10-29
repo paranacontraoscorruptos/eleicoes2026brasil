@@ -148,6 +148,7 @@
       trash: '<path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
       link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4L11.5 6M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.5-1.4"/>',
       rss: '<path d="M5 19a1 1 0 1 0 0-.01M5 11a8 8 0 0 1 8 8M5 4.5A14.5 14.5 0 0 1 19.5 19"/>',
+      swap: '<path d="M4 8h14m0 0-3.5-3.5M18 8l-3.5 3.5M20 16H6m0 0 3.5-3.5M6 16l3.5 3.5"/>',
     }[n];
     return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
   }
@@ -260,6 +261,7 @@
         <div class="float-chip c3"><span class="fc-ico">${icone("check")}</span><span><b>2</b>${esc(L.hero_chip_rounds)}</span></div>
       </div>
     </section>
+    ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
     ${botCta(false)}
     ${telegram(false)}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
@@ -378,6 +380,7 @@
       ${tile(P.aptos, L.st_aptos, L.tip_aptos, "users")}
       ${tile(P.comparecimento, L.st_comp, L.tip_comp(nf(P.comparecimento), nf(P.aptos - P.comparecimento)), "vote", `(${pct(P.comparecimento / P.aptos)})`)}
     </div>
+    ${n === "2" && window.APP.destaqueVariacao ? window.APP.destaqueVariacao(true) : ""}
     <section class="card"><h2>${esc(L.r_pres_title)}</h2>${pres}</section>
     <section><h2>${esc(L.r_tests_title)}</h2>${testes}</section>
     <section class="card"><div class="h-row"><h2>${esc(L.r_uf_title)}</h2><button class="btn btn-sm btn-ghost" type="button" data-toggle-view="uf">${esc(L.show_table)}</button></div>
@@ -549,6 +552,8 @@
       <section><h2>${esc(L.rp_opts_title)}</h2>${tabela(["", ""], L.rp_opts.map(([o, d]) => [`<code>${esc(o)}</code>`, esc(d)]))}</section>
       <section><h2>${esc(L.rp_hash_title)}</h2>${hashes.map(([s, c]) => `<p class="small muted">${esc(s)}</p>${blocoCodigo(c)}`).join("")}</section>
       <section><h2>${esc(L.rp_nucleo_title)}</h2>${tabela(["", { PT: "SHA-256 do núcleo analítico", EN: "Analytical core SHA-256", ES: "SHA-256 del núcleo analítico" }[state.lang], { PT: "SHA-512 do manifesto", EN: "Manifest SHA-512", ES: "SHA-512 del manifiesto" }[state.lang]], vals)}<p class="small muted">${esc(L.rp_env)}</p></section>
+      <section class="card"><h2>${esc(L.vr.rp_t)}</h2><p>${esc(L.vr.rp_txt)}</p>${blocoCodigo("python auditoria-eleicoes-2026-Brasil/variacao_entre_turnos.py --dados site/data --saida auditoria-eleicoes-2026-Brasil/resultados-2turno")}
+        <p class="small muted">${esc(L.vr.rp_note)}</p><a class="btn btn-sm" href="#/variacao">${icone("swap")} ${esc(L.vr.title)}</a></section>
       ${botCta(true)}`;
   }
 
@@ -656,9 +661,9 @@
   }
 
   const PAGINAS = [["home", "#/"], ["r1", "#/turno/1"], ["r2", "#/turno/2"], ["tests", "#/testes"], ["lookup", "#/secao"], ["replicate", "#/replicar"], ["downloads", "#/downloads"], ["limits", "#/limitacoes"]];
-  const ICO_MAIS = { map: "map", states: "pin", list: "list", charts: "chart", glossary: "book", verify: "hash", ballot: "qr", saved: "star", updates: "bell" };
+  const ICO_MAIS = { vary: "swap", map: "map", states: "pin", list: "list", charts: "chart", glossary: "book", verify: "hash", ballot: "qr", saved: "star", updates: "bell" };
   // Páginas do menu "Mais" (ferramentas e consultas)
-  const MAIS = [["map", "#/mapa"], ["states", "#/uf"], ["list", "#/lista"], ["charts", "#/graficos"], ["glossary", "#/glossario"], ["verify", "#/conferir"],
+  const MAIS = [["vary", "#/variacao"], ["map", "#/mapa"], ["states", "#/uf"], ["list", "#/lista"], ["charts", "#/graficos"], ["glossary", "#/glossario"], ["verify", "#/conferir"],
     ["ballot", "#/boletim"], ["saved", "#/salvas"], ["updates", "#/atualizacoes"]];
 
   function montarCabecalho() {

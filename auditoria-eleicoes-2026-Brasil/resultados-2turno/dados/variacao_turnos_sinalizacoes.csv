@@ -1,0 +1,393 @@
+﻿teste,teste_nome,nivel,nivel_geo,uf,mun,nm_mun,zona,secao,nr_urna,cod_carga,L1,F1,O1,BN1,comp1,aptos1,L2,F2,BN2,comp2,aptos2,dL,dF,dComp,observado,esperado,dif_pp,q,detalhe
+V2,Transferência atípica no município,anomalia,municipio,AL,27170,BELO MONTE,,,,,3116,1314,177,262,4869,6030,2812,1754,116,4682,6033,-304,440,-187,0.615856,0.731005,-11.5148,1.07143e-30,phi=2.1
+V2,Transferência atípica no município,informativo,municipio,PI,11878,SANTO ANTÔNIO DE LISBOA,,,,,3867,1202,161,241,5471,6371,3517,1600,115,5232,6369,-350,398,-239,0.687317,0.774595,-8.72786,1.16786e-25,phi=1.82
+V2,Transferência atípica no município,informativo,municipio,RN,18937,RAFAEL GODEIRO,,,,,1594,1268,75,80,3017,3667,1908,988,62,2958,3668,314,-280,-59,0.65884,0.583633,7.52069,5.89451e-05,phi=2.6
+V2,Transferência atípica no município,informativo,municipio,BA,34096,CALDEIRÃO GRANDE,,,,,5292,2218,274,385,8169,10361,5351,2709,243,8303,10363,59,491,134,0.663896,0.718927,-5.50313,0.00220409,phi=6.85
+V3,Transferência atípica na seção,anomalia,secao,AM,2097,BARCELOS,18,37,,,37,171,8,15,231,377,84,71,35,190,377,47,-100,-41,0.541935,0.189846,35.209,9.55401e-43,phi=0.584
+V3,Transferência atípica na seção,anomalia,secao,AC,1554,MANOEL URBANO,3,160,,,112,55,0,3,170,238,48,104,21,173,236,-64,49,3,0.315789,0.684351,-36.8561,2.63143e-25,phi=0.725
+V3,Transferência atípica na seção,anomalia,secao,AC,1031,SANTA ROSA DO PURUS,3,95,,,102,105,9,4,220,339,174,47,7,228,337,72,-58,8,0.78733,0.517321,27.0009,1.9894e-15,phi=0.755
+V3,Transferência atípica na seção,anomalia,secao,CE,14133,INDEPENDÊNCIA,39,85,,,107,30,59,4,200,224,113,82,4,199,224,6,52,-1,0.579487,0.784272,-20.4785,9.31741e-15,phi=0.589
+V3,Transferência atípica na seção,anomalia,secao,PI,11878,SANTO ANTÔNIO DE LISBOA,28,99,,,214,56,5,12,287,312,146,122,5,273,312,-68,66,-14,0.544776,0.730946,-18.617,5.42984e-14,phi=0.603
+V3,Transferência atípica na seção,anomalia,secao,AM,2399,IPIXUNA,45,63,2018717,900973901415646241309326,135,61,12,19,227,335,167,2,28,197,335,32,-59,-30,0.988166,0.723992,26.4174,4.52907e-12,phi=0.851
+V3,Transferência atípica na seção,anomalia,secao,AM,2437,ITAPIRANGA,24,67,,,38,0,1,0,39,64,28,4,2,34,64,-10,4,-5,0.875,0.988401,-11.3401,9.73825e-10,phi=0.618
+V3,Transferência atípica na seção,anomalia,secao,PA,4723,ANAPU,80,254,,,127,29,0,2,158,238,158,4,0,162,238,31,-25,4,0.975309,0.828686,14.6623,4.40232e-09,phi=0.446
+V3,Transferência atípica na seção,anomalia,secao,MA,8974,SANTA LUZIA,70,403,,,94,45,1,3,143,166,112,15,2,129,166,18,-30,-14,0.88189,0.697287,18.4603,9.50065e-09,phi=0.385
+V3,Transferência atípica na seção,anomalia,secao,MT,91391,POXORÉU,47,239,,,36,161,0,7,204,283,71,144,3,218,283,35,-17,14,0.330233,0.203592,12.664,2.34375e-07,phi=0.457
+V3,Transferência atípica na seção,anomalia,secao,AM,2755,SÃO PAULO DE OLIVENÇA,22,70,,,154,20,6,3,183,195,180,1,3,184,195,26,-19,1,0.994475,0.892401,10.2074,2.69183e-07,phi=0.425
+V3,Transferência atípica na seção,anomalia,secao,BA,34134,CAMAÇARI,170,262,1767510,145972964716780920286813,37,61,6,3,107,119,40,20,2,62,68,3,-41,-45,0.666667,0.396668,26.9998,7.8693e-07,phi=0.416
+V3,Transferência atípica na seção,anomalia,secao,MA,8133,LAGO DA PEDRA,74,66,,,124,86,10,12,232,299,170,62,1,233,299,46,-24,1,0.732759,0.614824,11.7934,1.04064e-06,phi=0.315
+V3,Transferência atípica na seção,anomalia,secao,AC,1139,FEIJÓ,7,67,,,35,59,0,4,98,155,52,14,7,73,155,17,-45,-25,0.787879,0.405603,38.2275,1.47809e-06,phi=0.943
+V3,Transferência atípica na seção,anomalia,secao,SP,71072,SÃO PAULO,2,539,,,168,52,26,7,253,385,200,112,5,317,385,32,60,64,0.641026,0.760318,-11.9292,2.16902e-06,phi=0.588
+V3,Transferência atípica na seção,anomalia,secao,MG,52531,SÃO JOÃO DO PARAÍSO,237,384,,,34,1,2,6,43,45,36,6,1,43,45,2,5,0,0.857143,0.960797,-10.3654,3.63698e-06,phi=0.297
+V3,Transferência atípica na seção,anomalia,secao,SP,67130,MOGI DAS CRUZES,287,182,,,48,150,19,29,246,333,98,146,10,254,333,50,-4,8,0.401639,0.276765,12.4875,1.46956e-05,phi=0.508
+V3,Transferência atípica na seção,anomalia,secao,SP,71072,SÃO PAULO,2,519,,,154,73,27,9,263,392,162,131,11,304,392,8,58,41,0.552901,0.675115,-12.2214,7.68453e-05,phi=0.588
+V3,Transferência atípica na seção,anomalia,secao,MG,45950,IBIRITÉ,351,165,,,84,142,23,14,263,341,144,135,5,284,341,60,-7,21,0.516129,0.412355,10.3774,0.000210048,phi=0.391
+V3,Transferência atípica na seção,anomalia,secao,TO,92452,ARAPOEMA,31,19,,,24,66,4,2,96,143,36,54,3,93,143,12,-12,-3,0.4,0.298821,10.1179,0.000226779,phi=0.14
+V3,Transferência atípica na seção,anomalia,secao,RS,89559,VENÂNCIO AIRES,93,60,,,30,114,21,5,170,229,63,112,3,178,229,33,-2,8,0.36,0.236727,12.3273,0.000303106,phi=0.478
+V3,Transferência atípica na seção,anomalia,secao,AM,2593,MARAÃ,49,27,,,113,37,2,4,156,238,98,13,2,113,238,-15,-24,-43,0.882883,0.778201,10.4682,0.000416028,phi=0.234
+V3,Transferência atípica na seção,anomalia,secao,SP,71072,SÃO PAULO,2,532,,,151,72,33,8,264,387,176,137,10,323,387,25,65,59,0.5623,0.673791,-11.149,0.000416728,phi=0.588
+V3,Transferência atípica na seção,anomalia,secao,PR,77917,PRUDENTÓPOLIS,30,37,,,69,173,10,12,264,339,28,124,3,155,339,-41,-49,-109,0.184211,0.320927,-13.6717,0.00126178,phi=0.473
+V3,Transferência atípica na seção,anomalia,secao,GO,95613,POSSE,29,44,1806680,2413724961475611706157,92,19,13,3,127,153,80,32,2,114,153,-12,13,-13,0.714286,0.849936,-13.5651,0.00244196,phi=0.621
+V3,Transferência atípica na seção,anomalia,secao,MT,90255,ARENÁPOLIS,17,3,,,94,93,8,3,198,231,84,110,2,196,231,-10,17,-2,0.43299,0.533532,-10.0542,0.0095478,phi=0.343
+V3,Transferência atípica na seção,informativo,secao,PE,25518,SANTA MARIA DA BOA VISTA,81,91,,,186,10,23,8,227,274,208,30,5,243,274,22,20,16,0.87395,0.951024,-7.70744,6.87122e-16,phi=0.345
+V3,Transferência atípica na seção,informativo,secao,PA,4065,SÃO JOÃO DE PIRABAS,64,146,,,122,8,4,9,143,184,121,20,1,142,184,-1,12,-1,0.858156,0.940226,-8.20704,9.73825e-10,phi=0.291
+V3,Transferência atípica na seção,informativo,secao,BA,37567,NOVA FÁTIMA,196,213,2221020,389876962372804567107994,199,35,11,9,254,303,198,59,6,263,303,-1,24,9,0.770428,0.849561,-7.91331,2.11073e-08,phi=0.245
+V3,Transferência atípica na seção,informativo,secao,MA,8290,MATINHA,86,65,,,163,4,8,3,178,210,159,15,4,178,210,-4,11,0,0.913793,0.975957,-6.21643,3.28251e-07,phi=0.627
+V3,Transferência atípica na seção,informativo,secao,MA,7994,ICATU,31,191,,,104,1,2,2,109,133,90,6,2,98,133,-14,5,-11,0.9375,0.987702,-5.02017,1.9549e-06,phi=0.477
+V3,Transferência atípica na seção,informativo,secao,MG,54437,VOLTA GRANDE,7,128,,,109,56,18,5,188,253,113,75,6,194,253,4,19,6,0.601064,0.677696,-7.66321,1.9549e-06,phi=0.121
+V3,Transferência atípica na seção,informativo,secao,TO,92371,ARAGUACEMA,28,120,,,82,110,7,7,206,258,93,96,8,197,258,11,-14,-9,0.492063,0.441181,5.08829,4.93558e-06,phi=0.05
+V3,Transferência atípica na seção,informativo,secao,PA,5010,ÓBIDOS,22,259,1845460,924828924070845018294695,61,2,3,5,71,104,67,10,3,80,104,6,8,9,0.87013,0.964331,-9.42006,6.85268e-06,phi=0.509
+V3,Transferência atípica na seção,informativo,secao,PI,10774,FLORIANO,9,342,,,61,2,2,1,66,88,52,7,1,60,88,-9,5,-6,0.881356,0.963959,-8.26027,2.93121e-05,phi=0.322
+V3,Transferência atípica na seção,informativo,secao,BA,38970,SEABRA,88,43,,,124,4,4,12,144,187,120,13,9,142,187,-4,9,-2,0.902256,0.964588,-6.23327,5.65499e-05,phi=0.436
+V3,Transferência atípica na seção,informativo,secao,TO,73270,MATEIROS,26,60,,,33,1,0,1,35,40,27,4,3,34,40,-6,3,-1,0.870968,0.957657,-8.6689,5.65499e-05,phi=0.166
+V3,Transferência atípica na seção,informativo,secao,RS,85839,CÂNDIDO GODÓI,166,56,,,5,115,6,0,126,142,16,119,0,135,142,11,4,9,0.118519,0.0494037,6.91148,6.99966e-05,phi=0.402
+V3,Transferência atípica na seção,informativo,secao,MA,7617,CHAPADINHA,42,163,,,104,6,7,3,120,150,109,14,1,124,150,5,8,4,0.886179,0.947452,-6.12735,0.00020818,phi=0.292
+V3,Transferência atípica na seção,informativo,secao,PI,12157,SIMPLÍCIO MENDES,37,95,,,176,25,14,7,222,239,169,38,11,218,239,-7,13,-4,0.816425,0.873626,-5.72011,0.00020818,phi=0.193
+V3,Transferência atípica na seção,informativo,secao,PA,4049,BOM JESUS DO TOCANTINS,100,315,,,170,44,6,8,228,302,202,25,1,228,302,32,-19,0,0.889868,0.804617,8.52507,0.000226779,phi=0.333
+V3,Transferência atípica na seção,informativo,secao,RS,85286,ESTAÇÃO,70,85,,,51,177,26,7,261,296,88,182,2,272,295,37,5,11,0.325926,0.245842,8.00839,0.000278184,phi=0.301
+V3,Transferência atípica na seção,informativo,secao,AL,27855,MACEIÓ,1,533,,,235,162,28,8,433,459,256,214,3,473,505,21,52,40,0.544681,0.62503,-8.03488,0.00028421,phi=0.418
+V3,Transferência atípica na seção,informativo,secao,RS,87831,PARAÍ,138,3,,,6,144,13,9,172,188,18,148,8,174,188,12,4,2,0.108434,0.0486775,5.97563,0.000529816,phi=0.432
+V3,Transferência atípica na seção,informativo,secao,GO,92720,SIMOLÂNDIA,123,53,,,88,70,27,8,193,269,91,92,11,194,269,3,22,1,0.497268,0.591336,-9.40686,0.000755729,phi=0.233
+V3,Transferência atípica na seção,informativo,secao,MT,91090,VILA BELA DA SANTÍSSIMA TRINDADE,25,154,,,34,149,7,8,198,309,56,135,1,192,309,22,-14,-6,0.293194,0.205341,8.78525,0.000755729,phi=0.314
+V3,Transferência atípica na seção,informativo,secao,PA,4359,BREVES,15,321,,,167,43,19,13,242,309,154,61,4,219,309,-13,18,-23,0.716279,0.806574,-9.02953,0.000755729,phi=0.39
+V3,Transferência atípica na seção,informativo,secao,PR,77518,PATO BRANCO,73,307,,,49,155,34,10,248,313,95,163,3,261,313,46,8,13,0.368217,0.272501,9.57156,0.000755729,phi=0.415
+V3,Transferência atípica na seção,informativo,secao,MA,8150,LAGO DO JUNCO,74,268,,,118,31,3,0,152,174,122,18,0,140,174,4,-13,-12,0.871429,0.798062,7.33669,0.000934817,phi=0.165
+V3,Transferência atípica na seção,informativo,secao,PR,79111,TAPEJARA,86,213,,,63,148,22,9,242,337,96,147,10,253,337,33,-1,11,0.395062,0.321508,7.3554,0.000979663,phi=0.214
+V3,Transferência atípica na seção,informativo,secao,RS,88013,PORTO ALEGRE,112,440,,,83,113,18,13,227,291,125,109,6,240,291,42,-4,13,0.534188,0.446103,8.80854,0.00125439,phi=0.266
+V3,Transferência atípica na seção,informativo,secao,ES,56430,FUNDÃO,14,152,,,99,113,9,7,228,295,120,102,9,231,296,21,-11,3,0.540541,0.485247,5.52931,0.00131563,phi=0.099
+V3,Transferência atípica na seção,informativo,secao,GO,94714,MONTES CLAROS DE GOIÁS,79,111,,,66,99,24,6,195,244,60,123,7,190,244,-6,24,-5,0.327869,0.422149,-9.42804,0.00174971,phi=0.248
+V3,Transferência atípica na seção,informativo,secao,BA,33596,BARRA DO MENDES,176,50,,,59,0,8,2,69,95,63,4,2,69,95,4,4,0,0.940299,0.991853,-5.15545,0.00188487,phi=0.826
+V3,Transferência atípica na seção,informativo,secao,SP,61689,ENGENHEIRO COELHO,75,410,,,29,175,30,6,240,371,57,184,9,250,371,28,9,10,0.236515,0.165508,7.10061,0.00216835,phi=0.334
+V3,Transferência atípica na seção,informativo,secao,BA,35947,ITABELA,189,82,,,132,126,20,15,293,377,132,150,16,298,377,0,24,5,0.468085,0.542159,-7.40741,0.00217483,phi=0.237
+V3,Transferência atípica na seção,informativo,secao,PR,78859,SÃO JOSÉ DOS PINHAIS,8,456,,,40,210,24,29,303,352,80,232,8,320,352,40,22,17,0.25641,0.184849,7.1561,0.00244196,phi=0.408
+V3,Transferência atípica na seção,informativo,secao,PI,10774,FLORIANO,9,96,,,205,20,6,7,238,292,212,33,4,249,291,7,13,11,0.865306,0.91602,-5.07137,0.00310971,phi=0.322
+V3,Transferência atípica na seção,informativo,secao,SC,81477,INDAIAL,15,212,,,36,204,28,10,278,348,72,224,6,302,348,36,20,24,0.243243,0.174892,6.83516,0.00381124,phi=0.383
+V3,Transferência atípica na seção,informativo,secao,SC,82198,MORRO DA FUMAÇA,34,167,,,38,250,28,8,324,382,71,249,7,327,382,33,-1,3,0.221875,0.16008,6.1795,0.00433896,phi=0.367
+V3,Transferência atípica na seção,informativo,secao,AP,6084,PEDRA BRANCA DO AMAPARI,11,24,,,198,124,12,2,336,418,216,79,1,296,418,18,-45,-40,0.732203,0.652648,7.9555,0.0045034,phi=0.334
+V3,Transferência atípica na seção,informativo,secao,MT,90468,BRASNORTE,56,110,,,165,33,2,7,207,257,189,17,6,212,257,24,-16,5,0.917476,0.849009,6.84671,0.00452507,phi=0.306
+V3,Transferência atípica na seção,informativo,secao,SP,71072,SÃO PAULO,255,428,,,88,110,27,15,240,307,136,98,11,245,307,48,-12,5,0.581197,0.481695,9.95011,0.00462279,phi=0.378
+V3,Transferência atípica na seção,informativo,secao,RS,87858,PASSO FUNDO,33,510,,,99,176,26,5,306,388,149,163,9,321,388,50,-13,15,0.477564,0.393268,8.42962,0.00506313,phi=0.382
+V3,Transferência atípica na seção,informativo,secao,SP,69698,RIBEIRÃO PRETO,108,367,,,165,130,40,7,342,363,158,158,9,325,349,-7,28,-17,0.5,0.596745,-9.67446,0.00564215,phi=0.51
+V3,Transferência atípica na seção,informativo,secao,PA,4359,BREVES,15,296,,,87,150,5,8,250,338,109,116,1,226,338,22,-34,-24,0.484444,0.385563,9.88817,0.00650207,phi=0.39
+V3,Transferência atípica na seção,informativo,secao,BA,39195,TANHAÇU,58,340,,,135,30,8,15,188,215,144,46,8,198,215,9,16,10,0.757895,0.816076,-5.81816,0.00722317,phi=0.182
+V3,Transferência atípica na seção,informativo,secao,BA,39691,WENCESLAU GUIMARÃES,197,122,,,108,38,14,7,167,193,109,55,6,170,193,1,17,3,0.664634,0.733862,-6.92278,0.00722317,phi=0.171
+V3,Transferência atípica na seção,informativo,secao,PB,19658,CABEDELO,57,115,,,100,131,18,20,269,338,147,119,6,272,338,47,-12,3,0.552632,0.469196,8.34357,0.00722317,phi=0.316
+V3,Transferência atípica na seção,informativo,secao,RS,89109,CANUDOS DO VALE,29,41,1699523,164329163174877467585887,42,107,44,10,203,237,82,121,10,213,237,40,14,10,0.403941,0.30634,9.76005,0.00841692,phi=0.392
+V3,Transferência atípica na seção,informativo,secao,MA,8559,PARNARAMA,36,69,,,79,3,4,8,94,108,80,8,2,90,108,1,5,-4,0.909091,0.962769,-5.36785,0.00956958,phi=0.309
+V3,Transferência atípica na seção,informativo,secao,MT,90468,BRASNORTE,56,132,,,179,24,1,4,208,251,204,11,0,215,251,25,-13,7,0.948837,0.893031,5.58066,0.00956958,phi=0.306
+V3,Transferência atípica na seção,informativo,secao,SP,70475,SANTANA DE PARNAÍBA,428,315,,,43,224,55,12,334,398,84,248,17,349,398,41,24,15,0.253012,0.186173,6.68386,0.00977386,phi=0.429
+V4,Variação atípica do comparecimento,anomalia,secao,CE,13811,COREAÚ,64,104,,,158,94,9,5,266,302,153,62,3,218,302,-5,-32,-48,0.721854,0.875444,-15.359,3.99554e-10,destino=22; excesso=0.344; phi=1.11
+V4,Variação atípica do comparecimento,anomalia,secao,PE,24775,LIMOEIRO,24,168,2167131,851443248894848564100433,144,34,7,23,208,243,161,22,2,185,243,17,-12,-23,0.761317,0.878234,-11.6917,6.42265e-08,destino=22; excesso=0.379; phi=0.645
+V4,Variação atípica do comparecimento,anomalia,secao,MT,90247,SÃO JOSÉ DO XINGU,28,185,,,153,6,3,5,167,256,193,5,1,199,256,40,-1,32,0.777344,0.659156,11.8187,1.19541e-06,destino=13; excesso=0.305; phi=0.382
+V4,Variação atípica do comparecimento,anomalia,secao,PE,23094,ÁGUAS BELAS,64,218,,,225,41,6,23,295,395,299,39,17,355,395,74,-2,60,0.898734,0.791845,10.6889,1.42471e-06,destino=13; excesso=0.427; phi=0.663
+V4,Variação atípica do comparecimento,anomalia,secao,RR,3018,BOA VISTA,5,43,,,78,142,4,2,226,261,88,93,0,181,261,10,-49,-45,0.693487,0.837075,-14.3588,1.62586e-06,destino=22; excesso=0.511; phi=0.963
+V4,Variação atípica do comparecimento,anomalia,secao,MS,55026,LAGUNA CARAPÃ,43,396,,,186,14,0,19,219,305,255,8,8,271,305,69,-6,52,0.888525,0.731376,15.7148,1.6306e-06,destino=13; excesso=0.427; phi=0.936
+V4,Variação atípica do comparecimento,anomalia,secao,MA,7315,BARRA DO CORDA,23,268,,,118,58,2,2,180,196,115,40,3,158,196,-3,-18,-22,0.806122,0.918687,-11.2565,1.89552e-06,destino=22; excesso=0.528; phi=0.821
+V4,Variação atípica do comparecimento,anomalia,secao,GO,92274,APARECIDA DE GOIÂNIA,119,201,,,137,110,67,11,325,509,233,155,11,399,509,96,45,74,0.78389,0.668755,11.5135,1.55032e-05,destino=13; excesso=0.786; phi=0.848
+V4,Variação atípica do comparecimento,anomalia,secao,MA,7285,BOM LUGAR,66,121,,,135,84,5,1,225,236,133,60,1,194,236,-2,-24,-31,0.822034,0.94187,-11.9836,6.92986e-05,destino=22; excesso=0.431; phi=1.9
+V4,Variação atípica do comparecimento,anomalia,secao,SP,71072,SÃO PAULO,2,539,,,168,52,26,7,253,385,200,112,5,317,385,32,60,64,0.823377,0.699762,12.3615,9.22305e-05,destino=22; excesso=0.65; phi=0.878
+V4,Variação atípica do comparecimento,anomalia,secao,MG,46833,ITUIUTABA,141,417,,,188,67,8,16,279,402,260,73,9,342,402,72,6,63,0.850746,0.747106,10.3641,0.000252202,destino=13; excesso=0.421; phi=0.772
+V4,Variação atípica do comparecimento,anomalia,secao,RS,85391,BARROS CASSAL,54,192,,,123,106,14,13,256,365,170,127,3,300,365,47,21,44,0.821918,0.720861,10.1056,0.000432275,destino=13; excesso=0.541; phi=0.654
+V4,Variação atípica do comparecimento,anomalia,secao,SP,71072,SÃO PAULO,2,532,,,151,72,33,8,264,387,176,137,10,323,387,25,65,59,0.834625,0.72295,11.1676,0.000611445,destino=22; excesso=0.746; phi=0.878
+V4,Variação atípica do comparecimento,anomalia,secao,MS,91316,PONTA PORÃ,19,140,,,73,102,1,1,177,296,114,111,2,227,296,41,9,50,0.766892,0.635727,13.1165,0.000619807,destino=13; excesso=0.357; phi=0.803
+V4,Variação atípica do comparecimento,anomalia,secao,SP,71072,SÃO PAULO,2,491,,,137,88,21,11,257,387,158,150,9,317,387,21,62,60,0.819121,0.706237,11.2885,0.000719441,destino=22; excesso=0.619; phi=0.878
+V4,Variação atípica do comparecimento,anomalia,secao,MG,42633,CARANDAÍ,68,45,,,105,29,11,10,155,213,139,36,9,184,213,34,7,29,0.86385,0.756372,10.7478,0.00107585,destino=13; excesso=0.453; phi=0.51
+V4,Variação atípica do comparecimento,anomalia,secao,PR,78298,RONDON,100,69,,,48,40,12,3,103,153,65,63,3,131,153,17,23,28,0.856209,0.714012,14.2197,0.00129626,destino=22; excesso=0.381; phi=0.588
+V4,Variação atípica do comparecimento,anomalia,secao,AL,28290,PASSO DE CAMARAGIBE,12,255,,,167,76,10,29,282,383,215,81,16,312,383,48,5,30,0.814621,0.69402,12.0602,0.00151221,destino=13; excesso=0.957; phi=1.03
+V4,Variação atípica do comparecimento,anomalia,secao,PA,5550,SENADOR JOSÉ PORFÍRIO,54,51,,,46,222,8,9,285,360,64,245,3,312,360,18,23,27,0.866667,0.756977,10.969,0.00209888,destino=13; excesso=0.482; phi=0.959
+V4,Variação atípica do comparecimento,anomalia,secao,SP,71072,SÃO PAULO,2,506,,,126,86,28,8,248,390,147,147,13,307,390,21,61,59,0.787179,0.679988,10.7192,0.00324544,destino=22; excesso=0.614; phi=0.878
+V4,Variação atípica do comparecimento,anomalia,secao,AL,27855,MACEIÓ,3,160,,,133,136,12,30,311,420,174,169,15,358,420,41,33,47,0.852381,0.748604,10.3777,0.0034146,destino=13; excesso=0.413; phi=1.03
+V4,Variação atípica do comparecimento,anomalia,secao,AP,6050,MACAPÁ,10,431,,,86,40,5,5,136,143,86,20,2,108,143,0,-20,-28,0.755245,0.922543,-16.7299,0.00453805,destino=22; excesso=0.468; phi=2.48
+V4,Variação atípica do comparecimento,anomalia,secao,AM,2216,CARAUARI,21,76,,,244,54,8,4,310,364,245,21,4,270,364,1,-33,-40,0.741758,0.847884,-10.6126,0.00507338,destino=22; excesso=0.696; phi=1.42
+V4,Variação atípica do comparecimento,anomalia,secao,PI,10235,BARRAS,6,105,,,182,18,6,14,220,296,224,23,7,254,296,42,5,34,0.858108,0.743903,11.4205,0.00731727,destino=13; excesso=0.379; phi=0.946
+V4,Variação atípica do comparecimento,anomalia,secao,MS,55026,LAGUNA CARAPÃ,43,398,,,207,25,1,5,238,324,256,20,1,277,324,49,-5,39,0.854938,0.747692,10.7246,0.0081084,destino=13; excesso=0.357; phi=0.936
+V4,Variação atípica do comparecimento,anomalia,secao,PE,25798,SERRITA,76,81,,,176,27,7,30,240,381,253,32,14,299,381,77,5,59,0.784777,0.661649,12.3128,0.00870199,destino=13; excesso=0.509; phi=1.23
+V4,Variação atípica do comparecimento,anomalia,secao,RJ,58335,DUQUE DE CAXIAS,127,25,,,83,117,12,16,228,342,126,127,15,268,342,43,10,40,0.783626,0.681987,10.1639,0.00890516,destino=13; excesso=0.654; phi=0.781
+V4,Variação atípica do comparecimento,informativo,secao,PE,25674,SÃO JOSÉ DA COROA GRANDE,42,151,,,167,47,4,6,224,341,120,34,1,155,341,-47,-13,-69,0.454545,0.681908,-22.7363,6.26113e-49,destino=proporcional; phi=0.335
+V4,Variação atípica do comparecimento,informativo,secao,PR,77917,PRUDENTÓPOLIS,30,37,,,69,173,10,12,264,339,28,124,3,155,339,-41,-49,-109,0.457227,0.787309,-33.0082,2.3959e-38,destino=proporcional; phi=1.15
+V4,Variação atípica do comparecimento,informativo,secao,PR,78212,RIO BRANCO DO SUL,156,221,,,171,93,6,5,275,338,113,69,1,183,338,-58,-24,-92,0.54142,0.83248,-29.106,3.07384e-21,destino=proporcional; phi=1.81
+V4,Variação atípica do comparecimento,informativo,secao,PR,75990,INÁCIO MARTINS,34,133,2060731,220687859799900016787257,92,67,5,6,170,215,11,7,0,18,215,-81,-60,-152,0.0837209,0.752413,-66.8693,3.25625e-20,destino=proporcional; phi=4.78
+V4,Variação atípica do comparecimento,informativo,secao,MG,41599,BOM SUCESSO,46,131,,,139,73,12,17,241,277,126,58,13,197,277,-13,-15,-44,0.711191,0.883677,-17.2485,7.48084e-20,destino=proporcional; phi=0.757
+V4,Variação atípica do comparecimento,informativo,secao,PA,5835,PARAUAPEBAS,106,330,2191815,371612858261111991255705,126,2,0,0,128,325,212,0,0,212,325,86,-2,84,0.652308,0.407666,24.4642,1.19871e-19,destino=proporcional; phi=0.77
+V4,Variação atípica do comparecimento,informativo,secao,PR,76074,IRATI,34,88,,,77,68,9,14,168,196,72,58,0,130,196,-5,-10,-38,0.663265,0.866241,-20.2975,3.09251e-19,destino=proporcional; phi=0.68
+V4,Variação atípica do comparecimento,informativo,secao,CE,13307,OCARA,67,275,,,51,25,3,4,83,83,45,22,6,73,83,-6,-3,-10,0.879518,0.992764,-11.3246,4.19104e-18,destino=proporcional; phi=1.53
+V4,Variação atípica do comparecimento,informativo,secao,AM,98515,TONANTINS,47,58,,,205,26,2,5,238,269,157,29,8,194,269,-48,3,-44,0.72119,0.877049,-15.586,6.35946e-15,destino=proporcional; phi=0.736
+V4,Variação atípica do comparecimento,informativo,secao,PA,5835,PARAUAPEBAS,106,244,2199222,381713289743450358294702,129,1,0,1,131,289,200,1,0,201,289,71,0,70,0.695502,0.467561,22.7941,4.24796e-14,destino=proporcional; phi=0.77
+V4,Variação atípica do comparecimento,informativo,secao,PR,78077,REBOUÇAS,62,18,,,94,140,23,7,264,294,87,134,5,226,294,-7,-6,-38,0.768707,0.903725,-13.5017,1.12161e-13,destino=proporcional; phi=0.808
+V4,Variação atípica do comparecimento,informativo,secao,PA,5355,SANTARÉM,83,194,,,67,58,6,6,137,160,54,39,3,96,160,-13,-19,-41,0.6,0.848348,-24.8348,4.32465e-13,destino=proporcional; phi=1.04
+V4,Variação atípica do comparecimento,informativo,secao,PR,78778,SÃO JOÃO DO TRIUNFO,52,16,2075276,681525685366535693396859,20,70,5,4,99,102,31,54,0,85,102,11,-16,-14,0.833333,0.969293,-13.596,4.59308e-13,destino=proporcional; phi=0.866
+V4,Variação atípica do comparecimento,informativo,secao,PR,78875,SÃO MATEUS DO SUL,12,41,,,78,117,11,6,212,239,73,104,2,179,239,-5,-13,-33,0.748954,0.894268,-14.5314,8.29542e-13,destino=proporcional; phi=0.743
+V4,Variação atípica do comparecimento,informativo,secao,RN,18910,VÁRZEA,13,150,,,71,68,9,5,153,183,64,52,5,121,183,-7,-16,-32,0.661202,0.834011,-17.2809,1.96176e-12,destino=proporcional; phi=0.564
+V4,Variação atípica do comparecimento,informativo,secao,PE,24635,JOAQUIM NABUCO,38,193,,,174,70,9,19,272,363,145,58,6,209,363,-29,-12,-63,0.575758,0.737883,-16.2126,5.29534e-11,destino=proporcional; phi=0.778
+V4,Variação atípica do comparecimento,informativo,secao,PR,78875,SÃO MATEUS DO SUL,12,43,,,123,128,26,18,295,352,127,117,9,253,352,4,-11,-42,0.71875,0.849348,-13.0598,5.60735e-11,destino=proporcional; phi=0.743
+V4,Variação atípica do comparecimento,informativo,secao,AP,6130,LARANJAL DO JARI,7,186,,,86,14,1,3,104,112,72,6,0,78,112,-14,-8,-26,0.696429,0.894266,-19.7837,1.54371e-10,destino=proporcional; phi=0.759
+V4,Variação atípica do comparecimento,informativo,secao,PR,74853,CÂNDIDO DE ABREU,106,26,,,37,101,17,10,165,211,34,81,8,123,211,-3,-20,-42,0.582938,0.795969,-21.303,1.30507e-09,destino=proporcional; phi=1.04
+V4,Variação atípica do comparecimento,informativo,secao,RR,3085,RORAINÓPOLIS,8,94,,,38,58,5,4,105,120,17,39,0,56,120,-21,-19,-49,0.466667,0.803649,-33.6982,2.45903e-09,destino=proporcional; phi=1.56
+V4,Variação atípica do comparecimento,informativo,secao,PA,4073,ALENQUER,21,60,1796421,579782992706044764474893,150,17,0,4,171,194,115,8,1,124,194,-35,-9,-47,0.639175,0.855307,-21.6131,2.97499e-09,destino=proporcional; phi=1.34
+V4,Variação atípica do comparecimento,informativo,secao,RR,3034,CARACARAÍ,2,92,,,153,101,23,6,283,323,110,75,1,186,323,-43,-26,-97,0.575851,0.776052,-20.02,4.19637e-09,destino=proporcional; phi=1.38
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58513,MANGARATIBA,54,126,,,89,144,12,10,255,326,51,96,1,148,326,-38,-48,-107,0.453988,0.747529,-29.3542,4.90034e-09,destino=proporcional; phi=2.77
+V4,Variação atípica do comparecimento,informativo,secao,AM,98515,TONANTINS,47,23,,,252,43,5,6,306,366,207,44,7,258,366,-45,1,-48,0.704918,0.826993,-12.2075,1.22895e-08,destino=proporcional; phi=0.736
+V4,Variação atípica do comparecimento,informativo,secao,MT,98310,JUÍNA,35,321,2448514,495225019343750570725129,275,17,0,2,294,385,337,15,3,355,385,62,-2,61,0.922078,0.782568,13.9509,1.6024e-08,destino=proporcional; phi=0.86
+V4,Variação atípica do comparecimento,informativo,secao,PA,5452,SÃO FÉLIX DO XINGU,53,218,2392159,75375200622742085477778,214,1,1,5,221,318,273,0,0,273,318,59,-1,52,0.858491,0.679698,17.8792,1.98159e-08,destino=proporcional; phi=0.921
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58513,MANGARATIBA,54,140,,,36,37,10,6,89,131,10,8,0,18,131,-26,-29,-71,0.137405,0.634969,-49.7565,2.16069e-08,destino=proporcional; phi=2.77
+V4,Variação atípica do comparecimento,informativo,secao,AM,2550,MANAUS,68,511,2018613,344264971541730442641347,135,42,12,6,195,230,126,23,4,153,230,-9,-19,-42,0.665217,0.843612,-17.8394,3.84857e-08,destino=proporcional; phi=1.13
+V4,Variação atípica do comparecimento,informativo,secao,CE,15415,SANTANA DO ACARAÚ,44,108,,,138,37,7,6,188,212,124,20,3,147,212,-14,-17,-41,0.693396,0.888552,-19.5155,1.39245e-07,destino=proporcional; phi=1.75
+V4,Variação atípica do comparecimento,informativo,secao,PR,78212,RIO BRANCO DO SUL,156,122,,,147,87,14,7,255,336,113,78,2,193,336,-34,-9,-62,0.574405,0.780885,-20.648,1.61399e-07,destino=proporcional; phi=1.81
+V4,Variação atípica do comparecimento,informativo,secao,CE,13196,AQUIRAZ,66,309,,,150,96,25,13,284,303,158,84,14,256,303,8,-12,-28,0.844884,0.942052,-9.71672,1.83689e-07,destino=proporcional; phi=1.14
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58033,ARARUAMA,92,239,,,49,169,17,6,241,266,52,138,6,196,266,3,-31,-45,0.736842,0.90104,-16.4198,1.83689e-07,destino=proporcional; phi=1.75
+V4,Variação atípica do comparecimento,informativo,secao,PA,4340,AURORA DO PARÁ,49,264,,,94,23,5,5,127,131,92,16,4,112,131,-2,-7,-15,0.854962,0.963399,-10.8438,2.5206e-07,destino=proporcional; phi=0.967
+V4,Variação atípica do comparecimento,informativo,secao,PA,4286,TRAIRÃO,34,634,,,57,135,4,5,201,280,50,103,0,153,280,-7,-32,-48,0.546429,0.699391,-15.2962,2.54507e-07,destino=proporcional; phi=0.691
+V4,Variação atípica do comparecimento,informativo,secao,BA,37672,OURIÇANGAS,74,175,,,209,62,14,21,306,404,253,84,10,347,405,44,22,41,0.85679,0.785667,7.11234,2.58949e-07,destino=13; excesso=0.366; phi=0.27
+V4,Variação atípica do comparecimento,informativo,secao,GO,94595,MINEIROS,21,169,,,77,176,47,7,307,389,86,177,7,270,387,9,1,-37,0.697674,0.813605,-11.593,5.5667e-07,destino=proporcional; phi=0.789
+V4,Variação atípica do comparecimento,informativo,secao,CE,14133,INDEPENDÊNCIA,39,41,,,188,63,3,13,267,301,168,54,5,227,301,-20,-9,-40,0.754153,0.875072,-12.0919,6.21629e-07,destino=proporcional; phi=0.932
+V4,Variação atípica do comparecimento,informativo,secao,PA,5835,PARAUAPEBAS,106,365,2183419,664541902690794112041508,141,0,0,4,145,289,197,0,1,198,289,56,0,53,0.685121,0.516123,16.8998,6.68541e-07,destino=proporcional; phi=0.77
+V4,Variação atípica do comparecimento,informativo,secao,PB,20001,SANTA CECÍLIA,18,108,,,192,52,3,29,276,320,238,58,5,301,320,46,6,25,0.940625,0.885673,5.49523,6.68541e-07,destino=13; excesso=1.09; phi=0.222
+V4,Variação atípica do comparecimento,informativo,secao,MA,7978,HUMBERTO DE CAMPOS,32,35,,,129,21,3,3,156,190,71,11,2,84,190,-58,-10,-72,0.442105,0.753179,-31.1074,1.01877e-06,destino=proporcional; phi=2.35
+V4,Variação atípica do comparecimento,informativo,secao,AP,6130,LARANJAL DO JARI,7,92,,,93,58,6,0,157,202,77,28,1,106,202,-16,-30,-51,0.524752,0.704789,-18.0037,1.34897e-06,destino=proporcional; phi=0.759
+V4,Variação atípica do comparecimento,informativo,secao,AP,6050,MACAPÁ,10,474,,,152,72,18,5,247,273,123,51,3,177,273,-29,-21,-70,0.648352,0.859643,-21.1292,1.73537e-06,destino=proporcional; phi=2.48
+V4,Variação atípica do comparecimento,informativo,secao,PR,77917,PRUDENTÓPOLIS,30,155,,,16,148,16,10,190,228,17,136,0,153,228,1,-12,-37,0.671053,0.837685,-16.6632,1.85571e-06,destino=proporcional; phi=1.15
+V4,Variação atípica do comparecimento,informativo,secao,AP,6050,MACAPÁ,10,475,,,145,70,25,1,241,269,113,52,4,169,269,-32,-18,-72,0.628253,0.847499,-21.9246,1.89552e-06,destino=proporcional; phi=2.48
+V4,Variação atípica do comparecimento,informativo,secao,PR,78875,SÃO MATEUS DO SUL,12,42,,,68,115,15,6,204,243,60,112,4,176,243,-8,-3,-28,0.72428,0.849888,-12.5609,1.89552e-06,destino=proporcional; phi=0.743
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58513,MANGARATIBA,54,134,,,65,198,7,8,278,346,62,119,3,184,346,-3,-79,-94,0.531792,0.770866,-23.9074,1.89552e-06,destino=proporcional; phi=2.77
+V4,Variação atípica do comparecimento,informativo,secao,SP,65510,ITAPEVI,359,439,,,130,97,34,13,274,342,148,90,4,242,342,18,-7,-32,0.707602,0.817374,-10.9771,1.89552e-06,destino=proporcional; phi=0.683
+V4,Variação atípica do comparecimento,informativo,secao,PR,77275,ORTIGUEIRA,167,63,,,115,70,6,9,200,268,100,55,4,159,268,-15,-15,-41,0.593284,0.773222,-17.9938,2.32637e-06,destino=proporcional; phi=1.24
+V4,Variação atípica do comparecimento,informativo,secao,AP,6092,OIAPOQUE,4,72,2017840,158659860778803515782312,197,8,2,6,213,273,140,3,0,143,273,-57,-5,-70,0.52381,0.707457,-18.3648,3.71393e-06,destino=proporcional; phi=1.14
+V4,Variação atípica do comparecimento,informativo,secao,MA,7315,BARRA DO CORDA,23,470,,,66,6,0,4,76,78,63,3,1,67,78,-3,-3,-9,0.858974,0.969288,-11.0314,3.92662e-06,destino=proporcional; phi=0.821
+V4,Variação atípica do comparecimento,informativo,secao,AP,6050,MACAPÁ,10,428,,,138,43,14,2,197,225,101,27,0,128,225,-37,-16,-69,0.568889,0.819632,-25.0743,4.33177e-06,destino=proporcional; phi=2.48
+V4,Variação atípica do comparecimento,informativo,secao,PA,4421,NOVO REPARTIMENTO,101,163,1797579,454065295877676964678872,260,0,0,3,263,323,308,1,1,310,323,48,1,47,0.959752,0.793779,16.5973,6.72379e-06,destino=proporcional; phi=1.44
+V4,Variação atípica do comparecimento,informativo,secao,AM,2550,MANAUS,40,557,,,138,89,16,5,248,332,120,78,7,205,332,-18,-11,-43,0.61747,0.753665,-13.6195,9.38932e-06,destino=proporcional; phi=0.895
+V4,Variação atípica do comparecimento,informativo,secao,MG,41505,SANTA HELENA DE MINAS,4,158,,,155,38,0,13,206,287,211,46,4,261,287,56,8,55,0.909408,0.749925,15.9482,1.02521e-05,destino=proporcional; phi=1.06
+V4,Variação atípica do comparecimento,informativo,secao,BA,33413,ARACI,123,102,,,191,10,1,19,221,319,247,7,20,274,319,56,-3,53,0.858934,0.736338,12.2596,1.24934e-05,destino=proporcional; phi=0.678
+V4,Variação atípica do comparecimento,informativo,secao,PE,23752,CAPOEIRAS,130,112,,,258,29,10,15,312,395,325,37,12,374,395,67,8,62,0.946835,0.836265,11.0571,1.46659e-05,destino=proporcional; phi=0.977
+V4,Variação atípica do comparecimento,informativo,secao,PA,5355,SANTARÉM,83,215,,,132,73,18,6,229,268,137,54,0,191,268,5,-19,-38,0.712687,0.847412,-13.4725,1.50235e-05,destino=proporcional; phi=1.04
+V4,Variação atípica do comparecimento,informativo,secao,PA,5355,SANTARÉM,83,199,,,82,140,12,9,243,295,75,120,5,200,295,-7,-20,-43,0.677966,0.815996,-13.8029,1.59813e-05,destino=proporcional; phi=1.04
+V4,Variação atípica do comparecimento,informativo,secao,BA,35637,IBITITÁ,104,220,,,126,115,3,2,246,268,107,122,0,229,268,-19,7,-17,0.854478,0.924591,-7.01133,1.61807e-05,destino=proporcional; phi=0.528
+V4,Variação atípica do comparecimento,informativo,secao,RO,418,SÃO MIGUEL DO GUAPORÉ,35,96,2292701,748550038185869735951945,39,8,3,3,53,54,45,4,0,49,54,6,-4,-4,0.907407,0.973067,-6.56598,1.61942e-05,destino=proporcional; phi=0.248
+V4,Variação atípica do comparecimento,informativo,secao,MG,52078,SANTO ANTÔNIO DO MONTE,249,104,,,73,173,15,9,270,381,96,210,6,312,381,23,37,42,0.818898,0.715346,10.3552,1.66721e-05,destino=proporcional; phi=0.562
+V4,Variação atípica do comparecimento,informativo,secao,PI,10022,ALEGRETE DO PIAUÍ,40,126,,,147,46,7,5,205,302,116,38,2,156,302,-31,-8,-49,0.516556,0.626655,-11.0099,1.7545e-05,destino=proporcional; phi=0.44
+V4,Variação atípica do comparecimento,informativo,secao,AM,98477,TABATINGA,36,83,,,202,11,4,2,219,244,172,9,10,191,244,-30,-2,-28,0.782787,0.897144,-11.4357,1.97609e-05,destino=proporcional; phi=0.98
+V4,Variação atípica do comparecimento,informativo,secao,AL,28517,QUEBRANGULO,28,123,,,194,33,5,29,261,317,244,34,9,287,317,50,1,26,0.905363,0.80904,9.63228,2.06122e-05,destino=13; excesso=1.12; phi=0.541
+V4,Variação atípica do comparecimento,informativo,secao,AP,6050,MACAPÁ,10,244,,,110,68,12,2,192,222,74,47,3,124,222,-36,-21,-68,0.558559,0.805385,-24.6827,2.41925e-05,destino=proporcional; phi=2.48
+V4,Variação atípica do comparecimento,informativo,secao,CE,14133,INDEPENDÊNCIA,39,157,,,177,49,8,11,245,290,157,47,1,205,291,-20,-2,-40,0.704467,0.829774,-12.5307,2.52622e-05,destino=proporcional; phi=0.932
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58513,MANGARATIBA,54,127,,,100,114,18,6,238,343,57,75,5,137,343,-43,-39,-101,0.399417,0.651737,-25.232,2.52622e-05,destino=proporcional; phi=2.77
+V4,Variação atípica do comparecimento,informativo,secao,AP,6050,MACAPÁ,10,253,,,151,58,7,0,216,230,120,44,4,168,230,-31,-14,-48,0.730435,0.907243,-17.6809,2.77238e-05,destino=proporcional; phi=2.48
+V4,Variação atípica do comparecimento,informativo,secao,SP,64777,GUARULHOS,176,503,,,125,108,16,0,249,341,149,112,4,265,306,24,4,16,0.866013,0.749307,11.6706,2.8642e-05,destino=proporcional; phi=0.645
+V4,Variação atípica do comparecimento,informativo,secao,MG,51152,RIO POMBA,239,80,,,184,84,18,14,300,394,239,101,5,345,394,55,17,45,0.875635,0.804309,7.13256,3.1289e-05,destino=13; excesso=0.566; phi=0.372
+V4,Variação atípica do comparecimento,informativo,secao,MG,52698,SÃO JOSÉ DO JACURI,212,169,,,128,47,8,14,197,266,155,55,8,218,266,27,8,21,0.819549,0.764403,5.51459,3.62766e-05,destino=13; excesso=0.604; phi=0.133
+V4,Variação atípica do comparecimento,informativo,secao,PB,20451,ITATUBA,8,62,,,175,57,4,21,257,332,218,62,11,291,332,43,5,34,0.876506,0.785715,9.07908,3.82702e-05,destino=13; excesso=0.548; phi=0.481
+V4,Variação atípica do comparecimento,informativo,secao,CE,15598,SOBRAL,24,256,,,153,126,8,7,294,325,166,101,3,270,325,13,-25,-24,0.830769,0.913827,-8.30581,4.91203e-05,destino=22; excesso=0.639; phi=0.856
+V4,Variação atípica do comparecimento,informativo,secao,PR,77917,PRUDENTÓPOLIS,30,109,,,20,86,5,7,118,138,15,77,1,93,138,-5,-9,-25,0.673913,0.857465,-18.3552,5.05311e-05,destino=proporcional; phi=1.15
+V4,Variação atípica do comparecimento,informativo,secao,SC,80900,MACIEIRA,6,246,,,96,158,16,4,274,364,87,144,3,234,364,-9,-14,-40,0.642857,0.77271,-12.9853,5.11011e-05,destino=proporcional; phi=1.05
+V4,Variação atípica do comparecimento,informativo,secao,PI,10022,ALEGRETE DO PIAUÍ,40,86,,,90,27,4,2,123,154,77,16,3,96,154,-13,-11,-27,0.623377,0.754852,-13.1475,6.39353e-05,destino=proporcional; phi=0.44
+V4,Variação atípica do comparecimento,informativo,secao,PE,24430,IPOJUCA,16,249,,,175,70,14,17,276,389,174,72,0,246,389,-1,2,-30,0.632391,0.753779,-12.1388,8.34031e-05,destino=proporcional; phi=0.962
+V4,Variação atípica do comparecimento,informativo,secao,SP,71072,SÃO PAULO,381,778,,,58,49,23,5,135,140,67,51,6,124,140,9,2,-11,0.885714,0.968615,-8.29008,9.01665e-05,destino=proporcional; phi=0.991
+V4,Variação atípica do comparecimento,informativo,secao,AM,2550,MANAUS,40,631,,,108,45,11,8,172,194,101,39,9,149,194,-7,-6,-23,0.768041,0.888471,-12.043,9.87306e-05,destino=proporcional; phi=0.895
+V4,Variação atípica do comparecimento,informativo,secao,AM,2550,MANAUS,68,517,,,134,64,19,8,225,273,121,55,10,186,273,-13,-9,-39,0.681319,0.819928,-13.8609,0.000106741,destino=proporcional; phi=1.13
+V4,Variação atípica do comparecimento,informativo,secao,PB,21091,OLHO D'ÁGUA,66,111,,,165,53,11,7,236,295,169,40,2,211,294,4,-13,-25,0.717687,0.787995,-7.03079,0.000106741,destino=22; excesso=0.312; phi=0.276
+V4,Variação atípica do comparecimento,informativo,secao,CE,14796,MORRINHOS,44,151,,,161,120,11,12,304,342,162,112,6,280,342,1,-8,-24,0.818713,0.897093,-7.83792,0.000111299,destino=proporcional; phi=0.724
+V4,Variação atípica do comparecimento,informativo,secao,CE,15598,SOBRAL,24,497,,,163,118,7,12,300,324,174,100,5,279,324,11,-18,-21,0.861111,0.932919,-7.18079,0.000124625,destino=22; excesso=0.481; phi=0.856
+V4,Variação atípica do comparecimento,informativo,secao,MA,7650,COELHO NETO,28,135,,,239,21,3,3,266,315,222,20,3,245,315,-17,-1,-21,0.777778,0.850695,-7.29176,0.000132192,destino=proporcional; phi=0.425
+V4,Variação atípica do comparecimento,informativo,secao,ZZ,30414,RAMALLAH,1,275,,,424,19,12,14,469,793,362,15,4,381,793,-62,-4,-88,0.480454,0.631035,-15.0581,0.000137339,destino=proporcional; phi=2.49
+V4,Variação atípica do comparecimento,informativo,secao,CE,15598,SOBRAL,24,646,,,142,121,12,7,282,321,144,105,8,257,321,2,-16,-25,0.800623,0.890274,-8.96507,0.000143397,destino=proporcional; phi=0.856
+V4,Variação atípica do comparecimento,informativo,secao,RS,87572,NONOAI,99,66,,,172,8,0,2,182,286,212,15,3,230,286,40,7,48,0.804196,0.696715,10.7481,0.000148382,destino=proporcional; phi=0.508
+V4,Variação atípica do comparecimento,informativo,secao,MA,8958,SANTA HELENA,83,146,,,116,7,3,1,127,178,149,3,2,154,178,33,-4,27,0.865169,0.712073,15.3095,0.000149543,destino=proporcional; phi=0.662
+V4,Variação atípica do comparecimento,informativo,secao,AC,1139,FEIJÓ,7,47,,,79,113,6,11,209,271,63,63,4,130,271,-16,-50,-79,0.479705,0.695099,-21.5394,0.000152894,destino=proporcional; phi=1.93
+V4,Variação atípica do comparecimento,informativo,secao,SP,63118,CARAGUATATUBA,206,237,,,206,22,2,3,233,279,185,22,5,212,279,-21,0,-21,0.759857,0.846181,-8.63245,0.00016742,destino=proporcional; phi=0.524
+V4,Variação atípica do comparecimento,informativo,secao,MG,41106,NATALÂNDIA,329,42,,,149,82,12,2,245,333,144,76,3,223,333,-5,-6,-22,0.66967,0.745954,-7.62845,0.000187241,destino=proporcional; phi=0.338
+V4,Variação atípica do comparecimento,informativo,secao,RS,88218,RODEIO BONITO,64,7,,,130,114,10,21,275,362,170,140,6,316,362,40,26,41,0.872928,0.784679,8.8249,0.000202264,destino=13; excesso=0.468; phi=0.555
+V4,Variação atípica do comparecimento,informativo,secao,GO,95737,RUBIATABA,76,37,,,41,100,32,13,186,221,54,113,3,170,221,13,13,-16,0.769231,0.849338,-8.01074,0.000225833,destino=proporcional; phi=0.371
+V4,Variação atípica do comparecimento,informativo,secao,RS,85391,BARROS CASSAL,54,214,,,75,205,23,9,312,364,81,204,5,290,364,6,-1,-22,0.796703,0.873132,-7.64289,0.000285934,destino=proporcional; phi=0.654
+V4,Variação atípica do comparecimento,informativo,secao,PA,4251,BARCARENA,65,284,,,143,48,7,22,220,245,131,51,14,196,245,-12,3,-24,0.8,0.893675,-9.36752,0.000292086,destino=proporcional; phi=0.773
+V4,Variação atípica do comparecimento,informativo,secao,AP,6122,VITÓRIA DO JARI,7,147,,,180,104,9,7,300,346,137,77,0,214,346,-43,-27,-86,0.618497,0.79216,-17.3663,0.000292472,destino=proporcional; phi=2.17
+V4,Variação atípica do comparecimento,informativo,secao,AP,6157,SANTANA,6,274,,,165,61,13,1,240,264,143,45,2,190,264,-22,-16,-50,0.719697,0.86549,-14.5793,0.000296876,destino=proporcional; phi=1.65
+V4,Variação atípica do comparecimento,informativo,secao,MT,90590,CHAPADA DOS GUIMARÃES,34,116,,,42,60,10,1,113,132,42,52,2,96,132,0,-8,-17,0.727273,0.849034,-12.1761,0.000296876,destino=proporcional; phi=0.523
+V4,Variação atípica do comparecimento,informativo,secao,PA,4286,TRAIRÃO,34,130,,,35,144,8,13,200,280,31,129,0,160,280,-4,-15,-40,0.571429,0.695006,-12.3578,0.000296876,destino=proporcional; phi=0.691
+V4,Variação atípica do comparecimento,informativo,secao,RS,87491,MONTENEGRO,31,247,,,28,7,0,0,35,38,20,4,1,25,34,-8,-3,-10,0.735294,0.919787,-18.4493,0.000312363,destino=proporcional; phi=0.54
+V4,Variação atípica do comparecimento,informativo,secao,AC,1457,SENA MADUREIRA,3,148,,,43,92,9,8,152,216,23,38,4,65,216,-20,-54,-87,0.300926,0.556527,-25.5601,0.000347143,destino=proporcional; phi=1.98
+V4,Variação atípica do comparecimento,informativo,secao,MT,91677,VÁRZEA GRANDE,49,363,,,39,50,7,4,100,112,38,48,0,86,112,-1,-2,-14,0.767857,0.899769,-13.1912,0.000379625,destino=proporcional; phi=0.754
+V4,Variação atípica do comparecimento,informativo,secao,RR,3123,PACARAIMA,7,85,2260685,48781157728965070379219,173,69,4,0,246,267,150,47,1,198,267,-23,-22,-48,0.741573,0.865651,-12.4078,0.000379625,destino=proporcional; phi=1.23
+V4,Variação atípica do comparecimento,informativo,secao,RS,88617,SANTO CRISTO,102,134,,,33,69,13,1,116,120,39,66,4,109,120,6,-3,-7,0.908333,0.968109,-5.97752,0.000392785,destino=proporcional; phi=0.486
+V4,Variação atípica do comparecimento,informativo,secao,AC,1457,SENA MADUREIRA,3,98,,,64,104,10,7,185,217,43,70,1,114,215,-21,-34,-71,0.530233,0.751665,-22.1432,0.000399347,destino=proporcional; phi=1.98
+V4,Variação atípica do comparecimento,informativo,secao,RO,35,PORTO VELHO,6,515,,,75,139,5,3,222,267,75,116,1,192,267,0,-23,-30,0.719101,0.817465,-9.83635,0.000399347,destino=proporcional; phi=0.608
+V4,Variação atípica do comparecimento,informativo,secao,MA,7706,ITAIPAVA DO GRAJAÚ,15,398,,,212,7,1,3,223,287,247,4,3,254,287,35,-3,31,0.885017,0.758975,12.6043,0.000459523,destino=proporcional; phi=0.884
+V4,Variação atípica do comparecimento,informativo,secao,SP,61557,ARAÇATUBA,299,229,,,19,12,1,2,34,34,21,10,0,31,34,2,-2,-3,0.911765,0.988668,-7.69036,0.000460201,destino=proporcional; phi=0.637
+V4,Variação atípica do comparecimento,informativo,secao,BA,37893,PILÃO ARCADO,195,104,,,136,108,14,8,266,313,116,107,9,232,313,-20,-1,-34,0.741214,0.842504,-10.129,0.00047934,destino=proporcional; phi=0.862
+V4,Variação atípica do comparecimento,informativo,secao,MA,7307,BREJO DE AREIA,49,100,,,53,22,3,4,82,91,58,12,1,71,91,5,-10,-11,0.78022,0.887439,-10.7219,0.000484393,destino=proporcional; phi=0.374
+V4,Variação atípica do comparecimento,informativo,secao,RO,35,PORTO VELHO,6,567,2033936,927058562034772849783788,152,40,1,1,194,211,147,27,1,175,211,-5,-13,-19,0.829384,0.910495,-8.11107,0.000484393,destino=proporcional; phi=0.608
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,185,131,,,171,147,31,13,362,476,235,168,12,415,476,64,21,53,0.871849,0.794499,7.73498,0.000501779,destino=13; excesso=0.685; phi=0.624
+V4,Variação atípica do comparecimento,informativo,secao,MG,53694,TEIXEIRAS,268,55,,,77,74,16,13,180,219,90,76,8,174,219,13,2,-6,0.794521,0.855419,-6.08988,0.00051384,destino=proporcional; phi=0.236
+V4,Variação atípica do comparecimento,informativo,secao,PI,11770,RIBEIRO GONÇALVES,44,68,,,181,79,13,0,273,332,178,62,8,248,332,-3,-17,-25,0.746988,0.80558,-5.85924,0.000518842,destino=22; excesso=0.409; phi=0.261
+V4,Variação atípica do comparecimento,informativo,secao,AL,27774,JUNDIÁ,14,221,,,157,111,18,22,308,376,125,83,3,211,376,-32,-28,-97,0.56117,0.750856,-18.9685,0.000528334,destino=proporcional; phi=2.6
+V4,Variação atípica do comparecimento,informativo,secao,AL,27855,MACEIÓ,2,220,,,108,137,16,23,284,326,118,132,6,256,326,10,-5,-28,0.785276,0.88618,-10.0904,0.000536508,destino=proporcional; phi=1.19
+V4,Variação atípica do comparecimento,informativo,secao,PE,25216,PETROLINA,145,92,,,91,54,20,11,176,204,106,46,7,159,204,15,-8,-17,0.779412,0.893017,-11.3605,0.000562199,destino=proporcional; phi=0.998
+V4,Variação atípica do comparecimento,informativo,secao,MA,8370,MONÇÃO,43,141,,,138,31,7,3,179,234,128,22,1,151,234,-10,-9,-28,0.645299,0.752052,-10.6753,0.000602535,destino=proporcional; phi=0.521
+V4,Variação atípica do comparecimento,informativo,secao,CE,13897,FORTALEZA,94,638,,,136,108,14,14,272,285,145,106,8,259,286,9,-2,-13,0.905594,0.959323,-5.37285,0.000653821,destino=proporcional; phi=0.776
+V4,Variação atípica do comparecimento,informativo,secao,RR,3000,CAROEBE,4,141,2283087,285572762668174112277933,66,2,0,0,68,80,44,0,0,44,80,-22,-2,-24,0.55,0.764216,-21.4216,0.000684497,destino=proporcional; phi=0.75
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,185,159,1650517,331953334845095200435331,107,139,22,17,285,424,152,172,17,341,424,45,33,56,0.804245,0.714211,9.00339,0.000749612,destino=13; excesso=0.39; phi=0.624
+V4,Variação atípica do comparecimento,informativo,secao,MA,7099,ALTO PARNAÍBA,11,14,,,128,15,4,11,158,202,112,15,0,127,202,-16,0,-31,0.628713,0.780009,-15.1296,0.000768694,destino=proporcional; phi=1
+V4,Variação atípica do comparecimento,informativo,secao,PA,5657,VISEU,14,118,,,172,29,9,3,213,256,137,24,3,164,256,-35,-5,-49,0.640625,0.804965,-16.434,0.000768694,destino=proporcional; phi=1.64
+V4,Variação atípica do comparecimento,informativo,secao,MG,48950,NOVA LIMA,194,315,,,29,128,25,4,186,197,34,132,7,173,197,5,4,-13,0.878173,0.95028,-7.21071,0.000776064,destino=proporcional; phi=0.808
+V4,Variação atípica do comparecimento,informativo,secao,PA,4936,MOJU,37,120,2187388,695567922691072232084828,48,3,0,2,53,55,41,0,0,41,55,-7,-3,-12,0.745455,0.947515,-20.2061,0.000776064,destino=proporcional; phi=1.68
+V4,Variação atípica do comparecimento,informativo,secao,PR,76716,MALLET,37,16,,,64,138,25,13,240,282,66,138,8,212,282,2,0,-28,0.751773,0.849961,-9.81879,0.000787764,destino=proporcional; phi=0.795
+V4,Variação atípica do comparecimento,informativo,secao,MG,41351,BIAS FORTES,24,141,,,109,84,8,20,221,266,113,75,11,199,266,4,-9,-22,0.74812,0.847726,-9.96055,0.000894663,destino=proporcional; phi=0.77
+V4,Variação atípica do comparecimento,informativo,secao,AL,27758,JOAQUIM GOMES,53,166,2473980,187986351908089947743104,270,32,8,25,335,390,313,36,9,358,390,43,4,23,0.917949,0.844488,7.34606,0.000954391,destino=13; excesso=1.03; phi=0.607
+V4,Variação atípica do comparecimento,informativo,secao,MT,90778,GENERAL CARNEIRO,9,481,2005852,444143473661153323145508,209,14,3,4,230,334,244,14,3,261,334,35,0,31,0.781437,0.674899,10.6538,0.0011197,destino=proporcional; phi=0.663
+V4,Variação atípica do comparecimento,informativo,secao,AP,6122,VITÓRIA DO JARI,7,183,,,125,121,12,4,262,276,109,106,2,217,276,-16,-15,-45,0.786232,0.913339,-12.7107,0.00114596,destino=proporcional; phi=2.17
+V4,Variação atípica do comparecimento,informativo,secao,MG,50113,PIRACEMA,208,110,,,168,99,16,14,297,342,153,106,10,269,342,-15,7,-28,0.78655,0.872691,-8.61412,0.00130527,destino=proporcional; phi=0.888
+V4,Variação atípica do comparecimento,informativo,secao,SP,70971,SÃO JOSÉ DO RIO PRETO,268,250,,,69,184,48,9,310,374,88,193,12,293,375,19,9,-17,0.781333,0.847919,-6.65852,0.00131288,destino=proporcional; phi=0.502
+V4,Variação atípica do comparecimento,informativo,secao,BA,39039,SENTO SÉ,96,44,,,50,52,8,4,114,125,48,42,6,96,125,-2,-10,-18,0.768,0.904742,-13.6742,0.00132572,destino=proporcional; phi=1.06
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,188,258,,,128,163,21,23,335,525,203,189,12,404,525,75,26,69,0.769524,0.676552,9.29714,0.00142571,destino=13; excesso=0.639; phi=0.812
+V4,Variação atípica do comparecimento,informativo,secao,MA,9016,SANTA RITA,18,274,,,193,39,6,13,251,299,178,34,1,213,299,-15,-5,-38,0.712375,0.829572,-11.7197,0.00148548,destino=proporcional; phi=1.14
+V4,Variação atípica do comparecimento,informativo,secao,AM,2534,MANACAPURU,6,101,,,111,135,27,3,276,360,100,94,9,203,360,-11,-41,-73,0.563889,0.725769,-16.188,0.00153144,destino=proporcional; phi=1.87
+V4,Variação atípica do comparecimento,informativo,secao,BA,33294,ANGUERA,157,836,,,243,47,9,9,308,396,286,56,8,350,396,43,9,42,0.883838,0.807728,7.61102,0.00153144,destino=proporcional; phi=0.583
+V4,Variação atípica do comparecimento,informativo,secao,MA,8818,PRESIDENTE JUSCELINO,110,309,,,100,41,7,3,151,155,98,34,2,134,155,-2,-7,-17,0.864516,0.96289,-9.83736,0.00154592,destino=proporcional; phi=1.66
+V4,Variação atípica do comparecimento,informativo,secao,MA,8630,PENALVA,45,68,,,167,3,3,2,175,231,198,3,1,202,231,31,0,27,0.874459,0.73391,14.0549,0.00171432,destino=proporcional; phi=0.931
+V4,Variação atípica do comparecimento,informativo,secao,SP,69698,RIBEIRÃO PRETO,305,333,,,46,7,9,1,63,71,42,10,0,52,71,-4,3,-11,0.732394,0.897196,-16.4802,0.00171561,destino=proporcional; phi=0.834
+V4,Variação atípica do comparecimento,informativo,secao,MG,40690,ARAGUARI,16,347,,,4,33,0,0,37,37,5,29,0,34,37,1,-4,-3,0.918919,0.988704,-6.97852,0.00183393,destino=proporcional; phi=0.647
+V4,Variação atípica do comparecimento,informativo,secao,MS,90735,DOURADOS,43,411,,,104,14,3,0,121,254,158,19,1,178,254,54,5,57,0.700787,0.535321,16.5466,0.0018377,destino=proporcional; phi=1.12
+V4,Variação atípica do comparecimento,informativo,secao,RJ,59250,VOLTA REDONDA,90,235,,,94,130,9,25,258,313,102,113,7,222,313,8,-17,-36,0.709265,0.826824,-11.7559,0.0018377,destino=proporcional; phi=1.21
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,216,133,1670980,786469785797878377761871,139,137,18,17,311,432,190,165,7,362,432,51,28,51,0.837963,0.752074,8.58892,0.0018377,destino=13; excesso=0.511; phi=0.686
+V4,Variação atípica do comparecimento,informativo,secao,AP,6050,MACAPÁ,14,389,,,173,57,17,8,255,313,142,39,1,182,313,-31,-18,-73,0.58147,0.749793,-16.8323,0.00187646,destino=proporcional; phi=1.9
+V4,Variação atípica do comparecimento,informativo,secao,RS,85316,BAGÉ,7,35,1658605,688745683317280051439537,82,109,25,20,236,364,136,133,10,279,364,54,24,43,0.766484,0.671708,9.47753,0.00188702,destino=13; excesso=0.833; phi=0.597
+V4,Variação atípica do comparecimento,informativo,secao,MG,41599,BOM SUCESSO,46,28,,,114,80,14,14,222,280,125,69,6,200,281,11,-11,-22,0.711744,0.812572,-10.0828,0.0019085,destino=proporcional; phi=0.757
+V4,Variação atípica do comparecimento,informativo,secao,AM,2690,PARINTINS,4,281,,,60,22,1,0,83,88,48,17,2,67,88,-12,-5,-16,0.761364,0.931171,-16.9807,0.00196424,destino=proporcional; phi=1.6
+V4,Variação atípica do comparecimento,informativo,secao,BA,35211,FORMOSA DO RIO PRETO,187,34,,,232,72,10,9,323,405,280,84,6,370,405,48,12,47,0.91358,0.815647,9.79333,0.00196424,destino=proporcional; phi=1.04
+V4,Variação atípica do comparecimento,informativo,secao,AM,2216,CARAUARI,21,73,,,82,52,3,6,143,188,67,35,5,107,188,-15,-17,-36,0.569149,0.755082,-18.5933,0.00199784,destino=proporcional; phi=1.42
+V4,Variação atípica do comparecimento,informativo,secao,PI,12718,PAU D'ARCO DO PIAUÍ,32,182,,,112,43,18,1,174,183,114,35,1,150,183,2,-8,-24,0.819672,0.934673,-11.5001,0.00207,destino=proporcional; phi=1.61
+V4,Variação atípica do comparecimento,informativo,secao,PE,23817,CARUARU,106,82,1656869,98884097273706352109166,127,131,15,15,288,396,185,149,13,347,397,58,18,59,0.874055,0.782309,9.17468,0.00209888,destino=13; excesso=0.492; phi=0.8
+V4,Variação atípica do comparecimento,informativo,secao,MG,42730,CARLOS CHAGAS,73,52,,,147,85,23,21,276,374,192,97,14,303,375,45,12,27,0.808,0.747725,6.02746,0.00212392,destino=13; excesso=1.08; phi=0.295
+V4,Variação atípica do comparecimento,informativo,secao,SP,65510,ITAPEVI,359,474,,,47,24,13,2,86,103,50,22,1,73,104,3,-2,-13,0.701923,0.846539,-14.4616,0.00212412,destino=proporcional; phi=0.683
+V4,Variação atípica do comparecimento,informativo,secao,GO,93017,CATALÃO,8,133,,,104,121,34,10,269,322,114,130,6,250,322,10,9,-19,0.776398,0.854135,-7.77371,0.00215288,destino=proporcional; phi=0.639
+V4,Variação atípica do comparecimento,informativo,secao,PR,75833,GUARAPUAVA,43,397,2462584,619922285065644557347040,23,19,8,1,51,65,22,15,1,38,65,-1,-4,-13,0.584615,0.802052,-21.7437,0.00216096,destino=proporcional; phi=0.792
+V4,Variação atípica do comparecimento,informativo,secao,SP,69698,RIBEIRÃO PRETO,108,346,,,13,12,0,1,26,28,12,8,0,20,28,-1,-4,-6,0.714286,0.925364,-21.1078,0.00216782,destino=proporcional; phi=0.74
+V4,Variação atípica do comparecimento,informativo,secao,AC,1074,CRUZEIRO DO SUL,4,459,,,58,69,2,5,134,162,43,35,4,82,162,-15,-34,-52,0.506173,0.763973,-25.78,0.00218256,destino=proporcional; phi=2.45
+V4,Variação atípica do comparecimento,informativo,secao,BA,37435,MUNDO NOVO,54,112,,,146,50,5,14,215,260,153,42,5,200,260,7,-8,-15,0.769231,0.845493,-7.62626,0.00218256,destino=proporcional; phi=0.474
+V4,Variação atípica do comparecimento,informativo,secao,SP,67032,MIRANDÓPOLIS,153,99,,,73,134,10,19,236,345,107,161,13,281,345,34,27,45,0.814493,0.732739,8.1754,0.00219185,destino=13; excesso=0.407; phi=0.483
+V4,Variação atípica do comparecimento,informativo,secao,MG,41238,BELO HORIZONTE,39,168,2254078,178937178903421025448475,130,117,17,17,281,501,192,160,13,365,501,62,43,84,0.728543,0.616803,11.1739,0.00231438,destino=proporcional; phi=1.09
+V4,Variação atípica do comparecimento,informativo,secao,MG,51918,SANTA RITA DO SAPUCAÍ,248,68,,,87,106,13,13,219,305,83,108,8,199,305,-4,2,-20,0.652459,0.738674,-8.62153,0.00238804,destino=proporcional; phi=0.486
+V4,Variação atípica do comparecimento,informativo,secao,SP,71072,SÃO PAULO,253,387,,,71,160,30,10,271,309,77,168,12,257,309,6,8,-14,0.831715,0.890377,-5.86622,0.00241216,destino=proporcional; phi=0.451
+V4,Variação atípica do comparecimento,informativo,secao,AC,1058,BRASILÉIA,6,140,,,29,122,3,3,157,215,23,90,4,117,215,-6,-32,-40,0.544186,0.677554,-13.3368,0.00243244,destino=proporcional; phi=0.725
+V4,Variação atípica do comparecimento,informativo,secao,MG,52515,SÃO JOÃO DO ORIENTE,128,191,,,102,122,18,4,246,330,105,124,5,234,330,3,2,-12,0.709091,0.769823,-6.07319,0.00261068,destino=proporcional; phi=0.286
+V4,Variação atípica do comparecimento,informativo,secao,RS,86444,BOM PROGRESSO,86,120,,,106,81,8,9,204,232,106,70,3,179,232,0,-11,-25,0.771552,0.880378,-10.8827,0.00270295,destino=proporcional; phi=1.09
+V4,Variação atípica do comparecimento,informativo,secao,RO,35,PORTO VELHO,20,399,,,39,129,5,2,175,188,34,123,1,158,188,-5,-6,-17,0.840426,0.923104,-8.26781,0.0027894,destino=proporcional; phi=0.76
+V4,Variação atípica do comparecimento,informativo,secao,AM,2534,MANACAPURU,6,217,2460892,264892281196110903379983,192,27,10,6,235,278,151,25,7,183,278,-41,-2,-52,0.658273,0.81393,-15.5657,0.00286308,destino=proporcional; phi=1.87
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58378,ITABORAÍ,151,211,,,102,156,24,16,298,440,141,183,17,341,440,39,27,43,0.775,0.6905,8.45004,0.0029037,destino=13; excesso=0.527; phi=0.619
+V4,Variação atípica do comparecimento,informativo,secao,MG,46370,ITABIRITO,133,148,,,85,67,11,7,170,186,98,55,4,157,186,13,-12,-13,0.844086,0.919309,-7.52234,0.00293416,destino=proporcional; phi=0.599
+V4,Variação atípica do comparecimento,informativo,secao,AP,6050,MACAPÁ,10,412,,,114,75,10,3,202,229,90,55,1,146,229,-24,-20,-56,0.637555,0.828324,-19.077,0.00298812,destino=proporcional; phi=2.48
+V4,Variação atípica do comparecimento,informativo,secao,BA,33774,BOM JESUS DA LAPA,71,245,,,190,79,17,9,295,349,195,81,6,282,349,5,2,-13,0.808023,0.867278,-5.92548,0.00306586,destino=proporcional; phi=0.451
+V4,Variação atípica do comparecimento,informativo,secao,PI,10545,SIGEFREDO PACHECO,7,228,,,162,46,13,9,230,263,154,34,6,194,263,-8,-12,-36,0.737643,0.835046,-9.74031,0.00306586,destino=proporcional; phi=0.768
+V4,Variação atípica do comparecimento,informativo,secao,AP,6157,SANTANA,6,78,,,88,81,22,5,196,242,84,49,2,135,242,-4,-32,-61,0.557851,0.734804,-17.6953,0.00311741,destino=proporcional; phi=1.65
+V4,Variação atípica do comparecimento,informativo,secao,CE,15237,PORTEIRAS,70,311,,,188,22,5,22,237,301,223,31,11,265,301,35,9,28,0.880399,0.8115,6.88985,0.00311741,destino=13; excesso=0.431; phi=0.397
+V4,Variação atípica do comparecimento,informativo,secao,AM,2631,NHAMUNDÁ,43,41,2342641,464807854257421221564618,246,22,4,0,272,335,258,21,6,285,335,12,-1,13,0.850746,0.746498,10.4248,0.00324544,destino=proporcional; phi=0.821
+V4,Variação atípica do comparecimento,informativo,secao,BA,34355,CANSANÇÃO,50,231,,,169,75,7,17,268,310,170,66,13,249,310,1,-9,-19,0.803226,0.891013,-8.77868,0.00324544,destino=proporcional; phi=1.05
+V4,Variação atípica do comparecimento,informativo,secao,CE,15237,PORTEIRAS,70,313,,,204,10,0,12,226,291,243,9,2,254,291,39,-1,28,0.872852,0.801708,7.11443,0.00334465,destino=13; excesso=0.462; phi=0.397
+V4,Variação atípica do comparecimento,informativo,secao,RS,85944,CERRO GRANDE DO SUL,84,16,,,85,150,16,21,272,354,123,166,10,299,354,38,16,27,0.844633,0.777557,6.70758,0.00334465,destino=13; excesso=1.04; phi=0.394
+V4,Variação atípica do comparecimento,informativo,secao,PA,4073,ALENQUER,21,180,,,51,19,1,1,72,85,34,14,1,49,85,-17,-5,-23,0.576471,0.812664,-23.6194,0.0033819,destino=proporcional; phi=1.34
+V4,Variação atípica do comparecimento,informativo,secao,SP,71870,TEODORO SAMPAIO,330,127,,,80,55,4,3,142,282,119,76,3,198,282,39,21,56,0.702128,0.555722,14.6406,0.00351684,destino=proporcional; phi=1.05
+V4,Variação atípica do comparecimento,informativo,secao,SP,66818,MARÍLIA,400,6,,,52,64,5,11,132,190,55,59,3,117,189,3,-5,-15,0.619048,0.733123,-11.4076,0.00353981,destino=proporcional; phi=0.542
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,179,113,,,155,121,18,25,319,487,236,135,17,388,487,81,14,69,0.796715,0.701948,9.47668,0.00366057,destino=13; excesso=0.621; phi=0.904
+V4,Variação atípica do comparecimento,informativo,secao,MA,9679,ARAME,104,70,2383035,533406028538222705969741,209,1,1,3,214,242,224,5,2,231,242,15,4,17,0.954545,0.876807,7.77385,0.00390282,destino=proporcional; phi=0.589
+V4,Variação atípica do comparecimento,informativo,secao,BA,38830,SÃO FRANCISCO DO CONDE,162,121,,,185,27,2,17,231,318,188,24,8,220,318,3,-3,-11,0.691824,0.771351,-7.9527,0.00397781,destino=proporcional; phi=0.497
+V4,Variação atípica do comparecimento,informativo,secao,PB,22233,SOLEDADE,23,127,,,160,78,14,23,275,318,175,78,9,262,318,15,0,-13,0.823899,0.880919,-5.702,0.00397781,destino=proporcional; phi=0.43
+V4,Variação atípica do comparecimento,informativo,secao,SP,62197,BAURU,300,193,,,84,99,19,24,226,276,104,101,7,212,276,20,2,-14,0.768116,0.837874,-6.97582,0.00397781,destino=proporcional; phi=0.431
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58033,ARARUAMA,92,99,,,82,153,13,8,256,319,82,123,3,208,319,0,-30,-48,0.652038,0.795245,-14.3208,0.00400228,destino=proporcional; phi=1.75
+V4,Variação atípica do comparecimento,informativo,secao,RJ,59250,VOLTA REDONDA,90,397,,,83,136,14,14,247,319,93,109,7,209,319,10,-27,-38,0.655172,0.777773,-12.26,0.00402255,destino=proporcional; phi=1.21
+V4,Variação atípica do comparecimento,informativo,secao,MG,51551,SANTA LUZIA,246,252,,,70,89,13,9,181,197,80,83,4,167,197,10,-6,-14,0.847716,0.926517,-7.88011,0.00433311,destino=proporcional; phi=0.791
+V4,Variação atípica do comparecimento,informativo,secao,PA,4022,TAILÂNDIA,93,194,,,67,19,7,5,98,110,60,17,3,80,110,-7,-2,-18,0.727273,0.879483,-15.221,0.00436049,destino=proporcional; phi=1.06
+V4,Variação atípica do comparecimento,informativo,secao,CE,14133,INDEPENDÊNCIA,39,219,,,57,17,2,0,76,96,46,9,0,55,96,-11,-8,-21,0.572917,0.77026,-19.7343,0.0044412,destino=proporcional; phi=0.932
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,180,196,,,127,142,26,10,305,500,180,170,12,362,500,53,28,57,0.724,0.642299,8.17013,0.00463698,destino=13; excesso=0.47; phi=0.644
+V4,Variação atípica do comparecimento,informativo,secao,MG,52116,SANTO HIPÓLITO,95,102,1759680,842902150888583931733035,77,50,14,5,146,197,81,39,2,122,197,4,-11,-24,0.619289,0.765327,-14.6038,0.0046741,destino=proporcional; phi=1.04
+V4,Variação atípica do comparecimento,informativo,secao,AM,2534,MANACAPURU,6,59,,,116,131,18,4,269,358,91,102,5,198,358,-25,-29,-71,0.553073,0.708882,-15.5809,0.00470033,destino=proporcional; phi=1.87
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,22,663,,,143,133,12,25,313,489,208,153,12,373,489,65,20,60,0.762781,0.674307,8.84744,0.00470033,destino=13; excesso=0.572; phi=0.774
+V4,Variação atípica do comparecimento,informativo,secao,BA,35017,DOM BASÍLIO,101,110,,,193,80,10,8,291,344,201,79,7,287,344,8,-1,-4,0.834302,0.887065,-5.27624,0.00484287,destino=proporcional; phi=0.426
+V4,Variação atípica do comparecimento,informativo,secao,RO,35,PORTO VELHO,20,203,,,150,55,12,9,226,260,144,51,5,200,260,-6,-4,-26,0.769231,0.858472,-8.92412,0.00484287,destino=proporcional; phi=0.76
+V4,Variação atípica do comparecimento,informativo,secao,SC,81795,JOINVILLE,19,708,,,78,186,46,6,316,377,96,199,5,300,376,18,13,-16,0.797872,0.853629,-5.5757,0.00486043,destino=proporcional; phi=0.417
+V4,Variação atípica do comparecimento,informativo,secao,AC,1473,TARAUACÁ,5,92,,,30,148,2,7,187,219,18,89,6,113,216,-12,-59,-74,0.523148,0.769186,-24.6038,0.00487818,destino=proporcional; phi=3.29
+V4,Variação atípica do comparecimento,informativo,secao,CE,14133,INDEPENDÊNCIA,39,169,,,145,56,2,7,210,236,139,44,1,184,236,-6,-12,-26,0.779661,0.87724,-9.75789,0.00491094,destino=proporcional; phi=0.932
+V4,Variação atípica do comparecimento,informativo,secao,RJ,59250,VOLTA REDONDA,90,265,,,84,134,17,17,252,321,96,107,12,215,321,12,-27,-37,0.669782,0.788337,-11.8555,0.00508151,destino=proporcional; phi=1.21
+V4,Variação atípica do comparecimento,informativo,secao,PA,4618,GURUPÁ,26,105,,,130,89,3,10,232,290,95,56,2,153,290,-35,-33,-79,0.527586,0.725284,-19.7698,0.00519679,destino=proporcional; phi=2.56
+V4,Variação atípica do comparecimento,informativo,secao,PB,21091,OLHO D'ÁGUA,66,133,,,108,30,6,6,150,165,113,26,0,139,165,5,-4,-11,0.842424,0.900041,-5.76171,0.00564811,destino=proporcional; phi=0.276
+V4,Variação atípica do comparecimento,informativo,secao,PI,10731,ESPERANTINA,41,229,,,143,75,13,11,242,280,153,60,9,222,280,10,-15,-20,0.792857,0.869118,-7.62604,0.00564811,destino=22; excesso=0.459; phi=0.649
+V4,Variação atípica do comparecimento,informativo,secao,RS,87858,PASSO FUNDO,128,483,,,11,7,3,2,23,24,8,10,1,19,24,-3,3,-4,0.791667,0.947163,-15.5497,0.0059511,destino=proporcional; phi=0.528
+V4,Variação atípica do comparecimento,informativo,secao,PI,11258,MIGUEL LEÃO,58,75,,,120,84,7,8,219,259,107,70,3,180,259,-13,-14,-39,0.694981,0.827384,-13.2403,0.00601261,destino=proporcional; phi=1.45
+V4,Variação atípica do comparecimento,informativo,secao,AM,2275,CODAJÁS,7,51,,,57,61,1,2,121,141,46,48,2,96,141,-11,-13,-25,0.680851,0.820919,-14.0068,0.00603197,destino=proporcional; phi=0.859
+V4,Variação atípica do comparecimento,informativo,secao,MS,91375,PORTO MURTINHO,20,26,,,80,118,5,8,211,297,94,128,4,226,297,14,10,15,0.760943,0.700745,6.01974,0.00606251,destino=proporcional; phi=0.234
+V4,Variação atípica do comparecimento,informativo,secao,AP,6130,LARANJAL DO JARI,7,91,,,183,21,11,4,219,260,158,18,1,177,260,-25,-3,-42,0.680769,0.784568,-10.3799,0.00623986,destino=proporcional; phi=0.759
+V4,Variação atípica do comparecimento,informativo,secao,RS,88170,RIO PARDO,38,135,,,125,120,14,15,274,346,171,130,8,309,347,46,10,35,0.89049,0.811104,7.93863,0.00632385,destino=13; excesso=0.807; phi=0.655
+V4,Variação atípica do comparecimento,informativo,secao,CE,13730,CAUCAIA,37,628,,,34,17,6,0,57,61,32,17,0,49,61,-2,0,-8,0.803279,0.934017,-13.0738,0.00648252,destino=proporcional; phi=0.778
+V4,Variação atípica do comparecimento,informativo,secao,PR,76716,MALLET,37,25,,,35,130,13,9,187,230,26,132,4,162,230,-9,2,-25,0.704348,0.811552,-10.7204,0.00648252,destino=proporcional; phi=0.795
+V4,Variação atípica do comparecimento,informativo,secao,MG,47333,JUIZ DE FORA,349,134,,,145,84,19,19,267,354,201,94,16,311,354,56,10,44,0.878531,0.787203,9.13285,0.00672433,destino=13; excesso=0.674; phi=0.814
+V4,Variação atípica do comparecimento,informativo,secao,MT,90786,FELIZ NATAL,36,55,,,26,110,1,3,140,215,31,131,1,163,215,5,21,23,0.75814,0.671553,8.65867,0.0068329,destino=proporcional; phi=0.338
+V4,Variação atípica do comparecimento,informativo,secao,AL,27855,MACEIÓ,2,189,,,95,140,17,20,272,325,112,126,8,246,325,17,-14,-26,0.756923,0.855572,-9.86487,0.00692458,destino=proporcional; phi=1.19
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58971,SÃO GONÇALO,36,608,2228812,330920334415172875475922,149,146,22,13,330,438,195,158,17,370,438,46,12,40,0.844749,0.772922,7.18271,0.00708506,destino=13; excesso=0.659; phi=0.598
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58971,SÃO GONÇALO,87,203,,,141,95,8,16,260,417,182,112,10,304,417,41,17,44,0.729017,0.642985,8.60313,0.00714146,destino=13; excesso=0.359; phi=0.625
+V4,Variação atípica do comparecimento,informativo,secao,BA,33138,ALAGOINHAS,163,234,2169757,310315317013361498152270,175,61,16,31,283,408,247,73,18,338,408,72,12,55,0.828431,0.740081,8.83507,0.00725916,destino=13; excesso=0.63; phi=0.771
+V4,Variação atípica do comparecimento,informativo,secao,SP,61107,GUATAPARÁ,293,214,,,113,116,15,12,256,356,149,125,12,286,356,36,9,30,0.803371,0.742945,6.04258,0.00726412,destino=13; excesso=0.717; phi=0.317
+V4,Variação atípica do comparecimento,informativo,secao,CE,14931,PACAJUS,49,318,,,120,37,7,6,170,201,119,32,2,153,201,-1,-5,-17,0.761194,0.857405,-9.62111,0.00731727,destino=proporcional; phi=0.711
+V4,Variação atípica do comparecimento,informativo,secao,GO,92274,APARECIDA DE GOIÂNIA,119,166,,,136,123,58,12,329,507,217,161,11,389,507,81,38,60,0.767258,0.678865,8.83936,0.00731727,destino=13; excesso=0.858; phi=0.848
+V4,Variação atípica do comparecimento,informativo,secao,PA,4618,GURUPÁ,26,64,,,63,45,4,2,114,122,49,36,0,85,122,-14,-9,-29,0.696721,0.898775,-20.2054,0.00731727,destino=proporcional; phi=2.56
+V4,Variação atípica do comparecimento,informativo,secao,MG,53856,TRÊS CORAÇÕES,272,110,,,102,108,34,14,258,353,137,95,6,238,353,35,-13,-20,0.674221,0.75563,-8.14086,0.00749511,destino=proporcional; phi=0.593
+V4,Variação atípica do comparecimento,informativo,secao,MG,51373,SACRAMENTO,243,38,,,45,112,17,7,181,220,53,105,7,165,220,8,-7,-16,0.75,0.842026,-9.20261,0.00760179,destino=proporcional; phi=0.658
+V4,Variação atípica do comparecimento,informativo,secao,PA,4871,MARAPANIM,32,49,,,166,40,5,2,213,246,135,29,1,165,246,-31,-11,-48,0.670732,0.814355,-14.3623,0.00760179,destino=proporcional; phi=1.58
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,185,175,,,94,152,28,23,297,425,152,178,17,347,425,58,26,50,0.816471,0.738753,7.77177,0.00760179,destino=13; excesso=0.778; phi=0.624
+V4,Variação atípica do comparecimento,informativo,secao,PA,4839,MARABÁ,100,128,,,39,87,6,6,138,161,42,75,0,117,161,3,-12,-21,0.726708,0.857781,-13.1073,0.00772067,destino=proporcional; phi=1.07
+V4,Variação atípica do comparecimento,informativo,secao,RJ,60011,RIO DE JANEIRO,176,23,1670692,473371473427143777642874,102,134,12,15,263,418,152,159,8,319,418,50,25,56,0.763158,0.665072,9.80857,0.00774239,destino=13; excesso=0.456; phi=0.85
+V4,Variação atípica do comparecimento,informativo,secao,BA,33294,ANGUERA,157,849,,,182,90,8,3,283,318,188,78,5,271,318,6,-12,-12,0.852201,0.908953,-5.67512,0.00779135,destino=proporcional; phi=0.583
+V4,Variação atípica do comparecimento,informativo,secao,RR,3018,BOA VISTA,5,278,,,183,101,7,2,293,315,186,78,1,265,315,3,-23,-28,0.84127,0.913011,-7.17412,0.00786048,destino=22; excesso=0.501; phi=0.963
+V4,Variação atípica do comparecimento,informativo,secao,MG,45535,GOVERNADOR VALADARES,119,157,,,62,57,3,4,126,144,65,48,2,115,144,3,-9,-11,0.798611,0.885363,-8.6752,0.00790231,destino=proporcional; phi=0.504
+V4,Variação atípica do comparecimento,informativo,secao,MA,9679,ARAME,104,75,2395377,695022731354820601824284,210,5,3,3,221,244,227,8,1,236,244,17,3,15,0.967213,0.899184,6.80287,0.00798418,destino=proporcional; phi=0.589
+V4,Variação atípica do comparecimento,informativo,secao,SC,83933,TIMBÉ DO SUL,42,149,,,74,154,23,8,259,303,99,177,6,282,303,25,23,23,0.930693,0.865291,6.54017,0.00798418,destino=13; excesso=0.767; phi=0.526
+V4,Variação atípica do comparecimento,informativo,secao,CE,13897,FORTALEZA,94,364,,,198,104,19,16,337,413,249,114,13,376,413,51,10,39,0.910412,0.836832,7.35799,0.00809944,destino=13; excesso=0.681; phi=0.776
+V4,Variação atípica do comparecimento,informativo,secao,ES,57118,RIO BANANAL,51,10,,,71,126,10,13,220,296,86,147,12,245,296,15,21,25,0.827703,0.76866,5.9043,0.00809944,destino=proporcional; phi=0.275
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58068,CARDOSO MOREIRA,141,27,,,70,122,14,12,218,246,79,101,9,189,246,9,-21,-29,0.768293,0.871806,-10.3513,0.00809944,destino=proporcional; phi=1.12
+V4,Variação atípica do comparecimento,informativo,secao,MG,41505,SANTA HELENA DE MINAS,4,148,,,145,59,1,15,220,279,178,76,4,258,279,33,17,38,0.924731,0.815034,10.9697,0.00812045,destino=proporcional; phi=1.06
+V4,Variação atípica do comparecimento,informativo,secao,MG,41238,BELO HORIZONTE,31,266,,,143,177,40,18,378,484,183,215,25,423,484,40,38,45,0.873967,0.80805,6.5917,0.00817702,destino=13; excesso=0.482; phi=0.644
+V4,Variação atípica do comparecimento,informativo,secao,BA,33499,BAIANÓPOLIS,126,144,,,97,64,4,6,171,222,89,48,4,141,222,-8,-16,-30,0.635135,0.76426,-12.9125,0.00882683,destino=proporcional; phi=0.983
+V4,Variação atípica do comparecimento,informativo,secao,CE,13102,QUITERIANÓPOLIS,99,99,,,171,15,14,14,214,255,209,21,6,236,255,38,6,22,0.92549,0.844473,8.1017,0.00882712,destino=13; excesso=0.883; phi=0.61
+V4,Variação atípica do comparecimento,informativo,secao,SP,70750,SÃO BERNARDO DO CAMPO,409,238,,,79,110,28,19,236,274,99,117,5,221,273,20,7,-15,0.809524,0.882193,-7.26692,0.00890013,destino=proporcional; phi=0.665
+V4,Variação atípica do comparecimento,informativo,secao,RS,87270,LAGOA VERMELHA,28,64,,,46,176,17,5,244,293,72,194,4,270,294,26,18,26,0.918367,0.850843,6.75243,0.00897926,destino=13; excesso=0.77; phi=0.507
+V4,Variação atípica do comparecimento,informativo,secao,MG,51330,SABARÁ,241,66,,,112,119,20,9,260,382,156,150,2,308,382,44,31,48,0.806283,0.711818,9.44644,0.00902745,destino=13; excesso=0.445; phi=0.798
+V4,Variação atípica do comparecimento,informativo,secao,MA,9555,BOM JARDIM,78,283,,,178,0,1,2,181,215,198,1,4,203,215,20,1,22,0.944186,0.834984,10.9202,0.00908299,destino=proporcional; phi=0.894
+V4,Variação atípica do comparecimento,informativo,secao,RR,3018,BOA VISTA,5,793,,,79,215,15,8,317,344,83,196,7,286,344,4,-19,-31,0.831395,0.902824,-7.14284,0.00917703,destino=proporcional; phi=0.963
+V4,Variação atípica do comparecimento,informativo,secao,BA,33294,ANGUERA,157,837,,,220,69,9,10,308,395,265,72,10,347,395,45,3,39,0.878481,0.809834,6.86467,0.00936032,destino=13; excesso=0.413; phi=0.583
+V4,Variação atípica do comparecimento,informativo,secao,PA,4073,ALENQUER,21,90,1792540,357560988993021812727363,86,6,0,3,95,110,68,3,0,71,110,-18,-3,-24,0.645455,0.832698,-18.7243,0.00936032,destino=proporcional; phi=1.34
+V4,Variação atípica do comparecimento,informativo,secao,SP,61220,ALUMÍNIO,131,318,,,87,113,19,13,232,310,111,142,7,260,310,24,29,28,0.83871,0.768256,7.04537,0.0094943,destino=22; excesso=0.517; phi=0.418
+V4,Variação atípica do comparecimento,informativo,secao,MG,51896,SANTA RITA DO ITUETO,233,94,,,57,48,4,3,112,125,62,43,1,106,125,5,-5,-6,0.848,0.911349,-6.33487,0.00958439,destino=proporcional; phi=0.3
+V4,Variação atípica do comparecimento,informativo,secao,SP,62812,CAIEIRAS,192,418,,,117,133,21,14,285,358,139,117,7,263,358,22,-16,-22,0.734637,0.814866,-8.02292,0.00958439,destino=proporcional; phi=0.739
+V4,Variação atípica do comparecimento,informativo,secao,BA,35637,IBITITÁ,104,239,,,206,45,10,8,269,347,237,56,6,299,347,31,11,30,0.861671,0.789556,7.21153,0.00997425,destino=proporcional; phi=0.528
+V4,Variação atípica do comparecimento,informativo,secao,RJ,58122,QUEIMADOS,138,157,,,104,145,20,6,275,364,134,166,9,309,364,30,21,34,0.848901,0.757463,9.14382,0.00997425,destino=13; excesso=0.475; phi=0.805
+V5,Ganho acima do teto de votos disponíveis,informativo,secao,AC,1031,SANTA ROSA DO PURUS,3,95,,,102,105,9,4,220,339,174,47,7,228,337,72,-58,8,72.0,21.0,,,candidato=13; excesso=51
+V5,Ganho acima do teto de votos disponíveis,informativo,secao,AC,1554,MANOEL URBANO,3,160,,,112,55,0,3,170,238,48,104,21,173,236,-64,49,3,49.0,6.0,,,candidato=22; excesso=43
+V5,Ganho acima do teto de votos disponíveis,informativo,secao,AM,2097,BARCELOS,18,37,,,37,171,8,15,231,377,84,71,35,190,377,47,-100,-41,47.0,23.0,,,candidato=13; excesso=24
+V5,Ganho acima do teto de votos disponíveis,informativo,secao,MA,8133,LAGO DA PEDRA,74,66,,,124,86,10,12,232,299,170,62,1,233,299,46,-24,1,46.0,23.0,,,candidato=13; excesso=23
+V5,Ganho acima do teto de votos disponíveis,informativo,secao,PA,4723,ANAPU,80,254,,,127,29,0,2,158,238,158,4,0,162,238,31,-25,4,31.0,6.0,,,candidato=13; excesso=25
+V5,Ganho acima do teto de votos disponíveis,informativo,secao,PI,11878,SANTO ANTÔNIO DE LISBOA,28,99,,,214,56,5,12,287,312,146,122,5,273,312,-68,66,-14,66.0,17.0,,,candidato=22; excesso=49
+V5,Ganho acima do teto de votos disponíveis,informativo,secao,RN,18937,RAFAEL GODEIRO,37,77,2344326,226420483886204608276679,155,117,8,4,284,344,190,88,7,285,344,35,-29,1,35.0,13.0,,,candidato=13; excesso=22
+V6,Cadastro alterado entre os turnos,informativo,secao,AL,27855,MACEIÓ,1,533,,,235,162,28,8,433,459,256,214,3,473,505,21,52,40,505.0,459.0,,,motivo=aptos; d_aptos=46
+V6,Cadastro alterado entre os turnos,informativo,secao,AL,27855,MACEIÓ,2,415,,,87,111,21,11,230,276,113,125,7,245,304,26,14,15,304.0,276.0,,,motivo=aptos; d_aptos=28
+V6,Cadastro alterado entre os turnos,informativo,secao,AL,27855,MACEIÓ,33,322,,,92,79,3,9,183,203,93,69,1,163,180,1,-10,-20,180.0,203.0,,,motivo=aptos; d_aptos=-23
+V6,Cadastro alterado entre os turnos,informativo,secao,AP,6050,MACAPÁ,10,436,,,136,94,14,4,248,288,125,88,1,214,249,-11,-6,-34,249.0,288.0,,,motivo=aptos; d_aptos=-39
+V6,Cadastro alterado entre os turnos,informativo,secao,AP,6050,MACAPÁ,10,493,,,125,89,26,8,248,285,110,85,4,199,248,-15,-4,-49,248.0,285.0,,,motivo=aptos; d_aptos=-37
+V6,Cadastro alterado entre os turnos,informativo,secao,BA,34134,CAMAÇARI,170,262,1767510,145972964716780920286813,37,61,6,3,107,119,40,20,2,62,68,3,-41,-45,68.0,119.0,,,motivo=aptos; d_aptos=-51
+V6,Cadastro alterado entre os turnos,informativo,secao,BA,38075,PORTO SEGURO,121,228,,,125,164,19,6,314,389,128,134,7,269,331,3,-30,-45,331.0,389.0,,,motivo=aptos; d_aptos=-58
+V6,Cadastro alterado entre os turnos,informativo,secao,BA,38075,PORTO SEGURO,121,230,,,121,173,21,10,325,388,119,136,8,263,329,-2,-37,-62,329.0,388.0,,,motivo=aptos; d_aptos=-59
+V6,Cadastro alterado entre os turnos,informativo,secao,MA,9210,SÃO LUÍS,2,511,,,116,87,15,5,223,239,96,80,2,178,193,-20,-7,-45,193.0,239.0,,,motivo=aptos; d_aptos=-46
+V6,Cadastro alterado entre os turnos,informativo,secao,MA,9210,SÃO LUÍS,2,512,,,87,65,15,4,171,181,90,44,0,134,142,3,-21,-37,142.0,181.0,,,motivo=aptos; d_aptos=-39
+V6,Cadastro alterado entre os turnos,informativo,secao,MA,9210,SÃO LUÍS,2,513,,,101,57,9,1,168,181,84,38,1,123,141,-17,-19,-45,141.0,181.0,,,motivo=aptos; d_aptos=-40
+V6,Cadastro alterado entre os turnos,informativo,secao,MA,9377,TIMON,19,622,,,110,95,19,5,229,248,119,82,1,202,220,9,-13,-27,220.0,248.0,,,motivo=aptos; d_aptos=-28
+V6,Cadastro alterado entre os turnos,informativo,secao,PE,24910,OLINDA,117,16,,,147,51,11,1,210,220,86,42,1,129,136,-61,-9,-81,136.0,220.0,,,motivo=aptos; d_aptos=-84
+V6,Cadastro alterado entre os turnos,informativo,secao,PE,24910,OLINDA,117,417,,,148,40,13,0,201,222,92,34,1,127,139,-56,-6,-74,139.0,222.0,,,motivo=aptos; d_aptos=-83
+V6,Cadastro alterado entre os turnos,informativo,secao,PE,25313,RECIFE,5,21,,,235,65,21,2,323,353,231,59,3,293,312,-4,-6,-30,312.0,353.0,,,motivo=aptos; d_aptos=-41
+V6,Cadastro alterado entre os turnos,informativo,secao,PE,25313,RECIFE,5,22,,,237,70,20,1,328,352,234,60,3,297,310,-3,-10,-31,310.0,352.0,,,motivo=aptos; d_aptos=-42
+V6,Cadastro alterado entre os turnos,informativo,secao,PE,25313,RECIFE,5,509,,,237,64,26,4,331,353,222,68,4,294,311,-15,4,-37,311.0,353.0,,,motivo=aptos; d_aptos=-42
+V6,Cadastro alterado entre os turnos,informativo,secao,PE,25313,RECIFE,5,516,,,238,61,26,2,327,351,226,59,7,292,310,-12,-2,-35,310.0,351.0,,,motivo=aptos; d_aptos=-41
+V6,Cadastro alterado entre os turnos,informativo,secao,PE,25313,RECIFE,5,517,,,253,50,22,4,329,352,236,55,3,294,310,-17,5,-35,310.0,352.0,,,motivo=aptos; d_aptos=-42
+V6,Cadastro alterado entre os turnos,informativo,secao,RJ,58017,ANGRA DOS REIS,116,282,,,58,152,9,5,224,282,75,187,3,265,319,17,35,41,319.0,282.0,,,motivo=aptos; d_aptos=37
+V6,Cadastro alterado entre os turnos,informativo,secao,SC,80810,CHAPECÓ,94,393,,,123,141,24,0,288,310,107,111,0,218,246,-16,-30,-70,246.0,310.0,,,motivo=aptos; d_aptos=-64
+V6,Cadastro alterado entre os turnos,informativo,secao,SE,32115,PORTO DA FOLHA,18,182,,,41,42,9,3,95,104,52,50,2,104,127,11,8,9,127.0,104.0,,,motivo=aptos; d_aptos=23
+V6,Cadastro alterado entre os turnos,informativo,secao,SP,64777,GUARULHOS,176,503,,,125,108,16,0,249,341,149,112,4,265,306,24,4,16,306.0,341.0,,,motivo=aptos; d_aptos=-35
+V6,Cadastro alterado entre os turnos,informativo,secao,SP,71072,SÃO PAULO,2,11,,,104,86,22,11,223,305,148,102,12,262,338,44,16,39,338.0,305.0,,,motivo=aptos; d_aptos=33
+V6,Cadastro alterado entre os turnos,informativo,secao,SP,71072,SÃO PAULO,2,18,,,122,79,25,6,232,307,158,102,7,267,338,36,23,35,338.0,307.0,,,motivo=aptos; d_aptos=31
+V6,Cadastro alterado entre os turnos,informativo,secao,SP,71072,SÃO PAULO,2,66,,,146,69,18,7,240,324,190,90,3,283,359,44,21,43,359.0,324.0,,,motivo=aptos; d_aptos=35
+V6,Cadastro alterado entre os turnos,informativo,secao,TO,73440,PALMAS,29,670,,,73,102,24,2,201,230,79,99,7,185,206,6,-3,-16,206.0,230.0,,,motivo=aptos; d_aptos=-24
+V6,Cadastro alterado entre os turnos,informativo,secao,ZZ,30686,TRÍPOLI,1,443,1808076,723283724025687430931213,2,0,0,0,2,30,0,0,0,0,0,-2,0,-2,0.0,30.0,,,motivo=sem_bu_2t

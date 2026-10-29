@@ -1077,5 +1077,5 @@
   };
 
   Object.assign(A.paginas, { mapa: pgMapa, uf: pgUf, lista: pgLista, graficos: pgGraficos, glossario: pgGlossario, conferir: pgConferir, boletim: pgBoletim, salvas: pgSalvas, atualizacoes: pgAtualizacoes });
-  A.paginasExtra = { ocorrencias, dado, lerQR, juntarQR, normHash, hashesDoTexto };
+  A.paginasExtra = { ocorrencias, dado, lerQR, juntarQR, normHash, hashesDoTexto, paginar };
 })();
