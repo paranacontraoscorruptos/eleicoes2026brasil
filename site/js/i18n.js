@@ -1425,3 +1425,16 @@ Object.assign(window.I18N.EN.dl_desc, { "dados/variacao_turnos_sinalizacoes.csv"
 Object.assign(window.I18N.ES.dl_desc, { "dados/variacao_turnos_sinalizacoes.csv": "Variación entre vueltas: ítems 🔴 y 🟡 (Anexo A)", "dados/variacao_turnos_municipios.csv": "Variación entre vueltas: todos los municipios",
   "dados/variacao_turnos_ufs.csv": "Variación entre vueltas: todos los estados", "variacao_entre_turnos.py": "Variación entre vueltas: pruebas V1 a V6 y Anexo A (Python)" });
 window.I18N.PT.vr.ok = "Sem sinal"; window.I18N.EN.vr.ok = "No flag"; window.I18N.ES.vr.ok = "Sin señal";
+// Destaque da página inicial: urnas com 100% dos votos válidos para um só candidato (2º turno)
+Object.assign(window.I18N.PT, { un_kicker: "Presidente · 2º turno", un_title: "Urnas com 100% dos votos para um só candidato",
+  un_txt: "Contagem direta dos boletins de urna do TSE: urnas em que todos os votos válidos para Presidente foram para um único candidato.",
+  un_lula: "urnas com 100% dos votos válidos para Lula e nenhum para Flávio Bolsonaro", un_flavio: "urnas com 100% dos votos válidos para Flávio Bolsonaro e nenhum para Lula",
+  un_btn: "Ver o teste 3 (Unanimidade na Seção)", un_btn2: "Ver a lista do teste 3" });
+Object.assign(window.I18N.EN, { un_kicker: "President · round 2", un_title: "Voting machines with 100% of the votes for a single candidate",
+  un_txt: "Direct count from the TSE ballot box reports: machines where every valid presidential vote went to a single candidate.",
+  un_lula: "machines with 100% of the valid votes for Lula and none for Flávio Bolsonaro", un_flavio: "machines with 100% of the valid votes for Flávio Bolsonaro and none for Lula",
+  un_btn: "See test 3 (In-Section Unanimity)", un_btn2: "See the test 3 list" });
+Object.assign(window.I18N.ES, { un_kicker: "Presidente · 2.ª vuelta", un_title: "Urnas con el 100% de los votos para un solo candidato",
+  un_txt: "Conteo directo de los boletines de urna del TSE: urnas en las que todos los votos válidos para Presidente fueron a un único candidato.",
+  un_lula: "urnas con el 100% de los votos válidos para Lula y ninguno para Flávio Bolsonaro", un_flavio: "urnas con el 100% de los votos válidos para Flávio Bolsonaro y ninguno para Lula",
+  un_btn: "Ver la prueba 3 (Unanimidad en la Sección)", un_btn2: "Ver la lista de la prueba 3" });

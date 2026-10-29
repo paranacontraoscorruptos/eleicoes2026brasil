@@ -262,6 +262,7 @@
       </div>
     </section>
     ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
+    ${destaqueUnanimidade()}
     ${botCta(false)}
     ${telegram(false)}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
@@ -283,6 +284,17 @@
     <section class="card" aria-labelledby="h-lk"><h2 id="h-lk">${esc(L.lookup_cta_title)}</h2><p>${esc(L.lookup_cta_text)}</p>${formSecao(true)}</section>
     <section aria-labelledby="h-leg"><h2 id="h-leg">${esc(L.legend_title)}</h2>
       <ul class="legend">${L.legend.map(([c, n, d]) => `<li>${chip(c, n)} <span class="muted">${esc(d)}</span></li>`).join("")}</ul>
+    </section>`;
+  }
+
+  // Destaque: urnas com 100% dos votos válidos para um só candidato a Presidente no 2º turno (só a contagem, sem juízo)
+  function destaqueUnanimidade() {
+    const L = t(), u = (nr) => (state.R.turnos["2"].unanimidade.find((x) => x.uf === "BR" && x.cargo === 1 && x.nr === nr) || { secoes: 0 }).secoes;
+    const num = (k, n, txt) => `<div class="un-n vr-${k}"><span class="un-v" data-count="${n}">${nf(n)}</span><span>${esc(txt)}</span></div>`;
+    return `<section class="vr-dest un-dest" aria-labelledby="un-h">
+      <div class="vr-dest-txt"><p class="kicker">${esc(L.un_kicker)}</p><h2 id="un-h">${esc(L.un_title)}</h2><p>${esc(L.un_txt)}</p>
+        <div class="btn-row"><a class="btn btn-primary" href="#/testes/T03">${icone("flask")} ${esc(L.un_btn)}</a><a class="btn btn-ghost" href="#/lista?t=2&teste=T03">${icone("list")} ${esc(L.un_btn2)}</a></div></div>
+      <div class="vr-dest-nums">${num("l", u("13"), L.un_lula)}${num("f", u("22"), L.un_flavio)}</div>
     </section>`;
   }
 
