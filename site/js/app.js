@@ -9,6 +9,9 @@
   const TSE_PORTAL = "https://dadosabertos.tse.jus.br/";
   const TSE_RESULTADOS = "https://resultados.tse.jus.br/";
   const URL_BU_EX = "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_2t_PR_261020260742.zip";
+  const TELEGRAM = "https://t.me/+gmizrDlU5FZmZTkx";
+  // Onde baixar o Telegram: Android, iPhone e computador
+  const TG_LOJAS = ["https://play.google.com/store/apps/details?id=org.telegram.messenger", "https://apps.apple.com/app/telegram-messenger/id686449807", "https://desktop.telegram.org/"];
   const LANGS = ["PT", "EN", "ES"];
 
   const state = { lang: "PT", R: null, extra: null, muns: null, zonas: {} };
@@ -70,6 +73,31 @@
       </div></section>`;
   }
 
+  // Grupo do Telegram: chamada completa na página inicial, faixa curta no rodapé
+  function telegram(compacto) {
+    const L = t();
+    const ir = (cls) => `<a class="btn btn-tg ${cls}" href="${TELEGRAM}" target="_blank" rel="noopener">${icone("tg")} ${esc(L.tg_btn)}</a>`;
+    if (compacto) {
+      return `<div class="foot-tg">
+        <span class="tg-ico" aria-hidden="true">${icone("tg")}</span>
+        <p><b>${esc(L.tg_title)}</b><span>${esc(L.tg_no)} ${TG_LOJAS.map((h, i) => `<a href="${h}" target="_blank" rel="noopener">${esc(L.tg_lojas[i])}</a>`).join(" · ")}</span></p>
+        ${ir("")}
+      </div>`;
+    }
+    return `<section class="tg-cta" aria-labelledby="tg-h">
+      <div class="tg-ico" aria-hidden="true">${icone("tg")}</div>
+      <div class="tg-body">
+        <h2 id="tg-h">${esc(L.tg_title)}</h2>
+        <p>${esc(L.tg_text)}</p>
+        ${ir("btn-lg")}
+        <div class="tg-new">
+          <h3>${esc(L.tg_new_title)}</h3>
+          <ol>${L.tg_steps.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
+          <div class="tg-dl">${TG_LOJAS.map((h, i) => `<a class="btn btn-sm" href="${h}" target="_blank" rel="noopener">${icone("download")} ${esc(L.tg_baixar[i])}</a>`).join("")}</div>
+        </div>
+      </div></section>`;
+  }
+
   function icone(n) {
     const p = {
       chat: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><circle cx="8.5" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="9.5" r="1.1" fill="currentColor" stroke="none"/>',
@@ -96,6 +124,7 @@
       up: '<path d="M12 19V5m-6 6 6-6 6 6"/>',
       check: '<path d="m5 12 4.5 4.5L19 7"/>',
       alert: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4m0 3v.01"/>',
+      tg: '<path fill="currentColor" stroke="none" d="M2.9 10.9 19.6 4.4c.8-.3 1.5.2 1.2 1.4l-2.8 13.4c-.2 1-.8 1.2-1.6.7l-4.3-3.2-2.1 2c-.2.2-.4.4-.9.4l.3-4.4 8-7.2c.3-.3-.1-.5-.5-.2l-9.9 6.2-4.2-1.3c-.9-.3-.9-.9.1-1.3z"/>',
     }[n];
     return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
   }
@@ -192,6 +221,7 @@
       </div>
     </section>
     ${botCta(false)}
+    ${telegram(false)}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
       <div class="tiles tiles-3">${tiles}</div>
     </section>
@@ -584,6 +614,7 @@
     const L = t(), R = state.R, A = R ? R.autor : null;
     const ext = (h, txt) => `<a href="${h}" target="_blank" rel="noopener">${esc(txt)}</a>`;
     $("#footer").innerHTML = `<div class="flag-stripe" aria-hidden="true"></div>
+      ${telegram(true)}
       <div class="foot-in">
         <div class="foot-brand">
           <a class="brand" href="#/"><img class="brand-flag" src="site/img/bandeira.svg" alt="" width="38" height="27"><span class="brand-txt"><span class="fb-name">${esc(L.brand)}</span><span class="brand-sub">${esc(L.brand_sub)}</span></span></a>
@@ -663,7 +694,7 @@
   }
 
   // --- efeitos --------------------------------------------------------------------
-  const SEL_RV = ".card, .tile, .page-card, .test-card, figure, .table-wrap, .bot-cta, .bot-band, .steps > li, .legend > li, main section > h2, main section > .sec-sub, .h-row, main > section > p, .btn-row, .page-head > p, .page-head > ul";
+  const SEL_RV = ".card, .tile, .page-card, .test-card, figure, .table-wrap, .bot-cta, .bot-band, .tg-cta, .steps > li, .legend > li, main section > h2, main section > .sec-sub, .h-row, main > section > p, .btn-row, .page-head > p, .page-head > ul";
   let obs = null;
 
   function revelar(el) {
