@@ -35,26 +35,387 @@
 
   // --- compartilhar ---------------------------------------------------------------------------------------------
   function urlPagina() { return URL_SITE + (location.hash && location.hash !== "#/" ? location.hash : ""); }
+  const toque = () => window.matchMedia("(pointer: coarse)").matches;
+
+  // Ícones das redes: desenho simples em branco sobre a cor de cada uma
+  const txtIco = (s, tam) => `<text x="12" y="${tam > 14 ? 17.6 : 16.4}" text-anchor="middle" font-size="${tam}" font-weight="700" font-family="Arial, Helvetica, sans-serif" fill="#fff">${s}</text>`;
+  const envelope = (cor) => `<rect x="3.5" y="6" width="17" height="12" rx="2" fill="#fff"/><path d="m4 7 8 6.2L20 7" fill="none" stroke="${cor}" stroke-width="1.8" stroke-linejoin="round"/>`;
+  const REDE_ICO = {
+    whatsapp: '<path d="M12 3.6a8.4 8.4 0 0 0-7.2 12.7l-1.2 4.1 4.2-1.1A8.4 8.4 0 1 0 12 3.6z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.2 8.1c.2-.3.6-.3.8 0l.8 1.5c.1.2 0 .5-.2.7l-.5.5c.5 1.1 1.4 2 2.5 2.5l.5-.5c.2-.2.5-.3.7-.2l1.5.8c.3.2.3.6 0 .8-.6.7-1.5 1-2.4.6a7.9 7.9 0 0 1-4.4-4.4c-.3-.9 0-1.8.7-2.3z" fill="#fff"/>',
+    telegram: '<path d="M20.8 4.2 3.3 11.1c-.8.3-.7 1.3.1 1.5l4.4 1.3 1.6 5c.2.7 1.1.8 1.5.3l2.4-2.5 4.3 3.1c.6.4 1.4.1 1.6-.6l2.7-12.6c.2-.9-.6-1.6-1.1-1.4z" fill="#fff"/><path d="m8 13.8 8.7-5.6-6.2 6.6-.4 3" fill="none" stroke="#229ed9" stroke-width="1.2" stroke-linejoin="round"/>',
+    facebook: '<path d="M13.6 21v-7.3h2.5l.4-2.9h-2.9V9c0-.8.3-1.4 1.4-1.4h1.6V5c-.3 0-1.2-.1-2.3-.1-2.2 0-3.7 1.4-3.7 3.8v2.1H8.2v2.9h2.4V21z" fill="#fff"/>',
+    x: '<path d="M4.2 4h4.5l3.6 5 4.2-5h2.4l-5.5 6.5L20 20h-4.5l-3.9-5.4L7 20H4.6l5.9-6.9z" fill="#fff"/>',
+    threads: txtIco("@", 16),
+    bluesky: '<path d="M12 10.9c-1.3-2.6-4.8-6-6.8-6-1.6 0-1.4 2.6-1 4.4.4 1.9 1.9 2.9 4 2.8-2.3.5-3.3 1.8-2.4 3.3.9 1.4 2.9 1.5 6.2-3 3.3 4.5 5.3 4.4 6.2 3 .9-1.5-.1-2.8-2.4-3.3 2.1.1 3.6-.9 4-2.8.4-1.8.6-4.4-1-4.4-2 0-5.5 3.4-6.8 6z" fill="#fff"/>',
+    linkedin: txtIco("in", 13),
+    reddit: '<circle cx="12" cy="13.6" r="6.2" fill="#fff"/><circle cx="9.6" cy="13" r="1.1" fill="#ff4500"/><circle cx="14.4" cy="13" r="1.1" fill="#ff4500"/><path d="M9.5 15.8c1.5.9 3.5.9 5 0" stroke="#ff4500" stroke-width="1.1" fill="none" stroke-linecap="round"/><circle cx="16.6" cy="5.6" r="1.4" fill="#fff"/><path d="m12 7.4 1-3 3.5.9" stroke="#fff" stroke-width="1.1" fill="none" stroke-linecap="round"/>',
+    pinterest: txtIco("P", 16),
+    tumblr: txtIco("t", 16),
+    messenger: '<path d="M12 3.5c-4.8 0-8.5 3.5-8.5 8 0 2.5 1.2 4.8 3.2 6.3v3.1l2.9-1.6c.8.2 1.6.3 2.4.3 4.8 0 8.5-3.5 8.5-8.1s-3.7-8-8.5-8z" fill="#fff"/><path d="m7 14.2 3.6-3.8 2 2 3.4-2-3.6 3.8-2-2z" fill="#0084ff"/>',
+    sms: '<path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4 3.5V16A2.5 2.5 0 0 1 4 13.5z" fill="#fff"/><circle cx="8.5" cy="10" r="1.1" fill="#34c759"/><circle cx="12" cy="10" r="1.1" fill="#34c759"/><circle cx="15.5" cy="10" r="1.1" fill="#34c759"/>',
+    gmail: envelope("#ea4335"), outlook: envelope("#0078d4"), email: envelope("#4b6356"),
+    instagram: '<rect x="4" y="4" width="16" height="16" rx="4.6" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="12" cy="12" r="3.8" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="16.7" cy="7.3" r="1.15" fill="#fff"/>',
+    tiktok: '<path d="M14.4 3.5h2.7c.3 2 1.6 3.3 3.4 3.5v2.7a6.6 6.6 0 0 1-3.4-1.1v6.2a5.3 5.3 0 1 1-5.3-5.3l.8.1v2.8a2.6 2.6 0 1 0 1.8 2.5z" fill="#fff"/>',
+    youtube: '<rect x="2.6" y="6" width="18.8" height="12.4" rx="3.6" fill="#fff"/><path d="m10.2 9.3 4.9 2.9-4.9 2.9z" fill="#ff0000"/>',
+    kwai: txtIco("K", 16),
+    status: '<circle cx="12" cy="12" r="7.6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4.4 2.4"/><circle cx="12" cy="12" r="3.3" fill="#fff"/>',
+    fbstory: '<rect x="7" y="3.5" width="10" height="17" rx="2.6" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M12 9v6M9 12h6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+  };
+  const icoRede = (k) => `<span class="sh-ico r-${k}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">${REDE_ICO[k]}</svg></span>`;
+  // Redes que não recebem link de um site: o site cria a imagem ou o vídeo e copia o texto
+  const APPS_POST = { instagram: ["https://www.instagram.com/", "post"], tiktok: ["https://www.tiktok.com/upload", "video"], youtube: ["https://www.youtube.com/upload", "video"],
+    kwai: ["https://www.kwai.com/", "video"], status: ["https://web.whatsapp.com/", "story"], fbstory: ["https://www.facebook.com/stories/create", "story"] };
+
+  function textoPost(url) { const L = t(); return `${L.sh_text} ${url}\n\n${L.sh_tags}`; }
 
   async function compartilhar(site) {
     const L = t();
     const url = site ? URL_SITE : urlPagina();
     const titulo = site ? L.hero_title : document.title;
     const texto = L.sh_text;
-    if (navigator.share && window.matchMedia("(pointer: coarse)").matches) {
+    // celular: a lista de apps do próprio aparelho já traz todas as redes instaladas
+    if (navigator.share && toque()) {
       try { await navigator.share({ title: titulo, text: texto, url }); return; } catch (e) { if (e.name === "AbortError") return; }
     }
-    const u = encodeURIComponent(url), tx = encodeURIComponent(texto + " " + url), tt = encodeURIComponent(texto);
-    const redes = [["WhatsApp", `https://wa.me/?text=${tx}`, "chat"], ["Telegram", `https://t.me/share/url?url=${u}&text=${tt}`, "tg"],
-      ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${u}`, "share"], ["X", `https://twitter.com/intent/tweet?url=${u}&text=${tt}`, "share"],
-      [L.sh_email, `mailto:?subject=${encodeURIComponent(titulo)}&body=${tx}`, "file"]];
-    const d = janela(L.sh_title, `<p class="small muted">${esc(titulo)}</p>
-      <div class="sh-grid">${redes.map(([n, h, ic]) => `<a class="btn" href="${h}" target="_blank" rel="noopener">${icone(ic)} ${esc(n)}</a>`).join("")}</div>
-      <div class="sh-link"><input type="text" readonly value="${esc(url)}" aria-label="${esc(L.sh_link)}"><button class="btn btn-primary" type="button" data-cp>${icone("link")} ${esc(L.sh_copy)}</button></div>`);
+    const u = encodeURIComponent(url), tx = encodeURIComponent(texto + " " + url), tt = encodeURIComponent(texto), ti = encodeURIComponent(titulo);
+    const links = [["whatsapp", "WhatsApp", `https://wa.me/?text=${tx}`], ["telegram", "Telegram", `https://t.me/share/url?url=${u}&text=${tt}`],
+      ["facebook", "Facebook", `https://www.facebook.com/sharer/sharer.php?u=${u}`], ["x", "X (Twitter)", `https://twitter.com/intent/tweet?url=${u}&text=${tt}`],
+      ["threads", "Threads", `https://www.threads.net/intent/post?text=${tx}`], ["bluesky", "Bluesky", `https://bsky.app/intent/compose?text=${tx}`],
+      ["linkedin", "LinkedIn", `https://www.linkedin.com/sharing/share-offsite/?url=${u}`], ["reddit", "Reddit", `https://www.reddit.com/submit?url=${u}&title=${ti}`],
+      ["pinterest", "Pinterest", `https://pinterest.com/pin/create/button/?url=${u}&media=${encodeURIComponent(URL_SITE + "site/img/og.jpg")}&description=${tt}`],
+      ["tumblr", "Tumblr", `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${u}&title=${ti}&caption=${tt}`]]
+      .concat(toque() ? [["messenger", "Messenger", `fb-messenger://share/?link=${u}`], ["sms", "SMS", `sms:?&body=${tx}`]] : [])
+      .concat([["gmail", "Gmail", `https://mail.google.com/mail/?view=cm&fs=1&su=${ti}&body=${tx}`], ["outlook", "Outlook", `https://outlook.live.com/mail/0/deeplink/compose?subject=${ti}&body=${tx}`],
+        ["email", L.sh_email, `mailto:?subject=${ti}&body=${tx}`]]);
+    const sistema = navigator.share && !toque();
+    const d = janela(L.sh_title, `<div class="sh-main">
+      <p class="small muted sh-pg">${esc(titulo)}</p>
+      <h3 class="sh-h">${esc(L.sh_sec_link)}</h3>
+      <div class="sh-grid">${links.map(([k, n, h]) => `<a class="btn sh-rede" href="${esc(h)}" target="_blank" rel="noopener">${icoRede(k)}<span>${esc(n)}</span></a>`).join("")}</div>
+      <h3 class="sh-h">${esc(L.sh_sec_post)}</h3>
+      <p class="small muted">${esc(L.sh_post_note)}</p>
+      <div class="sh-grid">${Object.keys(APPS_POST).map((k) => `<button class="btn sh-rede" type="button" data-post="${k}">${icoRede(k)}<span>${esc(L.sh_apps[k].nome)}</span></button>`).join("")}</div>
+      <h3 class="sh-h">${esc(L.sh_sec_more)}</h3>
+      <div class="sh-link"><input type="text" readonly value="${esc(url)}" aria-label="${esc(L.sh_link)}"><button class="btn btn-primary" type="button" data-cp>${icone("link")} ${esc(L.sh_copy)}</button></div>
+      <div class="btn-row sh-mais">${sistema ? `<button class="btn" type="button" data-sys>${icone("share")} ${esc(L.sh_system)}</button>` : ""}<button class="btn" type="button" data-qr>${icone("qr")} ${esc(L.sh_qr_title)}</button></div>
+      <div class="sh-qrbox" hidden></div></div><div class="sh-post" hidden></div>`, "dlg-share");
+    const principal = d.querySelector(".sh-main"), post = d.querySelector(".sh-post");
     d.querySelector("[data-cp]").addEventListener("click", async (e) => {
+      const bt = e.currentTarget;
       const ok = await copiarTexto(url);
-      e.currentTarget.lastChild.textContent = " " + (ok ? L.copied : L.sh_copy);
+      bt.lastChild.textContent = " " + (ok ? L.copied : L.sh_copy);
     });
+    const sb = d.querySelector("[data-sys]");
+    if (sb) sb.addEventListener("click", async () => { try { await navigator.share({ title: titulo, text: texto, url }); } catch (e) { /* cancelado */ } });
+    d.querySelector("[data-qr]").addEventListener("click", async (e) => {
+      const bt = e.currentTarget;
+      const box = d.querySelector(".sh-qrbox");
+      box.hidden = !box.hidden; e.currentTarget.setAttribute("aria-expanded", String(!box.hidden));
+      if (!box.hidden && !box.innerHTML) box.innerHTML = await blocoQr(url);
+    });
+    d.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-post]");
+      if (b) { principal.hidden = true; post.hidden = false; painelPost(post, b.dataset.post, url, site); post.scrollIntoView({ block: "start" }); return; }
+      if (e.target.closest("[data-voltar]")) { limparMidia(post); post.hidden = true; post.innerHTML = ""; principal.hidden = false; }
+    });
+    d.addEventListener("close", () => limparMidia(post));
+  }
+
+  // Passo a passo para postar numa rede que não recebe link: formato, arquivo, texto e abrir a rede
+  function painelPost(box, k, url, site) {
+    const L = t(), ap = L.sh_apps[k], [urlApp, fmt] = APPS_POST[k];
+    box.innerHTML = `<button class="btn btn-sm btn-ghost sh-voltar" type="button" data-voltar>‹ ${esc(L.sh_back)}</button>
+      <h3 class="sh-post-t">${icoRede(k)}<span>${esc(ap.titulo)}</span></h3>
+      <p class="small sh-dica">${esc(ap.dica)}</p>
+      <h4 class="sh-passo">${esc(L.md_step1)}</h4><div class="md"></div>
+      <h4 class="sh-passo">${esc(L.md_step2)}</h4>
+      <textarea class="sh-texto" rows="3" readonly aria-label="${esc(L.md_copy_text)}">${esc(textoPost(url))}</textarea>
+      <div class="btn-row"><button class="btn" type="button" data-cptx>${icone("copy")} ${esc(L.md_copy_text)}</button></div>
+      <h4 class="sh-passo">${esc(L.md_step3)}</h4>
+      <div class="btn-row"><a class="btn btn-primary" href="${urlApp}" target="_blank" rel="noopener">${icoRede(k)} ${esc(ap.abrir)}</a></div>
+      ${toque() ? "" : `<div class="sh-qrcel"></div>`}`;
+    painelMidia(box.querySelector(".md"), cartaoAtual(site), fmt, url);
+    box.querySelector("[data-cptx]").addEventListener("click", async (e) => {
+      const bt = e.currentTarget;
+      const ok = await copiarTexto(textoPost(url));
+      bt.lastChild.textContent = " " + (ok ? L.copied : L.md_copy_text);
+    });
+    const qc = box.querySelector(".sh-qrcel");
+    if (qc) blocoQr(url).then((h) => { qc.innerHTML = h; });
+  }
+
+  // --- código QR (abrir a página no celular) ----------------------------------------------------------------------
+  function carregarScript(src, global) {
+    if (window[global]) return Promise.resolve(window[global]);
+    return new Promise((ok, falha) => {
+      const s = document.createElement("script"); s.src = src; s.async = true;
+      s.onload = () => (window[global] ? ok(window[global]) : falha(new Error(src)));
+      s.onerror = () => falha(new Error(src));
+      document.head.appendChild(s);
+    });
+  }
+  async function svgQr(texto) {
+    const qrcode = await carregarScript("site/js/vendor/qrcode.min.js", "qrcode");
+    const q = qrcode(0, "M"); q.addData(texto); q.make();
+    const n = q.getModuleCount(), m = 2;
+    let p = "";
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) p += `M${c + m} ${r + m}h1v1h-1z`;
+    return `<svg class="qr" viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" shape-rendering="crispEdges" role="img" aria-label="QR Code"><rect width="100%" height="100%" fill="#fff"/><path d="${p}" fill="#000"/></svg>`;
+  }
+  async function blocoQr(url) {
+    const L = t();
+    try { return `<div class="sh-qr">${await svgQr(url)}<div><b>${esc(L.sh_qr_title)}</b><p class="small muted">${esc(L.sh_qr_note)}</p></div></div>`; }
+    catch (e) { return ""; }
+  }
+
+  // --- imagem e vídeo para redes sociais ------------------------------------------------------------------------------
+  const F_DISP = '"Space Grotesk", system-ui, sans-serif', F_SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif", F_MONO = "ui-monospace, Menlo, Consolas, monospace";
+  const FORMATOS = { post: [1080, 1350], story: [1080, 1920], video: [1080, 1920] };
+  const DUR_VIDEO = 8;
+
+  function quebrar(ctx, txt, larg) {
+    const ps = String(txt).split(" "), linhas = [];
+    let at = "";
+    ps.forEach((p) => { const x = at ? at + " " + p : p; if (ctx.measureText(x).width > larg && at) { linhas.push(at); at = p; } else at = x; });
+    if (at) linhas.push(at);
+    return linhas;
+  }
+  async function fontes() {
+    try { await Promise.all([document.fonts.load(`700 60px ${F_DISP}`), document.fonts.load(`600 30px ${F_DISP}`)]); } catch (e) { /* usa a fonte do sistema */ }
+  }
+
+  // Cartão da página atual; nas páginas sem números próprios, os números gerais do 2º turno
+  function cartaoAtual(site) {
+    if (!site && A.state.cartao) return A.state.cartao;
+    const L = t(), R = A.state.R;
+    const tit = document.title.split(" · ")[0];
+    const c = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: !site && tit && tit !== L.brand ? tit : L.hero_title, linhas: [] };
+    if (R) {
+      const T2 = R.turnos["2"], P2 = T2.presidente;
+      c.linhas = [[L.st_secoes, A.nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${A.nf(T2.secoes_sinalizadas)} (${A.pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
+        [L.st_aptos, A.nf(P2.aptos)], [L.st_comp, `${A.nf(P2.comparecimento)} (${A.pct(P2.comparecimento / P2.aptos)})`]];
+    }
+    return c;
+  }
+
+  // Fundo fixo do cartão (desenhado uma vez; no vídeo é reaproveitado em cada quadro)
+  function fundoCartao(W, H) {
+    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d");
+    const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#07130c"); g.addColorStop(1, "#0c1a12");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const rg = ctx.createRadialGradient(W * 0.9, 0, 10, W * 0.9, 0, 700); rg.addColorStop(0, "rgba(255,212,0,.16)"); rg.addColorStop(1, "rgba(255,212,0,0)");
+    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+    const rg2 = ctx.createRadialGradient(0, H * 0.2, 10, 0, H * 0.2, 760); rg2.addColorStop(0, "rgba(0,156,59,.22)"); rg2.addColorStop(1, "rgba(0,156,59,0)");
+    ctx.fillStyle = rg2; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "rgba(255,255,255,.035)"; ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 48) { ctx.beginPath(); ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 48) { ctx.beginPath(); ctx.moveTo(0, y + .5); ctx.lineTo(W, y + .5); ctx.stroke(); }
+    const fx = ctx.createLinearGradient(0, 0, W, 0); fx.addColorStop(0, "#009c3b"); fx.addColorStop(.5, "#ffdf00"); fx.addColorStop(1, "#002776");
+    ctx.fillStyle = fx; ctx.fillRect(0, 0, W, 14); ctx.fillRect(0, H - 14, W, 14);
+    return cv;
+  }
+
+  // Números de um texto contando de 0 até o valor (e = 0 a 1), no formato do idioma
+  function contarTexto(s, e) {
+    if (e >= 1) return String(s);
+    const L = t(), en = A.state.lang === "EN", dsep = en ? "." : ",", gsep = en ? "," : ".";
+    const re = en ? /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g : /\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/g;
+    return String(s).replace(re, (tok) => {
+      const [int, frac] = tok.split(dsep), d = frac ? frac.length : 0;
+      const v = parseFloat(int.split(gsep).join("") + (d ? "." + frac : ""));
+      return new Intl.NumberFormat(L.locale, { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: tok.includes(gsep) }).format(v * e);
+    });
+  }
+
+  // Desenha o cartão no instante tm (segundos) da animação do vídeo; tm = Infinity desenha a imagem final
+  function quadroCartao(ctx, c, W, H, fundo, tm) {
+    const L = t(), P = 80, alto = H > 1500;
+    // Story e vídeo: o topo e a base ficam livres porque a interface dos apps cobre essas faixas
+    const topo = alto ? 250 : 70, base = alto ? 270 : 0;
+    const fase = (ini, dur) => { const x = Math.max(0, Math.min(1, (tm - ini) / dur)); return 1 - Math.pow(1 - x, 3); };
+    ctx.globalAlpha = 1; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.drawImage(fundo, 0, 0);
+    // marca
+    let a = fase(0, .5);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = "#009c3b"; ctx.beginPath(); ctx.roundRect(P, topo, 64, 64, 16); ctx.fill();
+    ctx.strokeStyle = "#ffdf00"; ctx.lineWidth = 6; ctx.lineCap = "round";
+    [[16, 48, 28], [26.6, 48, 16], [37.4, 48, 32], [48, 48, 38]].forEach(([x, y1, y2]) => { ctx.beginPath(); ctx.moveTo(P + x, topo + y1); ctx.lineTo(P + x, topo + y2); ctx.stroke(); });
+    ctx.fillStyle = "#eef6f0"; ctx.font = `700 38px ${F_DISP}`; ctx.fillText(L.brand, P + 86, topo + 36);
+    ctx.fillStyle = "#ffd84d"; ctx.font = `600 20px ${F_SANS}`; ctx.fillText(L.brand_sub.toUpperCase(), P + 88, topo + 64);
+    // título
+    a = fase(.3, .6);
+    ctx.globalAlpha = a;
+    let y = topo + (alto ? 230 : 180) + (1 - a) * 40;
+    ctx.fillStyle = "#ffd84d"; ctx.font = `700 26px ${F_MONO}`;
+    quebrar(ctx, String(c.kicker || "").toUpperCase(), W - 2 * P).slice(0, 2).forEach((l) => { ctx.fillText(l, P, y); y += 36; });
+    y += 30;
+    const tt = alto ? 72 : 64;
+    ctx.fillStyle = "#ffffff"; ctx.font = `700 ${tt}px ${F_DISP}`;
+    let tl = quebrar(ctx, c.titulo, W - 2 * P);
+    if (tl.length > 3) { ctx.font = `700 ${tt - 12}px ${F_DISP}`; tl = quebrar(ctx, c.titulo, W - 2 * P).slice(0, 4); }
+    tl.forEach((l) => { ctx.fillText(l, P, y); y += tt + 8; });
+    ctx.globalAlpha = 1;
+    const bar = ctx.createLinearGradient(P, 0, P + 180, 0); bar.addColorStop(0, "#1fc35f"); bar.addColorStop(1, "#ffd400");
+    ctx.fillStyle = bar; ctx.fillRect(P, y - 22, 180 * fase(.7, .6), 6);
+    y += alto ? 70 : 40;
+    // linhas: entram uma a uma e os números contam
+    const linhas = (c.linhas || []).slice(0, 14);
+    const fim = H - base - 230, alt = Math.min(alto ? 120 : 64, Math.max(44, (fim - y) / Math.max(1, linhas.length)));
+    const fr = alto && alt >= 90 ? 1.18 : 1; // no formato alto, com espaço sobrando, letras maiores
+    linhas.forEach(([rot, val], i) => {
+      const ini = 1 + i * .22, ap = fase(ini, .45), conta = fase(ini, 1.3);
+      const sub = /^\s\s/.test(rot), r = String(rot).trim(), vv = String(val);
+      ctx.globalAlpha = ap;
+      const dx = (1 - ap) * 30;
+      // o valor nunca é cortado: a letra diminui até caber; o rótulo usa o espaço que sobra
+      let fv = Math.round((sub ? 30 : 34) * fr);
+      ctx.font = `700 ${fv}px ${F_DISP}`;
+      while (ctx.measureText(vv).width > W - 2 * P - 300 && fv > 22) { fv -= 2; ctx.font = `700 ${fv}px ${F_DISP}`; }
+      const lv = ctx.measureText(vv).width;
+      ctx.font = `${sub ? 400 : 600} ${Math.round((sub ? 28 : 31) * fr)}px ${F_SANS}`; ctx.fillStyle = sub ? "#b8ccbf" : "#e3efe6";
+      const xr = (sub ? P + 28 : P) + dx, maxr = W - 2 * P - lv - 40 - (sub ? 28 : 0);
+      let rr = r; while (ctx.measureText(rr).width > maxr && rr.length > 4) rr = rr.slice(0, -2);
+      if (rr !== r) rr = rr.trim() + "…";
+      ctx.fillText(rr, xr, y);
+      ctx.font = `700 ${fv}px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ctx.textAlign = "right";
+      ctx.fillText(contarTexto(vv, conta), W - P, y); ctx.textAlign = "left";
+      ctx.strokeStyle = "rgba(255,255,255,.09)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P, y + alt * 0.42); ctx.lineTo(P + (W - 2 * P) * ap, y + alt * 0.42); ctx.stroke();
+      y += alt;
+    });
+    // rodapé
+    a = fase(.6, .6);
+    ctx.globalAlpha = a;
+    const yb = H - base;
+    ctx.fillStyle = "rgba(255,212,0,.12)"; ctx.beginPath(); ctx.roundRect(P, yb - 196, W - 2 * P, 54, 27); ctx.fill();
+    ctx.fillStyle = "#ffd84d"; ctx.font = `600 24px ${F_SANS}`; ctx.textAlign = "center"; ctx.fillText(L.badge, W / 2, yb - 161);
+    ctx.fillStyle = "#b8ccbf"; ctx.font = `500 23px ${F_SANS}`;
+    ctx.fillText(L.cd_src, W / 2, yb - 104);
+    // no vídeo, o endereço do site ganha destaque no fim
+    const dest = fase(4.6, .8);
+    if (dest > 0 && tm !== Infinity) { ctx.fillStyle = `rgba(31,195,95,${.18 * dest})`; ctx.beginPath(); ctx.roundRect(P + 40, yb - 98, W - 2 * P - 80, 52, 26); ctx.fill(); }
+    ctx.fillStyle = "#eef6f0"; ctx.font = `600 25px ${F_MONO}`;
+    ctx.fillText(URL_SITE.replace("https://", ""), W / 2, yb - 64);
+    ctx.textAlign = "left"; ctx.globalAlpha = 1;
+  }
+
+  async function imagemCartao(c, fmt) {
+    const [W, H] = FORMATOS[fmt];
+    await fontes();
+    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    quadroCartao(cv.getContext("2d"), c, W, H, fundoCartao(W, H), Infinity);
+    return new Promise((ok) => cv.toBlob(ok, "image/png"));
+  }
+
+  // Vídeo vertical de 8 s gravado do próprio canvas (MP4 quando o navegador grava; senão WebM)
+  function tipoVideo() {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return null;
+    return ["video/mp4;codecs=avc1.42E01F", "video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"].find((x) => MediaRecorder.isTypeSupported(x)) || null;
+  }
+  async function videoCartao(c, cv, aoAvancar) {
+    const [W, H] = FORMATOS.video, tipo = tipoVideo();
+    await fontes();
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d"), fundo = fundoCartao(W, H);
+    quadroCartao(ctx, c, W, H, fundo, 0);
+    const fluxo = cv.captureStream(30);
+    const rec = new MediaRecorder(fluxo, { mimeType: tipo, videoBitsPerSecond: 8000000 });
+    const partes = [];
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) partes.push(e.data); };
+    const parou = new Promise((ok) => { rec.onstop = ok; });
+    rec.start(250);
+    const t0 = performance.now();
+    await new Promise((ok) => {
+      const passo = () => {
+        const tm = (performance.now() - t0) / 1000;
+        quadroCartao(ctx, c, W, H, fundo, tm);
+        aoAvancar(Math.min(1, tm / DUR_VIDEO));
+        if (tm < DUR_VIDEO) requestAnimationFrame(passo); else ok();
+      };
+      requestAnimationFrame(passo);
+    });
+    rec.stop(); fluxo.getTracks().forEach((x) => x.stop());
+    await parou;
+    const mime = tipo.split(";")[0];
+    return { blob: new Blob(partes, { type: mime }), ext: mime === "video/mp4" ? "mp4" : "webm" };
+  }
+
+  // Painel de mídia: formato (post, story ou vídeo), prévia, baixar e enviar para um app
+  function limparMidia(box) { (box._urls || []).forEach((u) => URL.revokeObjectURL(u)); box._urls = []; }
+  function painelMidia(box, c, fmtIni, url) {
+    const L = t(), feitos = {};
+    const slug = location.hash.replace(/^#\/?/, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "inicio";
+    const raiz = box.closest(".sh-post") || box.closest(".dlg-body") || box;
+    raiz._urls = raiz._urls || [];
+    box.innerHTML = `<div class="md-fmt" role="group" aria-label="${esc(L.md_fmt)}">${["post", "story", "video"].map((f) => `<button type="button" class="chipq" data-fmt="${f}" aria-pressed="false">${esc(L["md_fmt_" + f])}</button>`).join("")}</div>
+      <div class="md-prev"></div><p class="small muted md-nota"></p><div class="btn-row md-acoes"></div>`;
+    const prev = box.querySelector(".md-prev"), nota = box.querySelector(".md-nota"), acoes = box.querySelector(".md-acoes");
+    let atual = null;
+    const botoes = (blob, nome, tipo, rotDl) => {
+      const u = URL.createObjectURL(blob); raiz._urls.push(u);
+      const arq = new File([blob], nome, { type: tipo });
+      const pode = navigator.canShare && navigator.canShare({ files: [arq] });
+      acoes.innerHTML = `<a class="btn btn-primary" href="${u}" download="${esc(nome)}">${icone("download")} ${esc(rotDl)}</a>${pode ? `<button class="btn" type="button" data-env>${icone("share")} ${esc(L.md_send)}</button>` : ""}`;
+      const b = acoes.querySelector("[data-env]");
+      if (b) b.addEventListener("click", async () => { try { await navigator.share({ files: [arq], title: c.titulo, text: textoPost(url || urlPagina()) }); } catch (e) { /* cancelado */ } });
+      return u;
+    };
+    const mostrar = async (fmt) => {
+      atual = fmt;
+      box.querySelectorAll("[data-fmt]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.fmt === fmt)));
+      prev.className = "md-prev " + (fmt === "post" ? "" : "alto");
+      nota.textContent = L["md_note_" + fmt];
+      acoes.innerHTML = "";
+      if (fmt !== "video") {
+        prev.innerHTML = `<p class="muted">${esc(L.lk_loading)}</p>`;
+        if (!feitos[fmt]) feitos[fmt] = await imagemCartao(c, fmt);
+        if (atual !== fmt) return;
+        const u = botoes(feitos[fmt], `auditoria-bu-2026-${slug}-${fmt}.png`, "image/png", L.md_dl_img);
+        prev.innerHTML = `<img src="${u}" alt="${esc(c.titulo)}" width="${FORMATOS[fmt][0] / 2}" height="${FORMATOS[fmt][1] / 2}">`;
+        return;
+      }
+      const tipo = tipoVideo();
+      if (!tipo) { prev.innerHTML = ""; nota.textContent = L.md_novideo; return; }
+      const fimVideo = (v) => {
+        const u = botoes(v.blob, `auditoria-bu-2026-${slug}.${v.ext}`, v.blob.type, L.md_dl_video);
+        prev.innerHTML = `<video src="${u}" controls autoplay muted loop playsinline></video>`;
+        nota.textContent = L.md_note_video + (v.ext === "webm" ? " " + L.md_webm : "");
+      };
+      if (feitos.video) { fimVideo(feitos.video); return; }
+      prev.innerHTML = `<div class="md-vid-ini"><button class="btn btn-primary" type="button" data-gravar>${icone("play")} ${esc(L.md_make_video)}</button></div>`;
+      prev.querySelector("[data-gravar]").addEventListener("click", async () => {
+        const cv = document.createElement("canvas");
+        prev.innerHTML = `<div class="md-gravando"></div><div class="md-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(L.md_making)}"><span></span></div><p class="small">${esc(L.md_making)}</p>`;
+        prev.querySelector(".md-gravando").appendChild(cv);
+        box.querySelectorAll("[data-fmt]").forEach((b) => { b.disabled = true; });
+        const barra = prev.querySelector(".md-prog span"), pb = prev.querySelector(".md-prog");
+        try {
+          feitos.video = await videoCartao(c, cv, (k) => { barra.style.width = (k * 100).toFixed(1) + "%"; pb.setAttribute("aria-valuenow", Math.round(k * 100)); });
+        } catch (e) { prev.innerHTML = ""; nota.textContent = L.md_novideo; feitos.video = null; }
+        box.querySelectorAll("[data-fmt]").forEach((b) => { b.disabled = false; });
+        if (feitos.video && atual === "video") fimVideo(feitos.video);
+      });
+    };
+    box.querySelector(".md-fmt").addEventListener("click", (e) => { const b = e.target.closest("[data-fmt]"); if (b && !b.disabled) mostrar(b.dataset.fmt); });
+    mostrar(fmtIni || "post");
+  }
+
+  async function gerarImagem() {
+    const L = t(), c = cartaoAtual(false);
+    const d = janela(L.im_title, `<div class="md"></div>
+      <h4 class="sh-passo">${esc(L.md_text_title)}</h4>
+      <textarea class="sh-texto" rows="3" readonly aria-label="${esc(L.md_copy_text)}">${esc(textoPost(urlPagina()))}</textarea>
+      <div class="btn-row"><button class="btn" type="button" data-cptx>${icone("copy")} ${esc(L.md_copy_text)}</button><button class="btn btn-ghost" type="button" data-share>${icone("share")} ${esc(L.md_more_nets)}</button></div>`, "dlg-img");
+    const corpo = d.querySelector(".dlg-body");
+    painelMidia(d.querySelector(".md"), c, "post", urlPagina());
+    d.querySelector("[data-cptx]").addEventListener("click", async (e) => {
+      const bt = e.currentTarget;
+      const ok = await copiarTexto(textoPost(urlPagina()));
+      bt.lastChild.textContent = " " + (ok ? L.copied : L.md_copy_text);
+    });
+    d.querySelector("[data-share]").addEventListener("click", () => d.close());
+    d.addEventListener("close", () => setTimeout(() => limparMidia(corpo), 1000));
   }
 
   // --- assinar o feed (RSS): o arquivo é para leitores de RSS; aqui vai a explicação e os atalhos -------------
@@ -67,99 +428,10 @@
         <a class="btn" href="https://www.inoreader.com/?add_feed=${u}" target="_blank" rel="noopener">${icone("rss")} ${esc(L.fd_open("Inoreader"))}</a></div>
       <p class="small muted">${esc(L.fd_tg)} <a href="${A.TELEGRAM}" target="_blank" rel="noopener">${esc(L.fd_tg_link)}</a></p>`);
     d.querySelector("[data-cp]").addEventListener("click", async (e) => {
+      const bt = e.currentTarget;
       const ok = await copiarTexto(url);
-      e.currentTarget.lastChild.textContent = " " + (ok ? L.copied : L.fd_copy);
+      bt.lastChild.textContent = " " + (ok ? L.copied : L.fd_copy);
     });
-  }
-
-  // --- imagem para redes sociais (canvas 1080 × 1350) ----------------------------------------------------------
-  function quebrar(ctx, txt, larg) {
-    const ps = String(txt).split(" "), linhas = [];
-    let at = "";
-    ps.forEach((p) => { const x = at ? at + " " + p : p; if (ctx.measureText(x).width > larg && at) { linhas.push(at); at = p; } else at = x; });
-    if (at) linhas.push(at);
-    return linhas;
-  }
-
-  async function desenharCartao(c) {
-    const L = t(), W = 1080, H = 1350, P = 80;
-    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-    const ctx = cv.getContext("2d");
-    const disp = '"Space Grotesk", system-ui, sans-serif', sans = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
-    try { await Promise.all([document.fonts.load(`700 60px ${disp}`), document.fonts.load(`600 30px ${disp}`)]); } catch (e) { /* usa a fonte do sistema */ }
-    // fundo
-    const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#07130c"); g.addColorStop(1, "#0c1a12");
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    const rg = ctx.createRadialGradient(W * 0.9, 0, 10, W * 0.9, 0, 700); rg.addColorStop(0, "rgba(255,212,0,.16)"); rg.addColorStop(1, "rgba(255,212,0,0)");
-    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
-    const rg2 = ctx.createRadialGradient(0, H * 0.2, 10, 0, H * 0.2, 760); rg2.addColorStop(0, "rgba(0,156,59,.22)"); rg2.addColorStop(1, "rgba(0,156,59,0)");
-    ctx.fillStyle = rg2; ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = "rgba(255,255,255,.035)"; ctx.lineWidth = 1;
-    for (let x = 0; x < W; x += 48) { ctx.beginPath(); ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, H); ctx.stroke(); }
-    for (let y = 0; y < H; y += 48) { ctx.beginPath(); ctx.moveTo(0, y + .5); ctx.lineTo(W, y + .5); ctx.stroke(); }
-    const fx = ctx.createLinearGradient(0, 0, W, 0); fx.addColorStop(0, "#009c3b"); fx.addColorStop(.5, "#ffdf00"); fx.addColorStop(1, "#002776");
-    ctx.fillStyle = fx; ctx.fillRect(0, 0, W, 14); ctx.fillRect(0, H - 14, W, 14);
-    // marca
-    ctx.fillStyle = "#009c3b"; ctx.beginPath(); ctx.roundRect(P, 70, 64, 64, 16); ctx.fill();
-    ctx.strokeStyle = "#ffdf00"; ctx.lineWidth = 6; ctx.lineCap = "round";
-    [[16, 48, 28], [26.6, 48, 16], [37.4, 48, 32], [48, 48, 38]].forEach(([x, y1, y2]) => { ctx.beginPath(); ctx.moveTo(P + x, 70 + y1); ctx.lineTo(P + x, 70 + y2); ctx.stroke(); });
-    ctx.fillStyle = "#eef6f0"; ctx.font = `700 38px ${disp}`; ctx.textBaseline = "alphabetic"; ctx.fillText(L.brand, P + 86, 106);
-    ctx.fillStyle = "#ffd84d"; ctx.font = `600 20px ${sans}`; ctx.fillText(L.brand_sub.toUpperCase(), P + 88, 134);
-    // título
-    let y = 250;
-    ctx.fillStyle = "#ffd84d"; ctx.font = `700 26px ui-monospace, Menlo, Consolas, monospace`;
-    quebrar(ctx, String(c.kicker || "").toUpperCase(), W - 2 * P).slice(0, 2).forEach((l) => { ctx.fillText(l, P, y); y += 36; });
-    y += 30;
-    ctx.fillStyle = "#ffffff"; ctx.font = `700 64px ${disp}`;
-    let tl = quebrar(ctx, c.titulo, W - 2 * P);
-    if (tl.length > 3) { ctx.font = `700 52px ${disp}`; tl = quebrar(ctx, c.titulo, W - 2 * P).slice(0, 4); }
-    tl.forEach((l) => { ctx.fillText(l, P, y); y += 72; });
-    const bar = ctx.createLinearGradient(P, 0, P + 180, 0); bar.addColorStop(0, "#1fc35f"); bar.addColorStop(1, "#ffd400");
-    ctx.fillStyle = bar; ctx.fillRect(P, y - 22, 180, 6);
-    y += 40;
-    // linhas
-    const linhas = (c.linhas || []).slice(0, 14);
-    const fim = H - 230, alt = Math.min(64, Math.max(44, (fim - y) / Math.max(1, linhas.length)));
-    linhas.forEach(([rot, val]) => {
-      const sub = /^\s\s/.test(rot), r = String(rot).trim();
-      ctx.font = `${sub ? 400 : 600} ${sub ? 28 : 31}px ${sans}`; ctx.fillStyle = sub ? "#b8ccbf" : "#e3efe6";
-      const xr = sub ? P + 28 : P;
-      let rr = r; while (ctx.measureText(rr).width > 560 && rr.length > 4) rr = rr.slice(0, -2);
-      if (rr !== r) rr = rr.trim() + "…";
-      ctx.fillText(rr, xr, y);
-      ctx.font = `700 ${sub ? 30 : 34}px ${disp}`; ctx.fillStyle = "#ffffff"; ctx.textAlign = "right";
-      let vv = String(val); while (ctx.measureText(vv).width > W - 2 * P - 600 && vv.length > 4) vv = vv.slice(0, -2);
-      ctx.fillText(vv, W - P, y); ctx.textAlign = "left";
-      ctx.strokeStyle = "rgba(255,255,255,.09)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P, y + alt * 0.42); ctx.lineTo(W - P, y + alt * 0.42); ctx.stroke();
-      y += alt;
-    });
-    // rodapé
-    ctx.fillStyle = "rgba(255,212,0,.12)"; ctx.beginPath(); ctx.roundRect(P, H - 196, W - 2 * P, 54, 27); ctx.fill();
-    ctx.fillStyle = "#ffd84d"; ctx.font = `600 24px ${sans}`; ctx.textAlign = "center"; ctx.fillText(L.badge, W / 2, H - 161);
-    ctx.fillStyle = "#b8ccbf"; ctx.font = `500 23px ${sans}`;
-    ctx.fillText(L.cd_src, W / 2, H - 104);
-    ctx.fillStyle = "#eef6f0"; ctx.font = `600 25px ui-monospace, Menlo, Consolas, monospace`;
-    ctx.fillText(URL_SITE.replace("https://", ""), W / 2, H - 64); ctx.textAlign = "left";
-    return cv;
-  }
-
-  async function gerarImagem() {
-    const L = t(), c = A.state.cartao;
-    if (!c) return;
-    const d = janela(L.im_title, `<p class="muted">${esc(L.lk_loading)}</p>`, "dlg-img");
-    const cv = await desenharCartao(c);
-    const blob = await new Promise((ok) => cv.toBlob(ok, "image/png"));
-    const url = URL.createObjectURL(blob);
-    const nome = "auditoria-bu-2026-" + (location.hash.replace(/^#\/?/, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "inicio") + ".png";
-    const arq = new File([blob], nome, { type: "image/png" });
-    const podeEnviar = navigator.canShare && navigator.canShare({ files: [arq] });
-    d.querySelector(".dlg-body").innerHTML = `<img class="im-prev" src="${url}" alt="${esc(c.titulo)}" width="540" height="675">
-      <p class="small muted">${esc(L.im_note)}</p>
-      <div class="btn-row"><a class="btn btn-primary" href="${url}" download="${esc(nome)}">${icone("download")} ${esc(L.im_dl)}</a>
-      ${podeEnviar ? `<button class="btn" type="button" data-env>${icone("share")} ${esc(L.sh_btn)}</button>` : ""}</div>`;
-    const b = d.querySelector("[data-env]");
-    if (b) b.addEventListener("click", async () => { try { await navigator.share({ files: [arq], title: c.titulo, text: L.sh_text + " " + urlPagina() }); } catch (e) { /* cancelado */ } });
-    d.addEventListener("close", () => setTimeout(() => URL.revokeObjectURL(url), 1000));
   }
 
   // --- imprimir / PDF -------------------------------------------------------------------------------------------------
@@ -192,8 +464,9 @@
     const atual = () => { gh.href = `${A.REPO}/issues/new?title=${encodeURIComponent(tituloIssue())}&body=${encodeURIComponent(ta.value)}`; };
     ta.addEventListener("input", atual); atual();
     d.querySelector("[data-tgr]").addEventListener("click", async (e) => {
+      const bt = e.currentTarget;
       await copiarTexto(ta.value);
-      e.currentTarget.lastChild.textContent = " " + L.rep_copied;
+      bt.lastChild.textContent = " " + L.rep_copied;
       window.open(A.TELEGRAM, "_blank", "noopener");
     });
     setTimeout(() => { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 30);
@@ -412,5 +685,5 @@
     contar();
   });
 
-  A.ferramentas = { compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, desenharCartao, buscarNoIndice, indiceBusca };
+  A.ferramentas = { compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca };
 })();

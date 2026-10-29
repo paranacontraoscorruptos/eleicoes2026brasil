@@ -9,10 +9,18 @@
   <language>pt-BR</language>
   <lastBuildDate>Thu, 29 Oct 2026 12:59:00 -0300</lastBuildDate>
   <item>
+    <title>Mais formas de compartilhar</title>
+    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-7</guid>
+    <pubDate>Thu, 29 Oct 2026 12:59:00 -0300</pubDate>
+    <category>Site</category>
+    <description>No computador, o botão Compartilhar agora traz WhatsApp, Telegram, Facebook, X, Threads, Bluesky, LinkedIn, Reddit, Pinterest, Tumblr, Gmail, Outlook e e-mail, além de código QR para abrir a página no celular. Para Instagram, TikTok, YouTube, Kwai, Status do WhatsApp e Stories do Facebook, o site cria a imagem (post ou Story) ou um vídeo vertical de 8 segundos e explica o passo a passo.</description>
+  </item>
+  <item>
     <title>Testes 13, 14 e 15 em todas as consultas</title>
     <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/lista?teste=T15</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-6</guid>
-    <pubDate>Thu, 29 Oct 2026 12:59:00 -0300</pubDate>
+    <pubDate>Thu, 29 Oct 2026 12:58:00 -0300</pubDate>
     <category>Site</category>
     <description>Os testes 13, 14 e 15, feitos por estado, agora aparecem no mapa, nas páginas de estados e municípios, na lista de seções marcadas (com os 17 resultados por estado dos dois turnos) e no gráfico de ocorrências por estado. Menu completo no topo e gráficos animados.</description>
   </item>
@@ -20,7 +28,7 @@
     <title>Novas ferramentas e consultas</title>
     <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/mapa</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-5</guid>
-    <pubDate>Thu, 29 Oct 2026 12:58:00 -0300</pubDate>
+    <pubDate>Thu, 29 Oct 2026 12:57:00 -0300</pubDate>
     <category>Site</category>
     <description>Mapa do Brasil, páginas de cada estado e município, lista das seções marcadas com planilha, gráficos dos testes, glossário, conferência de arquivos (SHA-512) e do boletim impresso (QR Code), seções salvas, busca, compartilhar, imagem para redes, versão para impressão, acessibilidade (tamanho do texto, alto contraste, Libras e voz no bot) e app instalável.</description>
   </item>
@@ -28,7 +36,7 @@
     <title>Grupo do Telegram</title>
     <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-4</guid>
-    <pubDate>Wed, 28 Oct 2026 12:57:00 -0300</pubDate>
+    <pubDate>Wed, 28 Oct 2026 12:56:00 -0300</pubDate>
     <category>Site</category>
     <description>Link para entrar no grupo na página inicial, no rodapé e no bot, com o passo a passo para quem ainda não tem Telegram.</description>
   </item>
@@ -36,7 +44,7 @@
     <title>Site no ar</title>
     <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/secao</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-3</guid>
-    <pubDate>Wed, 28 Oct 2026 12:56:00 -0300</pubDate>
+    <pubDate>Wed, 28 Oct 2026 12:55:00 -0300</pubDate>
     <category>Site</category>
     <description>Consulta de seção, os 15 testes explicados, resultados dos dois turnos, passo a passo para replicar, downloads com SHA-512 e bot de dúvidas em português, inglês e espanhol.</description>
   </item>
@@ -44,7 +52,7 @@
     <title>Relatório Técnico do 2º turno</title>
     <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/turno/2</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-2</guid>
-    <pubDate>Wed, 28 Oct 2026 12:55:00 -0300</pubDate>
+    <pubDate>Wed, 28 Oct 2026 12:54:00 -0300</pubDate>
     <category>Dados</category>
     <description>Análise das 499.207 seções do 2º turno (25/10/2026) com o motor v2.1.0. Relatórios em português, inglês e espanhol e dados para download.</description>
   </item>
@@ -52,7 +60,7 @@
     <title>Relatório Técnico do 1º turno</title>
     <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/turno/1</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-24-1</guid>
-    <pubDate>Sat, 24 Oct 2026 12:54:00 -0300</pubDate>
+    <pubDate>Sat, 24 Oct 2026 12:53:00 -0300</pubDate>
     <category>Dados</category>
     <description>Análise das 499.206 seções do 1º turno (04/10/2026) com o motor v2.1.0. Relatórios em português, inglês e espanhol e dados para download.</description>
   </item>
