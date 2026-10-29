@@ -1,4 +1,5 @@
-/* Assistente da auditoria: sem IA. Busca aproximada numa base de perguntas e respostas, no navegador. */
+/* Bot da auditoria: busca aproximada numa base de perguntas e respostas, no navegador.
+   Entradas com "ns" só respondem quando perguntadas e nunca viram sugestão. */
 (function () {
   "use strict";
 
@@ -241,8 +242,8 @@
     if (e.act && e.act.go) h += `<p><button type="button" class="btn btn-sm" data-go="${esc(e.act.go)}">${esc(T.bot_open)}</button></p>`;
     h += `<p class="msg-src">${esc(T.bot_source)}: ${esc(e.s)}</p>`;
     const rel = [];
-    (e.r || []).forEach((id) => { if (B.byId[id] && rel.length < 4) rel.push({ id, txt: rotulo(B.byId[id]) }); });
-    (extras || []).forEach((x) => { if (x.i !== e.i && !rel.some((r) => r.id === x.i) && rel.length < 5) rel.push({ id: x.i, txt: rotulo(x) }); });
+    (e.r || []).forEach((id) => { if (B.byId[id] && !B.byId[id].ns && rel.length < 4) rel.push({ id, txt: rotulo(B.byId[id]) }); });
+    (extras || []).forEach((x) => { if (x.i !== e.i && !x.ns && !rel.some((r) => r.id === x.i) && rel.length < 5) rel.push({ id: x.i, txt: rotulo(x) }); });
     if (rel.length) h += `<p class="msg-rel">${esc(T.bot_related)}:</p>` + chips(rel);
     msg(h, "bot");
   }
@@ -313,7 +314,7 @@
     try { await carregar(); } catch (e) { msg(`<p class="alert">Erro: ${esc(e.message)}</p>`, "bot"); return; }
     const r = buscar(texto);
     if (!r.length || r[0].sc < 4 || r[0].f < 0.34) {
-      const sug = r.filter((x) => x.f > 0).slice(0, 3).map((x) => ({ id: x.e.i, txt: rotulo(x.e) }));
+      const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3).map((x) => ({ id: x.e.i, txt: rotulo(x.e) }));
       const top = sug.length ? sug : T.bot_fallback_topics.map((x) => ({ txt: x }));
       msg(`<p>${esc(sug.length ? T.bot_maybe : T.bot_fallback)}</p>` + chips(top), "bot");
       return;
