@@ -215,8 +215,8 @@ main > section, main > .grid2, main > .tests, main > .tiles, main > .card { marg
 .h-row h2 { margin: 0; }
 section > h2:first-child, .card > h2:first-child, .h-row h2 { position: relative; padding-left: 16px; }
 section > h2:first-child::before, .card > h2:first-child::before, .h-row h2::before { content: ""; position: absolute; left: 0; top: .18em; bottom: .18em; width: 5px; border-radius: 4px; background: linear-gradient(180deg, var(--accent), var(--yellow)); }
-.bot-cta h2::before, .page-card h2::before, .author h2::before { display: none; }
-.bot-cta h2, .author h2 { padding-left: 0 !important; }
+.bot-cta h2::before, .page-card h2::before { display: none; }
+.bot-cta h2 { padding-left: 0 !important; }
 ul.plain { padding-left: 1.1em; } ul.plain li { margin-bottom: .5em; }
 .checks, .crosses { list-style: none; padding: 0; margin: 0 0 1em; }
 .checks li, .crosses li { position: relative; padding-left: 30px; margin-bottom: .75em; }
@@ -406,17 +406,6 @@ td .btn-copy { position: static; margin-top: 4px; }
 .timeline li.y::before { border-color: var(--yellow); box-shadow: 0 0 0 4px var(--yellow-soft); }
 .timeline time { display: block; font: 700 .78rem var(--mono); color: var(--yellow-text); letter-spacing: .04em; text-transform: uppercase; }
 .timeline span { font-weight: 600; }
-
-/* --- autor ---------------------------------------------------------------------------- */
-.author { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; overflow: hidden; }
-.author::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--brasil); border-radius: var(--radius) var(--radius) 0 0; }
-.avatar { position: relative; flex: none; width: 104px; height: 104px; border-radius: 50%; padding: 4px; isolation: isolate; box-shadow: 0 16px 34px -12px rgba(255, 212, 0, .45); }
-.avatar::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 50%; background: conic-gradient(#009c3b, #ffdf00, #009c3b, #ffdf00, #009c3b); animation: gira 9s linear infinite; }
-.avatar img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--surface); }
-.author-body { flex: 1 1 260px; min-width: 0; }
-.author-body h2 { margin: 0 0 2px; font-size: .78rem; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--yellow-text); }
-.author-name { font: 700 1.6rem var(--display); margin: 0 0 6px; letter-spacing: -.02em; }
-.author-body p:last-child { margin-bottom: 0; }
 
 /* --- legenda e chips de status ------------------------------------------------------------- */
 .legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }

@@ -194,7 +194,6 @@
 
   function paginaInicio() {
     const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"], P2 = T2.presidente;
-    const A = R.autor;
     const tiles = [
       tile(T2.entrada.secoes, L.st_secoes, L.tip_secoes(nf(T2.entrada.linhas)), "grid"),
       tile(15, L.st_testes, L.tip_testes, "flask"),
@@ -282,14 +281,6 @@
     <section class="card" aria-labelledby="h-lk"><h2 id="h-lk">${esc(L.lookup_cta_title)}</h2><p>${esc(L.lookup_cta_text)}</p>${formSecao(true)}</section>
     <section aria-labelledby="h-leg"><h2 id="h-leg">${esc(L.legend_title)}</h2>
       <ul class="legend">${L.legend.map(([c, n, d]) => `<li>${chip(c, n)} <span class="muted">${esc(d)}</span></li>`).join("")}</ul>
-    </section>
-    <section class="card author" aria-labelledby="h-au">
-      <div class="avatar"><img src="site/img/autor.jpg" alt="" width="96" height="96" loading="lazy" decoding="async"></div>
-      <div class="author-body"><h2 id="h-au">${esc(L.author_title)}</h2>
-        <p class="author-name">${esc(A.nome)}</p>
-        <p><span class="muted">${esc(L.author_spec)}:</span> ${esc(A.especialidade[state.lang])}<br><span class="muted">${esc(L.author_place)}:</span> ${esc(A.local[state.lang])}</p>
-        <p><a class="btn btn-sm" href="https://www.instagram.com/${esc(A.instagram.replace("@", ""))}/" rel="noopener" target="_blank">${icone("insta")} ${esc(A.instagram)}</a></p>
-      </div>
     </section>`;
   }
 
