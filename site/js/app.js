@@ -593,7 +593,7 @@
       <section><h2>${esc(L.rp_opts_title)}</h2>${tabela(["", ""], L.rp_opts.map(([o, d]) => [`<code>${esc(o)}</code>`, esc(d)]))}</section>
       <section><h2>${esc(L.rp_hash_title)}</h2>${hashes.map(([s, c]) => `<p class="small muted">${esc(s)}</p>${blocoCodigo(c)}`).join("")}</section>
       <section><h2>${esc(L.rp_nucleo_title)}</h2>${tabela(["", { PT: "SHA-256 do núcleo analítico", EN: "Analytical core SHA-256", ES: "SHA-256 del núcleo analítico" }[state.lang], { PT: "SHA-512 do manifesto", EN: "Manifest SHA-512", ES: "SHA-512 del manifiesto" }[state.lang]], vals)}<p class="small muted">${esc(L.rp_env)}</p></section>
-      <section class="card"><h2>${esc(L.vr.rp_t)}</h2><p>${esc(L.vr.rp_txt)}</p>${blocoCodigo("python auditoria-eleicoes-2026-Brasil/variacao_entre_turnos.py --dados site/data --saida auditoria-eleicoes-2026-Brasil/resultados-2turno")}
+      <section class="card"><h2>${esc(L.vr.rp_t)}</h2><p>${esc(L.vr.rp_motor)}</p><p>${esc(L.vr.rp_txt)}</p>${blocoCodigo("python auditoria-eleicoes-2026-Brasil/variacao_entre_turnos.py --dados site/data --saida auditoria-eleicoes-2026-Brasil/resultados-2turno")}
         <p class="small muted">${esc(L.vr.rp_note)}</p><a class="btn btn-sm" href="#/variacao">${icone("swap")} ${esc(L.vr.title)}</a></section>
       ${botCta(true)}`;
   }

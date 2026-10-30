@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Fri, 30 Oct 2026 12:00:00 -0300</lastBuildDate>
+  <lastBuildDate>Fri, 30 Oct 2026 14:00:00 -0300</lastBuildDate>
+  <item>
+    <title>Motor v2.2.0: variação entre turnos incluída</title>
+    <link>https://paranacontraoscorruptos.org/#/replicar</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-30-11</guid>
+    <pubDate>Fri, 30 Oct 2026 14:00:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>O motor auditoria_eleicoes_2026.py agora faz sozinho os testes V1 a V6 de variação dos votos para Presidente entre o 1º e o 2º turno. Com os boletins dos dois turnos na mesma pasta, o relatório sai com o Anexo A (quantos votos cada finalista ganhou ou perdeu no Brasil e em cada estado, e a lista dos itens sinalizados) e com quatro planilhas variacao_turnos_*.csv, inclusive uma com todas as seções. Os 15 testes não mudaram. Novo SHA-512 na página Downloads.</description>
+  </item>
   <item>
     <title>Nova página: Atlas</title>
     <link>https://paranacontraoscorruptos.org/#/atlas</link>

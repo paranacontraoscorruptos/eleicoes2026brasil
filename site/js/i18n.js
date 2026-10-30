@@ -132,7 +132,7 @@ window.I18N = {
       ["Instale o Python 3", "No Windows, marque <b>Add python.exe to PATH</b> durante a instalação."],
       ["Instale as bibliotecas", null, "pip install duckdb pandas numpy scipy matplotlib"],
       ["Baixe o motor", "Baixe <code>auditoria_eleicoes_2026.py</code> na página Downloads e confira o SHA-512."],
-      ["Baixe os boletins do TSE", "No Portal de Dados Abertos do TSE, conjunto <b>Resultados – 2026 – Boletim de Urna</b>. Prefira os arquivos <code>.zip</code>: o motor confere cada um com o <code>.sha512</code> oficial publicado ao lado. Coloque todos numa pasta, por exemplo <code>dados_tse</code>."],
+      ["Baixe os boletins do TSE", "No Portal de Dados Abertos do TSE, conjunto <b>Resultados – 2026 – Boletim de Urna</b>. Prefira os arquivos <code>.zip</code>: o motor confere cada um com o <code>.sha512</code> oficial publicado ao lado. Coloque todos numa pasta, por exemplo <code>dados_tse</code>. Com os arquivos do 1º e do 2º turno na mesma pasta, o relatório também traz o teste de variação entre turnos (Anexo A)."],
       ["Rode", "Na pasta do script:", "python auditoria_eleicoes_2026.py --dados ./dados_tse --saida ./resultados"],
       ["Compare", "Abra o relatório gerado e compare o SHA-256 do núcleo analítico com o publicado abaixo. Se os arquivos de entrada forem os mesmos, o valor é idêntico."],
     ],
@@ -365,7 +365,7 @@ window.I18N = {
       ["Install Python 3", "On Windows, tick <b>Add python.exe to PATH</b> during installation."],
       ["Install the libraries", null, "pip install duckdb pandas numpy scipy matplotlib"],
       ["Download the engine", "Download <code>auditoria_eleicoes_2026.py</code> from the Downloads page and check its SHA-512."],
-      ["Download the TSE reports", "On the TSE Open Data Portal, data set <b>Resultados – 2026 – Boletim de Urna</b>. Prefer the <code>.zip</code> files: the engine checks each one against the official <code>.sha512</code> published next to it. Put them all in one folder, e.g. <code>dados_tse</code>."],
+      ["Download the TSE reports", "On the TSE Open Data Portal, data set <b>Resultados – 2026 – Boletim de Urna</b>. Prefer the <code>.zip</code> files: the engine checks each one against the official <code>.sha512</code> published next to it. Put them all in one folder, e.g. <code>dados_tse</code>. With the round 1 and round 2 files in the same folder, the report also includes the test of change between rounds (Appendix A)."],
       ["Run", "In the script folder:", "python auditoria_eleicoes_2026.py --dados ./dados_tse --saida ./resultados"],
       ["Compare", "Open the generated report and compare the analytical core SHA-256 with the one published below. With the same input files, the value is identical."],
     ],
@@ -593,7 +593,7 @@ window.I18N = {
       ["Instale Python 3", "En Windows, marque <b>Add python.exe to PATH</b> durante la instalación."],
       ["Instale las bibliotecas", null, "pip install duckdb pandas numpy scipy matplotlib"],
       ["Descargue el motor", "Descargue <code>auditoria_eleicoes_2026.py</code> en la página Descargas y verifique el SHA-512."],
-      ["Descargue los boletines del TSE", "En el Portal de Datos Abiertos del TSE, conjunto <b>Resultados – 2026 – Boletim de Urna</b>. Prefiera los archivos <code>.zip</code>: el motor compara cada uno con el <code>.sha512</code> oficial publicado al lado. Póngalos todos en una carpeta, por ejemplo <code>dados_tse</code>."],
+      ["Descargue los boletines del TSE", "En el Portal de Datos Abiertos del TSE, conjunto <b>Resultados – 2026 – Boletim de Urna</b>. Prefiera los archivos <code>.zip</code>: el motor compara cada uno con el <code>.sha512</code> oficial publicado al lado. Póngalos todos en una carpeta, por ejemplo <code>dados_tse</code>. Con los archivos de la 1.ª y de la 2.ª vuelta en la misma carpeta, el informe también trae la prueba de variación entre vueltas (Anexo A)."],
       ["Ejecute", "En la carpeta del script:", "python auditoria_eleicoes_2026.py --dados ./dados_tse --saida ./resultados"],
       ["Compare", "Abra el informe generado y compare el SHA-256 del núcleo analítico con el publicado abajo. Con los mismos archivos de entrada, el valor es idéntico."],
     ],
@@ -1484,17 +1484,20 @@ window.I18N.ES.vr = {
 };
 Object.assign(window.I18N.PT.vr, {
   rp_t: "Variação entre turnos (Adendo A)",
-  rp_txt: "Os testes V1 a V6 da variação entre o 1º e o 2º turno vêm de um script separado, que lê os votos por seção publicados com o site (extraídos dos boletins pelo motor) e escreve o Adendo A nos relatórios do 2º turno, as planilhas variacao_turnos_*.csv e o manifesto atualizado. Na pasta raiz do repositório:",
+  rp_motor: "Desde a versão 2.2.0 (30/10/2026), o próprio motor faz os testes V1 a V6: coloque na pasta de dados os boletins do 1º e do 2º turno e rode o comando do passo 5. O relatório sai com o Anexo A e as planilhas variacao_turnos_*.csv, inclusive uma com todas as seções.",
+  rp_txt: "O Adendo A publicado no relatório do 2º turno foi feito antes da versão 2.2.0, por um script separado, que lê os votos por seção publicados com o site (extraídos dos boletins pelo motor) e escreve o Adendo A nos relatórios do 2º turno, as planilhas variacao_turnos_*.csv e o manifesto atualizado. Na pasta raiz do repositório:",
   rp_note: "Precisa de Python 3 com pandas, numpy e scipy. Mesma entrada, mesmos arquivos: compare os SHA-512 com os da página Downloads.",
 });
 Object.assign(window.I18N.EN.vr, {
   rp_t: "Change between rounds (Addendum A)",
-  rp_txt: "Tests V1 to V6 of the change between round 1 and round 2 come from a separate script, which reads the per-section votes published with the site (extracted from the reports by the engine) and writes Addendum A into the round 2 reports, the variacao_turnos_*.csv spreadsheets and the updated manifest. In the repository's root folder:",
+  rp_motor: "Since version 2.2.0 (Oct 30, 2026), the engine itself runs tests V1 to V6: put the round 1 and round 2 reports in the data folder and run the command in step 5. The report comes with Appendix A and the variacao_turnos_*.csv spreadsheets, including one with every section.",
+  rp_txt: "Addendum A, published in the round 2 report, was produced before version 2.2.0 by a separate script, which reads the per-section votes published with the site (extracted from the reports by the engine) and writes Addendum A into the round 2 reports, the variacao_turnos_*.csv spreadsheets and the updated manifest. In the repository's root folder:",
   rp_note: "Requires Python 3 with pandas, numpy and scipy. Same input, same files: compare the SHA-512 hashes with those on the Downloads page.",
 });
 Object.assign(window.I18N.ES.vr, {
   rp_t: "Variación entre vueltas (Anexo A)",
-  rp_txt: "Las pruebas V1 a V6 de la variación entre la 1.ª y la 2.ª vuelta provienen de un script aparte, que lee los votos por sección publicados con el sitio (extraídos de los boletines por el motor) y escribe el Anexo A en los informes de la 2.ª vuelta, las planillas variacao_turnos_*.csv y el manifiesto actualizado. En la carpeta raíz del repositorio:",
+  rp_motor: "Desde la versión 2.2.0 (30/10/2026), el propio motor ejecuta las pruebas V1 a V6: ponga en la carpeta de datos los boletines de la 1.ª y de la 2.ª vuelta y ejecute el comando del paso 5. El informe sale con el Anexo A y las planillas variacao_turnos_*.csv, incluida una con todas las secciones.",
+  rp_txt: "El Anexo A publicado en el informe de la 2.ª vuelta se hizo antes de la versión 2.2.0, con un script aparte, que lee los votos por sección publicados con el sitio (extraídos de los boletines por el motor) y escribe el Anexo A en los informes de la 2.ª vuelta, las planillas variacao_turnos_*.csv y el manifiesto actualizado. En la carpeta raíz del repositorio:",
   rp_note: "Requiere Python 3 con pandas, numpy y scipy. Misma entrada, mismos archivos: compare los SHA-512 con los de la página Descargas.",
 });
 Object.assign(window.I18N.PT.dl_desc, { "dados/variacao_turnos_sinalizacoes.csv": "Variação entre turnos: itens 🔴 e 🟡 (Adendo A)", "dados/variacao_turnos_municipios.csv": "Variação entre turnos: todos os municípios",

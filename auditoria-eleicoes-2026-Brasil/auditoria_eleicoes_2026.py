@@ -22,11 +22,15 @@ Entradas (pasta --dados):
 Saídas (pasta --saida):
     Relatorio_Tecnico_Auditoria_Eleicoes_2026_PT.md / _EN.md / _ES.md
     dados/*.csv, graficos/*.png, manifesto_saida.sha512, log_execucao.txt
+    Com o 1º e o 2º turno na mesma pasta, o relatório ganha o Anexo A (variação dos votos para Presidente
+    entre os turnos, testes V1 a V6) e dados/variacao_turnos_*.csv.
 """
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
+import io
 import json
 import math
 import os
@@ -58,7 +62,7 @@ try:
 except ImportError:  # pragma: no cover
     plt = None
 
-VERSAO_MOTOR = "2.1.0"
+VERSAO_MOTOR = "2.2.0"
 
 # =============================================================================
 # 1. CONFIGURAÇÃO
@@ -1439,6 +1443,7 @@ class Auditoria:
         self.integridade: list[dict] = []
         self.resultados: dict[str, Resultado] = {}
         self.meta: dict = {}
+        self.var: dict | None = None
         self.con = None
 
     # ------------------------------------------------------------------ setup
@@ -2667,6 +2672,7 @@ class Auditoria:
                         "secoes": canon(self.meta["secoes"]), "secoes_distintas": canon(self.meta["secoes_distintas"]),
                         "boletins": canon(self.meta["boletins"]), "turnos": canon(self.meta["turnos"]), "ufs": canon(self.meta["ufs"])},
             "analises": analises,
+            "variacao": self.nucleo_variacao(),
             "consolidacao": {"secoes_sinalizadas": len(self.secoes_sinalizadas),
                              "convergentes": canon_df(self.convergentes[CHAVE_SECAO + ["testes", "n_testes"]]),
                              "por_uf": canon_df(self.por_uf)},
@@ -2679,7 +2685,9 @@ class Auditoria:
                  "LIMIAR_DIF_VIZINHANCA_PP", "MIN_VOTOS_IDENTICOS", "MIN_CATEGORIAS_IDENTICOS", "LIMIAR_ESPERADO_IDENTICOS",
                  "HORA_INICIO_OFICIAL", "HORA_FIM_OFICIAL", "TOLERANCIA_MINUTOS", "ATRASO_ABERTURA_MIN", "MIN_CONTAGENS_DIGITOS",
                  "KLIMEK_CANTO", "KLIMEK_MIN_CANTO", "KLIMEK_RAZAO", "MIN_MEDIANA_DIGITOS", "REPLICAS_DIGITOS",
-                 "SEMENTE_SIMULACAO", "MIN_SECOES_LOCAL_DIGITOS", "DIGITOS_NUCLEO"]
+                 "SEMENTE_SIMULACAO", "MIN_SECOES_LOCAL_DIGITOS", "DIGITOS_NUCLEO", "VAR_FINALISTAS", "VAR_LIMIAR_ANOMALIA_PP",
+                 "VAR_LIMIAR_INFO_PP", "VAR_MIN_UNIDADES_REF", "VAR_PHI_MIN", "VAR_MIN_APTOS", "VAR_LIMIAR_DIRECIONAMENTO",
+                 "VAR_MIN_VOTOS", "VAR_LIMIAR_TETO", "VAR_LIMIAR_CADASTRO"]
         g = globals()
         return {n: canon(g[n]) for n in nomes if n in g}
 
@@ -2723,7 +2731,8 @@ class Auditoria:
                 det["status"] = "identico"
                 log(barra)
                 log("[SUCESSO] VERIFICAÇÃO DE DETERMINISMO: O motor analítico produziu resultados 100% IDÊNTICOS ao relatório de "
-                    "homologação (Ignorando metadados temporais). As 15 análises foram validadas pelo Hash SHA-256.")
+                    "homologação (Ignorando metadados temporais). As 15 análises" + (" e os 6 testes de variação entre turnos" if self.var else "") +
+                    " foram validadas pelo Hash SHA-256.")
                 log(f"  SHA-256 do núcleo analítico: {h}")
                 log(barra)
             else:
@@ -2829,6 +2838,13 @@ class Auditoria:
         P.append(md_tabela([L["col_teste"], L["col_unidades"], L["col_sinal"], L["col_info"], L["col_bruto"], L["col_taxa"]],
                            linhas, {1, 2, 3, 4, 5}))
         P.append("")
+        if self.var:
+            P.append(TXT_VAR[lang]["s3"].format(a=fnum(sum(c["a"] for c in self.var["cont"].values()), lang),
+                                                i=fnum(sum(c["i"] for c in self.var["cont"].values()), lang)) + "\n")
+        elif self.meta.get("var_erro"):
+            P.append(TXT_VAR[lang]["s3_falha"].format(erro=self.meta["var_erro"]) + "\n")
+        else:
+            P.append(TXT_VAR[lang]["s3_sem"] + "\n")
         P.append(f"### {L['busca_titulo']}\n")
         for par in L["busca_txt"]:
             P.append(par + "\n")
@@ -2970,6 +2986,8 @@ class Auditoria:
         P.append(f"## {L['s15']}\n")
         for ref in REFERENCIAS:
             P.append(f"- {ref.format(ano=ANO_ELEICAO)}")
+        if self.var:
+            P.append("\n" + self._anexo_variacao(lang))
         P.append("\n---\n")
         P.append(f"*{L['rodape'].format(v=VERSAO_MOTOR)}*\n")
         return "\n".join(P)
@@ -3134,6 +3152,207 @@ class Auditoria:
             txt += f"\n**{L['klimek_graficos']}**\n\n" + "\n\n".join(f"![{f}](graficos/{f})" for f in figs) + "\n"
         return txt
 
+    # ------------------------------------------------------- variação entre turnos (Anexo A)
+    def variacao_turnos(self):
+        """Testes V1 a V6 (Parte 5): só quando a pasta de dados tem os Boletins de Urna do 1º e do 2º turno da mesma UF."""
+        ufs = {t: set(self.sec.loc[self.sec["turno"] == t, "uf"]) for t in (1, 2)}
+        comuns = sorted(ufs[1] & ufs[2])
+        if not comuns:
+            log("Variação entre turnos (V1 a V6): requer os Boletins de Urna do 1º e do 2º turno; não aplicada.")
+            return
+        finalistas = sorted(int(c["nv"]) for c in self.lideres_pres.get(2, []))
+        if finalistas != sorted(VAR_FINALISTAS):
+            self.meta["var_erro"] = f"finalistas do 2º turno {finalistas} ≠ VAR_FINALISTAS {list(VAR_FINALISTAS)}"
+            log(f"Variação entre turnos (V1 a V6): não aplicada ({self.meta['var_erro']}).")
+            return
+        t = time.time()
+        log(f"Variação entre turnos (V1 a V6) — {len(comuns)} UF(s) com os dois turnos...")
+        try:
+            df = self._base_variacao(comuns)
+            res = executar_variacao(df, self._urnas_variacao(comuns))
+            sinais = montar_sinais_variacao(res)
+            sinais.insert(1, "teste_nome", sinais["teste"].map(TXT_VAR["PT"]["nome"]))
+        except Exception as exc:
+            self.meta["var_erro"] = f"{type(exc).__name__}: {exc}"
+            log(f"  FALHA: {self.meta['var_erro']}")
+            _LOG.append(traceback.format_exc())
+            return
+        self.var = {"df": df, "res": res, "sinais": sinais, "cont": contagens_variacao(res),
+                    "fora": sorted((ufs[1] | ufs[2]) - set(comuns))}
+        for tid, c in self.var["cont"].items():
+            log(f"  {tid} {TXT_VAR['PT']['nome'][tid]}: unidades={c['unidades']:,} anomalias={c['a']:,} "
+                f"informativos={c['i']:,}".replace(",", "."))
+        log(f"  ({time.time() - t:.0f}s)")
+
+    def _base_variacao(self, ufs: list[str]) -> pd.DataFrame:
+        """Votos para Presidente por seção: um registro por seção, com as colunas dos dois turnos (sufixos 1 e 2)."""
+        a, b = VAR_FINALISTAS
+        lista = ", ".join(f"'{u}'" for u in ufs)
+        v = self.con.execute(f"""
+            SELECT turno, uf, mun, min(nm_mun) AS nm_mun, zona, secao, max(aptos) AS aptos, max(comp) AS comp,
+                   sum(votos) FILTER (WHERE nv = {a})::BIGINT AS L, sum(votos) FILTER (WHERE nv = {b})::BIGINT AS F,
+                   sum(votos) FILTER (WHERE nv = 95)::BIGINT AS B, sum(votos) FILTER (WHERE nv = 96)::BIGINT AS N,
+                   sum(votos)::BIGINT AS total
+            FROM bu WHERE cargo = 1 AND turno IN (1, 2) AND uf IN ({lista})
+            GROUP BY turno, uf, mun, zona, secao""").df()
+        cols = ["aptos", "comp", "L", "F", "B", "N"]
+        v[cols + ["total"]] = v[cols + ["total"]].fillna(0).astype("int64")
+        v["O"] = v["total"] - v["L"] - v["F"] - v["B"] - v["N"]  # demais candidatos (e anulados, se houver)
+        v["mun"] = v["mun"].astype("int64").astype(str)
+        chave, cols = ["uf", "mun", "zona", "secao"], cols + ["O"]
+        t1, t2 = (v[v["turno"] == n][chave + ["nm_mun"] + cols].rename(columns={c: f"{c}{n}" for c in cols + ["nm_mun"]})
+                  for n in (1, 2))
+        df = t1.merge(t2, on=chave, how="outer")
+        df["nm_mun"] = df["nm_mun2"].fillna(df["nm_mun1"])
+        df["tem1"], df["tem2"] = df["comp1"].notna(), df["comp2"].notna()
+        df["ambos"] = df["tem1"] & df["tem2"]
+        num = [f"{c}{n}" for n in (1, 2) for c in cols]
+        df[num] = df[num].fillna(0).astype("int64")
+        df[["zona", "secao"]] = df[["zona", "secao"]].astype("int64")
+        df = df.drop(columns=["nm_mun1", "nm_mun2"])
+        return df.sort_values(["uf", "mun", "zona", "secao"], kind="mergesort").reset_index(drop=True)
+
+    def _urnas_variacao(self, ufs: list[str]) -> dict:
+        """Número da urna e código de carga de cada seção: os do 2º turno ou, na falta, os do 1º."""
+        s = self.sec[self.sec["uf"].isin(ufs) & self.sec["urna"].notna()].sort_values("turno", ascending=False, kind="mergesort")
+        s = s.drop_duplicates(["uf", "zona", "secao"])
+        return {(u, int(z), int(sc)): (str(int(n)), "" if pd.isna(c) else str(c))
+                for u, z, sc, n, c in zip(s["uf"], s["zona"], s["secao"], s["urna"], s["carga"])}
+
+    def exportar_variacao(self):
+        if not self.var:
+            return
+        res, pasta = self.var["res"], self.pasta_csv
+        escrever_csv_variacao(pasta / ARQUIVOS_VAR["sin"], self.var["sinais"].to_dict("records"), COLS_CSV_VAR)
+        cols_n = ["secoes"] + COLS_VOTOS_VAR + ["BN1", "BN2", "dL", "dF", "dComp", "observado", "esperado", "dif_pp", "q", "nivel"]
+        escrever_csv_variacao(pasta / ARQUIVOS_VAR["mun"], tabela_nivel_variacao(res["V2"], ["uf", "mun", "nm_mun"]),
+                              ["uf", "mun", "nm_mun"] + cols_n)
+        escrever_csv_variacao(pasta / ARQUIVOS_VAR["uf"], tabela_nivel_variacao(res["V1"], ["uf"]), ["uf"] + cols_n)
+        # Todas as seções: votos dos dois turnos, variação e testes em que a seção foi sinalizada
+        s = self.var["df"].copy()
+        marca = {}
+        sig = self.var["sinais"]
+        for r in sig[sig["nivel_geo"] == "secao"].itertuples():
+            k = (r.uf, int(r.zona), int(r.secao))
+            marca[k] = (marca[k] + "; " if k in marca else "") + f"{r.teste} {r.nivel}"
+        s["turnos"] = np.where(s["ambos"], "1+2", np.where(s["tem1"], "1", "2"))
+        s["BN1"], s["BN2"] = s["B1"] + s["N1"], s["B2"] + s["N2"]
+        s["dL"], s["dF"], s["dComp"] = s["L2"] - s["L1"], s["F2"] - s["F1"], s["comp2"] - s["comp1"]
+        s["sinalizacoes"] = [marca.get(k, "") for k in zip(s["uf"], s["zona"], s["secao"])]
+        cols = ["uf", "mun", "nm_mun", "zona", "secao", "turnos"] + COLS_VOTOS_VAR + ["BN1", "BN2", "dL", "dF", "dComp", "sinalizacoes"]
+        buf = io.StringIO()
+        s[cols].to_csv(buf, index=False, lineterminator="\r\n")
+        (pasta / ARQUIVOS_VAR["sec"]).write_bytes(("﻿" + buf.getvalue()).encode("utf-8"))
+
+    def nucleo_variacao(self):
+        """Resultados dos testes V1 a V6 para o núcleo analítico (None quando não aplicados)."""
+        if not self.var:
+            return {"erro": self.meta["var_erro"]} if self.meta.get("var_erro") else None
+        cols = [c for c in COLS_CSV_VAR if c != "teste_nome"]
+        return {"testes": canon(self.var["cont"]), "brasil": canon(self.var["res"]["_br"]), "fora": self.var["fora"],
+                "sinais": [{c: canon(r.get(c)) for c in cols} for r in self.var["sinais"].to_dict("records")]}
+
+    def _anexo_variacao(self, lang: str) -> str:
+        L, res, sinais = TXT_VAR[lang], self.var["res"], self.var["sinais"]
+        num = lambda x: fnum(x, lang)
+        par = dict(phi=fnum(VAR_PHI_MIN, lang, 2), alfa=fnum(ALFA_FDR, lang, 2), la=num(VAR_LIMIAR_ANOMALIA_PP), li=num(VAR_LIMIAR_INFO_PP),
+                   mref=VAR_MIN_UNIDADES_REF, minv=MIN_VOTOS_PROPORCAO, mg=MIN_SECOES_GRUPO, mapt=VAR_MIN_APTOS,
+                   dir=num(100 * VAR_LIMIAR_DIRECIONAMENTO), mvar=VAR_MIN_VOTOS, teto=num(100 * VAR_LIMIAR_TETO),
+                   cad=num(100 * VAR_LIMIAR_CADASTRO))
+        P = [L["titulo"], "", L["a1_t"], "", L["a1"], ""]
+        if self.var["fora"]:
+            P += [L["fora"].format(ufs=", ".join(self.var["fora"])), ""]
+        P += [L["a2_t"], "", L["a2"], ""]
+        b = res["_br"]
+        BN1, BN2, dC = b["B1"] + b["N1"], b["B2"] + b["N2"], b["comp2"] - b["comp1"]
+        dl, dfl = b["L2"] - b["L1"], b["F2"] - b["F1"]
+        pool = dl + dfl
+        linhas = [[L["lin_br"][0], num(b["L1"]), num(b["L2"]), fsin(dl, lang)], [L["lin_br"][1], num(b["F1"]), num(b["F2"]), fsin(dfl, lang)],
+                  [L["lin_br"][2], num(b["O1"]), "—", fsin(-b["O1"], lang)],
+                  [L["lin_br"][3], num(b["B1"]), num(b["B2"]), fsin(b["B2"] - b["B1"], lang)],
+                  [L["lin_br"][4], num(b["N1"]), num(b["N2"]), fsin(b["N2"] - b["N1"], lang)],
+                  [L["lin_br"][5], num(b["comp1"]), num(b["comp2"]), fsin(dC, lang)],
+                  [L["lin_br"][6], num(b["aptos1"]), num(b["aptos2"]), fsin(b["aptos2"] - b["aptos1"], lang)]]
+        P += [md_tabela(L["cab_br"], linhas, {1, 2, 3}), ""]
+        ufs = sorted(self.var["df"]["uf"].unique())
+        onde = L["onde"][0] if set(UFS_BRASIL) <= set(ufs) else L["onde"][1].format(ufs=", ".join(ufs))
+        P += [L["a2_br"].format(onde=onde, o1=num(b["O1"]), bn1=num(BN1), bn2=num(BN2), dc_sinal="+" if dC >= 0 else "−", dc=num(abs(dC)),
+                                pool=num(pool) if pool >= 0 else fsin(pool, lang), dl=fsin(dl, lang), df=fsin(dfl, lang),
+                                pl=fpct(dl / pool, lang, 1) if pool > 0 else "—", pf=fpct(dfl / pool, lang, 1) if pool > 0 else "—"), ""]
+        P += [L["a3_t"], "", L["comum"].format(**par), ""]
+        for t in TESTES_VAR:
+            o, m, c = (x.format(**par) for x in L["testes"][t])
+            P += [f"**{t} — {L['nome'][t]}.** *{L['obj']}:* {o} *{L['met']}:* {m} *{L['crit']}:* {c}", ""]
+        cont = self.var["cont"]
+        P += [L["a4_t"], ""]
+        P += [md_tabela(L["cab_res"], [[f"{status_variacao(cont[t])} {t}. {L['nome'][t]}", L["nivel"][NIVEL_TESTE_VAR[t]],
+                                        num(cont[t]["unidades"]), num(cont[t]["a"]), num(cont[t]["i"])] for t in TESTES_VAR], {2, 3, 4}),
+              "", L["a4_txt"], ""]
+        P += [L["a5_t"], "", L["a5"], ""]
+        for i, t in enumerate(TESTES_VAR, 1):
+            st = sinais[sinais["teste"] == t]
+            P += [f"#### A.5.{i} {status_variacao(cont[t])} {t}. {L['nome'][t]}", ""]
+            if st.empty:
+                P += [L["nenhum"], ""]
+                continue
+            for nv, sub in (("anomalia", "sub_a"), ("informativo", "sub_i")):
+                d = st[st["nivel"] == nv]
+                if len(d):
+                    P += [f"**{L[sub].format(n=num(len(d)))}**", "", self._tabela_variacao(t, d, lang), ""]
+        P += [L["a6_t"], ""] + [f"- {x.format(**par)}" for x in L["a6"]] + [""]
+        P += [L["a7_t"], "", L["a7"], ""]
+        P += [md_tabela(L["cab_arq"], [[f"`dados/{ARQUIVOS_VAR[k]}`", L["arq"][k], f"`{self.hashes_saida.get('dados/' + ARQUIVOS_VAR[k], '—')}`"]
+                                       for k in ("sin", "sec", "mun", "uf")])]
+        return "\n".join(P)
+
+    def _tabela_variacao(self, t: str, d: pd.DataFrame, lang: str) -> str:
+        L = TXT_VAR[lang]
+        C = L["c"]
+        num = lambda x: fnum(x, lang)
+        var = lambda a, b: f"{num(a)} → {num(b)} ({fsin(b - a, lang)})"
+        vazio = lambda x: x is None or x == "" or (isinstance(x, float) and not np.isfinite(x))
+        pc = lambda x: "—" if vazio(x) else fpct(float(x), lang, 1)
+        dp = lambda x: "—" if vazio(x) else ("+" if float(x) > 0 else "−" if float(x) < 0 else "") + fnum(abs(float(x)), lang, 1)
+        fq = lambda x: "—" if vazio(x) else fp(float(x), lang)
+        mun = lambda r: f"{r.nm_mun} ({int(r.mun)})"
+        det = lambda r: dict(x.split("=") for x in r.detalhe.split("; "))
+        linhas = []
+        for k, r in enumerate(d.itertuples(), 1):
+            if t == "V1":
+                linhas.append([k, r.uf, var(r.L1, r.L2), var(r.F1, r.F2), num(r.O1), var(r.BN1, r.BN2), var(r.comp1, r.comp2),
+                               pc(r.observado), pc(r.esperado), dp(r.dif_pp), fq(r.q)])
+                continue
+            if t == "V2":
+                linhas.append([k, r.uf, mun(r), var(r.L1, r.L2), var(r.F1, r.F2), num(r.O1), var(r.BN1, r.BN2), var(r.comp1, r.comp2),
+                               pc(r.observado), pc(r.esperado), dp(r.dif_pp), fq(r.q)])
+                continue
+            loc = [k, r.uf, mun(r), int(r.zona), int(r.secao), r.nr_urna or "—"]
+            if t == "V3":
+                linhas.append(loc + [var(r.L1, r.L2), var(r.F1, r.F2), num(r.O1), var(r.BN1, r.BN2), var(r.comp1, r.comp2),
+                                     pc(r.observado), pc(r.esperado), dp(r.dif_pp), fq(r.q)])
+            elif t == "V4":
+                x = det(r)
+                dest = x["destino"] if x["destino"] in (NR_L, NR_F) else ""
+                linhas.append(loc + [var(r.comp1, r.comp2), pc(r.observado), pc(r.esperado), dp(r.dif_pp), fq(r.q),
+                                     var(r.L1, r.L2), var(r.F1, r.F2), L["dest"][dest].format(x=num(100 * float(x["excesso"])) if dest else "")])
+            elif t == "V5":
+                x = det(r)
+                linhas.append(loc + [NOMES_FINALISTAS[x["candidato"]], fsin(int(r.observado), lang), num(int(r.esperado)),
+                                     fsin(int(x["excesso"]), lang), var(r.L1, r.L2), var(r.F1, r.F2), num(r.O1), var(r.BN1, r.BN2),
+                                     var(r.comp1, r.comp2)])
+            else:
+                x = det(r)
+                linhas.append(loc + [var(int(r.esperado), int(r.observado)),
+                                     L["mot"][x["motivo"]].format(x=fsin(int(x.get("d_aptos", 0)), lang)), var(r.comp1, r.comp2)])
+        base = ["#", C["uf"], C["mun"], C["zona"], C["secao"], C["urna"]]
+        cab = {"V1": ["#", C["uf"], C["L"], C["F"], C["O"], C["BN"], C["C"], C["obs"], C["esp"], C["dif"], C["q"]],
+               "V2": ["#", C["uf"], C["mun"], C["L"], C["F"], C["O"], C["BN"], C["C"], C["obs"], C["esp"], C["dif"], C["q"]],
+               "V3": base + [C["L"], C["F"], C["O"], C["BN"], C["C"], C["obs"], C["esp"], C["dif"], C["q"]],
+               "V4": base + [C["C"], C["tobs"], C["tesp"], C["dif"], C["q"], C["L"], C["F"], C["dest"]],
+               "V5": base + [C["cand"], C["ganho"], C["teto"], C["exc"], C["L"], C["F"], C["O"], C["BN"], C["C"]],
+               "V6": base + [C["aptos"], C["mot"], C["C"]]}[t]
+        return md_tabela(cab, linhas, {0, 3, 4} if t not in ("V1", "V2") else {0})
+
     # ------------------------------------------------------- manifesto
     def manifesto_saida(self):
         (self.saida / "log_execucao.txt").write_text("\n".join(_LOG) + "\n", encoding="utf-8")
@@ -3162,13 +3381,600 @@ class Auditoria:
         self.preparar_bases()
         self.executar_testes()
         self.consolidar()
+        self.variacao_turnos()
         self.exportar()
+        self.exportar_variacao()
         self.verificar_determinismo()  # antes de compilar o .md
         self.gerar_relatorios()
         self.manifesto_saida()
         self.limpar()
         h, rem = divmod(int(time.time() - self.t0), 3600)
         log(f"AUDITORIA CONCLUÍDA em {h}h {rem // 60:02d}min {rem % 60:02d}s. Resultados em: {self.saida}")
+
+
+# =============================================================================
+# 5. VARIAÇÃO ENTRE TURNOS (ANEXO A DO RELATÓRIO)
+# =============================================================================
+# Testes V1 a V6: comparam os votos para Presidente do 1º e do 2º turno em cada estado, município e seção.
+# São aplicados quando a pasta de dados contém os Boletins de Urna dos dois turnos (de ao menos uma UF).
+VAR_FINALISTAS = (13, 22)          # finalistas à Presidência no 2º turno: Lula (13) e Flávio Bolsonaro (22)
+VAR_LIMIAR_ANOMALIA_PP = 10.0      # efeito mínimo para 🔴 (pontos percentuais)
+VAR_LIMIAR_INFO_PP = 5.0           # efeito mínimo para 🟡 (pontos percentuais)
+VAR_MIN_UNIDADES_REF = 3           # mínimo de unidades no grupo de referência (além da própria)
+VAR_PHI_MIN = 0.05                 # limite inferior do fator de dispersão
+VAR_MIN_APTOS = 20                 # mínimo de eleitores aptos, em cada turno (teste V4)
+VAR_LIMIAR_DIRECIONAMENTO = 0.30   # excesso da parcela da variação do comparecimento sobre a participação do finalista (V4)
+VAR_MIN_VOTOS = 20                 # variação mínima em votos (testes V4, V5 e V6)
+VAR_LIMIAR_TETO = 0.10             # excesso sobre o teto, em fração dos votos do outro finalista no 1º turno (V5)
+VAR_LIMIAR_CADASTRO = 0.10         # variação relativa de eleitores aptos (V6)
+# Demais parâmetros herdados dos testes 1 a 15: ALFA_FDR, MIN_SECOES_GRUPO e MIN_VOTOS_PROPORCAO.
+
+TESTES_VAR = ["V1", "V2", "V3", "V4", "V5", "V6"]
+NIVEL_TESTE_VAR = {"V1": "uf", "V2": "municipio", "V3": "secao", "V4": "secao", "V5": "secao", "V6": "secao"}
+NR_L, NR_F = (str(n) for n in VAR_FINALISTAS)
+NOMES_FINALISTAS = {NR_L: "Lula", NR_F: "Flávio Bolsonaro"}
+COLS_VOTOS_VAR = ["L1", "F1", "O1", "B1", "N1", "comp1", "aptos1", "L2", "F2", "B2", "N2", "comp2", "aptos2"]
+COLS_CSV_VAR = ["teste", "teste_nome", "nivel", "nivel_geo", "uf", "mun", "nm_mun", "zona", "secao", "nr_urna", "cod_carga",
+                "L1", "F1", "O1", "BN1", "comp1", "aptos1", "L2", "F2", "BN2", "comp2", "aptos2", "dL", "dF", "dComp",
+                "observado", "esperado", "dif_pp", "q", "detalhe"]
+ARQUIVOS_VAR = {"sin": "variacao_turnos_sinalizacoes.csv", "sec": "variacao_turnos_secoes.csv",
+                "mun": "variacao_turnos_municipios.csv", "uf": "variacao_turnos_ufs.csv"}
+
+
+def logit(p):
+    return np.log(p / (1.0 - p))
+
+
+def expit(x):
+    return 1.0 / (1.0 + np.exp(-x))
+
+
+def desvio_logit(x1, n1, x2, n2, grupo) -> pd.DataFrame:
+    """Proporção esperada no 2º turno pelo deslocamento logístico uniforme do grupo de referência,
+    calculado sem a própria unidade (leave-one-out): logit(p̂) = logit(x1/n1) + [logit(ΣX2/ΣN2) − logit(ΣX1/ΣN1)].
+    Estatística z de quase-verossimilhança, com fator de dispersão φ = mediana(z²)/0,4549 estimado no grupo."""
+    d = pd.DataFrame({"x1": x1, "n1": n1, "x2": x2, "n2": n2, "g": grupo})
+    G = d.groupby("g")[["x1", "n1", "x2", "n2"]].transform("sum")
+    k = d.groupby("g")["g"].transform("size") - 1
+    delta = logit((G.x2 - d.x2 + 0.5) / (G.n2 - d.n2 + 1.0)) - logit((G.x1 - d.x1 + 0.5) / (G.n1 - d.n1 + 1.0))
+    pe = expit(logit((d.x1 + 0.5) / (d.n1 + 1.0)) + delta)
+    po = d.x2 / d.n2
+    z0 = (po - pe) / np.sqrt(pe * (1.0 - pe) / d.n2)
+    phi = ((z0 ** 2).groupby(d.g).transform("median") / 0.4549364).clip(lower=VAR_PHI_MIN)
+    z = z0 / np.sqrt(phi)
+    out = pd.DataFrame({"esperado": pe, "observado": po, "dif_pp": 100.0 * (po - pe), "phi": phi, "z": z}, index=d.index)
+    out["ref_ok"] = k >= VAR_MIN_UNIDADES_REF
+    out["p"] = np.where(out.ref_ok, 2.0 * stats.norm.sf(out.z.abs()), np.nan)
+    out["q"] = np.nan
+    ok = out.ref_ok.values
+    out.loc[ok, "q"] = benjamini_hochberg(out.loc[ok, "p"].values)
+    return out
+
+
+def nivel_variacao(q, dif):
+    q, dif = np.asarray(q, dtype=float), np.abs(np.asarray(dif, dtype=float))
+    sig = np.nan_to_num(q, nan=1.0) < ALFA_FDR
+    return np.where(sig & (dif >= VAR_LIMIAR_ANOMALIA_PP), "anomalia", np.where(sig & (dif >= VAR_LIMIAR_INFO_PP), "informativo", ""))
+
+
+def rotular_grupos_var(d: pd.DataFrame) -> pd.Series:
+    """Mesma hierarquia dos testes 1 a 15 (zona no município → município → zona → UF → Brasil), só com seções do 2º turno."""
+    return rotular_grupos(d.assign(turno=2))
+
+
+def agregar_variacao(df: pd.DataFrame, chave: list[str]) -> pd.DataFrame:
+    """Totais oficiais por unidade (todas as seções; uma seção com boletim em um só turno entra só nesse turno)."""
+    a = df.groupby(chave, as_index=False, sort=True)[COLS_VOTOS_VAR].sum()
+    a["secoes"] = df.groupby(chave, sort=True).size().values
+    return a
+
+
+def teste_transferencia(u: pd.DataFrame, grupo) -> pd.DataFrame:
+    """V1, V2 e V3: participação de Lula nos votos dos dois finalistas no 2º turno, comparada à esperada
+    pela participação no 1º turno e pelo deslocamento observado no grupo de referência."""
+    u = u.copy()
+    u["H1"], u["H2"] = u.L1 + u.F1, u.L2 + u.F2
+    ok = (u.H1 >= MIN_VOTOS_PROPORCAO) & (u.H2 >= MIN_VOTOS_PROPORCAO)
+    r = desvio_logit(u.L1[ok], u.H1[ok], u.L2[ok], u.H2[ok], pd.Series(grupo, index=u.index)[ok])
+    u = u.join(r)
+    u["analisada"] = ok & u.ref_ok.fillna(False).astype(bool)
+    u["nivel"] = np.where(u.analisada, nivel_variacao(u.q, u.dif_pp), "")
+    return u
+
+
+def executar_variacao(df: pd.DataFrame, urnas: dict) -> dict:
+    res = {}
+    # V1 — estados, comparados às demais UFs
+    ufs = agregar_variacao(df, ["uf"])
+    res["V1"] = teste_transferencia(ufs, np.full(len(ufs), "BR"))
+    # V2 — municípios, comparados aos demais municípios da mesma UF
+    muns = agregar_variacao(df, ["uf", "mun", "nm_mun"])
+    res["V2"] = teste_transferencia(muns, muns.uf.values)
+    # Seções presentes nos dois turnos
+    s = df[df.ambos].copy()
+    s["H1"], s["H2"] = s.L1 + s.F1, s.L2 + s.F2
+    # V3 — seções, comparadas às seções do grupo de referência
+    elig = (s.H1 >= MIN_VOTOS_PROPORCAO) & (s.H2 >= MIN_VOTOS_PROPORCAO)
+    g = rotular_grupos_var(s[elig])
+    r = desvio_logit(s.L1[elig], s.H1[elig], s.L2[elig], s.H2[elig], g)
+    v3 = s[elig].join(r)
+    v3["grupo"] = g
+    v3["analisada"] = v3.ref_ok.astype(bool)
+    v3["nivel"] = np.where(v3.analisada, nivel_variacao(v3.q, v3.dif_pp), "")
+    res["V3"] = v3
+    # V4 — comparecimento: taxa do 2º turno comparada à esperada pela taxa do 1º turno e pelo grupo
+    elig = (s.aptos1 >= VAR_MIN_APTOS) & (s.aptos2 >= VAR_MIN_APTOS)
+    g = rotular_grupos_var(s[elig])
+    r = desvio_logit(s.comp1[elig], s.aptos1[elig], s.comp2[elig], s.aptos2[elig], g)
+    v4 = s[elig].join(r)
+    v4["analisada"] = v4.ref_ok.astype(bool)
+    # Direcionamento: a parcela da variação líquida do comparecimento que coube a um finalista (ΔX/ΔC) supera a
+    # participação média dele na seção, (X1 + X2)/(C1 + C2), em pelo menos VAR_LIMIAR_DIRECIONAMENTO.
+    dC = (v4.comp2 - v4.comp1).astype(float)
+    ex = {}
+    for nr, c in ((NR_L, "L"), (NR_F, "F")):
+        with np.errstate(all="ignore"):
+            ex[nr] = ((v4[c + "2"] - v4[c + "1"]) / dC.where(dC != 0)) - (v4[c + "1"] + v4[c + "2"]) / (v4.comp1 + v4.comp2)
+        ex[nr] = ex[nr].fillna(-9.0)
+    v4["exc_dir"] = np.maximum(ex[NR_L], ex[NR_F])
+    v4["direcionada"] = (dC.abs() >= VAR_MIN_VOTOS) & (v4.exc_dir >= VAR_LIMIAR_DIRECIONAMENTO)
+    v4["destino"] = np.where(~v4.direcionada, "", np.where(ex[NR_L] >= ex[NR_F], NR_L, NR_F))
+    sig = np.nan_to_num(v4.q.values, nan=1.0) < ALFA_FDR
+    dif = v4.dif_pp.abs().values
+    v4["nivel"] = np.where(v4.analisada & sig & (dif >= VAR_LIMIAR_ANOMALIA_PP) & v4.direcionada, "anomalia",
+                           np.where(v4.analisada & sig & (dif >= VAR_LIMIAR_INFO_PP), "informativo", ""))
+    res["V4"] = v4
+    # V5 — ganho acima do teto de votos disponíveis sem troca direta entre os finalistas
+    v5 = s.copy()
+    teto = v5.O1 + v5.B1 + v5.N1 + np.maximum(v5.comp2 - v5.comp1, 0)
+    v5["teto"] = teto
+    v5["exc_L"] = (v5.L2 - v5.L1) - teto
+    v5["exc_F"] = (v5.F2 - v5.F1) - teto
+    kL = (v5.exc_L >= VAR_MIN_VOTOS) & (v5.exc_L >= VAR_LIMIAR_TETO * v5.F1)
+    kF = (v5.exc_F >= VAR_MIN_VOTOS) & (v5.exc_F >= VAR_LIMIAR_TETO * v5.L1)
+    v5["quem"] = np.where(kL, NR_L, np.where(kF, NR_F, ""))
+    v5["analisada"] = True
+    v5["nivel"] = np.where(kL | kF, "informativo", "")
+    res["V5"] = v5
+    # V6 — cadastro alterado entre os turnos ou boletim ausente em um dos turnos
+    v6 = df.copy()
+    da = v6.aptos2 - v6.aptos1
+    v6["d_aptos"] = da
+    k = v6.ambos & (da.abs() >= VAR_MIN_VOTOS) & (da.abs() >= VAR_LIMIAR_CADASTRO * v6.aptos1)
+    falta = ~v6.ambos & ((v6.aptos1 > 0) | (v6.aptos2 > 0))
+    v6["motivo"] = np.where(k, "aptos", np.where(falta & (v6.aptos2 == 0), "sem_bu_2t", np.where(falta, "sem_bu_1t", "")))
+    v6["analisada"] = True
+    v6["nivel"] = np.where(k | falta, "informativo", "")
+    res["V6"] = v6
+    res["_urnas"] = urnas
+    res["_br"] = {c: int(df[c].sum()) for c in COLS_VOTOS_VAR}
+    return res
+
+
+def r6(x):
+    """6 algarismos significativos, como o núcleo analítico."""
+    if x is None or (isinstance(x, float) and not np.isfinite(x)):
+        return None
+    return float(f"{x:.6g}")
+
+
+def montar_sinais_variacao(res: dict) -> pd.DataFrame:
+    urnas = res["_urnas"]
+    lin = []
+
+    def base(r, teste):
+        return {"teste": teste, "nivel_geo": NIVEL_TESTE_VAR[teste], "uf": r["uf"], "mun": r.get("mun", ""), "nm_mun": r.get("nm_mun", ""),
+                "zona": r.get("zona", ""), "secao": r.get("secao", ""),
+                "L1": r["L1"], "F1": r["F1"], "O1": r["O1"], "BN1": r["B1"] + r["N1"], "comp1": r["comp1"], "aptos1": r["aptos1"],
+                "L2": r["L2"], "F2": r["F2"], "BN2": r["B2"] + r["N2"], "comp2": r["comp2"], "aptos2": r["aptos2"],
+                "dL": r["L2"] - r["L1"], "dF": r["F2"] - r["F1"], "dComp": r["comp2"] - r["comp1"],
+                "observado": "", "esperado": "", "dif_pp": "", "q": "", "detalhe": "", "nr_urna": "", "cod_carga": ""}
+
+    for t in ("V1", "V2", "V3"):
+        d = res[t]
+        for _, r in d[d.nivel != ""].iterrows():
+            b = base(r, t)
+            b.update(nivel=r["nivel"], observado=r6(r["observado"]), esperado=r6(r["esperado"]), dif_pp=r6(r["dif_pp"]), q=r6(r["q"]),
+                     detalhe=f"phi={r['phi']:.3g}")
+            lin.append(b)
+    d = res["V4"]
+    for _, r in d[d.nivel != ""].iterrows():
+        b = base(r, "V4")
+        b.update(nivel=r["nivel"], observado=r6(r["observado"]), esperado=r6(r["esperado"]), dif_pp=r6(r["dif_pp"]), q=r6(r["q"]),
+                 detalhe=(f"destino={r['destino']}; excesso={r['exc_dir']:.3g}" if r["destino"] else "destino=proporcional") + f"; phi={r['phi']:.3g}")
+        lin.append(b)
+    d = res["V5"]
+    for _, r in d[d.nivel != ""].iterrows():
+        b = base(r, "V5")
+        exc = r["exc_L"] if r["quem"] == NR_L else r["exc_F"]
+        b.update(nivel=r["nivel"], observado=int(r["L2"] - r["L1"] if r["quem"] == NR_L else r["F2"] - r["F1"]), esperado=int(r["teto"]),
+                 detalhe=f"candidato={r['quem']}; excesso={int(exc)}")
+        lin.append(b)
+    d = res["V6"]
+    for _, r in d[d.nivel != ""].iterrows():
+        b = base(r, "V6")
+        b.update(nivel=r["nivel"], observado=int(r["aptos2"]), esperado=int(r["aptos1"]),
+                 detalhe=f"motivo={r['motivo']}" + (f"; d_aptos={int(r['d_aptos'])}" if r["motivo"] == "aptos" else ""))
+        lin.append(b)
+    if not lin:
+        return pd.DataFrame(columns=[c for c in COLS_CSV_VAR if c != "teste_nome"])
+    s = pd.DataFrame(lin)
+    for i, r in s.iterrows():
+        if r["nivel_geo"] == "secao":
+            u = urnas.get((r["uf"], int(r["zona"]), int(r["secao"])))
+            if u:
+                s.at[i, "nr_urna"], s.at[i, "cod_carga"] = u
+    ordem_t = {t: i for i, t in enumerate(TESTES_VAR)}
+    s["_o1"] = s.nivel.map({"anomalia": 0, "informativo": 1})
+    s["_o2"] = s.teste.map(ordem_t)
+    s["_o3"] = pd.to_numeric(s.q, errors="coerce").fillna(1.0)
+    s = s.sort_values(["_o2", "_o1", "_o3", "uf", "mun", "zona", "secao"], kind="mergesort").drop(columns=["_o1", "_o2", "_o3"])
+    return s.reset_index(drop=True)
+
+
+def contagens_variacao(res: dict) -> dict:
+    c = {}
+    for t in TESTES_VAR:
+        d = res[t]
+        c[t] = {"unidades": int(d.analisada.sum()), "a": int((d.nivel == "anomalia").sum()), "i": int((d.nivel == "informativo").sum())}
+    return c
+
+
+def status_variacao(c: dict) -> str:
+    return "🔴" if c["a"] else ("🟡" if c["i"] else "🟢")
+
+
+def fsin(x, lang: str) -> str:
+    """Inteiro com sinal (+/−) e separador de milhar do idioma."""
+    return ("+" if x > 0 else "−" if x < 0 else "") + fnum(abs(x), lang)
+
+
+def escrever_csv_variacao(p: Path, linhas: list[dict], cols: list[str]) -> None:
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=cols, extrasaction="ignore", lineterminator="\r\n")
+    w.writeheader()
+    for ln in linhas:
+        w.writerow({k: ("" if v is None or (isinstance(v, float) and not np.isfinite(v)) else v) for k, v in ln.items()})
+    p.write_bytes(("﻿" + buf.getvalue()).encode("utf-8"))
+
+
+def tabela_nivel_variacao(d: pd.DataFrame, chave: list[str]) -> list[dict]:
+    out = []
+    for _, r in d.iterrows():
+        ln = {k: r[k] for k in chave}
+        ln.update({c: int(r[c]) for c in COLS_VOTOS_VAR})
+        ln.update(secoes=int(r["secoes"]), BN1=int(r["B1"] + r["N1"]), BN2=int(r["B2"] + r["N2"]),
+                  dL=int(r["L2"] - r["L1"]), dF=int(r["F2"] - r["F1"]), dComp=int(r["comp2"] - r["comp1"]),
+                  observado=r6(r["observado"]), esperado=r6(r["esperado"]), dif_pp=r6(r["dif_pp"]), q=r6(r["q"]),
+                  nivel=r["nivel"] or ("" if not r["analisada"] else "ok"))
+        out.append(ln)
+    return out
+
+
+TXT_VAR = {
+    "PT": {
+        "s3": "**Variação entre turnos.** Como a pasta de dados contém os dois turnos, foram aplicados também os seis testes de variação "
+              "dos votos para Presidente entre o 1º e o 2º turno (V1 a V6), apresentados no **Anexo A**, ao final do relatório: {a} "
+              "anomalia(s) (🔴) e {i} evento(s) informativo(s) (🟡).",
+        "s3_sem": "Os seis testes de variação dos votos para Presidente entre o 1º e o 2º turno (V1 a V6, Anexo A) exigem os Boletins de "
+                  "Urna dos dois turnos na mesma pasta de dados e não foram aplicados nesta execução.",
+        "s3_falha": "Os testes de variação entre turnos (V1 a V6) não puderam ser concluídos: `{erro}`.",
+        "fora": "UFs com boletins em apenas um dos turnos, fora deste anexo: {ufs}.",
+        "nome": {"V1": "Transferência atípica no estado", "V2": "Transferência atípica no município", "V3": "Transferência atípica na seção",
+                 "V4": "Variação atípica do comparecimento", "V5": "Ganho acima do teto de votos disponíveis",
+                 "V6": "Cadastro alterado entre os turnos"},
+        "nivel": {"uf": "Estado", "municipio": "Município", "secao": "Seção"},
+        "titulo": "## Anexo A — Variação dos votos para Presidente entre o 1º e o 2º turno",
+        "a1_t": "### A.1 Objetivo e escopo",
+        "a1": "Comparar, para o cargo de Presidente, os votos do 1º turno (04/10/2026) e do 2º turno (25/10/2026) em quatro níveis — Brasil, "
+              "estado (UF), município e seção eleitoral —, informando separadamente quantos votos cada finalista ganhou ou perdeu, e aplicar seis "
+              "testes (V1 a V6) para identificar variações estatisticamente atípicas. Finalistas: Lula (nº 13) e Flávio Bolsonaro (nº 22). Cada "
+              "seção eleitoral corresponde a uma urna; seções agregadas aparecem sob o número da seção principal, como no restante do relatório.\n\n"
+              "Este anexo lista apenas os itens com anomalia (🔴) ou evento informativo (🟡). A variação de todos os estados e municípios está em "
+              "`dados/variacao_turnos_ufs.csv` e `dados/variacao_turnos_municipios.csv`; a de todas as seções, em `dados/variacao_turnos_secoes.csv`.",
+        "a2_t": "### A.2 Variação nacional e identidade dos votos",
+        "a2": "Os votos que um finalista ganha no 2º turno só podem vir de quatro fontes: eleitores que votaram nos demais candidatos no 1º turno; "
+              "eleitores que votaram em branco ou nulo no 1º turno; eleitores que não votaram no 1º turno e votaram no 2º; e eleitores do outro "
+              "finalista que mudaram de voto. Em qualquer nível — Brasil, estado, município ou seção — vale a identidade contábil:\n\n"
+              "> **ganho de Lula + ganho de Flávio = votos dos demais candidatos no 1º turno + (brancos e nulos do 1º turno − brancos e nulos do "
+              "2º turno) + variação do comparecimento**",
+        "onde": ["No Brasil", "Nas UFs analisadas ({ufs})"],
+        "a2_br": "{onde}: {o1} + ({bn1} − {bn2}) {dc_sinal} {dc} = **{pool}** votos, dos quais Lula ficou com **{dl}** ({pl}) e Flávio Bolsonaro "
+                 "com **{df}** ({pf}).",
+        "cab_br": ["", "1º turno", "2º turno", "Variação"],
+        "lin_br": ["Lula (13)", "Flávio Bolsonaro (22)", "Demais candidatos", "Brancos", "Nulos", "Comparecimento", "Eleitores aptos"],
+        "a3_t": "### A.3 Métodos",
+        "comum": "**Fundamento comum (V1 a V4).** Para cada unidade (estado, município ou seção), a proporção observada no 2º turno (p₂) é comparada "
+                 "à proporção esperada (p̂), obtida aplicando à proporção do 1º turno (p₁) o deslocamento logístico observado no grupo de referência, "
+                 "calculado sem a própria unidade (*leave-one-out*): logit(p̂) = logit(p₁) + [logit(P₂) − logit(P₁)], em que P₁ e P₂ são as "
+                 "proporções agregadas do grupo. A diferença é avaliada pela estatística z = (p₂ − p̂)/√(p̂(1 − p̂)/n), dividida por √φ, com "
+                 "φ = mediana(z²)/0,4549 estimado no grupo de referência (φ ≥ {phi}). Diferentemente do teste 8, φ pode ser menor que 1: o voto do "
+                 "1º turno explica a maior parte do voto do 2º, e a variação entre turnos é menor que a de sorteios binomiais independentes. "
+                 "p bilateral; ajuste de Benjamini–Hochberg em cada teste. Além da significância estatística, exige-se efeito mínimo: "
+                 "🔴 q < {alfa} e |p₂ − p̂| ≥ {la} p.p.; 🟡 q < {alfa} e {li} ≤ |p₂ − p̂| < {la} p.p. Unidades cujo grupo de referência tem menos "
+                 "de {mref} outras unidades não são avaliadas.",
+        "obj": "Objetivo", "met": "Método", "crit": "Critério",
+        "testes": {
+            "V1": ["verificar se a participação de Lula nos votos dos dois finalistas, no 2º turno, se afastou do esperado para o estado.",
+                   "p = Lula/(Lula + Flávio) em cada turno; grupo de referência: as demais UFs (o Exterior é tratado como uma UF).",
+                   "fundamento comum."],
+            "V2": ["verificar se a participação de Lula nos votos dos dois finalistas, no 2º turno, se afastou do esperado para o município.",
+                   "p = Lula/(Lula + Flávio) em cada turno; grupo de referência: os demais municípios da mesma UF; municípios com ao menos "
+                   "{minv} votos nos finalistas em cada turno.",
+                   "fundamento comum."],
+            "V3": ["verificar se a participação de Lula nos votos dos dois finalistas, no 2º turno, se afastou do esperado para a seção, "
+                   "considerando as seções vizinhas.",
+                   "p = Lula/(Lula + Flávio) em cada turno; grupo de referência: a mesma hierarquia do relatório (zona dentro do município, "
+                   "com ao menos {mg} seções → município → zona → UF → Brasil); seções com ao menos {minv} votos nos finalistas em cada turno.",
+                   "fundamento comum."],
+            "V4": ["identificar seções em que o comparecimento subiu ou caiu muito além do observado nas seções do grupo de referência, "
+                   "tratando como anomalia os casos em que essa variação ficou concentrada em um dos finalistas.",
+                   "p = comparecimento/eleitores aptos, com o fundamento comum (seções com ao menos {mapt} aptos em cada turno). Direcionamento: "
+                   "a parcela da variação líquida do comparecimento que coube a um finalista (ΔX/ΔC) supera a participação média dele na seção, "
+                   "(X₁ + X₂)/(C₁ + C₂), em ao menos {dir} p.p., com |ΔC| ≥ {mvar} votos.",
+                   "🔴 q < {alfa}, |p₂ − p̂| ≥ {la} p.p. e variação direcionada; 🟡 q < {alfa} e |p₂ − p̂| ≥ {li} p.p. nos demais casos."],
+            "V5": ["identificar seções em que um finalista ganhou mais votos do que havia disponível sem que eleitores do outro finalista "
+                   "mudassem de voto.",
+                   "teto = votos dos demais candidatos no 1º turno + brancos e nulos do 1º turno + aumento do comparecimento (quando houver). "
+                   "Teste determinístico.",
+                   "🟡 quando o ganho supera o teto em ao menos {mvar} votos e em ao menos {teto}% dos votos do outro finalista no 1º turno. "
+                   "É sempre informativo: a mudança de voto entre os finalistas é um comportamento legítimo do eleitor; o registro indica onde "
+                   "essa mudança foi expressiva."],
+            "V6": ["registrar seções cujo eleitorado mudou entre os turnos, o que afeta a comparação.",
+                   "comparação do número de eleitores aptos nos dois boletins da seção.",
+                   "🟡 quando o número de aptos variou em ao menos {mvar} eleitores e em ao menos {cad}%, ou quando a seção tem boletim em apenas "
+                   "um dos turnos. É sempre informativo: ajustes do cadastro entre os turnos ocorrem, por exemplo, com eleitores habilitados para "
+                   "votar em trânsito, seções especiais e decisões da Justiça Eleitoral."],
+        },
+        "a4_t": "### A.4 Resultados consolidados",
+        "cab_res": ["Teste", "Nível", "Unidades analisadas", "Anomalias (🔴)", "Eventos informativos (🟡)"],
+        "a4_txt": "Os testes V3, V4 e V5 examinam as mesmas seções e não são independentes; uma seção pode aparecer em mais de um deles.",
+        "a5_t": "### A.5 Itens sinalizados — listas completas",
+        "a5": "As listas trazem todos os itens 🔴 e 🟡, em ordem de q. Para conferir a sua seção, procure a UF, a zona e a seção (Ctrl+F). As colunas "
+              "“1º → 2º” mostram os votos no 1º turno, no 2º turno e, entre parênteses, a variação. O número da urna é o do Boletim de Urna do "
+              "2º turno (ou do 1º, quando a seção só tem boletim nesse turno).",
+        "sub_a": "🔴 Anomalias — lista completa ({n})", "sub_i": "🟡 Eventos informativos — lista completa ({n})", "nenhum": "Nenhuma sinalização.",
+        "c": {"uf": "UF", "mun": "Município", "zona": "Zona", "secao": "Seção", "urna": "Nº da urna", "secoes": "Seções",
+              "L": "Lula 1º → 2º", "F": "Flávio 1º → 2º", "O": "Demais 1º", "BN": "Brancos e nulos 1º → 2º", "C": "Comparecimento 1º → 2º",
+              "obs": "% Lula obs.", "esp": "% Lula esp.", "dif": "Δ p.p.", "q": "q (BH)", "aptos": "Aptos 1º → 2º",
+              "tobs": "Comparec. obs.", "tesp": "Comparec. esp.", "dest": "Direcionamento", "cand": "Finalista", "ganho": "Ganho",
+              "teto": "Teto", "exc": "Excesso", "mot": "Motivo"},
+        "dest": {"13": "Lula ({x} p.p. acima da participação)", "22": "Flávio ({x} p.p. acima da participação)", "": "proporcional"},
+        "mot": {"aptos": "aptos alterados ({x})", "sem_bu_2t": "sem boletim no 2º turno", "sem_bu_1t": "sem boletim no 1º turno"},
+        "a6_t": "### A.6 Limitações",
+        "a6": ["A comparação é feita com votos agregados por seção. O voto é secreto, e não há dado individual de eleitor: não é possível saber "
+               "quem mudou de voto, nem separar quem votou em um turno e se absteve no outro; os testes tratam a variação líquida.",
+               "O deslocamento logístico uniforme é uma aproximação. Perfis locais distintos (idade, renda, religião, bairro de origem) e fatos "
+               "locais ocorridos entre os turnos (apoios políticos, mudança de local de votação, transporte, clima) podem gerar desvios legítimos.",
+               "Os limiares de efeito ({la} e {li} p.p.), de direcionamento ({dir} p.p.), de teto ({teto}%) e de cadastro ({cad}%) são premissas "
+               "explícitas deste anexo e podem ser alterados no início da Parte 5 do código do motor (parâmetros `VAR_*`).",
+               "Os testes V3, V4 e V5 não são independentes entre si; sinalizações simultâneas podem ter a mesma causa legítima.",
+               "Como no restante do relatório, a análise não examina os arquivos assinados das urnas (.bu, .rdv, .logjez), cuja verificação é "
+               "recomendada para os itens sinalizados."],
+        "a7_t": "### A.7 Reprodutibilidade e arquivos",
+        "a7": "O Anexo A é gerado pelo próprio motor sempre que a pasta de dados contém os Boletins de Urna do 1º e do 2º turno. Os "
+              "resultados dos testes V1 a V6 entram no núcleo analítico e na verificação de determinismo (Seção 14): mesma entrada, "
+              "mesmos arquivos.",
+        "cab_arq": ["Arquivo", "Conteúdo", "SHA-512"],
+        "arq": {"sin": "Itens 🔴 e 🟡 de todos os testes e níveis", "sec": "Todas as seções: votos e variação", "mun": "Todos os municípios: votos, variação e teste V2",
+                "uf": "Todos os estados: votos, variação e teste V1"},
+    },
+    "EN": {
+        "s3": "**Change between rounds.** Since the data folder contains both rounds, the six tests of change in presidential votes "
+              "between round 1 and round 2 (V1 to V6) were also applied; they are presented in **Appendix A**, at the end of the report: "
+              "{a} anomaly(ies) (🔴) and {i} informational event(s) (🟡).",
+        "s3_sem": "The six tests of change in presidential votes between round 1 and round 2 (V1 to V6, Appendix A) require the Ballot "
+                  "Box Reports of both rounds in the same data folder and were not applied in this run.",
+        "s3_falha": "The tests of change between rounds (V1 to V6) could not be completed: `{erro}`.",
+        "fora": "States with reports in only one of the rounds, outside this appendix: {ufs}.",
+        "nome": {"V1": "Atypical transfer in the state", "V2": "Atypical transfer in the municipality", "V3": "Atypical transfer in the section",
+                 "V4": "Atypical change in turnout", "V5": "Gain above the ceiling of available votes",
+                 "V6": "Voter roll changed between rounds"},
+        "nivel": {"uf": "State", "municipio": "Municipality", "secao": "Section"},
+        "titulo": "## Appendix A — Change in presidential votes between round 1 and round 2",
+        "a1_t": "### A.1 Purpose and scope",
+        "a1": "To compare, for the office of President, the votes of round 1 (Oct 4, 2026) and round 2 (Oct 25, 2026) at four levels — Brazil, "
+              "state (UF), municipality and polling section —, reporting separately how many votes each finalist gained or lost, and to apply six "
+              "tests (V1 to V6) to identify statistically atypical changes. Finalists: Lula (no. 13) and Flávio Bolsonaro (no. 22). Each polling "
+              "section corresponds to one voting machine; aggregated sections appear under the number of the main section, as in the rest of the report.\n\n"
+              "This appendix lists only items with an anomaly (🔴) or an informational event (🟡). The change for every state and municipality is in "
+              "`dados/variacao_turnos_ufs.csv` and `dados/variacao_turnos_municipios.csv`; the change for every section, in `dados/variacao_turnos_secoes.csv`.",
+        "a2_t": "### A.2 National change and vote identity",
+        "a2": "The votes a finalist gains in round 2 can only come from four sources: voters who chose the other candidates in round 1; voters who "
+              "voted blank or null in round 1; voters who did not vote in round 1 and voted in round 2; and voters of the other finalist who changed "
+              "their vote. At every level — Brazil, state, municipality or section — the following accounting identity holds:\n\n"
+              "> **Lula's gain + Flávio's gain = votes for the other candidates in round 1 + (blank and null in round 1 − blank and null in round 2) "
+              "+ change in turnout**",
+        "onde": ["In Brazil", "In the states analyzed ({ufs})"],
+        "a2_br": "{onde}: {o1} + ({bn1} − {bn2}) {dc_sinal} {dc} = **{pool}** votes, of which Lula took **{dl}** ({pl}) and Flávio Bolsonaro "
+                 "**{df}** ({pf}).",
+        "cab_br": ["", "Round 1", "Round 2", "Change"],
+        "lin_br": ["Lula (13)", "Flávio Bolsonaro (22)", "Other candidates", "Blank", "Null", "Turnout", "Eligible voters"],
+        "a3_t": "### A.3 Methods",
+        "comum": "**Common basis (V1 to V4).** For each unit (state, municipality or section), the proportion observed in round 2 (p₂) is compared "
+                 "with the expected proportion (p̂), obtained by applying to the round 1 proportion (p₁) the logistic shift observed in the "
+                 "reference group, computed without the unit itself (leave-one-out): logit(p̂) = logit(p₁) + [logit(P₂) − logit(P₁)], where P₁ and "
+                 "P₂ are the group's aggregate proportions. The difference is assessed with the statistic z = (p₂ − p̂)/√(p̂(1 − p̂)/n), divided by "
+                 "√φ, with φ = median(z²)/0.4549 estimated in the reference group (φ ≥ {phi}). Unlike test 8, φ may be below 1: the round 1 vote "
+                 "explains most of the round 2 vote, and the change between rounds is smaller than that of independent binomial draws. Two-sided "
+                 "p; Benjamini–Hochberg adjustment within each test. In addition to statistical significance, a minimum effect is required: "
+                 "🔴 q < {alfa} and |p₂ − p̂| ≥ {la} p.p.; 🟡 q < {alfa} and {li} ≤ |p₂ − p̂| < {la} p.p. Units whose reference group has fewer "
+                 "than {mref} other units are not assessed.",
+        "obj": "Purpose", "met": "Method", "crit": "Criterion",
+        "testes": {
+            "V1": ["check whether Lula's share of the two finalists' votes in round 2 departed from what was expected for the state.",
+                   "p = Lula/(Lula + Flávio) in each round; reference group: the other states (Abroad is treated as a state).",
+                   "common basis."],
+            "V2": ["check whether Lula's share of the two finalists' votes in round 2 departed from what was expected for the municipality.",
+                   "p = Lula/(Lula + Flávio) in each round; reference group: the other municipalities of the same state; municipalities with at "
+                   "least {minv} votes for the finalists in each round.",
+                   "common basis."],
+            "V3": ["check whether Lula's share of the two finalists' votes in round 2 departed from what was expected for the section, given the "
+                   "neighboring sections.",
+                   "p = Lula/(Lula + Flávio) in each round; reference group: the same hierarchy as the report (zone within the municipality with "
+                   "at least {mg} sections → municipality → zone → state → Brazil); sections with at least {minv} votes for the finalists in each round.",
+                   "common basis."],
+            "V4": ["identify sections where turnout rose or fell far beyond what was observed in the reference group, treating as an anomaly "
+                   "the cases where that change was concentrated on one of the finalists.",
+                   "p = turnout/eligible voters, with the common basis (sections with at least {mapt} eligible voters in each round). Direction: the "
+                   "share of the net turnout change that went to one finalist (ΔX/ΔC) exceeds that finalist's average share in the section, "
+                   "(X₁ + X₂)/(C₁ + C₂), by at least {dir} p.p., with |ΔC| ≥ {mvar} votes.",
+                   "🔴 q < {alfa}, |p₂ − p̂| ≥ {la} p.p. and directed change; 🟡 q < {alfa} and |p₂ − p̂| ≥ {li} p.p. in the other cases."],
+            "V5": ["identify sections where a finalist gained more votes than were available without voters of the other finalist changing their vote.",
+                   "ceiling = votes for the other candidates in round 1 + blank and null in round 1 + increase in turnout (if any). Deterministic test.",
+                   "🟡 when the gain exceeds the ceiling by at least {mvar} votes and by at least {teto}% of the other finalist's round 1 votes. It is "
+                   "always informational: changing one's vote between the finalists is legitimate voter behavior; the record shows where that change "
+                   "was large."],
+            "V6": ["record sections whose electorate changed between rounds, which affects the comparison.",
+                   "comparison of the number of eligible voters in the section's two reports.",
+                   "🟡 when the number of eligible voters changed by at least {mvar} voters and by at least {cad}%, or when the section has a report "
+                   "in only one round. It is always informational: voter roll adjustments between rounds occur, for example, with voters authorized "
+                   "to vote in transit, special sections and Electoral Court decisions."],
+        },
+        "a4_t": "### A.4 Consolidated results",
+        "cab_res": ["Test", "Level", "Units analyzed", "Anomalies (🔴)", "Informational events (🟡)"],
+        "a4_txt": "Tests V3, V4 and V5 examine the same sections and are not independent; a section may appear in more than one of them.",
+        "a5_t": "### A.5 Flagged items — complete lists",
+        "a5": "The lists include every 🔴 and 🟡 item, ordered by q. To check your section, search for the state, zone and section (Ctrl+F). The "
+              "“R1 → R2” columns show the votes in round 1, in round 2 and, in parentheses, the change. The voting machine number is the one in the "
+              "round 2 Ballot Box Report (or round 1, when the section only has a report in that round).",
+        "sub_a": "🔴 Anomalies — complete list ({n})", "sub_i": "🟡 Informational events — complete list ({n})", "nenhum": "No flags.",
+        "c": {"uf": "State", "mun": "Municipality", "zona": "Zone", "secao": "Section", "urna": "Machine no.", "secoes": "Sections",
+              "L": "Lula R1 → R2", "F": "Flávio R1 → R2", "O": "Others R1", "BN": "Blank and null R1 → R2", "C": "Turnout R1 → R2",
+              "obs": "% Lula obs.", "esp": "% Lula exp.", "dif": "Δ p.p.", "q": "q (BH)", "aptos": "Eligible R1 → R2",
+              "tobs": "Turnout obs.", "tesp": "Turnout exp.", "dest": "Direction", "cand": "Finalist", "ganho": "Gain",
+              "teto": "Ceiling", "exc": "Excess", "mot": "Reason"},
+        "dest": {"13": "Lula ({x} p.p. above share)", "22": "Flávio ({x} p.p. above share)", "": "proportional"},
+        "mot": {"aptos": "eligible voters changed ({x})", "sem_bu_2t": "no report in round 2", "sem_bu_1t": "no report in round 1"},
+        "a6_t": "### A.6 Limitations",
+        "a6": ["The comparison uses votes aggregated by section. The vote is secret and there is no individual voter data: it is not possible to "
+               "know who changed their vote, nor to separate those who voted in one round and abstained in the other; the tests deal with the net change.",
+               "The uniform logistic shift is an approximation. Different local profiles (age, income, religion, neighborhood of origin) and local "
+               "events between rounds (political endorsements, change of polling place, transport, weather) may cause legitimate deviations.",
+               "The effect thresholds ({la} and {li} p.p.), direction ({dir} p.p.), ceiling ({teto}%) and voter roll ({cad}%) are explicit "
+               "assumptions of this appendix and can be changed at the start of Part 5 of the engine code (`VAR_*` parameters).",
+               "Tests V3, V4 and V5 are not independent of each other; simultaneous flags may share the same legitimate cause.",
+               "As in the rest of the report, the analysis does not examine the voting machines' signed files (.bu, .rdv, .logjez), whose "
+               "verification is recommended for flagged items."],
+        "a7_t": "### A.7 Reproducibility and files",
+        "a7": "Appendix A is produced by the engine itself whenever the data folder contains the Ballot Box Reports of round 1 and "
+              "round 2. The results of tests V1 to V6 are part of the analytical core and of the determinism check (Section 14): same "
+              "input, same files.",
+        "cab_arq": ["File", "Content", "SHA-512"],
+        "arq": {"sin": "🔴 and 🟡 items of every test and level", "sec": "Every section: votes and change", "mun": "Every municipality: votes, change and test V2",
+                "uf": "Every state: votes, change and test V1"},
+    },
+    "ES": {
+        "s3": "**Variación entre vueltas.** Como la carpeta de datos contiene las dos vueltas, también se aplicaron las seis pruebas de "
+              "variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta (V1 a V6), presentadas en el **Anexo A**, al final del "
+              "informe: {a} anomalía(s) (🔴) y {i} evento(s) informativo(s) (🟡).",
+        "s3_sem": "Las seis pruebas de variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta (V1 a V6, Anexo A) requieren "
+                  "los Boletines de Urna de las dos vueltas en la misma carpeta de datos y no se aplicaron en esta ejecución.",
+        "s3_falha": "Las pruebas de variación entre vueltas (V1 a V6) no pudieron completarse: `{erro}`.",
+        "fora": "UF con boletines en solo una de las vueltas, fuera de este anexo: {ufs}.",
+        "nome": {"V1": "Transferencia atípica en el estado", "V2": "Transferencia atípica en el municipio", "V3": "Transferencia atípica en la sección",
+                 "V4": "Variación atípica de la participación", "V5": "Ganancia por encima del techo de votos disponibles",
+                 "V6": "Padrón alterado entre las vueltas"},
+        "nivel": {"uf": "Estado", "municipio": "Municipio", "secao": "Sección"},
+        "titulo": "## Anexo A — Variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta",
+        "a1_t": "### A.1 Objetivo y alcance",
+        "a1": "Comparar, para el cargo de Presidente, los votos de la 1.ª vuelta (04/10/2026) y de la 2.ª vuelta (25/10/2026) en cuatro niveles "
+              "—Brasil, estado (UF), municipio y sección electoral—, informando por separado cuántos votos ganó o perdió cada finalista, y aplicar "
+              "seis pruebas (V1 a V6) para identificar variaciones estadísticamente atípicas. Finalistas: Lula (n.º 13) y Flávio Bolsonaro (n.º 22). "
+              "Cada sección electoral corresponde a una urna; las secciones agregadas aparecen bajo el número de la sección principal, como en el "
+              "resto del informe.\n\n"
+              "Este anexo enumera solo los ítems con anomalía (🔴) o evento informativo (🟡). La variación de todos los estados y municipios está en "
+              "`dados/variacao_turnos_ufs.csv` y `dados/variacao_turnos_municipios.csv`; la de todas las secciones, en `dados/variacao_turnos_secoes.csv`.",
+        "a2_t": "### A.2 Variación nacional e identidad de los votos",
+        "a2": "Los votos que un finalista gana en la 2.ª vuelta solo pueden provenir de cuatro fuentes: electores que votaron por los demás "
+              "candidatos en la 1.ª vuelta; electores que votaron en blanco o nulo en la 1.ª vuelta; electores que no votaron en la 1.ª vuelta y "
+              "votaron en la 2.ª; y electores del otro finalista que cambiaron su voto. En cualquier nivel —Brasil, estado, municipio o sección— se "
+              "cumple la identidad contable:\n\n"
+              "> **ganancia de Lula + ganancia de Flávio = votos de los demás candidatos en la 1.ª vuelta + (blancos y nulos de la 1.ª vuelta − "
+              "blancos y nulos de la 2.ª vuelta) + variación de la participación**",
+        "onde": ["En Brasil", "En las UF analizadas ({ufs})"],
+        "a2_br": "{onde}: {o1} + ({bn1} − {bn2}) {dc_sinal} {dc} = **{pool}** votos, de los cuales Lula obtuvo **{dl}** ({pl}) y Flávio "
+                 "Bolsonaro **{df}** ({pf}).",
+        "cab_br": ["", "1.ª vuelta", "2.ª vuelta", "Variación"],
+        "lin_br": ["Lula (13)", "Flávio Bolsonaro (22)", "Demás candidatos", "Blancos", "Nulos", "Participación", "Electores habilitados"],
+        "a3_t": "### A.3 Métodos",
+        "comum": "**Fundamento común (V1 a V4).** Para cada unidad (estado, municipio o sección), la proporción observada en la 2.ª vuelta (p₂) se "
+                 "compara con la proporción esperada (p̂), obtenida aplicando a la proporción de la 1.ª vuelta (p₁) el desplazamiento logístico "
+                 "observado en el grupo de referencia, calculado sin la propia unidad (*leave-one-out*): logit(p̂) = logit(p₁) + [logit(P₂) − "
+                 "logit(P₁)], donde P₁ y P₂ son las proporciones agregadas del grupo. La diferencia se evalúa con el estadístico "
+                 "z = (p₂ − p̂)/√(p̂(1 − p̂)/n), dividido por √φ, con φ = mediana(z²)/0,4549 estimado en el grupo de referencia (φ ≥ {phi}). A "
+                 "diferencia de la prueba 8, φ puede ser menor que 1: el voto de la 1.ª vuelta explica la mayor parte del voto de la 2.ª, y la "
+                 "variación entre vueltas es menor que la de sorteos binomiales independientes. p bilateral; ajuste de Benjamini–Hochberg en cada "
+                 "prueba. Además de la significancia estadística, se exige un efecto mínimo: 🔴 q < {alfa} y |p₂ − p̂| ≥ {la} p.p.; 🟡 q < {alfa} y "
+                 "{li} ≤ |p₂ − p̂| < {la} p.p. Las unidades cuyo grupo de referencia tiene menos de {mref} otras unidades no se evalúan.",
+        "obj": "Objetivo", "met": "Método", "crit": "Criterio",
+        "testes": {
+            "V1": ["verificar si la participación de Lula en los votos de los dos finalistas, en la 2.ª vuelta, se apartó de lo esperado para el estado.",
+                   "p = Lula/(Lula + Flávio) en cada vuelta; grupo de referencia: las demás UF (el Exterior se trata como una UF).",
+                   "fundamento común."],
+            "V2": ["verificar si la participación de Lula en los votos de los dos finalistas, en la 2.ª vuelta, se apartó de lo esperado para el municipio.",
+                   "p = Lula/(Lula + Flávio) en cada vuelta; grupo de referencia: los demás municipios de la misma UF; municipios con al menos "
+                   "{minv} votos para los finalistas en cada vuelta.",
+                   "fundamento común."],
+            "V3": ["verificar si la participación de Lula en los votos de los dos finalistas, en la 2.ª vuelta, se apartó de lo esperado para la "
+                   "sección, considerando las secciones vecinas.",
+                   "p = Lula/(Lula + Flávio) en cada vuelta; grupo de referencia: la misma jerarquía del informe (zona dentro del municipio, con "
+                   "al menos {mg} secciones → municipio → zona → UF → Brasil); secciones con al menos {minv} votos para los finalistas en cada vuelta.",
+                   "fundamento común."],
+            "V4": ["identificar secciones en las que la participación subió o bajó mucho más de lo observado en el grupo de referencia, "
+                   "tratando como anomalía los casos en que esa variación se concentró en uno de los finalistas.",
+                   "p = participación/electores habilitados, con el fundamento común (secciones con al menos {mapt} habilitados en cada vuelta). "
+                   "Direccionamiento: la parte de la variación neta de la participación que correspondió a un finalista (ΔX/ΔC) supera su "
+                   "participación media en la sección, (X₁ + X₂)/(C₁ + C₂), en al menos {dir} p.p., con |ΔC| ≥ {mvar} votos.",
+                   "🔴 q < {alfa}, |p₂ − p̂| ≥ {la} p.p. y variación direccionada; 🟡 q < {alfa} y |p₂ − p̂| ≥ {li} p.p. en los demás casos."],
+            "V5": ["identificar secciones en las que un finalista ganó más votos de los que había disponibles sin que electores del otro finalista "
+                   "cambiaran su voto.",
+                   "techo = votos de los demás candidatos en la 1.ª vuelta + blancos y nulos de la 1.ª vuelta + aumento de la participación (si "
+                   "lo hubo). Prueba determinística.",
+                   "🟡 cuando la ganancia supera el techo en al menos {mvar} votos y en al menos el {teto}% de los votos del otro finalista en la "
+                   "1.ª vuelta. Es siempre informativo: cambiar el voto entre los finalistas es un comportamiento legítimo del elector; el registro "
+                   "indica dónde ese cambio fue significativo."],
+            "V6": ["registrar secciones cuyo electorado cambió entre las vueltas, lo que afecta la comparación.",
+                   "comparación del número de electores habilitados en los dos boletines de la sección.",
+                   "🟡 cuando el número de habilitados varió en al menos {mvar} electores y en al menos el {cad}%, o cuando la sección tiene "
+                   "boletín en una sola vuelta. Es siempre informativo: los ajustes del padrón entre vueltas ocurren, por ejemplo, con electores "
+                   "habilitados para votar en tránsito, secciones especiales y decisiones de la Justicia Electoral."],
+        },
+        "a4_t": "### A.4 Resultados consolidados",
+        "cab_res": ["Prueba", "Nivel", "Unidades analizadas", "Anomalías (🔴)", "Eventos informativos (🟡)"],
+        "a4_txt": "Las pruebas V3, V4 y V5 examinan las mismas secciones y no son independientes; una sección puede aparecer en más de una de ellas.",
+        "a5_t": "### A.5 Ítems señalados — listas completas",
+        "a5": "Las listas incluyen todos los ítems 🔴 y 🟡, en orden de q. Para verificar su sección, busque la UF, la zona y la sección (Ctrl+F). "
+              "Las columnas “1.ª → 2.ª” muestran los votos en la 1.ª vuelta, en la 2.ª vuelta y, entre paréntesis, la variación. El número de la "
+              "urna es el del Boletín de Urna de la 2.ª vuelta (o de la 1.ª, cuando la sección solo tiene boletín en esa vuelta).",
+        "sub_a": "🔴 Anomalías — lista completa ({n})", "sub_i": "🟡 Eventos informativos — lista completa ({n})", "nenhum": "Ninguna señalización.",
+        "c": {"uf": "UF", "mun": "Municipio", "zona": "Zona", "secao": "Sección", "urna": "N.º de urna", "secoes": "Secciones",
+              "L": "Lula 1.ª → 2.ª", "F": "Flávio 1.ª → 2.ª", "O": "Demás 1.ª", "BN": "Blancos y nulos 1.ª → 2.ª", "C": "Participación 1.ª → 2.ª",
+              "obs": "% Lula obs.", "esp": "% Lula esp.", "dif": "Δ p.p.", "q": "q (BH)", "aptos": "Habilitados 1.ª → 2.ª",
+              "tobs": "Particip. obs.", "tesp": "Particip. esp.", "dest": "Direccionamiento", "cand": "Finalista", "ganho": "Ganancia",
+              "teto": "Techo", "exc": "Exceso", "mot": "Motivo"},
+        "dest": {"13": "Lula ({x} p.p. sobre su participación)", "22": "Flávio ({x} p.p. sobre su participación)", "": "proporcional"},
+        "mot": {"aptos": "habilitados alterados ({x})", "sem_bu_2t": "sin boletín en la 2.ª vuelta", "sem_bu_1t": "sin boletín en la 1.ª vuelta"},
+        "a6_t": "### A.6 Limitaciones",
+        "a6": ["La comparación se hace con votos agregados por sección. El voto es secreto y no hay datos individuales de electores: no es posible "
+               "saber quién cambió su voto ni separar a quien votó en una vuelta y se abstuvo en la otra; las pruebas tratan la variación neta.",
+               "El desplazamiento logístico uniforme es una aproximación. Perfiles locales distintos (edad, ingresos, religión, barrio de origen) y "
+               "hechos locales ocurridos entre las vueltas (apoyos políticos, cambio de local de votación, transporte, clima) pueden generar "
+               "desviaciones legítimas.",
+               "Los umbrales de efecto ({la} y {li} p.p.), de direccionamiento ({dir} p.p.), de techo ({teto}%) y de padrón ({cad}%) son premisas "
+               "explícitas de este anexo y pueden modificarse al inicio de la Parte 5 del código del motor (parámetros `VAR_*`).",
+               "Las pruebas V3, V4 y V5 no son independientes entre sí; señalizaciones simultáneas pueden tener la misma causa legítima.",
+               "Como en el resto del informe, el análisis no examina los archivos firmados de las urnas (.bu, .rdv, .logjez), cuya verificación "
+               "se recomienda para los ítems señalados."],
+        "a7_t": "### A.7 Reproducibilidad y archivos",
+        "a7": "El Anexo A lo genera el propio motor siempre que la carpeta de datos contiene los Boletines de Urna de la 1.ª y de la "
+              "2.ª vuelta. Los resultados de las pruebas V1 a V6 forman parte del núcleo analítico y de la verificación de determinismo "
+              "(Sección 14): misma entrada, mismos archivos.",
+        "cab_arq": ["Archivo", "Contenido", "SHA-512"],
+        "arq": {"sin": "Ítems 🔴 y 🟡 de todas las pruebas y niveles", "sec": "Todas las secciones: votos y variación", "mun": "Todos los municipios: votos, variación y prueba V2",
+                "uf": "Todos los estados: votos, variación y prueba V1"},
+    },
+}
 
 
 def main():
