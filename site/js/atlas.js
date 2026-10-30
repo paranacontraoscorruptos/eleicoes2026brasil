@@ -246,6 +246,7 @@
   const ATOMOS = "button, svg, img, .chips, .bars, .table-wrap, .kv, a.btn, .at-card";
   async function escrever(h, meta) {
     if (S.pre) { h = S.pre + h; S.pre = ""; }
+    h += ofertaMidia(h, meta);
     const d = bolha("a", h);
     animar(d);
     await window.BOT.digitar(d, S.el.log, ATOMOS);
@@ -332,6 +333,8 @@
     // pedido sobre a resposta anterior ("resume", "mais 10", "agora em inglês", "sim")
     const cmd = MT.comando(texto);
     if (cmd) { const r = await comandoResp(cmd, op.etapa ? null : oferta, texto); if (r !== false) return r; }
+    const so = oferta && oferta.midia && !op.etapa && nz(texto).match(RE_SO_MIDIA), dm = so && ultimaResposta();
+    if (dm) return executar(acaoMidia(so[1]), dm, texto, "");
     const calc = MT.calculo(texto);
     if (calc) return calculoResp(calc, texto);
     if (!op.etapa) { const ps = MT.etapas(texto); if (ps.length > 1) return plano(ps, texto); }
@@ -498,6 +501,27 @@
     const c = convAtual(); if (c) c.oferta = fn ? { fn } : { q };
     return `<p class="msg-rel at-oferta">${esc(pergunta)}</p>` + (semChip ? "" : fn ? funcChips([fn]) : chipsQ([perg(q)]));
   }
+  // Resposta com números: oferece criar imagem, vídeo, carrossel ou apresentação (não repete nas duas respostas seguintes)
+  const MIDIAS = ["post", "video", "carrossel", "pptx"];
+  const RE_DADOS = /class="(?:kv|bars|at-sinais)["\s]/;
+  const midiaChips = () => `<div class="chips at-midia">${MIDIAS.map((k) => `<button type="button" class="chipq" data-at-md="${k}">${esc(X().md_bt[k])}</button>`).join("")}</div>`;
+  function ofertaMidia(h, meta) {
+    if (!meta || meta.cmd || meta.acao || meta.plano || meta.fn || !RE_DADOS.test(h)) return "";
+    const c = conversa();
+    if (c.m.filter((x) => x.r === "a").slice(-2).some((x) => /at-midia/.test(x.h || ""))) return "";
+    const T = X(), outra = /at-oferta/.test(h);
+    c.oferta = Object.assign(c.oferta || {}, { midia: true });
+    return `<p class="msg-rel at-oferta">${esc(umDe(outra ? T.md_of_tb : T.md_of))}</p>` + midiaChips();
+  }
+  // "vídeo", "o carrossel", "uma apresentação"… logo depois da oferta
+  const RE_SO_MIDIA = /^(?:(?:quero|queria|pode ser|prefiro|faz|faca|cria|crie|gera|gere|manda|i want|i d like|make|create|quiero|prefiero|haz|crea)\s+)?(?:(?:a|o|um|uma|the|an?|el|la|un|una|em|in|en)\s+)?(imagem|image|imagen|post|videos?|carrossel|carousel|carrusel|apresentacao|presentation|presentacion|powerpoint|pptx)(?:\s+(?:por favor|please|pf))?$/;
+  function acaoMidia(k) {
+    if (/^(?:imagem|image|imagen|post)$/.test(k)) k = "post";
+    else if (/^videos?$/.test(k)) k = "video";
+    else if (/^(?:carrossel|carousel|carrusel)$/.test(k)) k = "carrossel";
+    else if (k !== "post" && k !== "video") k = "pptx";
+    return k === "pptx" ? { k: "exportar", fmt: "pptx", todas: false } : k === "carrossel" ? { k: "midia", fmt: "carrossel", tipo: "img", tam: null } : { k: "midia", fmt: k };
+  }
   // Lugar, zona ou seção: o texto que o motor entende ("Londrina PR", "PR zona 3 seção 50") e o nome para mostrar
   function rotRef(x) {
     const T = X();
@@ -641,6 +665,11 @@
     if (cmd.k === "sim") {
       if (oferta && oferta.fn) return guiaFuncao(oferta.fn);
       if (oferta && oferta.q) return responder(oferta.q);
+      if (oferta && oferta.midia && ultimaResposta()) {
+        await pensarRapido(T.think.cv);
+        convAtual().oferta = { midia: true };
+        return escrever(`<p>${esc(T.md_qual)}</p>` + midiaChips(), { q, acao: true });
+      }
       await pensarRapido(T.think.cv);
       return escrever(`<p>${esc(umDe(T.cv_ok))}</p>` + funcChips(["secao", "municipio", "ranking", "comparar"]), { q, acao: true });
     }
@@ -2639,6 +2668,12 @@
         return;
       }
       if (!el.closest(".at-mais, .at-menu-mais, [data-at='exportar-conversa']")) fecharMenus();
+      const md = el.closest("[data-at-md]");
+      if (md) {
+        const r = md.closest(".at-resp"), d = r && r._m && !r._m.acao && !r._m.cmd && !r._m.plano ? r : ultimaResposta(), rot = X().md_bt[md.dataset.atMd];
+        if (d && !S.ocupado) ocupar(async () => { usuario(rot); await executar(acaoMidia(md.dataset.atMd), d, rot, ""); });
+        return;
+      }
       const q = el.closest("[data-q]"); if (q) { perguntar(q.dataset.q); return; }
       const id = el.closest("[data-at-id]");
       if (id) {
