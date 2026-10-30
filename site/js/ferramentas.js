@@ -642,9 +642,9 @@
     $$(".chips, .at-btns", raiz).forEach((x) => { if (!x.querySelector("a")) { const r = x.previousElementSibling; if (r && r.matches(".msg-rel")) r.remove(); x.remove(); } });
     $$("a[href]", raiz).forEach((a) => {
       a.setAttribute("href", urlAbs(a.getAttribute("href"), base));
-      if (a.classList.contains("btn")) a.className = "doc-btn";
+      if (a.classList.contains("btn")) a.setAttribute("class", "doc-btn");
       a.removeAttribute("download");
-      if (novaAba) { a.target = "_blank"; a.rel = "noopener"; }
+      if (novaAba) { a.setAttribute("target", "_blank"); a.setAttribute("rel", "noopener"); }
     });
     return raiz;
   }
@@ -910,5 +910,5 @@
     contar();
   });
 
-  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca };
+  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca, imprimirPagina };
 })();

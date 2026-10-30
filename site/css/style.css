@@ -1342,3 +1342,51 @@ body.atlas-on main { flex: 1 1 auto; min-height: 0; width: 100%; max-width: none
   .doc-btn, .doc-chip, .kv div, .bar-row { break-inside: avoid; }
   .doc-corpo .table-wrap { overflow: visible; }
 }
+
+/* --- exportar: janela com os formatos ------------------------------------------------------------------------------- */
+.dlg-ex { width: min(680px, calc(100vw - 24px)); }
+.ex-esc { display: inline-flex; gap: 4px; padding: 4px; margin: 4px 0 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); }
+.ex-esc label { position: relative; cursor: pointer; }
+.ex-esc input { position: absolute; opacity: 0; pointer-events: none; }
+.ex-esc span { display: block; padding: 6px 14px; border-radius: 999px; font-size: .9rem; color: var(--ink-2); }
+.ex-esc input:checked + span { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.ex-esc input:focus-visible + span { outline: 2px solid var(--yellow); outline-offset: 2px; }
+.ex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.ex-f { display: flex; align-items: flex-start; gap: 10px; text-align: left; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; transition: border-color .2s, background .2s, transform .15s; }
+.ex-f svg { flex: none; margin-top: 2px; color: var(--accent); }
+.ex-f span { display: grid; gap: 2px; }
+.ex-f b { font-size: .92rem; }
+.ex-f small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+.ex-f:hover, .ex-f:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+.ex-f:active { transform: scale(.98); }
+.ex-f:disabled { opacity: .55; cursor: progress; }
+.ex-f.on { border-color: var(--yellow); background: var(--yellow-soft); opacity: 1; }
+.ex-st { min-height: 1.4em; margin: 12px 0 0; color: var(--ink-2); }
+
+/* --- Atlas: mapa, ranking, comparação, roteiro, "por que" e vários boletins --------------------------------------- */
+.at-mapa { margin: 12px 0; background: var(--surface); padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 220px); gap: 12px; align-items: start; }
+.at-mapa:hover { transform: none; box-shadow: none; }
+.at-mapa .map svg { max-height: 420px; }
+.at-mapa figcaption { font-size: .86rem; }
+.mp-dest path { stroke: var(--yellow) !important; stroke-width: 2.5 !important; }
+.mp-dest-c { fill: none; stroke: var(--yellow); stroke-width: 3; vector-effect: non-scaling-stroke; pointer-events: none; }
+@media (max-width: 640px) { .at-mapa { grid-template-columns: 1fr; } }
+.at-rank td:first-child, .at-rank th:first-child { width: 2.5em; color: var(--muted); }
+.at-rank td:nth-child(2), .at-rank th:nth-child(2), .at-comp td:first-child, .at-comp th:first-child, .at-filtro td:nth-child(2) { text-align: left; }
+.at-comp td:first-child { color: var(--ink-2); white-space: nowrap; }
+.at-pq { display: grid; gap: 4px; }
+.at-pq p { margin: 2px 0; }
+.at-rt { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 10px; counter-reset: rt; }
+.at-rt-p { border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 10px 14px; counter-increment: rt; transition: border-color .2s, background .2s; }
+.at-rt-p .at-chk b::before { content: counter(rt) ". "; color: var(--accent); }
+.at-rt-p input { width: 18px; height: 18px; accent-color: var(--accent); }
+.at-rt-p p { margin: 4px 0 6px 26px; color: var(--ink-2); }
+.at-rt-p .chips, .at-rt-p .at-btns { margin-left: 26px; }
+.at-rt-p.ok { border-color: var(--accent); background: var(--accent-soft); }
+.at-rt-p.ok .at-chk b { text-decoration: line-through; text-decoration-color: var(--accent); }
+.at-rt-prog { font-weight: 600; color: var(--accent); }
+.at-qm { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 6px; }
+.at-sem { margin: 6px 0 0 52px; }
+.at-sem .btn-row { flex-wrap: wrap; gap: 6px; }
+.at-sem a.off { pointer-events: none; opacity: .5; }
+@media print { .ex-grid, .ex-esc { display: none; } }

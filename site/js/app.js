@@ -189,13 +189,13 @@
     return `<div class="table-wrap"><table class="${cls || ""}"><thead><tr>${cab.map((c) => `<th scope="col">${c}</th>`).join("")}</tr></thead><tbody>${linhas.map((l) => `<tr>${l.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   }
 
-  // Ações da página: compartilhar, gerar imagem para redes (quando há cartão) e imprimir/PDF
+  // Ações da página: compartilhar, gerar imagem para redes (quando há cartão) e exportar (PDF, apresentação, Word, Excel…)
   function acoes(img, extra) {
     const L = t();
     return `<div class="pg-acoes">${extra || ""}
       <button class="btn btn-sm" type="button" data-share>${icone("share")} ${esc(L.sh_btn)}</button>
       ${img ? `<button class="btn btn-sm" type="button" data-img>${icone("image")} ${esc(L.im_btn)}</button>` : ""}
-      <button class="btn btn-sm btn-ghost" type="button" data-print>${icone("print")} ${esc(L.pr_btn)}</button></div>`;
+      <button class="btn btn-sm btn-ghost" type="button" data-export>${icone("download")} ${esc(L.xp.btn)}</button></div>`;
   }
 
   function copiar(txt) { return `<button class="btn-copy" type="button" data-copy="${esc(txt)}" aria-label="${esc(t().copy)}">${icone("copy")}<span>${esc(t().copy)}</span></button>`; }

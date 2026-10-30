@@ -1,124 +1,67 @@
-/* Motor de respostas do Atlas: busca aproximada numa base de perguntas e respostas, no navegador.
-   Entradas com "ns" só respondem quando perguntadas e nunca viram sugestão. */
+/* Atlas na página: liga o motor (motor.js, de preferência em segundo plano no motor-worker.js), escreve as
+   respostas (markdown simples, "pensando" e texto digitado) e guarda as perguntas que ficaram sem resposta.
+   Entradas da base com "ns" só respondem quando perguntadas e nunca viram sugestão. */
 (function () {
   "use strict";
 
-  const STOP = {
-    PT: "a o as os um uma uns umas de da do das dos em no na nos nas por para pra pro com sem que qual quais quanto quantos quantas como e ou eu me meu minha voce voces ele ela isso isto esse essa este esta aqui ali la se ja so mais muito pouco ser foi era sao tem ter teve ha sobre entre ate apos pelo pela pelos pelas ao aos tambem nao sim fala fale diga dizer quero queria gostaria saber pode poderia favor ola oi".split(" "),
-    EN: "a an the of in on at to for from with without by and or i me my you your it its this that these those is are was were be been do does did have has had what which who whom how about please can could would tell want know show give hi hello".split(" "),
-    ES: "a el la los las un una unos unas de del en por para con sin que cual cuales cuanto cuantos cuantas como y o yo me mi mis tu usted ustedes es son fue era ser estar hay tiene tener sobre entre hasta pero tambien no si dime decir quiero queria saber puede podria favor hola".split(" "),
-  };
-  const SIN = {
-    PT: { analise: "teste", analises: "teste", testes: "teste", vetor: "teste", vetores: "teste", primeiro: "1", primeira: "1", segundo: "2", segunda: "2",
-      secoes: "secao", urnas: "urna", zonas: "zona", eleitores: "eleitor", fraudes: "fraude", fraudada: "fraude", fraudado: "fraude", roubada: "fraude",
-      baixar: "download", downloads: "download", hashes: "hash", programa: "codigo", script: "codigo", motor: "codigo", rodar: "executar", rodo: "executar" },
-    EN: { tests: "test", analysis: "test", analyses: "test", check: "test", checks: "test", first: "1", "1st": "1", second: "2", "2nd": "2",
-      sections: "section", machines: "machine", zones: "zone", voters: "voter", rigged: "fraud", stolen: "fraud", downloads: "download", hashes: "hash",
-      script: "code", engine: "code", program: "code", run: "execute", running: "execute" },
-    ES: { pruebas: "prueba", analisis: "prueba", test: "prueba", primera: "1", primero: "1", segunda: "2", segundo: "2", secciones: "seccion", urnas: "urna",
-      zonas: "zona", electores: "elector", fraudulenta: "fraude", robada: "fraude", descargar: "descarga", descargas: "descarga", hashes: "hash",
-      script: "codigo", motor: "codigo", programa: "codigo", correr: "ejecutar" },
-  };
-  const NUMEROS = {
-    PT: "zero um dois tres quatro cinco seis sete oito nove dez onze doze treze catorze quinze", EN: "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen",
-    ES: "cero uno dos tres cuatro cinco seis siete ocho nueve diez once doce trece catorce quince",
-  };
-  const numerar = (nz, lang) => {
-    const ws = NUMEROS[lang].split(" ");
-    return nz.replace(/\b[a-z]+\b/g, (w) => { const i = ws.indexOf(w === "quatorze" ? "catorze" : w); return i > 1 || (i === 1 && lang !== "PT") ? String(i) : w; });
-  };
-  const UFS = ["AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO", "ZZ"];
+  const M = () => window.MOTOR;
+  const B = { lang: "PT", kb: null, byId: {}, carregando: null, iniciado: false, cfg: null };
+  const norm = (s) => M().norm(s);
 
-  const norm = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[ºª°]/g, " ").replace(/[^a-z0-9]+/g, " ")
-    .replace(/\bsha (\d{3})\b/g, "sha$1").trim();
-
-  const B = { lang: "PT", kb: null, idx: null, byId: {}, carregando: null, iniciado: false };
-  let stopSet = new Set(STOP.PT);
-
-  function tokens(s) {
-    const sin = SIN[B.lang];
-    return numerar(norm(s), B.lang).split(" ").filter((w) => w && !stopSet.has(w)).map((w) => {
-      if (sin[w]) return sin[w];
-      if (w.length > 4 && w.endsWith("s") && !/\d/.test(w)) w = w.slice(0, -1);
-      return sin[w] || w;
+  // --- motor em segundo plano (Web Worker); sem ele, o mesmo motor roda na página ----------------------------------
+  const W = { w: null, n: 0, esp: new Map() };
+  function trabalhador() {
+    if (W.w !== null) return W.w;
+    try {
+      if (!window.Worker || location.protocol === "file:") throw new Error("sem worker");
+      W.w = new Worker("site/js/motor-worker.js");
+      W.w.onmessage = (e) => { const p = W.esp.get(e.data.id); if (!p) return; W.esp.delete(e.data.id); clearTimeout(p[2]); if (e.data.erro) p[1](new Error(e.data.erro)); else p[0](e.data.r); };
+      W.w.onerror = (e) => { if (e && e.preventDefault) e.preventDefault(); desistir(); };
+    } catch (e) { W.w = false; }
+    return W.w;
+  }
+  // O worker falhou: tudo passa a rodar na página
+  function desistir() {
+    if (W.w) { try { W.w.terminate(); } catch (e) { /* já parou */ } }
+    W.w = false; B.cfg = null;
+    W.esp.forEach((p) => { clearTimeout(p[2]); p[1](new Error("worker")); });
+    W.esp.clear();
+  }
+  function chamar(tipo, d, ms) {
+    const w = trabalhador();
+    if (!w) return Promise.reject(new Error("worker"));
+    return new Promise((ok, falha) => {
+      const id = ++W.n;
+      const tm = setTimeout(() => { if (W.esp.has(id)) { W.esp.delete(id); desistir(); falha(new Error("tempo")); } }, ms || 15000);
+      W.esp.set(id, [ok, falha, tm]);
+      w.postMessage({ id, tipo, d });
     });
   }
-
-  function lev(a, b, max) {
-    if (Math.abs(a.length - b.length) > max) return max + 1;
-    let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
-    for (let i = 1; i <= a.length; i++) {
-      const cur = [i]; let menor = i;
-      for (let j = 1; j <= b.length; j++) {
-        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-        if (cur[j] < menor) menor = cur[j];
-      }
-      if (menor > max) return max + 1;
-      prev = cur;
-    }
-    return prev[b.length];
+  const urlAbs = (u) => new URL(u, location.href).href;
+  function candidatos() {
+    const R = window.APP && window.APP.state.R, out = [];
+    if (R) ["1", "2"].forEach((n) => R.turnos[n].presidente.candidatos.forEach((c) => { if (!out.some((x) => x.nr === c.nr)) out.push({ nr: c.nr, nome: c.nome }); }));
+    return out;
   }
-
-  function similaridade(q, d) {
-    if (q === d) return 1;
-    if (/\d/.test(q) || /\d/.test(d)) return 0;
-    if (q.length >= 4 && d.length >= 4 && (d.startsWith(q) || q.startsWith(d))) return 0.75;
-    if (q.length >= 5 && d.length >= 5) { const mx = q.length >= 8 ? 2 : 1, l = lev(q, d, mx); if (l === 1) return 0.7; if (l === 2 && mx === 2) return 0.5; }
-    return 0;
+  // Prepara o motor (no worker ou, sem ele, na página) para o idioma atual
+  async function configurar() {
+    const lang = B.lang;
+    if (B.cfg && B.cfg.lang === lang) return B.cfg.p;
+    const kbUrl = urlAbs(`site/data/kb_${lang.toLowerCase()}.json`), munsUrl = urlAbs("site/data/municipios.json");
+    const base = { lang, ufNomes: window.UF_NOMES, cands: candidatos() };
+    const p = chamar("config", Object.assign({ kbUrl, munsUrl }, base), 20000).then(() => "worker").catch(async () => {
+      const [kb, muns] = await Promise.all([carregar().then(() => B.kb), window.APP.municipios()]);
+      M().configurar(Object.assign({ kb, muns }, base));
+      return "pagina";
+    });
+    B.cfg = { lang, p };
+    return p;
   }
-
-  function indexar(kb) {
-    const vocab = new Map(), frases = [];
-    kb.forEach((e, i) => {
-      const pesos = new Map();
-      const add = (txt, w) => tokens(txt).forEach((tk) => { if ((pesos.get(tk) || 0) < w) pesos.set(tk, w); });
-      e.q.forEach((q) => add(q, 3));
-      if (e.k) add(e.k, 1.5);
-      add(e.a.slice(0, 260).replace(/[`*#\[\]()]/g, " "), 0.4);
-      pesos.forEach((w, tk) => { if (!vocab.has(tk)) vocab.set(tk, []); vocab.get(tk).push([i, w]); });
-      frases.push(e.q.map((q) => tokens(q).join(" ")));
-    });
-    const N = kb.length;
-    const idf = new Map();
-    vocab.forEach((p, tk) => idf.set(tk, Math.log(1 + N / p.length)));
-    return { vocab, idf, frases, termos: Array.from(vocab.keys()) };
-  }
-
-  function buscar(texto) {
-    const I = B.idx, qt = [...new Set(tokens(texto))];
-    if (!qt.length) return [];
-    const contrib = new Map();
-    qt.forEach((q, qi) => {
-      I.termos.forEach((tk) => {
-        const s = similaridade(q, tk);
-        if (!s) return;
-        const idf = I.idf.get(tk);
-        I.vocab.get(tk).forEach(([e, w]) => {
-          let c = contrib.get(e); if (!c) { c = { v: new Array(qt.length).fill(0), s: new Array(qt.length).fill(0) }; contrib.set(e, c); }
-          const v = s * w * idf; if (v > c.v[qi]) c.v[qi] = v; if (s > c.s[qi]) c.s[qi] = s;
-        });
-      });
-    });
-    const qj = qt.join(" ");
-    const nz = numerar(norm(texto), B.lang);
-    const mt = nz.match(/\b(?:teste|test|prueba|analise|analisis|analysis|t)\s?0?(1[0-5]|[1-9])\b/);
-    const tid = mt ? "T" + String(mt[1]).padStart(2, "0") : null;
-    const res = [];
-    contrib.forEach((cc, e) => {
-      const c = cc.v;
-      const soma = c.reduce((a, b) => a + b, 0);
-      const cob = c.filter((x) => x > 0).length / qt.length;
-      const fortes = cc.s.filter((x) => x >= 0.7).length;
-      let sc = soma * (0.35 + 0.65 * cob);
-      const fr = I.frases[e];
-      if (fr.includes(qj)) sc += 6;
-      else if (qt.length >= 2 && fr.some((f) => f.includes(qj) || (f.length > 3 && qj.includes(f)))) sc += 2.5;
-      const ent = B.kb[e];
-      if (tid && ent.x && ent.x.t) sc = ent.x.t === tid ? sc * 1.5 + 2 : sc * 0.15;
-      res.push([sc, e, fortes / qt.length]);
-    });
-    res.sort((a, b) => b[0] - a[0]);
-    return res.slice(0, 6).map(([sc, e, f]) => ({ sc, e: B.kb[e], f }));
+  // Pergunta inteira: intenção, entidades, lugares e respostas da base (com a conversa anterior em "ctx")
+  async function analisar(texto, ctx) {
+    const onde = await configurar();
+    if (onde === "worker") { try { return await chamar("analisar", { texto, ctx: ctx || null }); } catch (e) { await configurar(); } }
+    return M().analisar(texto, ctx || null);
   }
 
   // --- markdown simples e seguro -------------------------------------------------
@@ -155,11 +98,14 @@
 
   const L = () => window.I18N[B.lang];
 
+  // A base também fica na página: as respostas e sugestões saem dela pelo id
   function carregar() {
     if (B.kb) return Promise.resolve();
     if (!B.carregando) {
-      B.carregando = fetch(`site/data/kb_${B.lang.toLowerCase()}.json`).then((r) => r.json()).then((kb) => {
-        B.kb = kb; B.byId = {}; kb.forEach((e) => { B.byId[e.i] = e; }); B.idx = indexar(kb);
+      const lang = B.lang;
+      B.carregando = fetch(`site/data/kb_${lang.toLowerCase()}.json`).then((r) => r.json()).then((kb) => {
+        if (lang !== B.lang) return;
+        B.kb = kb; B.byId = {}; kb.forEach((e) => { B.byId[e.i] = e; });
       }).finally(() => { B.carregando = null; });
     }
     return B.carregando;
@@ -257,87 +203,52 @@
     }
   }
 
-  function detectarSecao(texto) {
-    let nz = " " + norm(texto) + " ";
-    const mz = nz.match(/\b(?:zona|zone|zn)\s*(\d{1,4})\b/);
-    const ms = nz.match(/\b(?:secao|section|seccion|sec|se)\s*(\d{1,4})\b/);
-    if (!mz && !ms) return null;
-    nz = nz.replace(/\b(?:zona|zone|zn)\s*\d{1,4}\b/, " ").replace(/\b(?:secao|section|seccion|sec|se)\s*\d{1,4}\b/, " ");
-    let uf = null;
-    const orig = String(texto).replace(/\b(?:zona|zone|zn|se[cç][aã]o|section|secci[oó]n|sec|se)\s*\d{1,4}\b/gi, " ").match(/\b[A-Za-z]{2}\b/g) || [];
-    uf = orig.find((tk) => tk === tk.toUpperCase() && UFS.includes(tk)) || null;
-    if (!uf) { const tk = orig.find((x) => UFS.includes(x.toUpperCase()) && !stopSet.has(x.toLowerCase())); if (tk) uf = tk.toUpperCase(); }
-    if (!uf) {
-      for (const [sig, nome] of Object.entries(window.UF_NOMES)) {
-        const nm = typeof nome === "string" ? nome : nome[B.lang];
-        if (nz.includes(" " + norm(nm) + " ")) { uf = sig; break; }
-      }
-    }
-    return { uf, z: mz ? +mz[1] : null, s: ms ? +ms[1] : null };
-  }
-
-  // Saudação, "tudo bem?", obrigado e tchau (PT, EN e ES). Cada linha: [tipo, frase, pode vir antes de uma pergunta].
-  // Frases que também são verbo ou pergunta ("salve o arquivo", "como está a seção") só valem quando a mensagem é só cortesia.
-  const CORTESIA = [
-    ["dia", "bo[mn] dia|bons dias|buen dia|buenos dias|good morning|morning", 1],
-    ["tarde", "boa tarde|buenas tardes|good afternoon|afternoon", 1],
-    ["noite", "boa noite|buenas noches|good evening|evening", 1],
-    ["ola", "ola+|alo+|alou|hello+|hola+|buenas|saludos|greetings|howdy", 1],
-    ["oi", "oi+e*|hi+|hey+|eae|eai|e ai|ei|opa|hiya", 1],
-    ["oi", "salve|fala|yo", 0],
-    ["como", "tudo bem|tudo bom|tudo certo|tudo joia|tudo tranquilo|tudo beleza|td bem|td bom|tdb|como vai(?: voce| vc)?|how are you(?: doing)?|how are things|como estas|como esta usted|todo bien", 1],
-    ["como", "como (?:voce |vc )?esta(?: voce| vc)?|beleza|blz|suave|tranquilo|de boa|e voce|e vc|and you|y tu|y usted|how s it going|how is it going|what s up|whats up|wassup|sup|que tal|como te va|como andas", 0],
-    ["obg", "(?:muito |muitissimo )?obrigad[oa]s?|obg|brigad[oa]|valeu|vlw|agradeco|(?:thank you|thanks)(?: (?:a lot|so much|very much))?|thx|ty|(?:muchas |mil )?gracias", 0],
-    ["tchau", "tchau|xau|ate (?:mais|logo|breve|a proxima)|falou|flw|bye|goodbye|good bye|see you|see ya|adios|chao|hasta (?:luego|pronto|la proxima)|nos vemos", 0],
-    ["", "atlas|bot|amigo|amiga|pessoal|galera|gente|todo mundo|a todos|todos|there|all|everyone|guys|ok|okay|okey|certo|entendi|show|legal|otimo|perfeito|great|perfect|cool|nice|vale|bueno|genial|perfecto|e|and|y|muito|very|tambem|too|tambien", 1],
-  ].map(([k, f, p]) => [k, new RegExp(`^(?:${f})(?: |$)`), p]);
   const SAUDA = ["dia", "tarde", "noite", "ola", "oi", "como"];
-
-  // null: não é cortesia. so: a mensagem é só cortesia. Senão "resto" é o texto original depois da saudação.
-  function cortesia(texto) {
-    const t = String(texto || "").trim();
-    let n = norm(t);
-    if (!n) return /👋|🙋|✋|🖐/u.test(t) ? { tipos: new Set(["oi"]), so: true } : /🙏/u.test(t) ? { tipos: new Set(["obg"]), so: true } : null;
-    const tipos = new Set();
-    let antes = true;
-    for (let c; (c = CORTESIA.find(([, re]) => re.test(n)));) {
-      if (c[0]) tipos.add(c[0]);
-      if (!c[2]) antes = false;
-      n = n.slice(n.match(c[1])[0].length);
-    }
-    if (!tipos.size) return null;
-    if (!n) return { tipos, so: true };
-    if (!antes || !SAUDA.some((k) => tipos.has(k))) return null;
-    // tira do texto original as mesmas palavras que saíram do normalizado
-    const k = norm(t).split(" ").length - n.split(" ").length;
-    const resto = t.replace(new RegExp(`^(?:[^\\p{L}\\p{N}]*[\\p{L}\\p{N}]+){${k}}[^\\p{L}\\p{N}]*`, "u"), "");
-    return resto ? { tipos, so: false, resto } : { tipos, so: true };
-  }
   // Texto da resposta: devolve a saudação recebida; "completa" junta o convite (ou o tchau)
   function cortesiaTexto(c, completa, T = L().cort) {
-    const p = [];
-    const s = SAUDA.slice(0, 5).find((k) => c.tipos.has(k));
+    const p = [], tem = (k) => c.tipos.includes(k);
+    const s = SAUDA.slice(0, 5).find(tem);
     if (s) p.push(T[s]);
-    if (c.tipos.has("como")) p.push(T.como);
+    if (tem("como")) p.push(T.como);
     if (completa) {
-      if (c.tipos.has("obg")) p.push(T.obg);
-      p.push(c.tipos.has("tchau") ? T.tchau : s || c.tipos.has("como") ? T.ajuda : T.mais);
+      if (tem("obg")) p.push(T.obg);
+      p.push(tem("tchau") ? T.tchau : s || tem("como") ? T.ajuda : T.mais);
     }
     return p.join(" ");
   }
 
+  // --- perguntas sem resposta: ficam só neste aparelho; a pessoa pode exportar ou apagar ----------------------------
+  const CH_SEM = "atlas_sem_resposta", CH_SEM_ON = "atlas_sem_resposta_on";
+  const semResposta = {
+    ligado: () => { try { return localStorage.getItem(CH_SEM_ON) !== "0"; } catch (e) { return false; } },
+    ligar(sim) { try { localStorage.setItem(CH_SEM_ON, sim ? "1" : "0"); if (!sim) localStorage.removeItem(CH_SEM); } catch (e) { /* sem armazenamento */ } },
+    lista() { try { const v = JSON.parse(localStorage.getItem(CH_SEM) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } },
+    guardar(q) {
+      if (!semResposta.ligado()) return;
+      q = String(q || "").trim().slice(0, 300);
+      if (!q) return;
+      const l = semResposta.lista().filter((x) => x.q !== q);
+      l.unshift({ q, ts: Date.now(), lang: B.lang });
+      try { localStorage.setItem(CH_SEM, JSON.stringify(l.slice(0, 200))); } catch (e) { /* sem espaço */ }
+    },
+    limpar() { try { localStorage.removeItem(CH_SEM); } catch (e) { /* sem armazenamento */ } },
+  };
+
   window.BOT = {
     iniciar(lang) {
       if (B.iniciado) return;
-      B.iniciado = true; B.lang = lang; stopSet = new Set(STOP[lang]);
+      B.iniciado = true; B.lang = lang;
+      M().configurar({ lang, ufNomes: window.UF_NOMES });
     },
     idioma(lang) {
       if (!B.iniciado || lang === B.lang) return;
-      B.lang = lang; stopSet = new Set(STOP[lang]); B.kb = null; B.idx = null;
+      B.lang = lang; B.kb = null; B.byId = {}; B.cfg = null;
+      M().configurar({ lang, ufNomes: window.UF_NOMES });
     },
-    // a base, a busca e o jeito de pensar e escrever das respostas do Atlas
-    motor: { carregar, buscar, md, rotulo, detectarSecao, cortesia, cortesiaTexto, norm, entrada: (id) => B.byId[id] },
-    pensando, digitar,
-    _buscar: async (q) => { await carregar(); return buscar(q).map((x) => [x.e.i, +x.sc.toFixed(2), +x.f.toFixed(2)]); },
+    // a base, o motor e o jeito de pensar e escrever das respostas do Atlas
+    motor: { carregar, analisar, md, rotulo, cortesia: (t) => M().cortesia(t), cortesiaTexto, detectarSecao: (t) => M().detectarSecao(t), norm, entrada: (id) => B.byId[id],
+      onde: () => (W.w ? "worker" : W.w === false ? "pagina" : "?") },
+    semResposta, pensando, digitar,
+    _buscar: async (q) => { await carregar(); const r = await analisar(q); return r.kb.map((x) => [x.i, +x.sc.toFixed(2), +x.f.toFixed(2)]); },
   };
 })();

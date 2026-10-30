@@ -12,6 +12,7 @@
   const R = () => A.state.R;
   const ext = () => A.paginasExtra;
   const motor = () => window.BOT.motor;
+  const SR = () => window.BOT.semResposta;
   const URL_SITE = "https://paranacontraoscorruptos.org/";
   const TSE = "https://resultados.tse.jus.br/oficial/ele2026/";
   const ELEICAO = { 1: "6257", 2: "6258" }, PLEITO = { 1: "3220", 2: "3221" };
@@ -25,7 +26,8 @@
   const toque = () => window.matchMedia("(pointer: coarse)").matches;
 
   // Funções da barra lateral: [chave, ícone]
-  const FUNCS = [["ask", "chat"], ["secao", "search"], ["zona", "grid"], ["municipio", "pin"], ["estado", "map"], ["brasil", "flag"], ["urna", "vote"],
+  const FUNCS = [["ask", "chat"], ["roteiro", "check"], ["secao", "search"], ["zona", "grid"], ["municipio", "pin"], ["estado", "map"], ["brasil", "flag"], ["urna", "vote"],
+    ["ranking", "chart"], ["comparar", "swap"], ["filtro", "list"], ["porque", "alert"], ["relatorio", "file"], ["mapa", "map"],
     ["qr", "qr"], ["hash", "hash"], ["lista", "list"], ["apuracao", "chart"], ["downloads", "download"], ["tse", "shield"], ["ibge", "users"]];
   // Ícones dos tipos de arquivo; o botão "+" mostra só o que não está na barra lateral
   const ICO_ARQ = { foto: "image", camera: "camera", arquivo: "upload", hash: "hash", lista: "list", apuracao: "chart" };
@@ -286,79 +288,21 @@
 
   // --- entender a pergunta ------------------------------------------------------------------------------------
   const RE_DL = /\b(baixar|baixe|download|downloads|descargar|descargue|bajar)\b/;
-  const RE_TSE = /\btse\b/;
-  const RE_CONF = /\b(conferir|confere|confira|comparar|compare|checar|cheque|verificar|verifique|check|verify|comprobar|cotejar)\b/;
-  const RE_IBGE = /\b(ibge|populacao|population|poblacion|habitantes|inhabitants)\b/;
-  const RE_BR = /\b(brasil|brazil|nacional|national|pais|country)\b/;
-  const RE_KW_MUN = /\b(cidade|municipio|city|municipality|town|ciudad)\b/;
-  const RE_KW_UF = /\b(estado|state|provincia)\b/;
-  const RE_URNA = /\b(?:urna|machine|maquina)\s*(?:n|no|nr|numero|number|num|de|del|da)?\s*(\d{6,8})\b/;
   const RE_AJUDA = /^(?:ajuda|help|ayuda|menu|funcoes|functions|funciones|o que (?:voce|vc) (?:faz|sabe(?: fazer)?)|what can you do|que (?:puede|puedes) hacer|quem e voce|who are you|quien eres|o que e o atlas|what is atlas|que es atlas)$/;
-  // Palavras que não mudam o assunto quando a pergunta cita um lugar ("resultado em Curitiba")
-  const NEUTRAS = new Set(("resultado resultados result results voto votos vote votes votacao voting votacion eleitor eleitores eleitorado voter voters elector electores abstencao abstention abstencion "
-    + "comparecimento turnout participacao participation participacion comparecencia secao secoes section sections seccion secciones sinal sinais sinalizacao sinalizacoes flag flags flagged anomalia anomalias "
-    + "anomaly anomalies dado dados data datos turno turnos round rounds vuelta vueltas 1 2 1o 2o 1st 2nd primeiro segundo first second primera segunda primer quanto quantos quanta quantas how many much "
-    + "cuanto cuantos cuanta cuantas em no na nos nas de do da dos das in on of the en el la los las del a o e y and qual quais what which cual cuales foi foram was were fue fueron is es e "
-    + "populacao population poblacion ibge tse conferir confira check comparar compare comprobar verificar oficial official eleicao election eleccion presidente president lula flavio bolsonaro "
-    + "candidato candidatos candidate candidates ganhou venceu won gano mapa map zona zonas zone zones cidade municipio city municipality ciudad estado state uf me mostre mostra show muestra ver see "
-    + "sobre about acerca total totais totals geral general resumo summary resumen por para pra for to com with con tem has tiene teve had numero numeros number numbers regiao region "
-    + "habitantes inhabitants quero want quiero saber know informacoes information informacion info brasil brazil nacional national pais country baixo baixa alto alta low high bajo baja maior menor higher lower mayor").split(" "));
-  // Nomes de município que também são palavras comuns: só valem com "cidade/município", com a UF ou sozinhos
-  const RISCO_L = ["alegre", "alto alegre", "barao", "barcelos", "barra", "barras", "bom jesus", "capixaba", "caraubas", "catarina", "coluna", "contagem", "custodia", "delta", "extrema", "flores",
-    "guaranta", "horizonte", "independencia", "jurua", "liberdade", "lima", "luz", "marcacao", "modelo", "monte carlo", "olho d agua", "passa tempo", "passos", "pimenta", "propria", "querencia",
-    "registro", "reserva", "rio grande", "santo estevao", "tanque novo", "una", "uniao", "votorantim", "vitoria", "natal", "serra", "formosa", "esperanca", "feliz", "central", "floresta", "prata",
-    "paraiso", "cristal", "saudade", "recreio", "harmonia", "concordia", "progresso", "maravilha", "colorado", "palmas", "bonito", "salto", "campo alegre"];
-  const ARRISCADO = new Set(RISCO_L);
-  const SIGLA_COMUM = new Set(["to", "es", "se", "am", "al", "go", "ma", "pa", "ac", "ap", "pi", "rn", "ce", "ba", "df", "mt", "ms", "rr", "ro", "sc", "rs", "mg", "rj", "pe", "pb", "sp", "pr", "zz"]);
-
-  async function indiceLugares() {
-    if (S.idxLug) return S.idxLug;
-    const muns = await A.municipios();
-    const lista = [];
-    Object.entries(muns).forEach(([uf, ms]) => Object.entries(ms).forEach(([cod, [nm]]) => lista.push({ n: nz(nm), uf, cod, nome: A.titulo(nm) })));
-    lista.sort((a, b) => b.n.length - a.n.length);
-    const ufs = [];
-    Object.entries(window.UF_NOMES).forEach(([uf, v]) => (typeof v === "string" ? [v] : Object.values(v)).forEach((x) => ufs.push({ n: nz(x), uf })));
-    ufs.push({ n: "minas", uf: "MG" });
-    ufs.sort((a, b) => b.n.length - a.n.length);
-    S.idxLug = { lista, ufs };
-    return S.idxLug;
+  // --- memória da conversa: o assunto da última resposta, para "e no 1º turno?", "e em Londrina?", "e a seção 51?" -----
+  function ctxAtual() { const c = S.convs.find((x) => x.id === S.atual); return (c && c.ctx) || null; }
+  function lembrar(o) {
+    const c = S.convs.find((x) => x.id === S.atual); if (!c) return;
+    c.ctx = JSON.parse(JSON.stringify(o));
+    guardarConversas();
+  }
+  const lugarCtx = (lg) => (lg.muns && lg.muns.length === 1 ? Object.assign({ tipo: "mun" }, lg.muns[0]) : lg.uf ? { tipo: "uf", uf: lg.uf, nome: A.ufNome(lg.uf) } : null);
+  function ctxDe(E, extra) {
+    return Object.assign({ intencao: E.intencao, turno: E.turno, metrica: E.metrica, unidade: E.unidade, ordem: E.ordem, n: E.n, nivel: E.nivel, testes: E.testes, op: E.op, cand: E.cand,
+      lugar: lugarCtx(E.lugar) || (E.br ? { tipo: "br" } : null), sec: E.sec && E.sec.uf && E.sec.z ? E.sec : null, lugares: E.lugares }, extra || {});
   }
 
-  // Estado e/ou município citados na pergunta, e se a pergunta é "sobre o lugar" (forte)
-  function acharLugar(texto, I) {
-    const n = " " + nz(texto) + " ";
-    let uf = null, ufNome = null;
-    for (const u of I.ufs) if (n.includes(" " + u.n + " ")) { uf = u.uf; ufNome = u.n; break; }
-    const siglas = (String(texto).match(/\b[A-Z]{2}\b/g) || []).filter((x) => window.UF_NOMES[x]);
-    let ufSigla = siglas[0] || null;
-    const tks = n.trim().split(" ");
-    if (!ufSigla && tks.length <= 3) { const ult = tks[tks.length - 1]; if (ult.length === 2 && window.UF_NOMES[ult.toUpperCase()] && (tks.length > 1 || SIGLA_COMUM.has(ult))) ufSigla = ult.toUpperCase(); }
-    const semUf = ufNome ? n.replace(" " + ufNome + " ", " ") : n;
-    let muns = [];
-    for (const m of I.lista) {
-      if (muns.length && m.n.length < muns[0].n.length) break;
-      if (m.n.length >= 3 && semUf.includes(" " + m.n + " ")) muns.push(m);
-    }
-    const kwMun = RE_KW_MUN.test(n), kwUf = RE_KW_UF.test(n);
-    // município com o mesmo nome do estado citado ("Paraná", RN): vira alternativa, a não ser que peça "cidade"
-    const homonimos = ufNome ? I.lista.filter((m) => m.n === ufNome) : [];
-    if (kwMun && !muns.length && homonimos.length) { muns = homonimos; uf = null; ufNome = null; }
-    const ufFiltro = ufSigla || uf;
-    if (muns.length && ufFiltro) { const f = muns.filter((m) => m.uf === ufFiltro); if (f.length) muns = f; }
-    // o que sobra da pergunta além do lugar
-    let resto = semUf;
-    if (muns.length) resto = resto.replace(" " + muns[0].n + " ", " ");
-    const sobra = resto.trim().split(" ").filter((w) => w && !NEUTRAS.has(w) && !(w.length === 2 && window.UF_NOMES[w.toUpperCase()]));
-    const forte = kwMun || kwUf || !sobra.length;
-    if (muns.length && muns[0].n.length <= 4 && !(kwMun || ufFiltro || !sobra.length)) muns = [];
-    if (muns.length && ARRISCADO.has(muns[0].n) && !(kwMun || ufFiltro || !sobra.length)) muns = [];
-    return { uf: muns.length ? null : (ufSigla || uf), muns, forte, homonimos: muns.length ? [] : homonimos, kwMun };
-  }
-
-  async function buscaKb(texto) {
-    try { await motor().carregar(); return motor().buscar(texto); } catch (e) { return []; }
-  }
+  const kbEntradas = (r) => r.map((x) => ({ sc: x.sc, f: x.f, e: motor().entrada(x.i) })).filter((x) => x.e);
   const kbForte = (r) => r.length && r[0].sc >= 4 && r[0].f >= 0.34;
 
   async function responder(texto) {
@@ -368,41 +312,51 @@
     if (c) { S.pre = `<p>${esc(motor().cortesiaTexto(c, false, t().cort))}</p>`; texto = c.resto; }
     const T = X(), n = nz(texto);
     if (RE_AJUDA.test(n)) return ajuda();
-    const mu = n.match(RE_URNA);
-    if (mu) return urna(mu[1], texto);
-    if (RE_DL.test(n)) return downloads(texto);
-    const querTse = RE_TSE.test(n) && RE_CONF.test(n);
-    const sec = motor().detectarSecao(texto);
+    const [an] = await Promise.all([motor().analisar(texto, ctxAtual()), motor().carregar().catch(() => {})]);
+    const E = an.E, kb = kbEntradas(an.kb);
+    if (E.urna) { lembrar(ctxDe(E, { intencao: "urna" })); return urna(E.urna, texto); }
+    if (E.intencao === "roteiro" && !(an.forte && !/\b(roteiro|checklist|guia)\b/.test(n) && !/\b(secao|urna|boletim|section|ballot|seccion|boletin)\b/.test(n))) return roteiro(texto);
+    if (RE_DL.test(n) && E.intencao !== "relatorio") return downloads(texto);
+    if (E.intencao === "porque") return porque(E, texto);
+    if (E.intencao === "ranking") return rankingResp(E, texto);
+    if (E.intencao === "comparar") return compararResp(E, texto);
+    if (E.intencao === "filtro") return filtroResp(E, texto);
+    if (E.intencao === "relatorio") return relatorioResp(E, texto);
+    if (E.intencao === "mapa") return mapaResp(E, texto);
+    const querTse = E.querTse;
+    const sec = E.sec;
     if (sec && sec.z && !/\b(relatorio|report|informe)\b/.test(n)) {
       if (!sec.uf) return pedir(sec.s ? T.need_uf_sec : T.need_uf_zone, sec.s ? [`PR ${T.w_zone} ${sec.z} ${T.w_section} ${sec.s}`, `SP ${T.w_zone} ${sec.z} ${T.w_section} ${sec.s}`] : [`PR ${T.w_zone} ${sec.z}`, `SP ${T.w_zone} ${sec.z}`]);
+      lembrar(ctxDe(E, { intencao: sec.s ? "secao" : "zona", lugar: { tipo: "uf", uf: sec.uf, nome: A.ufNome(sec.uf) }, sec: sec.s ? sec : { uf: sec.uf, z: sec.z, s: null } }));
       if (sec.s) return querTse && S.con.tse ? tseSecao({ uf: sec.uf, z: sec.z, s: sec.s }, texto) : secao(sec, texto);
       return zona(sec, texto);
     }
     if (sec && sec.s && !sec.z) return pedir(T.need_zone, [`${sec.uf || "PR"} ${T.w_zone} 3 ${T.w_section} ${sec.s}`]);
-    const [I, kb] = await Promise.all([indiceLugares(), buscaKb(texto)]);
-    const lg = acharLugar(texto, I);
+    const lg = E.lugar;
     const forte = lg.forte || !kbForte(kb) || querTse;
     if (lg.muns.length && forte) {
       const nomes = new Set(lg.muns.map((m) => m.uf));
       if (nomes.size > 1) return escolherMun(lg.muns, texto);
       const m = lg.muns[0];
+      lembrar(ctxDe(E, { intencao: "lugar" }));
       if (querTse) return tseComparar({ tipo: "mun", uf: m.uf, cod: m.cod, nome: m.nome }, texto);
-      return municipio(m, { q: texto, querIbge: RE_IBGE.test(n) });
+      return municipio(m, { q: texto, querIbge: E.querIbge });
     }
     if (lg.uf && forte) {
+      lembrar(ctxDe(E, { intencao: "lugar" }));
       if (querTse) return tseComparar({ tipo: "uf", uf: lg.uf, nome: A.ufNome(lg.uf) }, texto);
       return estado(lg.uf, { q: texto, homonimos: lg.homonimos });
     }
-    if (RE_BR.test(n) && forte) return querTse ? tseComparar({ tipo: "br", nome: T.br_name }, texto) : brasil(texto);
+    if (E.br && forte) { lembrar(ctxDe(E, { intencao: "lugar", lugar: { tipo: "br" } })); return querTse ? tseComparar({ tipo: "br", nome: T.br_name }, texto) : brasil(texto); }
     if (querTse) return pedir(T.tse_which, T.ex.tse);
-    if (RE_IBGE.test(n)) return pedir(T.ibge_which, T.ex.ibge);
+    if (E.querIbge) return pedir(T.ibge_which, T.ex.ibge);
     return kbResposta(texto, kb);
   }
 
   // Saudação, obrigado ou tchau: devolve e oferece as funções
   async function cortesia(c) {
     await pensar(t().cort.think);
-    return escrever(`<p>${esc(motor().cortesiaTexto(c, true, t().cort))}</p>` + (c.tipos.has("tchau") ? "" : funcChips(["secao", "municipio", "estado", "qr", "downloads", "ask"])));
+    return escrever(`<p>${esc(motor().cortesiaTexto(c, true, t().cort))}</p>` + (c.tipos.includes("tchau") ? "" : funcChips(["secao", "municipio", "estado", "qr", "downloads", "ask"])));
   }
 
   async function pedir(txt, exemplos) {
@@ -428,6 +382,7 @@
   async function kbResposta(texto, r) {
     const L = t(), T = X(), M = motor();
     if (!kbForte(r)) {
+      window.BOT.semResposta.guardar(texto);
       const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3);
       await pensar([L.bot_think_qa[0], L.bot_think_qa[1], ...L.bot_think_none]);
       return escrever(`<p>${esc(sug.length ? L.bot_maybe : T.fallback)}</p>`
@@ -453,6 +408,7 @@
     const T = X();
     fecharGaveta();
     if (S.ocupado) return;
+    if (k === "roteiro") { ocupar(async () => { usuario(T.fn[k][0]); await roteiro(T.fn[k][0]); }); return; }
     ocupar(async () => {
       usuario(T.fn[k][0]);
       await pensar(T.think.guia);
@@ -481,15 +437,16 @@
     const etapas = T.think.mun.slice(0, 3).concat(S.con.ibge && m.uf !== "ZZ" ? [T.think.ibge] : [], T.think.mun.slice(3));
     const trab = (async () => {
       const [U, s] = await Promise.all([ext().dado(`site/data/ufs/${m.uf}.json`), sinais((o) => o[0] === m.uf && o[1] === m.cod)]);
-      const ib = S.con.ibge && m.uf !== "ZZ" ? await ibge(m).catch((e) => ({ erro: e.message })) : null;
-      return { x: U.m[m.cod], s, ib };
+      const [ib, mapa] = await Promise.all([S.con.ibge && m.uf !== "ZZ" ? ibge(m).catch((e) => ({ erro: e.message })) : null, blocoMapa(m.uf, 2, m.cod).catch(() => "")]);
+      return { x: U.m[m.cod], s, ib, mapa };
     })();
-    const { x, s, ib } = await pensar(etapas, trab);
+    const { x, s, ib, mapa } = await pensar(etapas, trab);
     if (!x) return escrever(`<p>${esc(L.mu_none)}</p>`, { q: opts.q });
     let h = cab(`${esc(m.nome)} (${esc(m.uf)})`, esc(A.ufNome(m.uf)), `#/uf/${m.uf}/${m.cod}`);
     h += `<p>${esc(T.mun_lead(nf(x[0]), x[1].length, x[1].join(", ")))}</p>`;
     [2, 1].forEach((n) => { const tv = x[n + 1]; if (tv) h += blocoTurno(n, tv[0], tv[1], tv[2]); });
     h += blocoSinais(s);
+    if (mapa) h += mapa;
     if (ib) h += blocoIbge(ib, m);
     else if (opts.querIbge && m.uf !== "ZZ") h += `<p class="note small">${esc(T.con_off.ibge)}</p>`;
     h += botoes([ir(`#/uf/${m.uf}/${m.cod}`, "pin", T.open_mun), ir(`#/lista?uf=${m.uf}&mun=${m.cod}`, "list", T.open_list), ir(`#/variacao/${m.uf}/${m.cod}`, "swap", T.open_var),
@@ -500,8 +457,8 @@
 
   async function estado(uf, opts) {
     const T = X(), L = t();
-    const trab = Promise.all([ext().dado(`site/data/ufs/${uf}.json`), sinais((o) => o[0] === uf)]);
-    const [U, s] = await pensar(T.think.uf, trab);
+    const trab = Promise.all([ext().dado(`site/data/ufs/${uf}.json`), sinais((o) => o[0] === uf), blocoMapa(uf, 2, null).catch(() => "")]);
+    const [U, s, mapa] = await pensar(T.think.uf, trab);
     const ms = Object.values(U.m);
     const tot = { 1: null, 2: null };
     ms.forEach((m) => [1, 2].forEach((n) => {
@@ -514,6 +471,7 @@
     h += `<p>${esc(T.uf_lead(nf(sec), nf(ms.length)))}</p>`;
     [2, 1].forEach((n) => { if (tot[n]) h += blocoTurno(n, tot[n][0], tot[n][1], tot[n][2]); });
     h += blocoSinais(s, T.sg_note_uf);
+    if (mapa) h += mapa;
     h += botoes([ir(`#/uf/${uf}`, "pin", T.open_uf), ir(`#/lista?uf=${uf}`, "list", T.open_list), ir(`#/variacao/${uf}`, "swap", T.open_var), ir("#/mapa", "map", t().nav.map),
       S.con.tse ? tseBtn({ tipo: "uf", uf, nome: A.ufNome(uf) }) : ""]);
     if (opts.homonimos && opts.homonimos.length) h += `<p class="msg-rel">${esc(T.uf_homonym)}</p>` + chipsQ(opts.homonimos.map((m) => perg(`${T.w_city} ${m.nome} ${m.uf}`, `${m.nome} (${m.uf})`)));
@@ -606,16 +564,385 @@
 
   async function brasil(q) {
     const T = X(), L = t();
-    await pensar(T.think.br);
+    const mapa = await pensar(T.think.br, blocoMapa(null, 2, null).catch(() => ""));
     let h = cab(esc(T.br_name), esc(L.cd_pres));
     [2, 1].forEach((n) => {
       const P = R().turnos[n].presidente, arr = R().ordem_votos[n].map((nr) => (P.candidatos.find((c) => c.nr === nr) || { votos: 0 }).votos);
       h += blocoTurno(n, P.aptos, P.comparecimento, arr, [[L.st_secoes, nf(R().turnos[n].entrada.secoes)], [L.st_sinal, `${nf(R().turnos[n].secoes_sinalizadas)} (${pct(R().turnos[n].secoes_sinalizadas / R().turnos[n].entrada.secoes)})`]]);
     });
-    h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    h += `<p class="small muted">${esc(T.sg_note)}</p>` + mapa;
     h += botoes([ir("#/turno/2", "chart", L.round(2)), ir("#/turno/1", "chart", L.round(1)), ir("#/mapa", "map", L.nav.map), S.con.tse ? tseBtn({ tipo: "br", nome: T.br_name }) : ""]);
     h += fonte(T.src_site);
     return escrever(h, { q });
+  }
+
+  // --- ranking, comparação, filtro, mapa, "por que", relatório e roteiro -----------------------------------------------
+  const Q = () => A.consulta;
+  const turnoTem = (n, nr) => R().turnos[n].presidente.candidatos.some((c) => c.nr === nr);
+  const lk = (q, txt) => `<button type="button" class="at-lk" data-q="${esc(q)}">${esc(txt)}</button>`;
+  const ABS = /\b(numero|quantidade|total|absolut\w*|number|count|cantidad)\b/;
+  // Nome de quem aparece numa linha de ranking ou comparação, com o link que pergunta sobre ele
+  function nomeLinha(r) {
+    const T = X(), L = t();
+    if (r.tipo === "uf") return lk(A.ufNome(r.uf), `${r.uf} – ${A.ufNome(r.uf)}`);
+    if (r.tipo === "mun") return lk(`${r.nome} ${r.uf}`, `${r.nome} (${r.uf})`);
+    if (r.tipo === "zona") return lk(`${r.uf} ${T.w_zone} ${r.z}`, `${L.th_zone} ${r.z}`);
+    if (r.tipo === "secao") return lk(`${r.uf} ${T.w_zone} ${r.z} ${T.w_section} ${r.s}`, `${L.th_zone} ${r.z} · ${L.th_section} ${r.s}`);
+    return esc(r.nome || "");
+  }
+  const nomeTxt = (r) => (r.tipo === "uf" ? `${r.uf} – ${A.ufNome(r.uf)}` : r.tipo === "mun" ? `${r.nome} (${r.uf})` : r.nome || "");
+  // Pergunta que falta um dado: oferece as opções prontas
+  async function faltando(txt, qs, extra) {
+    await pensar(X().think.guia);
+    return escrever(`<p>${esc(txt)}</p>` + chipsQ(qs.map((x) => (Array.isArray(x) ? perg(x[0], x[1]) : perg(x)))) + (extra || ""));
+  }
+  function escopoTxt(uf, cod, nomeMun) {
+    if (cod) return `${nomeMun} (${uf})`;
+    if (uf) return `${A.ufNome(uf)} (${uf})`;
+    return X().rk_br;
+  }
+
+  async function rankingResp(E, q) {
+    const T = X(), L = t(), lg = E.lugar, nq = nz(q);
+    if (lg.muns.length > 1 && new Set(lg.muns.map((m) => m.uf)).size > 1) return escolherMun(lg.muns, q);
+    let uf = lg.uf || (lg.muns.length ? lg.muns[0].uf : null), cod = lg.muns.length ? lg.muns[0].cod : null;
+    const nomeMun_ = lg.muns.length ? lg.muns[0].nome : "";
+    let un = E.unidade;
+    if (cod && (!un || un === "mun")) un = E.metrica === "sinal" || !E.metrica ? "zona" : "secao";
+    if (!un) un = uf ? "mun" : E.br ? "uf" : null;
+    if (un === "uf") { uf = null; cod = null; }
+    if (!E.metrica) {
+      const base = T.rk_base(un || "mun", uf, cod ? nomeMun_ : "");
+      return faltando(T.rk_ask_metric, ["sinal", "comp", "abst", "bn"].map((k) => `${base} ${T.rk_frase[k](E.ordem || "desc")}`));
+    }
+    if (!un || (un === "mun" && !uf && !E.br)) {
+      const fr = T.rk_frase[E.metrica] ? T.rk_frase[E.metrica](E.ordem || "desc", E.cand && A.titulo(E.cand.nome)) : "";
+      return faltando(T.rk_ask_scope, [`${T.rk_base("mun", "PR")} ${fr}`, `${T.rk_base("mun", "SP")} ${fr}`, `${T.rk_base("uf")} ${fr}`, `${T.rk_base("mun", null, "", true)} ${fr}`]);
+    }
+    if ((un === "zona" || un === "secao") && !uf) return faltando(T.rk_ask_city, T.ex.municipio.slice(0, 3).map((c) => `${T.rk_base(un, null, c)} ${T.rk_frase[E.metrica] ? T.rk_frase[E.metrica](E.ordem || "desc") : ""}`));
+    if (un === "secao" && !cod && !(E.sec && E.sec.z)) return faltando(T.rk_ask_city, T.ex.municipio.slice(0, 3).map((c) => `${T.rk_base("secao", null, c)} ${T.rk_frase[E.metrica] ? T.rk_frase[E.metrica](E.ordem || "desc") : ""}`));
+    if (un === "zona" && !cod && E.metrica !== "sinal") return faltando(T.rk_ask_city_zone, T.ex.municipio.slice(0, 3).map((c) => `${T.rk_base("zona", null, c)} ${T.rk_frase[E.metrica](E.ordem || "desc")}`));
+    const cand = E.cand;
+    let n = E.turno || 2;
+    if (cand && !turnoTem(n, cand.nr)) { if (E.turno) return faltando(T.rk_cand_round(A.titulo(cand.nome), L.round(n)), [q.replace(/2\S* turno|segundo turno/i, "") + " " + L.round(1)]); n = 1; }
+    const opts = { unidade: un, uf, cod, z: E.sec && E.sec.z, metrica: E.metrica, turno: n, ordem: E.ordem || "desc", n: E.n || 10, nivel: E.nivel, taxa: E.taxa, abs: ABS.test(nq),
+      cand: cand && cand.nr, candNome: cand && A.titulo(cand.nome), testes: (E.testes || []).filter((x) => !Q().TESTES_UF.includes(x)), op: E.op };
+    const res = await pensar(T.think.rank, Q().ranking(opts));
+    lembrar(ctxDe(E, { intencao: "ranking", unidade: un, turno: E.turno, lugar: cod ? { tipo: "mun", uf, cod, nome: nomeMun_ } : uf ? { tipo: "uf", uf, nome: A.ufNome(uf) } : E.br ? { tipo: "br" } : null }));
+    if (!res.top.length) return escrever(`<p>${esc(T.rk_none)}</p>`, { q });
+    const M = res.M;
+    let h = cab(esc(`${T.rk_unid[un]} · ${escopoTxt(uf, cod, nomeMun_)}`), esc(`${T.rk_ord(M.nome, opts.ordem)} · ${L.round(n)}`));
+    h += `<p>${esc(T.rk_lead(nf(res.top.length), nf(res.total), T.rk_unid[un].toLowerCase()))}</p>`;
+    if (opts.testes.length) h += `<p class="small">${esc(T.rk_tests(opts.testes.map((x) => `${A.numTeste(x)}. ${A.nomeTeste(x)}`).join(opts.op === "ou" ? " | " : " + ")))}</p>`;
+    const barra = res.top.slice(0, 15);
+    const max = Math.max(...barra.map((x) => Math.abs(x.v)), 1e-9);
+    h += A.barras(barra.map((x) => ({ rotulo: nomeTxt(x.r), valor: Math.abs(x.v) / max, texto: M.txt(x.r, n), dica: `${nomeTxt(x.r)}\n${M.nome}: ${M.txt(x.r, n)}` })));
+    const comSinal = M.k === "sinal";
+    h += tabela(["#", T.rk_th_nome, M.nome, L.st_secoes].concat(comSinal ? [] : [T.rk_th_flag]),
+      res.top.map((x, i) => [String(i + 1), nomeLinha(x.r), esc(M.txt(x.r, n)), x.r.sec == null ? "—" : nf(x.r.sec)].concat(comSinal ? [] : [nf(x.r.sn[n].a)])), "num-cols at-rank");
+    if (res.soSinal) h += `<p class="small muted">${esc(T.rk_only_flags)}</p>`;
+    if (M.pct && un !== "uf") h += `<p class="small muted">${esc(T.rk_note_pct)}</p>`;
+    h += `<p class="small muted">${esc(comSinal ? T.sg_note : T.rk_note)}</p>`;
+    h += botoes([comSinal ? ir(`#/lista?t=${n}${uf ? "&uf=" + uf : ""}${cod ? "&mun=" + cod : ""}${E.nivel ? "&nivel=" + E.nivel : ""}`, "list", T.open_list) : "", ir(uf ? `#/uf/${uf}` : "#/mapa", "map", uf ? T.open_uf : L.nav.map)]);
+    h += fonte(T.src_site);
+    return escrever(h, { q });
+  }
+
+  // Linhas da comparação: o que cada lugar tem, lado a lado
+  function linhasComparacao(rs) {
+    const L = t(), T = X(), out = [];
+    const pctOu = (a, b) => (b ? pct(a / b) : "—");
+    const linha = (rot, f) => out.push([esc(rot)].concat(rs.map((r) => { try { return f(r); } catch (e) { return "—"; } })));
+    linha(L.st_secoes, (r) => nf(r.sec));
+    [2, 1].forEach((n) => {
+      out.push([`<b>${esc(L.round(n))}</b>`].concat(rs.map(() => "")));
+      linha(L.lk_aptos, (r) => nf(r.t[n].aptos));
+      linha(L.lk_comp, (r) => `${pctOu(r.t[n].comp, r.t[n].aptos)} · ${nf(r.t[n].comp)}`);
+      linha(L.lk_abst, (r) => pctOu(r.t[n].aptos - r.t[n].comp, r.t[n].aptos));
+      const nomes = nomesTurno(n);
+      const cands = R().ordem_votos[n].filter((nr) => nr !== "95" && nr !== "96").slice(0, n === 1 ? 4 : 2);
+      cands.forEach((nr) => linha(`${A.titulo(nomes[nr] || nr)} (${nr})`, (r) => `${pctOu(r.t[n].v[nr] || 0, Q().validos(r.t[n]))} · ${nf(r.t[n].v[nr] || 0)}`));
+      linha(L.blank, (r) => `${pctOu(r.t[n].v["95"] || 0, r.t[n].comp)}`);
+      linha(L.null_, (r) => `${pctOu(r.t[n].v["96"] || 0, r.t[n].comp)}`);
+      linha(T.cp_flag_a, (r) => (r.tipo === "secao" ? (r.sn[n].a ? A.chip("red", L.lv_a) : r.sn[n].i ? A.chip("amber", L.lv_i) : A.chip("green", L.lk_noflags)) : `${nf(r.sn[n].a)}${r.sec ? ` · ${nf(Math.round((r.sn[n].a / r.sec) * 10000) / 10)} ${t().cq_per1000}` : ""}`));
+    });
+    return out;
+  }
+  async function compararResp(E, q) {
+    const T = X(), L = t();
+    let alvos = [];
+    if (E.secs && E.secs.length >= 2) {
+      if (E.secs.some((x) => !x.uf)) return faltando(T.need_uf_sec, [E.secs.map((x) => `PR ${T.w_zone} ${x.z} ${T.w_section} ${x.s}`).join(" x ")]);
+      alvos = E.secs.slice(0, 4).map((x) => ({ tipo: "secao", uf: x.uf, z: x.z, s: x.s }));
+    } else {
+      const amb = (E.lugares || []).find((x) => x.alternativas);
+      if (amb) return faltando(T.cp_pick(amb.nome), amb.alternativas.map((m) => [q.replace(new RegExp(amb.trecho.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `${m.nome} ${m.uf}`), `${m.nome} (${m.uf})`]));
+      alvos = (E.lugares || []).filter((x) => !x.alternativas).slice(0, 4);
+      const ctx = ctxAtual();
+      const igual = (a, b) => a.tipo === b.tipo && a.uf === b.uf && a.cod === b.cod;
+      if (alvos.length === 1 && ctx && ctx.lugar && !igual(ctx.lugar, alvos[0])) alvos.unshift(ctx.lugar);
+      if (alvos.length < 2) {
+        const um = alvos[0];
+        const nome = um ? (um.tipo === "uf" ? A.ufNome(um.uf) : um.tipo === "mun" ? `${um.nome} ${um.uf}` : T.br_name) : "";
+        const outra = (l) => l.find((x) => nz(x) !== nz(um.nome || ""));
+        const sug = um && um.tipo === "mun" ? [`${nome} x ${outra(["Curitiba", "Londrina"])}`, `${nome} x ${outra(["São Paulo", "Campinas"])}`]
+          : um && um.tipo === "uf" ? [`${A.ufNome(um.uf)} x ${um.uf === "SP" ? "Paraná" : "São Paulo"}`, `${A.ufNome(um.uf)} x ${T.br_name}`] : T.ex.comparar;
+        return faltando(T.cp_ask, sug);
+      }
+    }
+    const rs = (await pensar(T.think.comp, Promise.all(alvos.map((x) => Q().linhaLugar(x))))).filter(Boolean);
+    lembrar(ctxDe(E, { intencao: "comparar", lugares: alvos.filter((x) => x.tipo !== "secao"), lugar: alvos[alvos.length - 1].tipo !== "secao" ? alvos[alvos.length - 1] : null }));
+    if (rs.length < 2) return escrever(`<p>${esc(T.cp_none)}</p>`, { q });
+    const nome = (r) => (r.tipo === "secao" ? r.nome : nomeTxt(r) || (r.tipo === "br" ? T.br_name : ""));
+    let h = cab(esc(T.cp_title(rs.map(nome).join(" × "))), esc(L.cd_pres));
+    h += A.tabela([""].concat(rs.map((r) => (r.tipo === "br" ? esc(T.br_name) : nomeLinha(r)))), linhasComparacao(rs), "num-cols at-comp");
+    [2, 1].forEach((n) => {
+      const nomes = nomesTurno(n), cands = R().ordem_votos[n].filter((nr) => nr !== "95" && nr !== "96").slice(0, 2);
+      h += `<h4 class="at-t">${esc(L.round(n))} · ${esc(T.cp_bars)}</h4>`;
+      h += A.barras(cands.flatMap((nr) => rs.map((r) => { const v = (r.t[n].v[nr] || 0) / (Q().validos(r.t[n]) || 1); return { rotulo: `${A.titulo(nomes[nr] || nr)} · ${nome(r)}`, valor: v, texto: pct(v), dica: `${nome(r)}\n${A.titulo(nomes[nr] || nr)} (${nr}): ${pct(v)} ${L.valid}` }; })));
+    });
+    h += `<h4 class="at-t">${esc(L.lk_comp)}</h4>` + A.barras(rs.map((r) => { const v = r.t[2].comp / (r.t[2].aptos || 1); return { rotulo: nome(r), valor: v, texto: pct(v), dica: `${nome(r)}\n${L.lk_comp}: ${pct(v)} (${L.round(2)})` }; }));
+    h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    h += botoes(rs.filter((r) => r.tipo !== "br").map((r) => ir(r.tipo === "uf" ? `#/uf/${r.uf}` : r.tipo === "mun" ? `#/uf/${r.uf}/${r.cod}` : `#/secao/${r.uf}/${r.z}/${r.s}`, "arrow", nome(r))));
+    h += fonte(T.src_site);
+    return escrever(h, { q });
+  }
+
+  const MAX_FILTRO = 100;
+  function alvoFiltro(E) {
+    const lg = E.lugar;
+    if (lg.muns.length === 1 || (lg.muns.length && new Set(lg.muns.map((m) => m.uf)).size === 1)) return { uf: lg.muns[0].uf, cod: lg.muns[0].cod, nome: `${lg.muns[0].nome} (${lg.muns[0].uf})` };
+    if (E.sec && E.sec.z && E.sec.uf) return { uf: E.sec.uf, z: E.sec.z, nome: `${E.sec.uf} · ${t().th_zone} ${E.sec.z}` };
+    if (lg.uf) return { uf: lg.uf, nome: A.ufNome(lg.uf) };
+    if (E.br) return { nome: X().br_name };
+    return null;
+  }
+  async function filtroResp(E, q) {
+    const T = X(), L = t(), lg = E.lugar;
+    if (lg.muns.length > 1 && new Set(lg.muns.map((m) => m.uf)).size > 1) return escolherMun(lg.muns, q);
+    const alvo = alvoFiltro(E);
+    if (!alvo) return faltando(T.ft_ask_place, [`${q} ${T.w_in} Curitiba`, `${q} ${T.w_in} ${A.ufNome("SP")}`, `${q} ${T.w_in} ${T.br_name}`]);
+    const estaduais = (E.testes || []).filter((x) => Q().TESTES_UF.includes(x)), testes = (E.testes || []).filter((x) => !Q().TESTES_UF.includes(x));
+    if (estaduais.length && !testes.length) {
+      await pensar(T.think.guia);
+      return escrever(`<p>${esc(T.ft_state_tests)}</p>` + botoes(estaduais.map((x) => ir(`#/lista?teste=${x}${alvo.uf ? "&uf=" + alvo.uf : ""}`, "list", `${A.numTeste(x)}. ${A.nomeTeste(x)}`))), { q });
+    }
+    const f = { uf: alvo.uf, cod: alvo.cod, z: alvo.z, turno: E.turno || 0, testes, op: E.op, nivel: E.nivel };
+    const l = await pensar(T.think.filtro, Q().filtrar(f));
+    lembrar(ctxDe(E, { intencao: "filtro" }));
+    const nomeT = testes.length ? testes.map((x) => `${A.numTeste(x)}. ${A.nomeTeste(x)}`).join(E.op === "ou" ? ` ${T.w_or} ` : ` ${T.w_and} `) : E.nivel === "a" ? L.lv_a : E.nivel === "i" ? L.lv_i : T.ft_any;
+    let h = cab(esc(T.ft_title(alvo.nome)), esc(`${nomeT}${f.turno ? " · " + L.round(f.turno) : ""}`));
+    if (!l.length) {
+      h += `<p>${A.chip("green", T.ft_none)}</p>`;
+      if (testes.length > 1 && E.op !== "ou") h += `<p class="small muted">${esc(T.ft_try_or)}</p>` + chipsQ([perg(q.replace(/\s(e|and|y)\s/i, ` ${T.w_or} `))]);
+      return escrever(h + fonte(T.src_site), { q });
+    }
+    const por = { 1: l.filter((x) => x.n === 1).length, 2: l.filter((x) => x.n === 2).length };
+    h += `<p>${esc(T.ft_lead(nf(l.length)))}</p><p>${[2, 1].filter((n) => !f.turno || f.turno === n).map((n) => A.chip(por[n] ? "red" : "green", `${L.round(n)}: ${nf(por[n])}`)).join(" ")}</p>`;
+    if (estaduais.length) h += `<p class="small muted">${esc(T.ft_state_tests)}</p>`;
+    const mostra = l.slice(0, MAX_FILTRO);
+    h += tabela([L.th_uf, L.th_mun, L.th_zone, L.th_section, T.th_round, T.ft_th_tests, ""], mostra.map((x) => [esc(x.uf), esc(x.mun), x.z, x.s, `${x.n}º`,
+      x.testes.map((id) => A.chip(x.a ? "red" : "amber", String(A.numTeste(id)))).join(" "), lk(T.pq_q(x.uf, x.z, x.s, x.n), T.ft_why)]), "num-cols at-filtro");
+    if (l.length > MAX_FILTRO) h += `<p class="small muted">${esc(T.ft_more(nf(MAX_FILTRO), nf(l.length)))}</p>`;
+    h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    h += botoes([`<button type="button" class="btn btn-sm" data-at-filtro="${esc(JSON.stringify(f))}">${icone("download")} ${esc(T.ft_csv(nf(l.length)))}</button>`,
+      ir(`#/lista?${[f.turno ? "t=" + f.turno : "", f.uf ? "uf=" + f.uf : "", f.cod ? "mun=" + f.cod : "", f.z ? "z=" + f.z : "", testes.length === 1 ? "teste=" + testes[0] : "", E.nivel ? "nivel=" + E.nivel : ""].filter(Boolean).join("&")}`, "list", T.open_list)]);
+    h += fonte(T.src_site);
+    return escrever(h, { q });
+  }
+  async function csvFiltro(f) {
+    const L = t(), T = X(), l = await Q().filtrar(f);
+    baixar(`atlas-secoes-${slug([f.uf, f.cod, f.z].filter(Boolean).join(" ") || "brasil")}-${hoje()}.csv`, csv([[L.th_uf, T.th_cod, L.th_mun, L.th_zone, L.th_section, T.th_round, T.ft_th_level, T.ft_th_tests]]
+      .concat(l.map((x) => [x.uf, x.cod, x.mun, x.z, x.s, x.n, x.a ? L.lv_a : L.lv_i, x.testes.map((id) => `${A.numTeste(id)}. ${A.nomeTeste(id)}`).join(" | ")]))
+      .concat([[], [L.badge, URL_SITE]])), "text/csv;charset=utf-8");
+  }
+
+  // Mapa: estado (municípios) ou Brasil (estados), pintado pela taxa de seções com anomalia
+  async function blocoMapa(uf, n, destaque) {
+    const T = X(), L = t();
+    if (uf === "ZZ") return "";
+    if (uf) {
+      const ms = await Q().municipiosUf(uf, {});
+      const val = {}, por = {}; ms.forEach((m) => { val[m.cod] = m.sec ? m.sn[n].a / m.sec : 0; por[m.cod] = m; });
+      return Q().mapa({ uf, valor: val, destaque, titulo: T.mp_t(A.ufNome(uf)), legenda: T.mp_leg(L.round(n)), nome: (k) => (por[k] ? por[k].nome : k),
+        dica: (k, v) => (por[k] ? `${por[k].nome}\n${L.mp_tip(nf(por[k].sn[n].a), nf(por[k].sec), pct(v, 2))}` : k) });
+    }
+    const es = await Q().estados({});
+    const val = {}, por = {}; es.forEach((u) => { val[u.uf] = u.sec ? u.sn[n].a / u.sec : 0; por[u.uf] = u; });
+    return Q().mapa({ valor: val, destaque, titulo: T.mp_t(T.br_name), legenda: T.mp_leg(L.round(n)), nome: (k) => A.ufNome(k),
+      dica: (k, v) => (por[k] ? `${A.ufNome(k)} (${k})\n${L.mp_tip(nf(por[k].sn[n].a), nf(por[k].sec), pct(v, 2))}` : k) });
+  }
+  async function mapaResp(E, q) {
+    const T = X(), L = t(), lg = E.lugar, n = E.turno || 2;
+    if (lg.muns.length > 1 && new Set(lg.muns.map((m) => m.uf)).size > 1) return escolherMun(lg.muns, q);
+    const m = lg.muns[0], uf = m ? m.uf : lg.uf;
+    const h0 = await pensar(T.think.mapa, blocoMapa(uf, n, m ? m.cod : null));
+    lembrar(ctxDe(E, { intencao: "mapa" }));
+    let h = cab(esc(T.mp_t(m ? `${m.nome} (${m.uf})` : uf ? A.ufNome(uf) : T.br_name)), esc(`${L.round(n)} · ${L.roundDate[n]}`), m ? `#/uf/${m.uf}/${m.cod}` : uf ? `#/uf/${uf}` : "#/mapa");
+    h += `<p>${esc(m ? T.mp_lead_mun(m.nome) : uf ? T.mp_lead_uf : T.mp_lead_br)}</p>` + h0;
+    h += `<p class="small muted">${esc(T.mp_note)}</p>`;
+    h += botoes([ir(uf ? `#/uf/${uf}` : "#/mapa", "map", uf ? T.open_uf : L.nav.map), m ? ir(`#/uf/${m.uf}/${m.cod}`, "pin", T.open_mun) : "", n === 2 ? `<button type="button" class="btn btn-sm" data-q="${esc(`${q} ${L.round(1)}`)}">${icone("map")} ${esc(L.round(1))}</button>` : ""]);
+    h += fonte(T.src_site);
+    return escrever(h, { q });
+  }
+
+  // "Por que esta seção foi sinalizada?": cada teste que deu sinal, com o objetivo, o critério e os números da seção
+  async function porque(E, q) {
+    const T = X(), L = t(), ctx = ctxAtual();
+    let sec = E.sec && E.sec.z && E.sec.s ? E.sec : null;
+    if (sec && !sec.uf && ctx && ctx.sec) sec = Object.assign({}, sec, { uf: ctx.sec.uf });
+    if (!sec && ctx && ctx.sec && ctx.sec.s) sec = ctx.sec;
+    if (!sec || !sec.uf) return faltando(T.pq_ask, [T.pq_q("PR", 3, 50), T.pq_q("SP", 1, 5)]);
+    const trab = (async () => {
+      const d = await A.consultarSecao(sec.uf, sec.z, sec.s);
+      if (!d.rec) return { d };
+      const U = await ext().dado(`site/data/ufs/${d.uf}.json`);
+      return { d, mun: U.m[d.mun[0]] };
+    })();
+    const { d, mun } = await pensar(T.think.porque, trab);
+    lembrar(ctxDe(E, { intencao: "porque", sec: { uf: sec.uf, z: sec.z, s: sec.s }, lugar: { tipo: "uf", uf: sec.uf, nome: A.ufNome(sec.uf) } }));
+    if (!d.rec) return escrever(htmlSecao(d), { q });
+    const rec = d.rec, flags = rec[3] || {}, nomeM = A.titulo(d.mun[1]);
+    const turnos = [2, 1].filter((n) => !E.turno || E.turno === n).filter((n) => flags[String(n)] && flags[String(n)].o.length);
+    let h = cab(`${esc(d.uf)} · ${esc(nomeM)} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}`, esc(T.pq_title), `#/secao/${d.uf}/${d.z}/${d.s}`);
+    if (!turnos.length) {
+      h += `<p>${A.chip("green", T.pq_none)}</p>` + botoes([ir(`#/secao/${d.uf}/${d.z}/${d.s}`, "search", T.open_sec)]) + fonte(L.bot_sec_src);
+      return escrever(h, { q });
+    }
+    const TT = R().testes_txt[A.state.lang];
+    turnos.forEach((n) => {
+      const tv = rec[n], f = flags[String(n)];
+      const { v, nomes } = A.votosTurno(n, tv);
+      const val = Object.keys(v).reduce((a, nr) => a + (nr === "95" || nr === "96" ? 0 : v[nr]), 0) || 1;
+      const mt = mun && mun[n + 1], mv = mt ? votosObj(n, mt[2]) : null;
+      const mval = mv ? Object.keys(mv).reduce((a, nr) => a + (nr === "95" || nr === "96" ? 0 : mv[nr]), 0) || 1 : 1;
+      const top = Object.keys(v).filter((nr) => nr !== "95" && nr !== "96").sort((a, b) => v[b] - v[a])[0];
+      h += `<h4 class="at-t">${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h4>`;
+      const vistos = new Set();
+      f.o.forEach((o) => {
+        const id = o[0], tx = TT[id] || {};
+        const nums = [];
+        const k2 = id + o[2]; if (vistos.has(k2)) return; vistos.add(k2);
+        if (id === "T03") nums.push([`${A.titulo(nomes[top] || top)} (${top})`, `${nf(v[top])} · ${pct(v[top] / val)} ${L.valid}`], [T.pq_valid, nf(val)]);
+        else if (id === "T04") nums.push([L.lk_aptos, nf(tv[0])], [L.lk_comp, `${nf(tv[1])} (${pct(tv[1] / (tv[0] || 1), 1)})`], mt ? [T.pq_ref_mun(nomeM), pct(mt[1] / (mt[0] || 1), 1)] : null);
+        else if (id === "T05") { const b = (v["95"] || 0) + (v["96"] || 0); nums.push([T.pq_bn, `${nf(b)} · ${pct(b / (tv[1] || 1))}`], mv ? [T.pq_ref_mun(nomeM), pct(((mv["95"] || 0) + (mv["96"] || 0)) / (mt[1] || 1))] : null); }
+        else if (id === "T08") nums.push([`${A.titulo(nomes[top] || top)} (${top})`, `${pct(v[top] / val)} ${L.valid}`], mv ? [T.pq_ref_mun(nomeM), `${pct((mv[top] || 0) / mval)} ${L.valid}`] : null);
+        else if (id === "T11") nums.push([L.lk_open, A.hora(tv[2])], [L.lk_close, A.hora(tv[3])]);
+        else if (id === "T12" && f.u) nums.push([T.pq_urna, esc(L.lk_urna(f.u, f.c, f.l))]);
+        const linhas = nums.filter(Boolean);
+        h += `<div class="at-card at-pq"><p>${A.chip(o[1] === "a" ? "red" : "amber", o[1] === "a" ? L.lv_a : L.lv_i)} <b>${A.numTeste(id)}. ${esc(A.nomeTeste(id))}</b> <span class="small muted">· ${esc((R().categorias[o[2]] || {})[A.state.lang] || o[2])}</span></p>
+          ${tx.objetivo ? `<p class="small"><b>${esc(T.pq_obj)}:</b> ${esc(tx.objetivo)}</p>` : ""}${tx.criterio ? `<p class="small"><b>${esc(T.pq_crit)}:</b> ${esc(tx.criterio)}</p>` : ""}
+          ${linhas.length ? `<p class="small"><b>${esc(T.pq_nums)}:</b></p>${kv(linhas)}` : `<p class="small muted">${esc(T.pq_nodata)}</p>`}</div>`;
+      });
+    });
+    h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    h += botoes([ir(`#/secao/${d.uf}/${d.z}/${d.s}`, "search", T.open_sec), `<button type="button" class="btn btn-sm" data-at-fn="qr">${icone("qr")} ${esc(T.fn.qr[0])}</button>`,
+      S.con.tse ? `<button type="button" class="btn btn-sm" data-at-tsesec="${esc(JSON.stringify({ uf: d.uf, z: d.z, s: d.s }))}">${icone("shield")} ${esc(T.tse_files)}</button>` : "", ir("#/testes", "list", L.nav.tests)]);
+    h += fonte(`${L.bot_sec_src} · ${T.pq_src}`);
+    return escrever(h, { q });
+  }
+
+  // Relatório completo de um município ou estado, pronto para exportar em qualquer formato
+  async function relatorioResp(E, q) {
+    const T = X(), L = t(), lg = E.lugar, ctx = ctxAtual();
+    if (lg.muns.length > 1 && new Set(lg.muns.map((m) => m.uf)).size > 1) return escolherMun(lg.muns, q);
+    let m = lg.muns[0], uf = m ? m.uf : lg.uf;
+    if (!m && !uf && ctx && ctx.lugar && E.minha !== true) { if (ctx.lugar.tipo === "mun") { m = ctx.lugar; uf = m.uf; } else if (ctx.lugar.tipo === "uf") uf = ctx.lugar.uf; }
+    if (!m && !uf) return faltando(T.rl_ask, (ctx && ctx.lugar && ctx.lugar.tipo === "mun" ? [`${T.rl_word} ${ctx.lugar.nome} ${ctx.lugar.uf}`] : []).concat(T.ex.municipio.slice(0, 3).map((c) => `${T.rl_word} ${c}`)));
+    if (m) return relatorioMun(m, E, q);
+    return relatorioUf(uf, E, q);
+  }
+  async function relatorioMun(m, E, q) {
+    const T = X(), L = t();
+    const trab = (async () => {
+      const [U, zs, pos2, pos1, secs, mapa] = await Promise.all([ext().dado(`site/data/ufs/${m.uf}.json`), Q().zonas(m.uf, m.cod, {}), Q().posicao(m.uf, m.cod, 2), Q().posicao(m.uf, m.cod, 1),
+        Q().filtrar({ uf: m.uf, cod: m.cod }), blocoMapa(m.uf, 2, m.cod).catch(() => "")]);
+      const ib = S.con.ibge && m.uf !== "ZZ" ? await ibge(m).catch((e) => ({ erro: e.message })) : null;
+      return { x: U.m[m.cod], zs, pos2, pos1, secs, mapa, ib };
+    })();
+    const r = await pensar(T.think.relat, trab);
+    lembrar(ctxDe(E, { intencao: "relatorio", lugar: Object.assign({ tipo: "mun" }, m) }));
+    if (!r.x) return escrever(`<p>${esc(L.mu_none)}</p>`, { q });
+    const x = r.x;
+    let h = cab(esc(T.rl_title(`${m.nome} (${m.uf})`)), esc(`${A.ufNome(m.uf)} · ${T.rl_kicker}`), `#/uf/${m.uf}/${m.cod}`);
+    h += `<p>${esc(T.mun_lead(nf(x[0]), x[1].length, x[1].join(", ")))}</p>`;
+    const a2 = r.secs.filter((s) => s.n === 2 && s.a).length, a1 = r.secs.filter((s) => s.n === 1 && s.a).length;
+    h += `<h4 class="at-t">${esc(T.rl_resumo)}</h4>` + kv([[T.rl_pos(L.round(2)), esc(T.rl_pos_v(r.pos2.pos, r.pos2.total, pct(r.pos2.taxa, 2)))], [T.rl_pos(L.round(1)), esc(T.rl_pos_v(r.pos1.pos, r.pos1.total, pct(r.pos1.taxa, 2)))],
+      [`${T.cp_flag_a} · ${L.round(2)}`, nf(a2)], [`${T.cp_flag_a} · ${L.round(1)}`, nf(a1)]]);
+    [2, 1].forEach((n) => { const tv = x[n + 1]; if (tv) h += blocoTurno(n, tv[0], tv[1], tv[2]); });
+    if (r.mapa) h += `<h4 class="at-t">${esc(T.mp_t(A.ufNome(m.uf)))}</h4>` + r.mapa;
+    if (r.zs.length) {
+      h += `<h4 class="at-t">${esc(T.rl_zonas)}</h4>`;
+      h += tabela([L.th_zone, L.st_secoes, `${L.lk_comp} · ${L.round(2)}`, `${T.cp_flag_a} · ${L.round(2)}`, `${T.cp_flag_a} · ${L.round(1)}`],
+        r.zs.sort((a, b) => a.z - b.z).map((z) => [lk(`${m.uf} ${T.w_zone} ${z.z}`, String(z.z)), nf(z.sec), z.t[2] ? pct(z.t[2].comp / (z.t[2].aptos || 1), 1) : "—", nf(z.sn[2].a), nf(z.sn[1].a)]), "num-cols");
+    }
+    if (r.secs.length) {
+      h += `<h4 class="at-t">${esc(T.rl_secs(nf(r.secs.length)))}</h4>`;
+      h += tabela([L.th_zone, L.th_section, T.th_round, T.ft_th_tests, ""], r.secs.slice(0, 40).map((s) => [s.z, s.s, `${s.n}º`, s.testes.map((id) => A.chip(s.a ? "red" : "amber", String(A.numTeste(id)))).join(" "), lk(T.pq_q(s.uf, s.z, s.s, s.n), T.ft_why)]), "num-cols");
+      if (r.secs.length > 40) h += `<p class="small muted">${esc(T.ft_more("40", nf(r.secs.length)))}</p>`;
+    } else h += `<p>${A.chip("green", T.rl_nosecs)}</p>`;
+    if (r.ib) h += blocoIbge(r.ib, m);
+    h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    h += botoes([`<button type="button" class="btn btn-sm btn-primary" data-at-exp>${icone("download")} ${esc(T.rl_export)}</button>`, ir(`#/uf/${m.uf}/${m.cod}`, "pin", T.open_mun),
+      ir(`#/lista?uf=${m.uf}&mun=${m.cod}`, "list", T.open_list), ir(`#/variacao/${m.uf}/${m.cod}`, "swap", T.open_var)]);
+    h += fonte(T.src_site + (r.ib && !r.ib.erro && !r.ib.semMatch ? " · IBGE" : ""));
+    return escrever(h, { q });
+  }
+  async function relatorioUf(uf, E, q) {
+    const T = X(), L = t();
+    const trab = Promise.all([ext().dado(`site/data/ufs/${uf}.json`), Q().ranking({ unidade: "mun", uf, metrica: "sinal", turno: 2, ordem: "desc", n: 15 }), Q().filtrar({ uf }), blocoMapa(uf, 2, null).catch(() => "")]);
+    const [U, rk, secs, mapa] = await pensar(T.think.relat, trab);
+    lembrar(ctxDe(E, { intencao: "relatorio", lugar: { tipo: "uf", uf, nome: A.ufNome(uf) } }));
+    const ms = Object.values(U.m), tot = { 1: null, 2: null };
+    ms.forEach((mm) => [1, 2].forEach((n) => { const x = mm[n + 1]; if (!x) return; if (!tot[n]) tot[n] = [0, 0, x[2].map(() => 0)]; tot[n][0] += x[0]; tot[n][1] += x[1]; x[2].forEach((v, i) => { tot[n][2][i] += v; }); }));
+    let h = cab(esc(T.rl_title(`${A.ufNome(uf)} (${uf})`)), esc(T.rl_kicker), `#/uf/${uf}`);
+    h += `<p>${esc(T.uf_lead(nf(ms.reduce((a, mm) => a + mm[0], 0)), nf(ms.length)))}</p>`;
+    h += `<h4 class="at-t">${esc(T.rl_resumo)}</h4>` + kv([[`${T.cp_flag_a} · ${L.round(2)}`, nf(secs.filter((s) => s.n === 2 && s.a).length)], [`${T.cp_flag_a} · ${L.round(1)}`, nf(secs.filter((s) => s.n === 1 && s.a).length)],
+      [T.rl_muns_flag, nf(rk.todas.filter((x) => x.v > 0).length)]]);
+    [2, 1].forEach((n) => { if (tot[n]) h += blocoTurno(n, tot[n][0], tot[n][1], tot[n][2]); });
+    if (mapa) h += `<h4 class="at-t">${esc(T.mp_t(A.ufNome(uf)))}</h4>` + mapa;
+    const top = rk.top.filter((x) => x.v > 0);
+    if (top.length) {
+      h += `<h4 class="at-t">${esc(T.rl_top_mun)}</h4>`;
+      h += tabela(["#", T.rk_th_nome, rk.M.nome, L.st_secoes], top.map((x, i) => [String(i + 1), nomeLinha(x.r), esc(rk.M.txt(x.r, 2)), nf(x.r.sec)]), "num-cols");
+    }
+    h += `<p class="small muted">${esc(T.sg_note_uf)}</p>`;
+    h += botoes([`<button type="button" class="btn btn-sm btn-primary" data-at-exp>${icone("download")} ${esc(T.rl_export)}</button>`, ir(`#/uf/${uf}`, "pin", T.open_uf), ir(`#/lista?uf=${uf}`, "list", T.open_list), ir(`#/variacao/${uf}`, "swap", T.open_var)]);
+    h += fonte(T.src_site);
+    return escrever(h, { q });
+  }
+
+  // Roteiro do cidadão: passos com caixa de marcar; o progresso fica só neste aparelho
+  const CH_RT = "atlas_roteiro";
+  const rtFeitos = () => new Set(lerJ(CH_RT, []));
+  async function roteiro(q) {
+    const T = X();
+    await pensar(T.think.guia);
+    lembrar({ intencao: "roteiro" });
+    const passos = T.rt_steps, feitos = rtFeitos();
+    const acao = {
+      achar: chipsQ([perg(T.ex.secao[0])]),
+      consultar: botoes([`<button type="button" class="btn btn-sm" data-at-fn="secao">${icone("search")} ${esc(T.fn.secao[0])}</button>`]),
+      qr: botoes([btnArq("foto"), podeCamera ? btnArq("camera") : "", ir("#/boletim", "qr", t().nav.ballot || T.fn.qr[0])]),
+      arquivos: botoes([btnCon(), `<button type="button" class="btn btn-sm" data-at-arq="hash">${icone("hash")} ${esc(T.up.hash[0])}</button>`]),
+      porque: chipsQ([perg(T.pq_q("PR", 3, 50))]),
+      comparar: chipsQ([perg(T.ex.comparar[0]), perg(T.ex.ranking[0])]),
+      relatorio: chipsQ([perg(`${T.rl_word} Curitiba`)]),
+      reportar: botoes([`<a class="btn btn-sm" href="${A.REPO}/issues/new" target="_blank" rel="noopener">${icone("code")} GitHub</a>`, `<a class="btn btn-sm" href="${A.TELEGRAM}" target="_blank" rel="noopener">${icone("tg")} Telegram</a>`]),
+    };
+    let h = cab(esc(T.rt_title), "") + `<p>${esc(T.rt_lead)}</p><ol class="at-rt">`;
+    passos.forEach(([k, tit, txt]) => {
+      h += `<li class="at-rt-p${feitos.has(k) ? " ok" : ""}" data-rt-p="${k}"><label class="at-chk"><input type="checkbox" data-rt="${k}"${feitos.has(k) ? " checked" : ""}> <b>${esc(tit)}</b></label><p class="small">${esc(txt)}</p>${acao[k] || ""}</li>`;
+    });
+    h += `</ol><p class="small at-rt-prog" aria-live="polite">${esc(T.rt_prog(passos.filter(([k]) => feitos.has(k)).length, passos.length))}</p><p class="small muted">${esc(T.rt_note)}</p>`;
+    return escrever(h, { q, fn: "roteiro" });
+  }
+  // Marca as caixas do roteiro (respostas antigas mostram o progresso atual)
+  function sincronizarRoteiro(d) {
+    const feitos = rtFeitos(), T = X(), ps = d.querySelectorAll("[data-rt]");
+    if (!ps.length) return;
+    ps.forEach((c) => { c.checked = feitos.has(c.dataset.rt); c.closest(".at-rt-p").classList.toggle("ok", c.checked); });
+    const p = d.querySelector(".at-rt-prog"); if (p) p.textContent = T.rt_prog([...ps].filter((c) => c.checked).length, ps.length);
   }
 
   // --- downloads: botão que baixa o arquivo pedido ------------------------------------------------------------
@@ -878,13 +1205,17 @@
     const r = ext().juntarQR(S.qr.partes), lidas = Object.keys(S.qr.partes).length, total = p.total || 1;
     return { ok: true, pronto: r.presidente, lidas, total, msg: r.presidente ? t().bu_qr_done(lidas, total) : t().bu_qr_part(lidas, total) };
   }
-  async function compararBU(r, origem) {
+  // resumo (opcional) recebe { difs, iguais, local } para a tabela de vários boletins
+  async function compararBU(r, origem, resumo) {
     const L = t(), T = X();
-    if (!r.uf || !(r.z > 0) || !(r.s > 0)) return `<p>${esc(T.qr_noloc)}</p>`;
+    resumo = resumo || {};
+    resumo.local = r.uf ? `${r.uf} · ${L.th_zone} ${r.z} · ${L.th_section} ${r.s} · ${L.round(r.turno === 1 ? 1 : 2)}` : "—";
+    if (!r.uf || !(r.z > 0) || !(r.s > 0)) { resumo.erro = T.qr_noloc; return `<p>${esc(T.qr_noloc)}</p>`; }
     const d = await A.consultarSecao(r.uf, r.z, r.s), n = r.turno === 1 ? 1 : 2;
-    if (d.erro) return `<p>${esc(d.erro === "zona" ? L.lk_nozone : L.lk_nosec)}</p>`;
+    if (d.erro) { resumo.erro = d.erro === "zona" ? L.lk_nozone : L.lk_nosec; return `<p>${esc(resumo.erro)}</p>`; }
     const tv = d.rec[n];
-    if (!tv) return `<p>${esc(L.lk_nodata)}</p>`;
+    if (!tv) { resumo.erro = L.lk_nodata; return `<p>${esc(L.lk_nodata)}</p>`; }
+    resumo.local = `${d.uf} · ${A.titulo(d.mun[1])} · ${L.th_zone} ${d.z} · ${L.th_section} ${d.s} · ${L.round(n)}`;
     const { v, nomes } = A.votosTurno(n, tv);
     const linhas = [[L.lk_aptos, r.aptos, tv[0]], [L.lk_comp, r.comp, tv[1]]];
     const fim = (x) => (x === "95" || x === "96" ? 1 : 0);
@@ -897,22 +1228,43 @@
       return [esc(rot), a == null || Number.isNaN(a) ? "—" : nf(a), b == null ? "—" : nf(b), st];
     });
     const res = difs ? A.chip("red", L.bu_res_diff(difs)) : iguais ? A.chip("green", L.bu_res_ok(iguais)) : A.chip("amber", L.bu_res_none);
+    Object.assign(resumo, { difs, iguais, chip: res, link: `#/secao/${d.uf}/${d.z}/${d.s}` });
     return cab(`${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s} · ${esc(L.round(n))}`, "", `#/secao/${d.uf}/${d.z}/${d.s}`)
       + `<p>${res} <span class="small muted">${esc(origem)}</span></p>` + tabela([L.bu_th_field, L.bu_th_paper, L.bu_th_file, ""], corpo, "num-cols")
       + `<p class="small muted">${esc(L.bu_res_note)}</p><p class="small muted">${esc(L.bu_note)}</p>`
       + botoes([ir(`#/secao/${d.uf}/${d.z}/${d.s}`, "search", T.open_sec)]) + fonte(L.bot_sec_src);
   }
+  // Partes de QR Code lidas, separadas por boletim: a parte que traz estado, zona e seção abre (ou acha) o boletim;
+  // as outras vão para o último boletim que ainda não tem aquela parte
+  function agruparQR(txts) {
+    const grupos = [], outros = [];
+    const chave = (p) => (p.campos.UNFE && p.campos.ZONA && p.campos.SECA ? [p.campos.UNFE.toUpperCase(), +p.campos.ZONA, +p.campos.SECA, +(p.campos.TURN || 0)].join("|") : null);
+    if (Object.keys(S.qr.partes).length) { const ps = Object.values(S.qr.partes); grupos.push({ k: ps.map(chave).find(Boolean) || null, partes: Object.assign({}, S.qr.partes) }); }
+    txts.forEach((x) => {
+      const p = ext().lerQR(x);
+      if (!p.parte) { outros.push(x); return; }
+      const k = chave(p);
+      let g = k ? grupos.find((y) => y.k === k) : null;
+      if (!g && k) { g = grupos.slice().reverse().find((y) => !y.k && !y.partes[p.parte]); if (g) g.k = k; }
+      if (!g && !k) g = grupos.slice().reverse().find((y) => !y.partes[p.parte]);
+      if (!g) { g = { k, partes: {} }; grupos.push(g); }
+      g.partes[p.parte] = p;
+    });
+    return { grupos, outros: outros.length };
+  }
   async function conferirQR(fs) {
     const T = X(), L = t();
     const trab = (async () => {
-      let lidos = 0, outros = 0;
+      const txts = [];
       for (const f of fs) {
         try {
           const bmp = await createImageBitmap(f);
-          const txts = await decodificar(bmp, bmp.width, bmp.height);
-          txts.forEach((x) => { if (receberQR(x).ok) lidos++; else outros++; });
+          (await decodificar(bmp, bmp.width, bmp.height)).forEach((x) => txts.push(x));
         } catch (e) { /* imagem que não abriu */ }
       }
+      const G = agruparQR(txts), outros = G.outros;
+      if (G.grupos.length > 1) return variosBU(G.grupos);
+      S.qr.partes = G.grupos.length ? G.grupos[0].partes : {};
       const ks = Object.keys(S.qr.partes);
       if (!ks.length) return { h: `<p>${esc(outros ? L.bu_qr_unknown : L.bu_qr_none)}</p><ul class="at-lista">${T.qr_tips.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` + botoes([btnArq("foto"), podeCamera ? btnArq("camera") : ""]) };
       const r = ext().juntarQR(S.qr.partes), total = S.qr.partes[ks[0]].total || ks.length;
@@ -923,6 +1275,31 @@
     })();
     const x = await pensar(T.think.qr, trab);
     return escrever(x.h, { q: T.fn.qr[0] });
+  }
+
+  async function variosBU(grupos) {
+    const T = X(), L = t();
+    const linhas = [], blocos = [];
+    let pendente = null;
+    for (const g of grupos) {
+      const r = ext().juntarQR(g.partes), ks = Object.keys(g.partes), total = g.partes[ks[0]].total || ks.length;
+      if (!r.presidente) {
+        linhas.push([esc(r.uf ? `${r.uf} · ${L.th_zone} ${r.z} · ${L.th_section} ${r.s}` : "—"), A.chip("amber", L.bu_qr_part(ks.length, total)), ""]);
+        pendente = g.partes;
+        continue;
+      }
+      const rs = {};
+      const h = await compararBU(r, `${L.bu_from_qr} · ${T.qr_from_photo}`, rs);
+      linhas.push([rs.link ? `<b data-href="${esc(rs.link)}">${esc(rs.local)}</b>` : esc(rs.local), rs.chip || A.chip("amber", rs.erro || "—"), rs.difs ? nf(rs.difs) : "0"]);
+      blocos.push(h);
+    }
+    S.qr = { partes: pendente || {} };
+    const comDif = linhas.filter((l) => l[2] !== "0" && l[2] !== "").length;
+    let h = `<p>${esc(T.qm_lead(grupos.length))}</p><p>${A.chip(comDif ? "red" : "green", comDif ? T.qm_diff(comDif) : T.qm_ok)}</p>`;
+    h += tabela([T.qm_th_local, T.qm_th_res, T.qm_th_dif], linhas, "num-cols");
+    if (pendente) h += `<p class="small muted">${esc(T.qm_pend)}</p>` + botoes([btnArq("foto"), podeCamera ? btnArq("camera") : ""]);
+    h += blocos.map((b, i) => `<section class="at-qm"><h4 class="at-t">${esc(T.qm_item(i + 1))}</h4>${b}</section>`).join("");
+    return { h };
   }
 
   async function abrirCamera() {
@@ -1256,27 +1633,11 @@
   });
 
   // Página interativa: um arquivo .html com o visual do site, dicas nos gráficos e números e barras animados
-  const SCRIPT_DOC = `(function(){var h=document.documentElement,reduz=matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduz)h.classList.remove("anim");
-var tip=document.createElement("div");tip.className="tip";tip.hidden=true;document.body.appendChild(tip);var at=null;
-function encher(el){if(at===el)return;at=el;tip.textContent="";var l=el.getAttribute("data-tip").split("\\n"),s=document.createElement("strong");s.textContent=l[0];tip.appendChild(s);for(var i=1;i<l.length;i++){var d=document.createElement("div");d.textContent=l[i];tip.appendChild(d);}tip.hidden=false;}
-function pos(x,y){var r=tip.getBoundingClientRect(),a=x+14,b=y-r.height-12;if(a+r.width>innerWidth-8)a=Math.max(8,x-r.width-14);if(b<8)b=y+18;tip.style.left=a+"px";tip.style.top=b+"px";}
-function sai(){tip.hidden=true;at=null;}
-document.addEventListener("mousemove",function(e){var el=e.target.closest("[data-tip]");if(el){encher(el);pos(e.clientX,e.clientY);}else if(at)sai();});
-document.addEventListener("click",function(e){var el=e.target.closest("[data-tip]");if(el){encher(el);var r=el.getBoundingClientRect();pos(r.left+Math.min(r.width/2,120),r.top);}else sai();});
-document.addEventListener("focusin",function(e){var el=e.target.closest("[data-tip]");if(el){encher(el);var r=el.getBoundingClientRect();pos(r.left+Math.min(r.width/2,120),r.top);}});
-addEventListener("scroll",sai,{passive:true});
-var fmt=new Intl.NumberFormat(h.getAttribute("data-locale")||"pt-BR");
-function conta(el){var alvo=+el.getAttribute("data-count"),t0=performance.now();function p(t){var k=Math.min(1,(t-t0)/1500),e=1-Math.pow(1-k,3);el.textContent=fmt.format(Math.round(alvo*e));if(k<1)requestAnimationFrame(p);}requestAnimationFrame(p);}
-if(reduz||!("IntersectionObserver" in window))return;
-var io=new IntersectionObserver(function(es){es.forEach(function(en){if(!en.isIntersecting)return;io.unobserve(en.target);if(en.target.classList.contains("bars"))en.target.classList.add("in");else conta(en.target);});},{rootMargin:"0px 0px -6% 0px"});
-document.querySelectorAll(".bars").forEach(function(el){el.classList.remove("in");io.observe(el);});
-document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fmt.format(0);io.observe(el);});})();`;
-  async function paginaInterativa(d, aviso) {
-    const T = X(), L = t();
+  async function paginaInterativa(d) {
+    const T = X();
     if (!d && !S.el.log.querySelector(".msg")) return;
-    if (aviso) status(aviso, T.ex_wait);
     const vivo = linkVivo(d, URL_SITE);
-    const [css, qr] = await Promise.all([fetch("site/css/style.css").then((r) => r.text()).catch(() => ""), vivo ? A.ferramentas.svgQr(vivo).catch(() => "") : ""]);
+    const qr = vivo ? await A.ferramentas.svgQr(vivo).catch(() => "") : "";
     const doc = montarDoc(d, { base: URL_SITE, qr, html: true });
     // números dos blocos: o script da página faz a contagem ao aparecer
     doc.querySelectorAll(".kv dd").forEach((dd) => {
@@ -1286,21 +1647,15 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
       const sp = document.createElement("span"); sp.dataset.count = n; sp.textContent = m[1];
       tn.nodeValue = tn.nodeValue.slice(m[1].length); dd.insertBefore(sp, tn);
     });
-    const tema = document.documentElement.getAttribute("data-theme"), q = d ? (d._m && d._m.q) || T.doc_one : T.doc_all;
-    const pagina = `<!doctype html>
-<html lang="${{ PT: "pt-BR", EN: "en", ES: "es" }[A.state.lang]}" class="anim"${tema ? ` data-theme="${esc(tema)}"` : ""} data-locale="${esc(L.locale)}">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark light">
-<title>Atlas · ${esc(q)}</title><link rel="icon" href="${URL_SITE}site/img/favicon.svg">
-<style>${css.replace(/url\("\.\.\//g, `url("${URL_SITE}site/`)}</style></head>
-<body class="doc-pagina">${doc.outerHTML}<script>${SCRIPT_DOC}<\/script></body></html>`;
-    baixar(`atlas-${slug(d ? q : T.doc_all)}-${hoje()}.html`, pagina, "text/html;charset=utf-8");
-    if (aviso) status(aviso, "");
+    const q = d ? (d._m && d._m.q) || T.doc_one : T.doc_all;
+    return A.exportar.htmlInterativo(doc, `Atlas · ${q}`, `atlas-${slug(d ? q : T.doc_all)}-${hoje()}.html`);
   }
 
   // --- ações em cada resposta: copiar, ouvir, compartilhar, exportar, automação, reportar ------------------
   function acoesResposta(d, m) {
     const T = X(), C = S.con;
     d._m = m;
+    sincronizarRoteiro(d);
     const old = d.querySelector(".at-acts"); if (old) old.remove();
     const b = (k, ic, txt, pop) => `<button type="button" class="at-ac" data-at-ac="${k}" aria-label="${esc(txt)}" title="${esc(txt)}"${pop ? ' aria-haspopup="menu" aria-expanded="false"' : ""}>${icone(ic)}</button>`;
     d.insertAdjacentHTML("beforeend", `<div class="at-acts">${b("copiar", "copy", T.ac_copy)}${podeFalar ? b("ouvir", "speaker", T.ac_listen) : ""}${C.share ? b("compartilhar", "share", T.ac_share, true) : ""}${d.querySelector(".kv, .bars, .at-sinais") ? b("imagem", "image", t().im_btn) : ""}${C.export ? b("exportar", "download", T.ac_export, true) : ""}${C.hook && urlValida(S.hook.url) ? b("automacao", "plug", T.ac_hook) : ""}${C.github ? b("reportar", "alert", T.ac_report) : ""}<span class="at-status" aria-live="polite"></span></div>`);
@@ -1368,18 +1723,21 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
     });
     return { kicker: ["Atlas", txt(sub)].filter(Boolean).join(" · "), titulo: h ? txt(h.querySelector("b")) : m.q || "Atlas", itens, slug: "atlas-" + slug(m.q || (h ? txt(h.querySelector("b")) : "")) };
   }
-  function exportarMenu(btn, d, m) {
+  // Esta resposta (com a pergunta) ou a conversa inteira, como fonte para os formatos de exportação
+  function fonteAtlas(d) {
     const T = X();
-    const itens = [];
+    let msgs = $$(".msg", S.el.log).filter((x) => !x.classList.contains("msg-typing"));
+    if (d) { let p = d.previousElementSibling; while (p && !p.classList.contains("msg-user")) p = p.previousElementSibling; msgs = p ? [p, d] : [d]; }
+    const m = d && d._m, h = d && d.querySelector(".at-h b");
+    const titulo = d ? (h ? h.textContent.trim() : "") || (m && m.q) || T.doc_one : T.doc_all;
+    const vivo = linkVivo(d, URL_SITE) || URL_SITE + "#/atlas";
+    return { elementos: msgs, meta: { titulo, sub: d && m && m.q && h && m.q !== titulo ? m.q : d ? "" : (conversa().t || ""), kicker: "Atlas · " + t().brand, url: vivo, arquivo: "atlas-" + (d ? titulo : T.doc_all) } };
+  }
+  function exportarMenu(btn, d, m) {
+    const T = X(), xp = t().xp;
     A.ferramentas.svgQr("").catch(() => {});
-    if (m) itens.push({ k: "pdf1", ic: icone("print"), txt: T.ex_pdf_one }, { k: "html1", ic: icone("globe"), txt: T.ex_html_one }, { k: "csv1", ic: icone("list"), txt: T.ex_csv_one });
-    itens.push({ k: "pdf", ic: icone("print"), txt: T.ex_pdf_all }, { k: "html", ic: icone("globe"), txt: T.ex_html_all }, { k: "csv", ic: icone("list"), txt: T.ex_csv_all });
-    const p = popover(btn, itens);
-    p.addEventListener("click", (e) => {
-      const b = e.target.closest("[data-pop]"); if (!b) return;
-      fecharMenus();
-      ({ pdf1: () => imprimir(d), html1: () => paginaInterativa(d, d), csv1: () => csvResposta(m), pdf: () => imprimir(null), html: () => paginaInterativa(null, d), csv: csvConversa })[b.dataset.pop]();
-    });
+    const escopos = (m ? [{ k: "uma", rot: xp.one }] : []).concat([{ k: "todas", rot: xp.all }]);
+    A.exportar.abrir({ titulo: T.ac_export, escopos, fonte: (k) => fonteAtlas(k === "uma" ? d : null), pdf: (k) => imprimir(k === "uma" ? d : null), html: (k) => paginaInterativa(k === "uma" ? d : null) });
   }
   let falando = null;
   function ouvir(btn, m) {
@@ -1447,12 +1805,35 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
     const dl = A.ferramentas.janela(T.conn_t, `<p class="small muted">${esc(T.conn_sub)}</p>
       <ul class="at-cons">${["share", "export", "ibge", "tse", "github", "hook"].map(item).join("")}</ul>
       <h3>${esc(T.priv_t)}</h3><ul class="at-cons"><li class="at-con"><label class="at-sw"><input type="checkbox" data-salvar${S.salvar ? " checked" : ""}><span class="at-sw-t" aria-hidden="true"></span>
-        <span class="at-con-txt"><b>${esc(T.hist_save)}</b><small>${esc(T.hist_save_sub)}</small></span></label></li></ul>`, "dlg-atlas");
+        <span class="at-con-txt"><b>${esc(T.hist_save)}</b><small>${esc(T.hist_save_sub)}</small></span></label></li>
+        <li class="at-con"><label class="at-sw"><input type="checkbox" data-sem-on${SR().ligado() ? " checked" : ""}><span class="at-sw-t" aria-hidden="true"></span>
+        <span class="at-con-txt"><b>${esc(T.sem_t)}</b><small>${esc(T.sem_sub)}</small></span></label>
+        <div class="at-sem"><p class="small" data-sem-n>${esc(T.sem_n(SR().lista().length))}</p>
+          <div class="btn-row"><button class="btn btn-sm" type="button" data-sem="csv">${icone("download")} CSV</button><button class="btn btn-sm" type="button" data-sem="json">${icone("download")} JSON</button>
+          <a class="btn btn-sm" data-sem="gh" target="_blank" rel="noopener">${icone("code")} ${esc(T.sem_gh)}</a><button class="btn btn-sm btn-ghost" type="button" data-sem="limpar">${icone("trash")} ${esc(T.sem_clear)}</button></div>
+          <p class="small muted">${esc(T.sem_note)}</p></div></li></ul>`, "dlg-atlas");
+    const semAtual = () => {
+      const l = SR().lista(), gh = dl.querySelector('[data-sem="gh"]');
+      dl.querySelector("[data-sem-n]").textContent = T.sem_n(l.length);
+      const corpo = `${T.sem_issue_lead}\n\n${l.slice(0, 60).map((x) => `- ${x.q.replace(/\s+/g, " ")} (${x.lang})`).join("\n")}`;
+      gh.href = `${A.REPO}/issues/new?title=${enc(T.sem_issue_t)}&body=${enc(corpo.slice(0, 6000))}`;
+      dl.querySelectorAll("[data-sem]").forEach((b) => { b.toggleAttribute("disabled", !l.length && b.dataset.sem !== "gh"); if (b.dataset.sem === "gh") b.classList.toggle("off", !l.length); });
+    };
+    semAtual();
+    dl.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-sem]"); if (!b) return;
+      const l = SR().lista(), k = b.dataset.sem;
+      if (k === "csv") baixar(`atlas-sem-resposta-${hoje()}.csv`, csv([[T.th_text, T.th_when, "lang"]].concat(l.map((x) => [x.q, new Date(x.ts).toISOString(), x.lang]))), "text/csv;charset=utf-8");
+      if (k === "json") baixar(`atlas-sem-resposta-${hoje()}.json`, JSON.stringify({ fonte: "Atlas · paranacontraoscorruptos.org", perguntas: l }, null, 2), "application/json");
+      if (k === "gh" && !l.length) e.preventDefault();
+      if (k === "limpar" && window.confirm(T.sem_clear_q)) { SR().limpar(); semAtual(); }
+    });
     const atualizar = () => { gravarJ(CH.con, S.con); gravarJ(CH.hook, S.hook); $$(".at-resp").forEach((d) => { if (d._m) acoesResposta(d, d._m); }); };
     dl.addEventListener("change", (e) => {
       const c = e.target.closest("[data-con]");
       if (c) { S.con[c.dataset.con] = c.checked; atualizar(); return; }
       if (e.target.matches("[data-hook-auto]")) { S.hook.auto = e.target.checked; atualizar(); return; }
+      if (e.target.matches("[data-sem-on]")) { SR().ligar(e.target.checked); semAtual(); return; }
       if (e.target.matches("[data-salvar]")) {
         S.salvar = e.target.checked;
         A.guardar(CH.salvar, S.salvar ? "1" : "0");
@@ -1545,6 +1926,10 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
       if (tse) { const alvo = JSON.parse(tse.dataset.atTse); if (!S.ocupado) ocupar(async () => { usuario(T.tse_user(alvo.tipo === "br" ? alvo.nome : `${alvo.nome} (${alvo.uf})`)); await tseComparar(alvo, T.tse_user(alvo.nome)); }); return; }
       const ts = el.closest("[data-at-tsesec]");
       if (ts) { const p = JSON.parse(ts.dataset.atTsesec); if (!S.ocupado) ocupar(async () => { const q = `${p.uf} ${T.w_zone} ${p.z} ${T.w_section} ${p.s} · TSE`; usuario(q); await tseSecao(p, q); }); return; }
+      const cf = el.closest("[data-at-filtro]");
+      if (cf) { csvFiltro(JSON.parse(cf.dataset.atFiltro)); return; }
+      const xr = el.closest("[data-at-exp]");
+      if (xr) { const d = xr.closest(".at-resp"); if (d && d._m) exportarMenu(xr, d, d._m); return; }
       const cv = el.closest("[data-at-csv]");
       if (cv) { const d = cv.closest(".at-resp"); if (d && d._m) csvResposta(d._m); return; }
       const conv = el.closest("[data-at-conv]");
@@ -1587,7 +1972,7 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
         const c = S.convs.find((x) => x.id === S.atual);
         if (!c || !c.m.length) { at.title = T.exp_empty; at.classList.add("treme"); setTimeout(() => at.classList.remove("treme"), 500); return; }
         if (at.getAttribute("aria-expanded") === "true") { fecharMenus(); return; }
-        exportarMenuTopo(at);
+        exportarMenuTopo();
         return;
       }
       if (k === "modelo-lista") { baixar("modelo-lista-secoes.csv", csv([["uf", "zona", "secao"], ["PR", "3", "50"], ["SP", "1", "5"], ["BA", "1", "3"]]), "text/csv;charset=utf-8"); return; }
@@ -1595,6 +1980,13 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
         const cands = R().ordem_votos["2"].filter((nr) => nr !== "95" && nr !== "96");
         baixar("modelo-apuracao.csv", csv([["uf", "zona", "secao", "turno", "aptos", "votaram"].concat(cands, ["brancos", "nulos"]), ["PR", "3", "50", "2", "", ""].concat(cands.map(() => ""), ["", ""])]), "text/csv;charset=utf-8");
       }
+    });
+    // Roteiro do cidadão: marcar um passo vale para todas as cópias do roteiro
+    root.addEventListener("change", (e) => {
+      const c = e.target.closest("[data-rt]"); if (!c) return;
+      const f = rtFeitos(); if (c.checked) f.add(c.dataset.rt); else f.delete(c.dataset.rt);
+      gravarJ(CH_RT, [...f]);
+      $$(".at-resp", S.el.log).forEach(sincronizarRoteiro);
     });
     // Arrastar e soltar arquivos na conversa
     const main = root.querySelector(".at-main");
@@ -1605,17 +1997,7 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
     main.addEventListener("dragleave", () => { prof = Math.max(0, prof - 1); if (!prof) S.el.solte.hidden = true; });
     main.addEventListener("drop", (e) => { if (!temArq(e)) return; e.preventDefault(); prof = 0; S.el.solte.hidden = true; tratarArquivos(e.dataTransfer.files, null); });
   }
-  function exportarMenuTopo(btn) {
-    const T = X();
-    fecharMenus();
-    const p = document.createElement("div");
-    p.className = "at-pop at-pop-topo"; p.setAttribute("role", "menu");
-    A.ferramentas.svgQr("").catch(() => {});
-    p.innerHTML = [["pdf", "print", T.ex_pdf_all], ["html", "globe", T.ex_html_all], ["csv", "list", T.ex_csv_all]].map(([k, ic, txt]) => `<button type="button" role="menuitem" data-pop="${k}">${icone(ic)}<span>${esc(txt)}</span></button>`).join("");
-    btn.parentElement.appendChild(p); p._btn = btn; btn.setAttribute("aria-expanded", "true");
-    p.querySelector("button").focus({ preventScroll: true });
-    p.addEventListener("click", (e) => { const b = e.target.closest("[data-pop]"); if (!b) return; fecharMenus(); ({ pdf: () => imprimir(null), html: () => paginaInterativa(null), csv: csvConversa })[b.dataset.pop](); });
-  }
+  function exportarMenuTopo() { exportarMenu(null, null, null); }
 
   // Eventos de página (uma vez só)
   document.addEventListener("keydown", (e) => {
