@@ -891,10 +891,12 @@
 
   // --- ações pedidas por texto: imagem, vídeo, carrossel, exportar, ouvir, compartilhar, copiar, abrir página -------------
   const SOCIAL = ["instagram", "tiktok", "kwai", "youtube", "facebook"];
+  const SITE_DADOS = ["comparativo", "ranking", "painel", "mapa"];
   async function acoesResp(ac, texto, kb) {
     const T = X();
     // a ação vem junto de um pedido de dados ("imagem do relatório de Curitiba"): primeiro a resposta, depois a ação
-    if (ac.resto && !ac.lista.every((a) => a.k === "abrir")) {
+    // site com os dados ("site de ranking do PR"): o resto do pedido diz os lugares do site, não vira uma resposta antes
+    if (ac.resto && !ac.lista.every((a) => a.k === "abrir") && !ac.lista.some((a) => a.k === "site" && (SITE_DADOS.includes(a.tipo) || !respostasSite().length))) {
       const an = await motor().analisar(ac.resto, ctxAtual()), E2 = an.E;
       if (E2.intencao || E2.lugar.uf || E2.lugar.muns.length || (E2.sec && E2.sec.z) || E2.br || E2.urna || E2.conta || an.forte) {
         S.parou = false;
@@ -933,9 +935,12 @@
   async function executar(a, d, q, resto) {
     const T = X(), m = d && d._m;
     if (a.k === "site") {
-      if (!respostasSite().length) { S.parou = true; return escrever(`<p>${esc(T.st_vazio)}</p>`, { q, acao: true }); }
-      await escrever(`<p>${esc(T.st_abrir)}</p>`, { q, acao: true });
-      janelaSite(d);
+      // tipo pedido ("site de ranking") e lugares citados no pedido ("comparando Curitiba e Londrina") já vêm escolhidos na janela
+      let lugares = [];
+      try { if (resto) { await motorComMunicipios(); lugares = (window.MOTOR.lugares(resto) || []).filter((x) => !x.alternativas); } } catch (e) { lugares = []; }
+      const semResp = !respostasSite().length;
+      await escrever(`<p>${esc(SITE_DADOS.includes(a.tipo) ? T.st_abrir_t(T.sb_tipos[a.tipo][0]) : semResp ? T.st_abrir_d : T.st_abrir)}</p>`, { q, acao: true });
+      janelaSite(d, { tipo: a.tipo || null, lugares, texto: resto || "" });
       return;
     }
     const midia = (fmt, cr) => A.ferramentas.gerarImagem({ cartao: cartaoResposta(d, m), url: linkResposta(m), titulo: `Atlas · ${m.q || T.title}`, fonte: () => fonteAtlas(d), fmt, cr });
@@ -2435,44 +2440,14 @@
     A.ferramentas.linkarDoc(c, URL_SITE, true);
     return { titulo: titulo || "Atlas", sub, el: contarNoArquivo(c), destaque, resumo: curto(corrido(c), 110) };
   }
-  function janelaSite(dAtual) {
-    const T = X(), lista = respostasSite();
-    if (!lista.length) return;
-    const itens = lista.map((d) => ({ d, p: parteSite(d), on: temDados(d) || d === dAtual }));
-    const fmt = (k, ic) => `<button type="button" class="ex-f" data-st-fmt="${k}">${icone(ic)}<span><b>${esc(T["st_" + k][0])}</b><small>${esc(T["st_" + k][1])}</small></span></button>`;
-    const dlg = A.ferramentas.janela(T.st_title, `<p class="small muted">${esc(T.st_lead)}</p>
-      <label class="st-nome"><span>${esc(T.st_nome)}</span><input type="text" maxlength="90" value="${esc(T.st_nome_def)}"></label>
-      <div class="st-topo"><span class="small st-conta" aria-live="polite"></span><span><button type="button" class="btn btn-sm" data-st="todas">${esc(T.st_marcar)}</button> <button type="button" class="btn btn-sm" data-st="nenhuma">${esc(T.st_desmarcar)}</button></span></div>
-      <ol class="st-lista">${itens.map((x, i) => `<li class="st-it" data-i="${i}"><input type="checkbox" class="st-on"${x.on ? " checked" : ""} aria-label="${esc(x.p.titulo)}">
-        <div class="st-txt"><input type="text" class="st-tit" maxlength="90" value="${esc(x.p.titulo)}" aria-label="${esc(T.st_tit(i + 1))}">
-        <small>${esc(curto(x.p.resumo, 120))}</small>${x.d._m.q ? `<small class="st-q">${esc(T.st_q)}: ${esc(curto(x.d._m.q, 80))}</small>` : ""}</div>
-        <span class="st-ord"><button type="button" class="icon-btn" data-st="sobe" aria-label="${esc(T.st_subir)}" title="${esc(T.st_subir)}">${icone("up")}</button><button type="button" class="icon-btn st-desce" data-st="desce" aria-label="${esc(T.st_descer)}" title="${esc(T.st_descer)}">${icone("up")}</button></span></li>`).join("")}</ol>
-      <div class="ex-grid st-fmts">${fmt("html", "globe")}${fmt("zip", "download")}</div>
-      <p class="small ex-st" aria-live="polite"></p>`, "dlg-ex dlg-site");
-    const lis = () => $$(".st-it", dlg), st = dlg.querySelector(".ex-st");
-    const contar = () => { const n = lis().filter((li) => li.querySelector(".st-on").checked).length; dlg.querySelector(".st-conta").textContent = T.st_conta(n, itens.length); lis().forEach((li) => li.classList.toggle("off", !li.querySelector(".st-on").checked)); };
-    contar();
-    dlg.addEventListener("change", (e) => { if (e.target.matches(".st-on")) contar(); });
-    dlg.addEventListener("click", async (e) => {
-      const b = e.target.closest("[data-st], [data-st-fmt]"); if (!b || b.disabled) return;
-      const k = b.dataset.st;
-      if (k === "todas" || k === "nenhuma") { lis().forEach((li) => { li.querySelector(".st-on").checked = k === "todas"; }); contar(); return; }
-      if (k === "sobe" || k === "desce") {
-        const li = b.closest(".st-it"), viz = k === "sobe" ? li.previousElementSibling : li.nextElementSibling;
-        if (viz) { if (k === "sobe") viz.before(li); else viz.after(li); b.focus(); }
-        return;
-      }
-      const marcados = lis().filter((li) => li.querySelector(".st-on").checked);
-      if (!marcados.length) { st.textContent = T.st_pick; return; }
-      const titulo = dlg.querySelector(".st-nome input").value.trim() || T.st_nome_def;
-      const partes = marcados.map((li) => { const x = itens[+li.dataset.i]; return Object.assign({}, x.p, { titulo: li.querySelector(".st-tit").value.trim() || x.p.titulo }); });
-      $$("[data-st-fmt]", dlg).forEach((x) => { x.disabled = true; });
-      b.classList.add("on"); st.textContent = T.st_wait;
-      try { await A.exportar.siteEstatico({ titulo, partes }, b.dataset.stFmt); st.textContent = T.st_done("." + b.dataset.stFmt); }
-      catch (err) { console.error(err); st.textContent = `${T.st_err} (${err.message})`; }
-      finally { $$("[data-st-fmt]", dlg).forEach((x) => { x.disabled = false; }); b.classList.remove("on"); }
-    });
-    return dlg;
+  // O motor da página (o das respostas costuma rodar no worker) precisa dos municípios para achar os lugares de um pedido de site
+  async function motorComMunicipios() { if (!S.munsMotor) { window.MOTOR.configurar({ muns: await A.municipios() }); S.munsMotor = true; } }
+  // A janela e os geradores ficam em sites.js, carregado só agora; pedido: { tipo, lugares, texto } vindo do motor
+  async function janelaSite(dAtual, pedido) {
+    try { await carregarScript("site/js/sites.js", "ATLAS_SITES"); } catch (e) { console.error(e); return null; }
+    const itens = respostasSite().map((d) => ({ d, p: parteSite(d), on: temDados(d) || d === dAtual }));
+    const mm = memoria();
+    return A.sites.abrir({ itens, atual: dAtual, lugares: (mm && mm.lug) || [], pedido });
   }
 
   // Página interativa: um arquivo .html com o visual do site, dicas nos gráficos e números e barras animados
@@ -2568,7 +2543,7 @@
     A.ferramentas.svgQr("").catch(() => {});
     const escopos = (m ? [{ k: "uma", rot: xp.one }] : []).concat([{ k: "todas", rot: xp.all }]);
     A.exportar.abrir({ titulo: T.ac_export, escopos, fonte: (k) => fonteAtlas(k === "uma" ? d : null), pdf: (k) => imprimir(k === "uma" ? d : null), html: (k) => paginaInterativa(k === "uma" ? d : null),
-      extra: respostasSite().length ? [{ k: "site", ic: "grid", rot: T.st_bt[0], sub: T.st_bt[1], fn: () => janelaSite(d) }] : [] });
+      extra: [{ k: "site", ic: "grid", rot: T.st_bt[0], sub: T.st_bt[1], fn: () => janelaSite(d) }] });
   }
   let falando = null;
   function ouvir(btn, m) {

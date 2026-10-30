@@ -624,6 +624,14 @@
     ["#/limitacoes", /\b(?:limitacoes|limitations|limitaciones)\b/], ["#/replicar", /\b(?:replicar|replicate|replication|replicacion)\b/], ["#/atualizacoes", /\b(?:atualizacoes|updates|actualizaciones|novidades|news)\b/],
     ["#/lista", /\b(?:lista de secoes|secoes sinalizadas|secoes marcadas|flagged sections|secciones senaladas|lista)\b/], ["#/variacao", /\b(?:variacao|variation|variacion)\b/], ["#/mapa", /\b(?:mapa|map)\b/],
     ["#/", /\b(?:inicio|home|pagina inicial|homepage|pagina principal|inicial)\b/], ["lugar", /\b(?:pagina|page)\b/]];
+  // tipo de site pedido: "site de ranking", "site comparando Curitiba e Londrina", "site em formato de apresentação"
+  const TIPOS_SITE = [["comparativo", /\b(?:comparativo|comparativa|comparacao|comparando|compara|compare|comparar|comparing|comparison|comparacion|lado a lado|side by side|versus|vs)\b/],
+    ["ranking", /\b(?:ranking|rankings|ranqueamento|classificacao|clasificacion)\b/], ["painel", /\b(?:painel|paineis|dashboard|dashboards|panel|tablero)\b/],
+    ["mapa", /\b(?:mapa clicavel|mapa interativo|mapas|mapa|maps|map|clickable map|interactive map|mapa interactivo)\b/],
+    ["apresentacao", /\b(?:apresentacao|apresentacoes|slides?|slideshow|presentation|presentacion|diapositivas)\b/],
+    ["paginas", /\b(?:varias paginas|multiplas paginas|multipaginas?|multi ?pages?|multiple pages|several pages|paginas separadas)\b/],
+    ["perguntas", /\b(?:perguntas e respostas|perguntas frequentes|faq|questions and answers|q and a|preguntas y respuestas|preguntas frecuentes)\b/],
+    ["relatorio", /\b(?:relatorio|report|informe)\b/]];
   const RE_SITE = /\b(?:sitio web|sitios web|sitios|sitio|web site|websites|website|sites|site|landing page|mini ?site)\b/;
   const RE_ABRIR = /\b(?:abre|abra|abrir|vai para|va para|vai pra|va pra|ir para|ir pra|me leva|leva para|leva pra|open|go to|take me to|navigate to|ir a|ve a|llevame a|llevame)\b/;
   const RESTO_FORA = new Set(("de do da dos das of the a o as os um uma uns umas an el la los las un una em no na in en com with con e and y pra para pro to for por me mim isso isto it this that eso esto essa esse esta este "
@@ -649,8 +657,10 @@
     const site = RE_SITE.test(n) && !/\b(?:tse|oficial|official|justica eleitoral|deste site|desse site|this site|este sitio|del sitio)\b/.test(n)
       && (RE_V_MIDIA.test(n) || /\b(?:em|como|in|as|into|en|para|pra|to|num|numa)\s+(?:um\s+|uma\s+|an?\s+|un\s+)?(?:site|website|sitio)\b/.test(n));
     if (site) {
-      lista.push({ k: "site" });
-      marcar(RE_SITE); marcar(/\b(?:html|zip|github|pages|com|with|con|esses|essas|estes|estas|these|those|estos|esos|esas|dados|data|datos|respostas|answers|respuestas|completo|complete|pronto|ready|estatico|static)\b/);
+      const tp = TIPOS_SITE.find(([, re]) => re.test(n));
+      lista.push(tp ? { k: "site", tipo: tp[0] } : { k: "site" });
+      if (tp) marcar(tp[1]);
+      marcar(RE_SITE); marcar(/\b(?:html|zip|github|pages|com|with|con|esses|essas|estes|estas|these|those|estos|esos|esas|dados|data|datos|respostas|answers|respuestas|completo|complete|pronto|ready|estatico|static|tipo|type|interativo|interactive|interactivo|clicavel|clickable|formato|format|chat|conversa|conversation|conversacion)\b/);
     } else if (carr) {
       const tam = /\b(?:9 ?16|9x16|vertical|stories?|reels?|tiktok)\b/.test(n) ? "916" : /\b(?:1 ?1|1x1|quadrad\w*|square|cuadrad\w*)\b/.test(n) ? "11" : /\bpdf\b/.test(n) && !video ? "pdf" : /\b(?:4 ?5|4x5|feed)\b/.test(n) ? "45" : null;
       lista.push({ k: "midia", fmt: "carrossel", tipo: video ? "vid" : "img", tam });
