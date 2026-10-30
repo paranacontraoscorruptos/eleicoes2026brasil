@@ -13,6 +13,11 @@
 
 **Color legend:** 🔴 Statistical anomaly (ballot box listed for verification) · 🟡 Informational event (recorded for checking, below the anomaly criterion) · 🟢 No occurrence · ⚠️ Test execution failure
 
+<!-- nota-edicao:inicio -->
+> 📌 **Editorial note (29/10/2026).** This report has been supplemented with **Addendum A — Change in presidential votes between round 1 and round 2**, at the end of the document, including the author's note explaining the edit. Sections 1 to 15 have not been changed.
+
+<!-- nota-edicao:fim -->
+
 ## 1. Nature of the document and disclaimers
 
 This document is a technical report of exploratory statistical analysis (*election forensics*) applied to the official public Ballot Box Report (Boletim de Urna, BU) data released by Brazil's Superior Electoral Court (Tribunal Superior Eleitoral, TSE) on its Open Data Portal.
@@ -4461,6 +4466,551 @@ The analysis is fully reproducible: with the same input files (identical manifes
 - Ridout, M. S.; Demétrio, C. G. B.; Firth, D. (1999). Estimating intraclass correlation for binary data. *Biometrics*, 55(1), 137–148.
 - Skellam, J. G. (1948). A probability distribution derived from the binomial distribution by regarding the probability of success as variable between the sets of trials. *Journal of the Royal Statistical Society: Series B*, 10(2), 257–261.
 - Tribunal Superior Eleitoral. Portal de Dados Abertos — Resultados 2026: Boletim de Urna; Correspondências esperadas e efetivadas. https://dadosabertos.tse.jus.br/
+
+
+<!-- adendo-variacao:inicio -->
+## Addendum A — Change in presidential votes between round 1 and round 2
+
+### Editorial note — 29/10/2026
+
+After this Technical Report was issued on 28/10/2026, the comparison between the votes received by the two presidential finalists in round 1 and round 2 became central to the public debate. Figures on how many votes each candidate gained or lost from one round to the next — by state, by municipality and even by polling section — were widely circulated on social media and in the national and international press, accompanied by legitimate doubts and questions from voters.
+
+As the author and the person technically responsible for this audit, I considered that a work which sets out to examine, independently and transparently, the statistical consistency of the official results could not remain silent on a question of such public interest. I therefore felt duty-bound to subject this comparison to formal statistical tests as well, carried out with the same rigor, the same methodological foundations and the same documentation standard adopted in the fifteen original tests. The purpose is to offer society a technical, verifiable and impartial answer, able to distinguish the change expected between rounds — resulting from the redistribution of votes cast for the candidates who did not advance, of blank and null votes, and from changes in turnout — from what actually warrants documentary verification.
+
+This Addendum A is based exclusively on the official data of the Ballot Box Reports (Boletins de Urna) of both rounds, already processed by this audit. Sections 1 to 15 of this report have not been changed: their results, criteria and conclusions remain fully valid, and the fifteen original tests did not need to be re-run, since the input data and the analytical core (SHA-256 `e352358885fbee03f553d831dc82c0499dc5b2f5cc94048dd2ddc0468afa8581`) are the same. The addendum was produced by a dedicated script (`variacao_entre_turnos.py`), published together with this report so that anyone can reproduce it in full. The SHA-512 hashes of this document and of the new data files have been updated in `manifesto_saida.sha512`, and the edit has been publicly recorded on the site's Updates page.
+
+I reaffirm the principle that guides this entire work: a statistical anomaly indicates a priority for verification and is not, in itself, proof of fraud, error or irregularity; likewise, the absence of a flag does not replace checking the printed reports and the signed digital files of the voting machines.
+
+**Eduardo Santana dos Santos Beira de Lima**  
+Author and technical lead
+
+### A.1 Purpose and scope
+
+To compare, for the office of President, the votes of round 1 (Oct 4, 2026) and round 2 (Oct 25, 2026) at four levels — Brazil, state (UF), municipality and polling section —, reporting separately how many votes each finalist gained or lost, and to apply six tests (V1 to V6) to identify statistically atypical changes. Finalists: Lula (no. 13) and Flávio Bolsonaro (no. 22). Each polling section corresponds to one voting machine; aggregated sections appear under the number of the main section, as in the rest of the report.
+
+This addendum lists only items with an anomaly (🔴) or an informational event (🟡). The change for every state and municipality is in `dados/variacao_turnos_ufs.csv` and `dados/variacao_turnos_municipios.csv`; the change for every section can be looked up on the site.
+
+### A.2 National change and vote identity
+
+The votes a finalist gains in round 2 can only come from four sources: voters who chose the other candidates in round 1; voters who voted blank or null in round 1; voters who did not vote in round 1 and voted in round 2; and voters of the other finalist who changed their vote. At every level — Brazil, state, municipality or section — the following accounting identity holds:
+
+> **Lula's gain + Flávio's gain = votes for the other candidates in round 1 + (blank and null in round 1 − blank and null in round 2) + change in turnout**
+
+|  | Round 1 | Round 2 | Change |
+|---|---:|---:|---:|
+| Lula (13) | 53,879,538 | 64,256,232 | +10,376,694 |
+| Flávio Bolsonaro (22) | 56,104,503 | 59,826,041 | +3,721,538 |
+| Other candidates | 9,321,993 | — | −9,321,993 |
+| Blank | 2,300,798 | 1,430,496 | −870,302 |
+| Null | 3,669,003 | 2,723,305 | −945,698 |
+| Turnout | 125,275,835 | 128,236,074 | +2,960,239 |
+| Eligible voters | 158,745,007 | 158,744,977 | −30 |
+
+In Brazil: 9,321,993 + (5,969,801 − 4,153,801) + 2,960,239 = **14,098,232** votes, of which Lula took **+10,376,694** (73.6%) and Flávio Bolsonaro **+3,721,538** (26.4%).
+
+### A.3 Methods
+
+**Common basis (V1 to V4).** For each unit (state, municipality or section), the proportion observed in round 2 (p₂) is compared with the expected proportion (p̂), obtained by applying to the round 1 proportion (p₁) the logistic shift observed in the reference group, computed without the unit itself (leave-one-out): logit(p̂) = logit(p₁) + [logit(P₂) − logit(P₁)], where P₁ and P₂ are the group's aggregate proportions. The difference is assessed with the statistic z = (p₂ − p̂)/√(p̂(1 − p̂)/n), divided by √φ, with φ = median(z²)/0.4549 estimated in the reference group (φ ≥ 0.05). Unlike test 8, φ may be below 1: the round 1 vote explains most of the round 2 vote, and the change between rounds is smaller than that of independent binomial draws. Two-sided p; Benjamini–Hochberg adjustment within each test. In addition to statistical significance, a minimum effect is required: 🔴 q < 0.01 and |p₂ − p̂| ≥ 10 p.p.; 🟡 q < 0.01 and 5 ≤ |p₂ − p̂| < 10 p.p. Units whose reference group has fewer than 3 other units are not assessed.
+
+**V1 — Atypical transfer in the state.** *Purpose:* check whether Lula's share of the two finalists' votes in round 2 departed from what was expected for the state. *Method:* p = Lula/(Lula + Flávio) in each round; reference group: the other states (Abroad is treated as a state). *Criterion:* common basis.
+
+**V2 — Atypical transfer in the municipality.** *Purpose:* check whether Lula's share of the two finalists' votes in round 2 departed from what was expected for the municipality. *Method:* p = Lula/(Lula + Flávio) in each round; reference group: the other municipalities of the same state; municipalities with at least 30 votes for the finalists in each round. *Criterion:* common basis.
+
+**V3 — Atypical transfer in the section.** *Purpose:* check whether Lula's share of the two finalists' votes in round 2 departed from what was expected for the section, given the neighboring sections. *Method:* p = Lula/(Lula + Flávio) in each round; reference group: the same hierarchy as the report (zone within the municipality with at least 20 sections → municipality → zone → state → Brazil); sections with at least 30 votes for the finalists in each round. *Criterion:* common basis.
+
+**V4 — Atypical change in turnout.** *Purpose:* identify sections where turnout rose or fell far beyond what was observed in the reference group, treating as an anomaly the cases where that change was concentrated on one of the finalists. *Method:* p = turnout/eligible voters, with the common basis (sections with at least 20 eligible voters in each round). Direction: the share of the net turnout change that went to one finalist (ΔX/ΔC) exceeds that finalist's average share in the section, (X₁ + X₂)/(C₁ + C₂), by at least 30 p.p., with |ΔC| ≥ 20 votes. *Criterion:* 🔴 q < 0.01, |p₂ − p̂| ≥ 10 p.p. and directed change; 🟡 q < 0.01 and |p₂ − p̂| ≥ 5 p.p. in the other cases.
+
+**V5 — Gain above the ceiling of available votes.** *Purpose:* identify sections where a finalist gained more votes than were available without voters of the other finalist changing their vote. *Method:* ceiling = votes for the other candidates in round 1 + blank and null in round 1 + increase in turnout (if any). Deterministic test. *Criterion:* 🟡 when the gain exceeds the ceiling by at least 20 votes and by at least 10% of the other finalist's round 1 votes. It is always informational: changing one's vote between the finalists is legitimate voter behavior; the record shows where that change was large.
+
+**V6 — Voter roll changed between rounds.** *Purpose:* record sections whose electorate changed between rounds, which affects the comparison. *Method:* comparison of the number of eligible voters in the section's two reports. *Criterion:* 🟡 when the number of eligible voters changed by at least 20 voters and by at least 10%, or when the section has a report in only one round. It is always informational: voter roll adjustments between rounds occur, for example, with voters authorized to vote in transit, special sections and Electoral Court decisions.
+
+### A.4 Consolidated results
+
+| Test | Level | Units analyzed | Anomalies (🔴) | Informational events (🟡) |
+|---|---|---:|---:|---:|
+| 🟢 V1. Atypical transfer in the state | State | 28 | 0 | 0 |
+| 🔴 V2. Atypical transfer in the municipality | Municipality | 5,696 | 1 | 3 |
+| 🔴 V3. Atypical transfer in the section | Section | 498,996 | 26 | 47 |
+| 🔴 V4. Atypical change in turnout | Section | 499,205 | 27 | 253 |
+| 🟡 V5. Gain above the ceiling of available votes | Section | 499,205 | 0 | 7 |
+| 🟡 V6. Voter roll changed between rounds | Section | 499,207 | 0 | 28 |
+
+Tests V3, V4 and V5 examine the same sections and are not independent; a section may appear in more than one of them.
+
+### A.5 Flagged items — complete lists
+
+The lists include every 🔴 and 🟡 item, ordered by q. To check your section, search for the state, zone and section (Ctrl+F). The “R1 → R2” columns show the votes in round 1, in round 2 and, in parentheses, the change. The voting machine number is given when the section was also listed by the engine in Section 9 (round 1 or 2); otherwise, see the printed report or the TSE files.
+
+#### A.5.1 🟢 V1. Atypical transfer in the state
+
+No flags.
+
+#### A.5.2 🔴 V2. Atypical transfer in the municipality
+
+**🔴 Anomalies — complete list (1)**
+
+| # | State | Municipality | Lula R1 → R2 | Flávio R1 → R2 | Others R1 | Blank and null R1 → R2 | Turnout R1 → R2 | % Lula obs. | % Lula exp. | Δ p.p. | q (BH) |
+|---:|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | AL | BELO MONTE (27170) | 3,116 → 2,812 (−304) | 1,314 → 1,754 (+440) | 177 | 262 → 116 (−146) | 4,869 → 4,682 (−187) | 61.6% | 73.1% | −11.5 | 1.07e-30 |
+
+**🟡 Informational events — complete list (3)**
+
+| # | State | Municipality | Lula R1 → R2 | Flávio R1 → R2 | Others R1 | Blank and null R1 → R2 | Turnout R1 → R2 | % Lula obs. | % Lula exp. | Δ p.p. | q (BH) |
+|---:|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | PI | SANTO ANTÔNIO DE LISBOA (11878) | 3,867 → 3,517 (−350) | 1,202 → 1,600 (+398) | 161 | 241 → 115 (−126) | 5,471 → 5,232 (−239) | 68.7% | 77.5% | −8.7 | 1.17e-25 |
+| 2 | RN | RAFAEL GODEIRO (18937) | 1,594 → 1,908 (+314) | 1,268 → 988 (−280) | 75 | 80 → 62 (−18) | 3,017 → 2,958 (−59) | 65.9% | 58.4% | +7.5 | 5.89e-05 |
+| 3 | BA | CALDEIRÃO GRANDE (34096) | 5,292 → 5,351 (+59) | 2,218 → 2,709 (+491) | 274 | 385 → 243 (−142) | 8,169 → 8,303 (+134) | 66.4% | 71.9% | −5.5 | 0.0022 |
+
+#### A.5.3 🔴 V3. Atypical transfer in the section
+
+**🔴 Anomalies — complete list (26)**
+
+| # | State | Municipality | Zone | Section | Machine no. | Lula R1 → R2 | Flávio R1 → R2 | Others R1 | Blank and null R1 → R2 | Turnout R1 → R2 | % Lula obs. | % Lula exp. | Δ p.p. | q (BH) |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|---|---|
+| 1 | AM | BARCELOS (2097) | 18 | 37 | — | 37 → 84 (+47) | 171 → 71 (−100) | 8 | 15 → 35 (+20) | 231 → 190 (−41) | 54.2% | 19.0% | +35.2 | 9.55e-43 |
+| 2 | AC | MANOEL URBANO (1554) | 3 | 160 | — | 112 → 48 (−64) | 55 → 104 (+49) | 0 | 3 → 21 (+18) | 170 → 173 (+3) | 31.6% | 68.4% | −36.9 | 2.63e-25 |
+| 3 | AC | SANTA ROSA DO PURUS (1031) | 3 | 95 | — | 102 → 174 (+72) | 105 → 47 (−58) | 9 | 4 → 7 (+3) | 220 → 228 (+8) | 78.7% | 51.7% | +27.0 | 1.99e-15 |
+| 4 | CE | INDEPENDÊNCIA (14133) | 39 | 85 | — | 107 → 113 (+6) | 30 → 82 (+52) | 59 | 4 → 4 (0) | 200 → 199 (−1) | 57.9% | 78.4% | −20.5 | 9.32e-15 |
+| 5 | PI | SANTO ANTÔNIO DE LISBOA (11878) | 28 | 99 | — | 214 → 146 (−68) | 56 → 122 (+66) | 5 | 12 → 5 (−7) | 287 → 273 (−14) | 54.5% | 73.1% | −18.6 | 5.43e-14 |
+| 6 | AM | IPIXUNA (2399) | 45 | 63 | 2018717 | 135 → 167 (+32) | 61 → 2 (−59) | 12 | 19 → 28 (+9) | 227 → 197 (−30) | 98.8% | 72.4% | +26.4 | 4.53e-12 |
+| 7 | AM | ITAPIRANGA (2437) | 24 | 67 | — | 38 → 28 (−10) | 0 → 4 (+4) | 1 | 0 → 2 (+2) | 39 → 34 (−5) | 87.5% | 98.8% | −11.3 | 9.74e-10 |
+| 8 | PA | ANAPU (4723) | 80 | 254 | — | 127 → 158 (+31) | 29 → 4 (−25) | 0 | 2 → 0 (−2) | 158 → 162 (+4) | 97.5% | 82.9% | +14.7 | 4.40e-09 |
+| 9 | MA | SANTA LUZIA (8974) | 70 | 403 | — | 94 → 112 (+18) | 45 → 15 (−30) | 1 | 3 → 2 (−1) | 143 → 129 (−14) | 88.2% | 69.7% | +18.5 | 9.50e-09 |
+| 10 | MT | POXORÉU (91391) | 47 | 239 | — | 36 → 71 (+35) | 161 → 144 (−17) | 0 | 7 → 3 (−4) | 204 → 218 (+14) | 33.0% | 20.4% | +12.7 | 2.34e-07 |
+| 11 | AM | SÃO PAULO DE OLIVENÇA (2755) | 22 | 70 | — | 154 → 180 (+26) | 20 → 1 (−19) | 6 | 3 → 3 (0) | 183 → 184 (+1) | 99.4% | 89.2% | +10.2 | 2.69e-07 |
+| 12 | BA | CAMAÇARI (34134) | 170 | 262 | 1767510 | 37 → 40 (+3) | 61 → 20 (−41) | 6 | 3 → 2 (−1) | 107 → 62 (−45) | 66.7% | 39.7% | +27.0 | 7.87e-07 |
+| 13 | MA | LAGO DA PEDRA (8133) | 74 | 66 | — | 124 → 170 (+46) | 86 → 62 (−24) | 10 | 12 → 1 (−11) | 232 → 233 (+1) | 73.3% | 61.5% | +11.8 | 1.04e-06 |
+| 14 | AC | FEIJÓ (1139) | 7 | 67 | — | 35 → 52 (+17) | 59 → 14 (−45) | 0 | 4 → 7 (+3) | 98 → 73 (−25) | 78.8% | 40.6% | +38.2 | 1.48e-06 |
+| 15 | SP | SÃO PAULO (71072) | 2 | 539 | — | 168 → 200 (+32) | 52 → 112 (+60) | 26 | 7 → 5 (−2) | 253 → 317 (+64) | 64.1% | 76.0% | −11.9 | 2.17e-06 |
+| 16 | MG | SÃO JOÃO DO PARAÍSO (52531) | 237 | 384 | — | 34 → 36 (+2) | 1 → 6 (+5) | 2 | 6 → 1 (−5) | 43 → 43 (0) | 85.7% | 96.1% | −10.4 | 3.64e-06 |
+| 17 | SP | MOGI DAS CRUZES (67130) | 287 | 182 | — | 48 → 98 (+50) | 150 → 146 (−4) | 19 | 29 → 10 (−19) | 246 → 254 (+8) | 40.2% | 27.7% | +12.5 | 1.47e-05 |
+| 18 | SP | SÃO PAULO (71072) | 2 | 519 | — | 154 → 162 (+8) | 73 → 131 (+58) | 27 | 9 → 11 (+2) | 263 → 304 (+41) | 55.3% | 67.5% | −12.2 | 7.68e-05 |
+| 19 | MG | IBIRITÉ (45950) | 351 | 165 | — | 84 → 144 (+60) | 142 → 135 (−7) | 23 | 14 → 5 (−9) | 263 → 284 (+21) | 51.6% | 41.2% | +10.4 | 0.0002 |
+| 20 | TO | ARAPOEMA (92452) | 31 | 19 | — | 24 → 36 (+12) | 66 → 54 (−12) | 4 | 2 → 3 (+1) | 96 → 93 (−3) | 40.0% | 29.9% | +10.1 | 0.0002 |
+| 21 | RS | VENÂNCIO AIRES (89559) | 93 | 60 | — | 30 → 63 (+33) | 114 → 112 (−2) | 21 | 5 → 3 (−2) | 170 → 178 (+8) | 36.0% | 23.7% | +12.3 | 0.0003 |
+| 22 | AM | MARAÃ (2593) | 49 | 27 | — | 113 → 98 (−15) | 37 → 13 (−24) | 2 | 4 → 2 (−2) | 156 → 113 (−43) | 88.3% | 77.8% | +10.5 | 0.0004 |
+| 23 | SP | SÃO PAULO (71072) | 2 | 532 | — | 151 → 176 (+25) | 72 → 137 (+65) | 33 | 8 → 10 (+2) | 264 → 323 (+59) | 56.2% | 67.4% | −11.1 | 0.0004 |
+| 24 | PR | PRUDENTÓPOLIS (77917) | 30 | 37 | — | 69 → 28 (−41) | 173 → 124 (−49) | 10 | 12 → 3 (−9) | 264 → 155 (−109) | 18.4% | 32.1% | −13.7 | 0.0013 |
+| 25 | GO | POSSE (95613) | 29 | 44 | 1806680 | 92 → 80 (−12) | 19 → 32 (+13) | 13 | 3 → 2 (−1) | 127 → 114 (−13) | 71.4% | 85.0% | −13.6 | 0.0024 |
+| 26 | MT | ARENÁPOLIS (90255) | 17 | 3 | — | 94 → 84 (−10) | 93 → 110 (+17) | 8 | 3 → 2 (−1) | 198 → 196 (−2) | 43.3% | 53.4% | −10.1 | 0.0095 |
+
+**🟡 Informational events — complete list (47)**
+
+| # | State | Municipality | Zone | Section | Machine no. | Lula R1 → R2 | Flávio R1 → R2 | Others R1 | Blank and null R1 → R2 | Turnout R1 → R2 | % Lula obs. | % Lula exp. | Δ p.p. | q (BH) |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|---|---|
+| 1 | PE | SANTA MARIA DA BOA VISTA (25518) | 81 | 91 | — | 186 → 208 (+22) | 10 → 30 (+20) | 23 | 8 → 5 (−3) | 227 → 243 (+16) | 87.4% | 95.1% | −7.7 | 6.87e-16 |
+| 2 | PA | SÃO JOÃO DE PIRABAS (4065) | 64 | 146 | — | 122 → 121 (−1) | 8 → 20 (+12) | 4 | 9 → 1 (−8) | 143 → 142 (−1) | 85.8% | 94.0% | −8.2 | 9.74e-10 |
+| 3 | BA | NOVA FÁTIMA (37567) | 196 | 213 | 2221020 | 199 → 198 (−1) | 35 → 59 (+24) | 11 | 9 → 6 (−3) | 254 → 263 (+9) | 77.0% | 85.0% | −7.9 | 2.11e-08 |
+| 4 | MA | MATINHA (8290) | 86 | 65 | — | 163 → 159 (−4) | 4 → 15 (+11) | 8 | 3 → 4 (+1) | 178 → 178 (0) | 91.4% | 97.6% | −6.2 | 3.28e-07 |
+| 5 | MA | ICATU (7994) | 31 | 191 | — | 104 → 90 (−14) | 1 → 6 (+5) | 2 | 2 → 2 (0) | 109 → 98 (−11) | 93.8% | 98.8% | −5.0 | 1.95e-06 |
+| 6 | MG | VOLTA GRANDE (54437) | 7 | 128 | — | 109 → 113 (+4) | 56 → 75 (+19) | 18 | 5 → 6 (+1) | 188 → 194 (+6) | 60.1% | 67.8% | −7.7 | 1.95e-06 |
+| 7 | TO | ARAGUACEMA (92371) | 28 | 120 | — | 82 → 93 (+11) | 110 → 96 (−14) | 7 | 7 → 8 (+1) | 206 → 197 (−9) | 49.2% | 44.1% | +5.1 | 4.94e-06 |
+| 8 | PA | ÓBIDOS (5010) | 22 | 259 | 1845460 | 61 → 67 (+6) | 2 → 10 (+8) | 3 | 5 → 3 (−2) | 71 → 80 (+9) | 87.0% | 96.4% | −9.4 | 6.85e-06 |
+| 9 | PI | FLORIANO (10774) | 9 | 342 | — | 61 → 52 (−9) | 2 → 7 (+5) | 2 | 1 → 1 (0) | 66 → 60 (−6) | 88.1% | 96.4% | −8.3 | 2.93e-05 |
+| 10 | BA | SEABRA (38970) | 88 | 43 | — | 124 → 120 (−4) | 4 → 13 (+9) | 4 | 12 → 9 (−3) | 144 → 142 (−2) | 90.2% | 96.5% | −6.2 | 5.65e-05 |
+| 11 | TO | MATEIROS (73270) | 26 | 60 | — | 33 → 27 (−6) | 1 → 4 (+3) | 0 | 1 → 3 (+2) | 35 → 34 (−1) | 87.1% | 95.8% | −8.7 | 5.65e-05 |
+| 12 | RS | CÂNDIDO GODÓI (85839) | 166 | 56 | — | 5 → 16 (+11) | 115 → 119 (+4) | 6 | 0 → 0 (0) | 126 → 135 (+9) | 11.9% | 4.9% | +6.9 | 7.00e-05 |
+| 13 | MA | CHAPADINHA (7617) | 42 | 163 | — | 104 → 109 (+5) | 6 → 14 (+8) | 7 | 3 → 1 (−2) | 120 → 124 (+4) | 88.6% | 94.7% | −6.1 | 0.0002 |
+| 14 | PI | SIMPLÍCIO MENDES (12157) | 37 | 95 | — | 176 → 169 (−7) | 25 → 38 (+13) | 14 | 7 → 11 (+4) | 222 → 218 (−4) | 81.6% | 87.4% | −5.7 | 0.0002 |
+| 15 | PA | BOM JESUS DO TOCANTINS (4049) | 100 | 315 | — | 170 → 202 (+32) | 44 → 25 (−19) | 6 | 8 → 1 (−7) | 228 → 228 (0) | 89.0% | 80.5% | +8.5 | 0.0002 |
+| 16 | RS | ESTAÇÃO (85286) | 70 | 85 | — | 51 → 88 (+37) | 177 → 182 (+5) | 26 | 7 → 2 (−5) | 261 → 272 (+11) | 32.6% | 24.6% | +8.0 | 0.0003 |
+| 17 | AL | MACEIÓ (27855) | 1 | 533 | — | 235 → 256 (+21) | 162 → 214 (+52) | 28 | 8 → 3 (−5) | 433 → 473 (+40) | 54.5% | 62.5% | −8.0 | 0.0003 |
+| 18 | RS | PARAÍ (87831) | 138 | 3 | — | 6 → 18 (+12) | 144 → 148 (+4) | 13 | 9 → 8 (−1) | 172 → 174 (+2) | 10.8% | 4.9% | +6.0 | 0.0005 |
+| 19 | GO | SIMOLÂNDIA (92720) | 123 | 53 | — | 88 → 91 (+3) | 70 → 92 (+22) | 27 | 8 → 11 (+3) | 193 → 194 (+1) | 49.7% | 59.1% | −9.4 | 0.0008 |
+| 20 | MT | VILA BELA DA SANTÍSSIMA TRINDADE (91090) | 25 | 154 | — | 34 → 56 (+22) | 149 → 135 (−14) | 7 | 8 → 1 (−7) | 198 → 192 (−6) | 29.3% | 20.5% | +8.8 | 0.0008 |
+| 21 | PA | BREVES (4359) | 15 | 321 | — | 167 → 154 (−13) | 43 → 61 (+18) | 19 | 13 → 4 (−9) | 242 → 219 (−23) | 71.6% | 80.7% | −9.0 | 0.0008 |
+| 22 | PR | PATO BRANCO (77518) | 73 | 307 | — | 49 → 95 (+46) | 155 → 163 (+8) | 34 | 10 → 3 (−7) | 248 → 261 (+13) | 36.8% | 27.3% | +9.6 | 0.0008 |
+| 23 | MA | LAGO DO JUNCO (8150) | 74 | 268 | — | 118 → 122 (+4) | 31 → 18 (−13) | 3 | 0 → 0 (0) | 152 → 140 (−12) | 87.1% | 79.8% | +7.3 | 0.0009 |
+| 24 | PR | TAPEJARA (79111) | 86 | 213 | — | 63 → 96 (+33) | 148 → 147 (−1) | 22 | 9 → 10 (+1) | 242 → 253 (+11) | 39.5% | 32.2% | +7.4 | 0.0010 |
+| 25 | RS | PORTO ALEGRE (88013) | 112 | 440 | — | 83 → 125 (+42) | 113 → 109 (−4) | 18 | 13 → 6 (−7) | 227 → 240 (+13) | 53.4% | 44.6% | +8.8 | 0.0013 |
+| 26 | ES | FUNDÃO (56430) | 14 | 152 | — | 99 → 120 (+21) | 113 → 102 (−11) | 9 | 7 → 9 (+2) | 228 → 231 (+3) | 54.1% | 48.5% | +5.5 | 0.0013 |
+| 27 | GO | MONTES CLAROS DE GOIÁS (94714) | 79 | 111 | — | 66 → 60 (−6) | 99 → 123 (+24) | 24 | 6 → 7 (+1) | 195 → 190 (−5) | 32.8% | 42.2% | −9.4 | 0.0017 |
+| 28 | BA | BARRA DO MENDES (33596) | 176 | 50 | — | 59 → 63 (+4) | 0 → 4 (+4) | 8 | 2 → 2 (0) | 69 → 69 (0) | 94.0% | 99.2% | −5.2 | 0.0019 |
+| 29 | SP | ENGENHEIRO COELHO (61689) | 75 | 410 | — | 29 → 57 (+28) | 175 → 184 (+9) | 30 | 6 → 9 (+3) | 240 → 250 (+10) | 23.7% | 16.6% | +7.1 | 0.0022 |
+| 30 | BA | ITABELA (35947) | 189 | 82 | — | 132 → 132 (0) | 126 → 150 (+24) | 20 | 15 → 16 (+1) | 293 → 298 (+5) | 46.8% | 54.2% | −7.4 | 0.0022 |
+| 31 | PR | SÃO JOSÉ DOS PINHAIS (78859) | 8 | 456 | — | 40 → 80 (+40) | 210 → 232 (+22) | 24 | 29 → 8 (−21) | 303 → 320 (+17) | 25.6% | 18.5% | +7.2 | 0.0024 |
+| 32 | PI | FLORIANO (10774) | 9 | 96 | — | 205 → 212 (+7) | 20 → 33 (+13) | 6 | 7 → 4 (−3) | 238 → 249 (+11) | 86.5% | 91.6% | −5.1 | 0.0031 |
+| 33 | SC | INDAIAL (81477) | 15 | 212 | — | 36 → 72 (+36) | 204 → 224 (+20) | 28 | 10 → 6 (−4) | 278 → 302 (+24) | 24.3% | 17.5% | +6.8 | 0.0038 |
+| 34 | SC | MORRO DA FUMAÇA (82198) | 34 | 167 | — | 38 → 71 (+33) | 250 → 249 (−1) | 28 | 8 → 7 (−1) | 324 → 327 (+3) | 22.2% | 16.0% | +6.2 | 0.0043 |
+| 35 | AP | PEDRA BRANCA DO AMAPARI (6084) | 11 | 24 | — | 198 → 216 (+18) | 124 → 79 (−45) | 12 | 2 → 1 (−1) | 336 → 296 (−40) | 73.2% | 65.3% | +8.0 | 0.0045 |
+| 36 | MT | BRASNORTE (90468) | 56 | 110 | — | 165 → 189 (+24) | 33 → 17 (−16) | 2 | 7 → 6 (−1) | 207 → 212 (+5) | 91.7% | 84.9% | +6.8 | 0.0045 |
+| 37 | SP | SÃO PAULO (71072) | 255 | 428 | — | 88 → 136 (+48) | 110 → 98 (−12) | 27 | 15 → 11 (−4) | 240 → 245 (+5) | 58.1% | 48.2% | +10.0 | 0.0046 |
+| 38 | RS | PASSO FUNDO (87858) | 33 | 510 | — | 99 → 149 (+50) | 176 → 163 (−13) | 26 | 5 → 9 (+4) | 306 → 321 (+15) | 47.8% | 39.3% | +8.4 | 0.0051 |
+| 39 | SP | RIBEIRÃO PRETO (69698) | 108 | 367 | — | 165 → 158 (−7) | 130 → 158 (+28) | 40 | 7 → 9 (+2) | 342 → 325 (−17) | 50.0% | 59.7% | −9.7 | 0.0056 |
+| 40 | PA | BREVES (4359) | 15 | 296 | — | 87 → 109 (+22) | 150 → 116 (−34) | 5 | 8 → 1 (−7) | 250 → 226 (−24) | 48.4% | 38.6% | +9.9 | 0.0065 |
+| 41 | BA | TANHAÇU (39195) | 58 | 340 | — | 135 → 144 (+9) | 30 → 46 (+16) | 8 | 15 → 8 (−7) | 188 → 198 (+10) | 75.8% | 81.6% | −5.8 | 0.0072 |
+| 42 | BA | WENCESLAU GUIMARÃES (39691) | 197 | 122 | — | 108 → 109 (+1) | 38 → 55 (+17) | 14 | 7 → 6 (−1) | 167 → 170 (+3) | 66.5% | 73.4% | −6.9 | 0.0072 |
+| 43 | PB | CABEDELO (19658) | 57 | 115 | — | 100 → 147 (+47) | 131 → 119 (−12) | 18 | 20 → 6 (−14) | 269 → 272 (+3) | 55.3% | 46.9% | +8.3 | 0.0072 |
+| 44 | RS | CANUDOS DO VALE (89109) | 29 | 41 | 1699523 | 42 → 82 (+40) | 107 → 121 (+14) | 44 | 10 → 10 (0) | 203 → 213 (+10) | 40.4% | 30.6% | +9.8 | 0.0084 |
+| 45 | MA | PARNARAMA (8559) | 36 | 69 | — | 79 → 80 (+1) | 3 → 8 (+5) | 4 | 8 → 2 (−6) | 94 → 90 (−4) | 90.9% | 96.3% | −5.4 | 0.0096 |
+| 46 | MT | BRASNORTE (90468) | 56 | 132 | — | 179 → 204 (+25) | 24 → 11 (−13) | 1 | 4 → 0 (−4) | 208 → 215 (+7) | 94.9% | 89.3% | +5.6 | 0.0096 |
+| 47 | SP | SANTANA DE PARNAÍBA (70475) | 428 | 315 | — | 43 → 84 (+41) | 224 → 248 (+24) | 55 | 12 → 17 (+5) | 334 → 349 (+15) | 25.3% | 18.6% | +6.7 | 0.0098 |
+
+#### A.5.4 🔴 V4. Atypical change in turnout
+
+**🔴 Anomalies — complete list (27)**
+
+| # | State | Municipality | Zone | Section | Machine no. | Turnout R1 → R2 | Turnout obs. | Turnout exp. | Δ p.p. | q (BH) | Lula R1 → R2 | Flávio R1 → R2 | Direction |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|---|
+| 1 | CE | COREAÚ (13811) | 64 | 104 | — | 266 → 218 (−48) | 72.2% | 87.5% | −15.4 | 4.00e-10 | 158 → 153 (−5) | 94 → 62 (−32) | Flávio (34 p.p. above share) |
+| 2 | PE | LIMOEIRO (24775) | 24 | 168 | 2167131 | 208 → 185 (−23) | 76.1% | 87.8% | −11.7 | 6.42e-08 | 144 → 161 (+17) | 34 → 22 (−12) | Flávio (38 p.p. above share) |
+| 3 | MT | SÃO JOSÉ DO XINGU (90247) | 28 | 185 | — | 167 → 199 (+32) | 77.7% | 65.9% | +11.8 | 1.20e-06 | 153 → 193 (+40) | 6 → 5 (−1) | Lula (30 p.p. above share) |
+| 4 | PE | ÁGUAS BELAS (23094) | 64 | 218 | — | 295 → 355 (+60) | 89.9% | 79.2% | +10.7 | 1.42e-06 | 225 → 299 (+74) | 41 → 39 (−2) | Lula (43 p.p. above share) |
+| 5 | RR | BOA VISTA (3018) | 5 | 43 | — | 226 → 181 (−45) | 69.3% | 83.7% | −14.4 | 1.63e-06 | 78 → 88 (+10) | 142 → 93 (−49) | Flávio (51 p.p. above share) |
+| 6 | MS | LAGUNA CARAPÃ (55026) | 43 | 396 | — | 219 → 271 (+52) | 88.9% | 73.1% | +15.7 | 1.63e-06 | 186 → 255 (+69) | 14 → 8 (−6) | Lula (43 p.p. above share) |
+| 7 | MA | BARRA DO CORDA (7315) | 23 | 268 | — | 180 → 158 (−22) | 80.6% | 91.9% | −11.3 | 1.90e-06 | 118 → 115 (−3) | 58 → 40 (−18) | Flávio (53 p.p. above share) |
+| 8 | GO | APARECIDA DE GOIÂNIA (92274) | 119 | 201 | — | 325 → 399 (+74) | 78.4% | 66.9% | +11.5 | 1.55e-05 | 137 → 233 (+96) | 110 → 155 (+45) | Lula (79 p.p. above share) |
+| 9 | MA | BOM LUGAR (7285) | 66 | 121 | — | 225 → 194 (−31) | 82.2% | 94.2% | −12.0 | 6.93e-05 | 135 → 133 (−2) | 84 → 60 (−24) | Flávio (43 p.p. above share) |
+| 10 | SP | SÃO PAULO (71072) | 2 | 539 | — | 253 → 317 (+64) | 82.3% | 70.0% | +12.4 | 9.22e-05 | 168 → 200 (+32) | 52 → 112 (+60) | Flávio (65 p.p. above share) |
+| 11 | MG | ITUIUTABA (46833) | 141 | 417 | — | 279 → 342 (+63) | 85.1% | 74.7% | +10.4 | 0.0003 | 188 → 260 (+72) | 67 → 73 (+6) | Lula (42 p.p. above share) |
+| 12 | RS | BARROS CASSAL (85391) | 54 | 192 | — | 256 → 300 (+44) | 82.2% | 72.1% | +10.1 | 0.0004 | 123 → 170 (+47) | 106 → 127 (+21) | Lula (54 p.p. above share) |
+| 13 | SP | SÃO PAULO (71072) | 2 | 532 | — | 264 → 323 (+59) | 83.5% | 72.3% | +11.2 | 0.0006 | 151 → 176 (+25) | 72 → 137 (+65) | Flávio (75 p.p. above share) |
+| 14 | MS | PONTA PORÃ (91316) | 19 | 140 | — | 177 → 227 (+50) | 76.7% | 63.6% | +13.1 | 0.0006 | 73 → 114 (+41) | 102 → 111 (+9) | Lula (36 p.p. above share) |
+| 15 | SP | SÃO PAULO (71072) | 2 | 491 | — | 257 → 317 (+60) | 81.9% | 70.6% | +11.3 | 0.0007 | 137 → 158 (+21) | 88 → 150 (+62) | Flávio (62 p.p. above share) |
+| 16 | MG | CARANDAÍ (42633) | 68 | 45 | — | 155 → 184 (+29) | 86.4% | 75.6% | +10.7 | 0.0011 | 105 → 139 (+34) | 29 → 36 (+7) | Lula (45 p.p. above share) |
+| 17 | PR | RONDON (78298) | 100 | 69 | — | 103 → 131 (+28) | 85.6% | 71.4% | +14.2 | 0.0013 | 48 → 65 (+17) | 40 → 63 (+23) | Flávio (38 p.p. above share) |
+| 18 | AL | PASSO DE CAMARAGIBE (28290) | 12 | 255 | — | 282 → 312 (+30) | 81.5% | 69.4% | +12.1 | 0.0015 | 167 → 215 (+48) | 76 → 81 (+5) | Lula (96 p.p. above share) |
+| 19 | PA | SENADOR JOSÉ PORFÍRIO (5550) | 54 | 51 | — | 285 → 312 (+27) | 86.7% | 75.7% | +11.0 | 0.0021 | 46 → 64 (+18) | 222 → 245 (+23) | Lula (48 p.p. above share) |
+| 20 | SP | SÃO PAULO (71072) | 2 | 506 | — | 248 → 307 (+59) | 78.7% | 68.0% | +10.7 | 0.0032 | 126 → 147 (+21) | 86 → 147 (+61) | Flávio (61 p.p. above share) |
+| 21 | AL | MACEIÓ (27855) | 3 | 160 | — | 311 → 358 (+47) | 85.2% | 74.9% | +10.4 | 0.0034 | 133 → 174 (+41) | 136 → 169 (+33) | Lula (41 p.p. above share) |
+| 22 | AP | MACAPÁ (6050) | 10 | 431 | — | 136 → 108 (−28) | 75.5% | 92.3% | −16.7 | 0.0045 | 86 → 86 (0) | 40 → 20 (−20) | Flávio (47 p.p. above share) |
+| 23 | AM | CARAUARI (2216) | 21 | 76 | — | 310 → 270 (−40) | 74.2% | 84.8% | −10.6 | 0.0051 | 244 → 245 (+1) | 54 → 21 (−33) | Flávio (70 p.p. above share) |
+| 24 | PI | BARRAS (10235) | 6 | 105 | — | 220 → 254 (+34) | 85.8% | 74.4% | +11.4 | 0.0073 | 182 → 224 (+42) | 18 → 23 (+5) | Lula (38 p.p. above share) |
+| 25 | MS | LAGUNA CARAPÃ (55026) | 43 | 398 | — | 238 → 277 (+39) | 85.5% | 74.8% | +10.7 | 0.0081 | 207 → 256 (+49) | 25 → 20 (−5) | Lula (36 p.p. above share) |
+| 26 | PE | SERRITA (25798) | 76 | 81 | — | 240 → 299 (+59) | 78.5% | 66.2% | +12.3 | 0.0087 | 176 → 253 (+77) | 27 → 32 (+5) | Lula (51 p.p. above share) |
+| 27 | RJ | DUQUE DE CAXIAS (58335) | 127 | 25 | — | 228 → 268 (+40) | 78.4% | 68.2% | +10.2 | 0.0089 | 83 → 126 (+43) | 117 → 127 (+10) | Lula (65 p.p. above share) |
+
+**🟡 Informational events — complete list (253)**
+
+| # | State | Municipality | Zone | Section | Machine no. | Turnout R1 → R2 | Turnout obs. | Turnout exp. | Δ p.p. | q (BH) | Lula R1 → R2 | Flávio R1 → R2 | Direction |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|---|
+| 1 | PE | SÃO JOSÉ DA COROA GRANDE (25674) | 42 | 151 | — | 224 → 155 (−69) | 45.5% | 68.2% | −22.7 | 6.26e-49 | 167 → 120 (−47) | 47 → 34 (−13) | proportional |
+| 2 | PR | PRUDENTÓPOLIS (77917) | 30 | 37 | — | 264 → 155 (−109) | 45.7% | 78.7% | −33.0 | 2.40e-38 | 69 → 28 (−41) | 173 → 124 (−49) | proportional |
+| 3 | PR | RIO BRANCO DO SUL (78212) | 156 | 221 | — | 275 → 183 (−92) | 54.1% | 83.2% | −29.1 | 3.07e-21 | 171 → 113 (−58) | 93 → 69 (−24) | proportional |
+| 4 | PR | INÁCIO MARTINS (75990) | 34 | 133 | 2060731 | 170 → 18 (−152) | 8.4% | 75.2% | −66.9 | 3.26e-20 | 92 → 11 (−81) | 67 → 7 (−60) | proportional |
+| 5 | MG | BOM SUCESSO (41599) | 46 | 131 | — | 241 → 197 (−44) | 71.1% | 88.4% | −17.2 | 7.48e-20 | 139 → 126 (−13) | 73 → 58 (−15) | proportional |
+| 6 | PA | PARAUAPEBAS (5835) | 106 | 330 | 2191815 | 128 → 212 (+84) | 65.2% | 40.8% | +24.5 | 1.20e-19 | 126 → 212 (+86) | 2 → 0 (−2) | proportional |
+| 7 | PR | IRATI (76074) | 34 | 88 | — | 168 → 130 (−38) | 66.3% | 86.6% | −20.3 | 3.09e-19 | 77 → 72 (−5) | 68 → 58 (−10) | proportional |
+| 8 | CE | OCARA (13307) | 67 | 275 | — | 83 → 73 (−10) | 88.0% | 99.3% | −11.3 | 4.19e-18 | 51 → 45 (−6) | 25 → 22 (−3) | proportional |
+| 9 | AM | TONANTINS (98515) | 47 | 58 | — | 238 → 194 (−44) | 72.1% | 87.7% | −15.6 | 6.36e-15 | 205 → 157 (−48) | 26 → 29 (+3) | proportional |
+| 10 | PA | PARAUAPEBAS (5835) | 106 | 244 | 2199222 | 131 → 201 (+70) | 69.6% | 46.8% | +22.8 | 4.25e-14 | 129 → 200 (+71) | 1 → 1 (0) | proportional |
+| 11 | PR | REBOUÇAS (78077) | 62 | 18 | — | 264 → 226 (−38) | 76.9% | 90.4% | −13.5 | 1.12e-13 | 94 → 87 (−7) | 140 → 134 (−6) | proportional |
+| 12 | PA | SANTARÉM (5355) | 83 | 194 | — | 137 → 96 (−41) | 60.0% | 84.8% | −24.8 | 4.32e-13 | 67 → 54 (−13) | 58 → 39 (−19) | proportional |
+| 13 | PR | SÃO JOÃO DO TRIUNFO (78778) | 52 | 16 | 2075276 | 99 → 85 (−14) | 83.3% | 96.9% | −13.6 | 4.59e-13 | 20 → 31 (+11) | 70 → 54 (−16) | proportional |
+| 14 | PR | SÃO MATEUS DO SUL (78875) | 12 | 41 | — | 212 → 179 (−33) | 74.9% | 89.4% | −14.5 | 8.30e-13 | 78 → 73 (−5) | 117 → 104 (−13) | proportional |
+| 15 | RN | VÁRZEA (18910) | 13 | 150 | — | 153 → 121 (−32) | 66.1% | 83.4% | −17.3 | 1.96e-12 | 71 → 64 (−7) | 68 → 52 (−16) | proportional |
+| 16 | PE | JOAQUIM NABUCO (24635) | 38 | 193 | — | 272 → 209 (−63) | 57.6% | 73.8% | −16.2 | 5.30e-11 | 174 → 145 (−29) | 70 → 58 (−12) | proportional |
+| 17 | PR | SÃO MATEUS DO SUL (78875) | 12 | 43 | — | 295 → 253 (−42) | 71.9% | 84.9% | −13.1 | 5.61e-11 | 123 → 127 (+4) | 128 → 117 (−11) | proportional |
+| 18 | AP | LARANJAL DO JARI (6130) | 7 | 186 | — | 104 → 78 (−26) | 69.6% | 89.4% | −19.8 | 1.54e-10 | 86 → 72 (−14) | 14 → 6 (−8) | proportional |
+| 19 | PR | CÂNDIDO DE ABREU (74853) | 106 | 26 | — | 165 → 123 (−42) | 58.3% | 79.6% | −21.3 | 1.31e-09 | 37 → 34 (−3) | 101 → 81 (−20) | proportional |
+| 20 | RR | RORAINÓPOLIS (3085) | 8 | 94 | — | 105 → 56 (−49) | 46.7% | 80.4% | −33.7 | 2.46e-09 | 38 → 17 (−21) | 58 → 39 (−19) | proportional |
+| 21 | PA | ALENQUER (4073) | 21 | 60 | 1796421 | 171 → 124 (−47) | 63.9% | 85.5% | −21.6 | 2.97e-09 | 150 → 115 (−35) | 17 → 8 (−9) | proportional |
+| 22 | RR | CARACARAÍ (3034) | 2 | 92 | — | 283 → 186 (−97) | 57.6% | 77.6% | −20.0 | 4.20e-09 | 153 → 110 (−43) | 101 → 75 (−26) | proportional |
+| 23 | RJ | MANGARATIBA (58513) | 54 | 126 | — | 255 → 148 (−107) | 45.4% | 74.8% | −29.4 | 4.90e-09 | 89 → 51 (−38) | 144 → 96 (−48) | proportional |
+| 24 | AM | TONANTINS (98515) | 47 | 23 | — | 306 → 258 (−48) | 70.5% | 82.7% | −12.2 | 1.23e-08 | 252 → 207 (−45) | 43 → 44 (+1) | proportional |
+| 25 | MT | JUÍNA (98310) | 35 | 321 | 2448514 | 294 → 355 (+61) | 92.2% | 78.3% | +14.0 | 1.60e-08 | 275 → 337 (+62) | 17 → 15 (−2) | proportional |
+| 26 | PA | SÃO FÉLIX DO XINGU (5452) | 53 | 218 | 2392159 | 221 → 273 (+52) | 85.8% | 68.0% | +17.9 | 1.98e-08 | 214 → 273 (+59) | 1 → 0 (−1) | proportional |
+| 27 | RJ | MANGARATIBA (58513) | 54 | 140 | — | 89 → 18 (−71) | 13.7% | 63.5% | −49.8 | 2.16e-08 | 36 → 10 (−26) | 37 → 8 (−29) | proportional |
+| 28 | AM | MANAUS (2550) | 68 | 511 | 2018613 | 195 → 153 (−42) | 66.5% | 84.4% | −17.8 | 3.85e-08 | 135 → 126 (−9) | 42 → 23 (−19) | proportional |
+| 29 | CE | SANTANA DO ACARAÚ (15415) | 44 | 108 | — | 188 → 147 (−41) | 69.3% | 88.9% | −19.5 | 1.39e-07 | 138 → 124 (−14) | 37 → 20 (−17) | proportional |
+| 30 | PR | RIO BRANCO DO SUL (78212) | 156 | 122 | — | 255 → 193 (−62) | 57.4% | 78.1% | −20.6 | 1.61e-07 | 147 → 113 (−34) | 87 → 78 (−9) | proportional |
+| 31 | CE | AQUIRAZ (13196) | 66 | 309 | — | 284 → 256 (−28) | 84.5% | 94.2% | −9.7 | 1.84e-07 | 150 → 158 (+8) | 96 → 84 (−12) | proportional |
+| 32 | RJ | ARARUAMA (58033) | 92 | 239 | — | 241 → 196 (−45) | 73.7% | 90.1% | −16.4 | 1.84e-07 | 49 → 52 (+3) | 169 → 138 (−31) | proportional |
+| 33 | PA | AURORA DO PARÁ (4340) | 49 | 264 | — | 127 → 112 (−15) | 85.5% | 96.3% | −10.8 | 2.52e-07 | 94 → 92 (−2) | 23 → 16 (−7) | proportional |
+| 34 | PA | TRAIRÃO (4286) | 34 | 634 | — | 201 → 153 (−48) | 54.6% | 69.9% | −15.3 | 2.55e-07 | 57 → 50 (−7) | 135 → 103 (−32) | proportional |
+| 35 | BA | OURIÇANGAS (37672) | 74 | 175 | — | 306 → 347 (+41) | 85.7% | 78.6% | +7.1 | 2.59e-07 | 209 → 253 (+44) | 62 → 84 (+22) | Lula (37 p.p. above share) |
+| 36 | GO | MINEIROS (94595) | 21 | 169 | — | 307 → 270 (−37) | 69.8% | 81.4% | −11.6 | 5.57e-07 | 77 → 86 (+9) | 176 → 177 (+1) | proportional |
+| 37 | CE | INDEPENDÊNCIA (14133) | 39 | 41 | — | 267 → 227 (−40) | 75.4% | 87.5% | −12.1 | 6.22e-07 | 188 → 168 (−20) | 63 → 54 (−9) | proportional |
+| 38 | PA | PARAUAPEBAS (5835) | 106 | 365 | 2183419 | 145 → 198 (+53) | 68.5% | 51.6% | +16.9 | 6.69e-07 | 141 → 197 (+56) | 0 → 0 (0) | proportional |
+| 39 | PB | SANTA CECÍLIA (20001) | 18 | 108 | — | 276 → 301 (+25) | 94.1% | 88.6% | +5.5 | 6.69e-07 | 192 → 238 (+46) | 52 → 58 (+6) | Lula (109 p.p. above share) |
+| 40 | MA | HUMBERTO DE CAMPOS (7978) | 32 | 35 | — | 156 → 84 (−72) | 44.2% | 75.3% | −31.1 | 1.02e-06 | 129 → 71 (−58) | 21 → 11 (−10) | proportional |
+| 41 | AP | LARANJAL DO JARI (6130) | 7 | 92 | — | 157 → 106 (−51) | 52.5% | 70.5% | −18.0 | 1.35e-06 | 93 → 77 (−16) | 58 → 28 (−30) | proportional |
+| 42 | AP | MACAPÁ (6050) | 10 | 474 | — | 247 → 177 (−70) | 64.8% | 86.0% | −21.1 | 1.74e-06 | 152 → 123 (−29) | 72 → 51 (−21) | proportional |
+| 43 | PR | PRUDENTÓPOLIS (77917) | 30 | 155 | — | 190 → 153 (−37) | 67.1% | 83.8% | −16.7 | 1.86e-06 | 16 → 17 (+1) | 148 → 136 (−12) | proportional |
+| 44 | AP | MACAPÁ (6050) | 10 | 475 | — | 241 → 169 (−72) | 62.8% | 84.7% | −21.9 | 1.90e-06 | 145 → 113 (−32) | 70 → 52 (−18) | proportional |
+| 45 | PR | SÃO MATEUS DO SUL (78875) | 12 | 42 | — | 204 → 176 (−28) | 72.4% | 85.0% | −12.6 | 1.90e-06 | 68 → 60 (−8) | 115 → 112 (−3) | proportional |
+| 46 | RJ | MANGARATIBA (58513) | 54 | 134 | — | 278 → 184 (−94) | 53.2% | 77.1% | −23.9 | 1.90e-06 | 65 → 62 (−3) | 198 → 119 (−79) | proportional |
+| 47 | SP | ITAPEVI (65510) | 359 | 439 | — | 274 → 242 (−32) | 70.8% | 81.7% | −11.0 | 1.90e-06 | 130 → 148 (+18) | 97 → 90 (−7) | proportional |
+| 48 | PR | ORTIGUEIRA (77275) | 167 | 63 | — | 200 → 159 (−41) | 59.3% | 77.3% | −18.0 | 2.33e-06 | 115 → 100 (−15) | 70 → 55 (−15) | proportional |
+| 49 | AP | OIAPOQUE (6092) | 4 | 72 | 2017840 | 213 → 143 (−70) | 52.4% | 70.7% | −18.4 | 3.71e-06 | 197 → 140 (−57) | 8 → 3 (−5) | proportional |
+| 50 | MA | BARRA DO CORDA (7315) | 23 | 470 | — | 76 → 67 (−9) | 85.9% | 96.9% | −11.0 | 3.93e-06 | 66 → 63 (−3) | 6 → 3 (−3) | proportional |
+| 51 | AP | MACAPÁ (6050) | 10 | 428 | — | 197 → 128 (−69) | 56.9% | 82.0% | −25.1 | 4.33e-06 | 138 → 101 (−37) | 43 → 27 (−16) | proportional |
+| 52 | PA | NOVO REPARTIMENTO (4421) | 101 | 163 | 1797579 | 263 → 310 (+47) | 96.0% | 79.4% | +16.6 | 6.72e-06 | 260 → 308 (+48) | 0 → 1 (+1) | proportional |
+| 53 | AM | MANAUS (2550) | 40 | 557 | — | 248 → 205 (−43) | 61.7% | 75.4% | −13.6 | 9.39e-06 | 138 → 120 (−18) | 89 → 78 (−11) | proportional |
+| 54 | MG | SANTA HELENA DE MINAS (41505) | 4 | 158 | — | 206 → 261 (+55) | 90.9% | 75.0% | +15.9 | 1.03e-05 | 155 → 211 (+56) | 38 → 46 (+8) | proportional |
+| 55 | BA | ARACI (33413) | 123 | 102 | — | 221 → 274 (+53) | 85.9% | 73.6% | +12.3 | 1.25e-05 | 191 → 247 (+56) | 10 → 7 (−3) | proportional |
+| 56 | PE | CAPOEIRAS (23752) | 130 | 112 | — | 312 → 374 (+62) | 94.7% | 83.6% | +11.1 | 1.47e-05 | 258 → 325 (+67) | 29 → 37 (+8) | proportional |
+| 57 | PA | SANTARÉM (5355) | 83 | 215 | — | 229 → 191 (−38) | 71.3% | 84.7% | −13.5 | 1.50e-05 | 132 → 137 (+5) | 73 → 54 (−19) | proportional |
+| 58 | PA | SANTARÉM (5355) | 83 | 199 | — | 243 → 200 (−43) | 67.8% | 81.6% | −13.8 | 1.60e-05 | 82 → 75 (−7) | 140 → 120 (−20) | proportional |
+| 59 | BA | IBITITÁ (35637) | 104 | 220 | — | 246 → 229 (−17) | 85.4% | 92.5% | −7.0 | 1.62e-05 | 126 → 107 (−19) | 115 → 122 (+7) | proportional |
+| 60 | RO | SÃO MIGUEL DO GUAPORÉ (418) | 35 | 96 | 2292701 | 53 → 49 (−4) | 90.7% | 97.3% | −6.6 | 1.62e-05 | 39 → 45 (+6) | 8 → 4 (−4) | proportional |
+| 61 | MG | SANTO ANTÔNIO DO MONTE (52078) | 249 | 104 | — | 270 → 312 (+42) | 81.9% | 71.5% | +10.4 | 1.67e-05 | 73 → 96 (+23) | 173 → 210 (+37) | proportional |
+| 62 | PI | ALEGRETE DO PIAUÍ (10022) | 40 | 126 | — | 205 → 156 (−49) | 51.7% | 62.7% | −11.0 | 1.75e-05 | 147 → 116 (−31) | 46 → 38 (−8) | proportional |
+| 63 | AM | TABATINGA (98477) | 36 | 83 | — | 219 → 191 (−28) | 78.3% | 89.7% | −11.4 | 1.98e-05 | 202 → 172 (−30) | 11 → 9 (−2) | proportional |
+| 64 | AL | QUEBRANGULO (28517) | 28 | 123 | — | 261 → 287 (+26) | 90.5% | 80.9% | +9.6 | 2.06e-05 | 194 → 244 (+50) | 33 → 34 (+1) | Lula (112 p.p. above share) |
+| 65 | AP | MACAPÁ (6050) | 10 | 244 | — | 192 → 124 (−68) | 55.9% | 80.5% | −24.7 | 2.42e-05 | 110 → 74 (−36) | 68 → 47 (−21) | proportional |
+| 66 | CE | INDEPENDÊNCIA (14133) | 39 | 157 | — | 245 → 205 (−40) | 70.4% | 83.0% | −12.5 | 2.53e-05 | 177 → 157 (−20) | 49 → 47 (−2) | proportional |
+| 67 | RJ | MANGARATIBA (58513) | 54 | 127 | — | 238 → 137 (−101) | 39.9% | 65.2% | −25.2 | 2.53e-05 | 100 → 57 (−43) | 114 → 75 (−39) | proportional |
+| 68 | AP | MACAPÁ (6050) | 10 | 253 | — | 216 → 168 (−48) | 73.0% | 90.7% | −17.7 | 2.77e-05 | 151 → 120 (−31) | 58 → 44 (−14) | proportional |
+| 69 | SP | GUARULHOS (64777) | 176 | 503 | — | 249 → 265 (+16) | 86.6% | 74.9% | +11.7 | 2.86e-05 | 125 → 149 (+24) | 108 → 112 (+4) | proportional |
+| 70 | MG | RIO POMBA (51152) | 239 | 80 | — | 300 → 345 (+45) | 87.6% | 80.4% | +7.1 | 3.13e-05 | 184 → 239 (+55) | 84 → 101 (+17) | Lula (57 p.p. above share) |
+| 71 | MG | SÃO JOSÉ DO JACURI (52698) | 212 | 169 | — | 197 → 218 (+21) | 82.0% | 76.4% | +5.5 | 3.63e-05 | 128 → 155 (+27) | 47 → 55 (+8) | Lula (60 p.p. above share) |
+| 72 | PB | ITATUBA (20451) | 8 | 62 | — | 257 → 291 (+34) | 87.7% | 78.6% | +9.1 | 3.83e-05 | 175 → 218 (+43) | 57 → 62 (+5) | Lula (55 p.p. above share) |
+| 73 | CE | SOBRAL (15598) | 24 | 256 | — | 294 → 270 (−24) | 83.1% | 91.4% | −8.3 | 4.91e-05 | 153 → 166 (+13) | 126 → 101 (−25) | Flávio (64 p.p. above share) |
+| 74 | PR | PRUDENTÓPOLIS (77917) | 30 | 109 | — | 118 → 93 (−25) | 67.4% | 85.7% | −18.4 | 5.05e-05 | 20 → 15 (−5) | 86 → 77 (−9) | proportional |
+| 75 | SC | MACIEIRA (80900) | 6 | 246 | — | 274 → 234 (−40) | 64.3% | 77.3% | −13.0 | 5.11e-05 | 96 → 87 (−9) | 158 → 144 (−14) | proportional |
+| 76 | PI | ALEGRETE DO PIAUÍ (10022) | 40 | 86 | — | 123 → 96 (−27) | 62.3% | 75.5% | −13.1 | 6.39e-05 | 90 → 77 (−13) | 27 → 16 (−11) | proportional |
+| 77 | PE | IPOJUCA (24430) | 16 | 249 | — | 276 → 246 (−30) | 63.2% | 75.4% | −12.1 | 8.34e-05 | 175 → 174 (−1) | 70 → 72 (+2) | proportional |
+| 78 | SP | SÃO PAULO (71072) | 381 | 778 | — | 135 → 124 (−11) | 88.6% | 96.9% | −8.3 | 9.02e-05 | 58 → 67 (+9) | 49 → 51 (+2) | proportional |
+| 79 | AM | MANAUS (2550) | 40 | 631 | — | 172 → 149 (−23) | 76.8% | 88.8% | −12.0 | 9.87e-05 | 108 → 101 (−7) | 45 → 39 (−6) | proportional |
+| 80 | AM | MANAUS (2550) | 68 | 517 | — | 225 → 186 (−39) | 68.1% | 82.0% | −13.9 | 0.0001 | 134 → 121 (−13) | 64 → 55 (−9) | proportional |
+| 81 | PB | OLHO D'ÁGUA (21091) | 66 | 111 | — | 236 → 211 (−25) | 71.8% | 78.8% | −7.0 | 0.0001 | 165 → 169 (+4) | 53 → 40 (−13) | Flávio (31 p.p. above share) |
+| 82 | CE | MORRINHOS (14796) | 44 | 151 | — | 304 → 280 (−24) | 81.9% | 89.7% | −7.8 | 0.0001 | 161 → 162 (+1) | 120 → 112 (−8) | proportional |
+| 83 | CE | SOBRAL (15598) | 24 | 497 | — | 300 → 279 (−21) | 86.1% | 93.3% | −7.2 | 0.0001 | 163 → 174 (+11) | 118 → 100 (−18) | Flávio (48 p.p. above share) |
+| 84 | MA | COELHO NETO (7650) | 28 | 135 | — | 266 → 245 (−21) | 77.8% | 85.1% | −7.3 | 0.0001 | 239 → 222 (−17) | 21 → 20 (−1) | proportional |
+| 85 | ZZ | RAMALLAH (30414) | 1 | 275 | — | 469 → 381 (−88) | 48.0% | 63.1% | −15.1 | 0.0001 | 424 → 362 (−62) | 19 → 15 (−4) | proportional |
+| 86 | CE | SOBRAL (15598) | 24 | 646 | — | 282 → 257 (−25) | 80.1% | 89.0% | −9.0 | 0.0001 | 142 → 144 (+2) | 121 → 105 (−16) | proportional |
+| 87 | RS | NONOAI (87572) | 99 | 66 | — | 182 → 230 (+48) | 80.4% | 69.7% | +10.7 | 0.0001 | 172 → 212 (+40) | 8 → 15 (+7) | proportional |
+| 88 | MA | SANTA HELENA (8958) | 83 | 146 | — | 127 → 154 (+27) | 86.5% | 71.2% | +15.3 | 0.0001 | 116 → 149 (+33) | 7 → 3 (−4) | proportional |
+| 89 | AC | FEIJÓ (1139) | 7 | 47 | — | 209 → 130 (−79) | 48.0% | 69.5% | −21.5 | 0.0002 | 79 → 63 (−16) | 113 → 63 (−50) | proportional |
+| 90 | SP | CARAGUATATUBA (63118) | 206 | 237 | — | 233 → 212 (−21) | 76.0% | 84.6% | −8.6 | 0.0002 | 206 → 185 (−21) | 22 → 22 (0) | proportional |
+| 91 | MG | NATALÂNDIA (41106) | 329 | 42 | — | 245 → 223 (−22) | 67.0% | 74.6% | −7.6 | 0.0002 | 149 → 144 (−5) | 82 → 76 (−6) | proportional |
+| 92 | RS | RODEIO BONITO (88218) | 64 | 7 | — | 275 → 316 (+41) | 87.3% | 78.5% | +8.8 | 0.0002 | 130 → 170 (+40) | 114 → 140 (+26) | Lula (47 p.p. above share) |
+| 93 | GO | RUBIATABA (95737) | 76 | 37 | — | 186 → 170 (−16) | 76.9% | 84.9% | −8.0 | 0.0002 | 41 → 54 (+13) | 100 → 113 (+13) | proportional |
+| 94 | RS | BARROS CASSAL (85391) | 54 | 214 | — | 312 → 290 (−22) | 79.7% | 87.3% | −7.6 | 0.0003 | 75 → 81 (+6) | 205 → 204 (−1) | proportional |
+| 95 | PA | BARCARENA (4251) | 65 | 284 | — | 220 → 196 (−24) | 80.0% | 89.4% | −9.4 | 0.0003 | 143 → 131 (−12) | 48 → 51 (+3) | proportional |
+| 96 | AP | VITÓRIA DO JARI (6122) | 7 | 147 | — | 300 → 214 (−86) | 61.8% | 79.2% | −17.4 | 0.0003 | 180 → 137 (−43) | 104 → 77 (−27) | proportional |
+| 97 | AP | SANTANA (6157) | 6 | 274 | — | 240 → 190 (−50) | 72.0% | 86.5% | −14.6 | 0.0003 | 165 → 143 (−22) | 61 → 45 (−16) | proportional |
+| 98 | MT | CHAPADA DOS GUIMARÃES (90590) | 34 | 116 | — | 113 → 96 (−17) | 72.7% | 84.9% | −12.2 | 0.0003 | 42 → 42 (0) | 60 → 52 (−8) | proportional |
+| 99 | PA | TRAIRÃO (4286) | 34 | 130 | — | 200 → 160 (−40) | 57.1% | 69.5% | −12.4 | 0.0003 | 35 → 31 (−4) | 144 → 129 (−15) | proportional |
+| 100 | RS | MONTENEGRO (87491) | 31 | 247 | — | 35 → 25 (−10) | 73.5% | 92.0% | −18.4 | 0.0003 | 28 → 20 (−8) | 7 → 4 (−3) | proportional |
+| 101 | AC | SENA MADUREIRA (1457) | 3 | 148 | — | 152 → 65 (−87) | 30.1% | 55.7% | −25.6 | 0.0003 | 43 → 23 (−20) | 92 → 38 (−54) | proportional |
+| 102 | MT | VÁRZEA GRANDE (91677) | 49 | 363 | — | 100 → 86 (−14) | 76.8% | 90.0% | −13.2 | 0.0004 | 39 → 38 (−1) | 50 → 48 (−2) | proportional |
+| 103 | RR | PACARAIMA (3123) | 7 | 85 | 2260685 | 246 → 198 (−48) | 74.2% | 86.6% | −12.4 | 0.0004 | 173 → 150 (−23) | 69 → 47 (−22) | proportional |
+| 104 | RS | SANTO CRISTO (88617) | 102 | 134 | — | 116 → 109 (−7) | 90.8% | 96.8% | −6.0 | 0.0004 | 33 → 39 (+6) | 69 → 66 (−3) | proportional |
+| 105 | AC | SENA MADUREIRA (1457) | 3 | 98 | — | 185 → 114 (−71) | 53.0% | 75.2% | −22.1 | 0.0004 | 64 → 43 (−21) | 104 → 70 (−34) | proportional |
+| 106 | RO | PORTO VELHO (35) | 6 | 515 | — | 222 → 192 (−30) | 71.9% | 81.7% | −9.8 | 0.0004 | 75 → 75 (0) | 139 → 116 (−23) | proportional |
+| 107 | MA | ITAIPAVA DO GRAJAÚ (7706) | 15 | 398 | — | 223 → 254 (+31) | 88.5% | 75.9% | +12.6 | 0.0005 | 212 → 247 (+35) | 7 → 4 (−3) | proportional |
+| 108 | SP | ARAÇATUBA (61557) | 299 | 229 | — | 34 → 31 (−3) | 91.2% | 98.9% | −7.7 | 0.0005 | 19 → 21 (+2) | 12 → 10 (−2) | proportional |
+| 109 | BA | PILÃO ARCADO (37893) | 195 | 104 | — | 266 → 232 (−34) | 74.1% | 84.3% | −10.1 | 0.0005 | 136 → 116 (−20) | 108 → 107 (−1) | proportional |
+| 110 | MA | BREJO DE AREIA (7307) | 49 | 100 | — | 82 → 71 (−11) | 78.0% | 88.7% | −10.7 | 0.0005 | 53 → 58 (+5) | 22 → 12 (−10) | proportional |
+| 111 | RO | PORTO VELHO (35) | 6 | 567 | 2033936 | 194 → 175 (−19) | 82.9% | 91.0% | −8.1 | 0.0005 | 152 → 147 (−5) | 40 → 27 (−13) | proportional |
+| 112 | RJ | RIO DE JANEIRO (60011) | 185 | 131 | — | 362 → 415 (+53) | 87.2% | 79.4% | +7.7 | 0.0005 | 171 → 235 (+64) | 147 → 168 (+21) | Lula (68 p.p. above share) |
+| 113 | MG | TEIXEIRAS (53694) | 268 | 55 | — | 180 → 174 (−6) | 79.5% | 85.5% | −6.1 | 0.0005 | 77 → 90 (+13) | 74 → 76 (+2) | proportional |
+| 114 | PI | RIBEIRO GONÇALVES (11770) | 44 | 68 | — | 273 → 248 (−25) | 74.7% | 80.6% | −5.9 | 0.0005 | 181 → 178 (−3) | 79 → 62 (−17) | Flávio (41 p.p. above share) |
+| 115 | AL | JUNDIÁ (27774) | 14 | 221 | — | 308 → 211 (−97) | 56.1% | 75.1% | −19.0 | 0.0005 | 157 → 125 (−32) | 111 → 83 (−28) | proportional |
+| 116 | AL | MACEIÓ (27855) | 2 | 220 | — | 284 → 256 (−28) | 78.5% | 88.6% | −10.1 | 0.0005 | 108 → 118 (+10) | 137 → 132 (−5) | proportional |
+| 117 | PE | PETROLINA (25216) | 145 | 92 | — | 176 → 159 (−17) | 77.9% | 89.3% | −11.4 | 0.0006 | 91 → 106 (+15) | 54 → 46 (−8) | proportional |
+| 118 | MA | MONÇÃO (8370) | 43 | 141 | — | 179 → 151 (−28) | 64.5% | 75.2% | −10.7 | 0.0006 | 138 → 128 (−10) | 31 → 22 (−9) | proportional |
+| 119 | CE | FORTALEZA (13897) | 94 | 638 | — | 272 → 259 (−13) | 90.6% | 95.9% | −5.4 | 0.0007 | 136 → 145 (+9) | 108 → 106 (−2) | proportional |
+| 120 | RR | CAROEBE (3000) | 4 | 141 | 2283087 | 68 → 44 (−24) | 55.0% | 76.4% | −21.4 | 0.0007 | 66 → 44 (−22) | 2 → 0 (−2) | proportional |
+| 121 | RJ | RIO DE JANEIRO (60011) | 185 | 159 | 1650517 | 285 → 341 (+56) | 80.4% | 71.4% | +9.0 | 0.0007 | 107 → 152 (+45) | 139 → 172 (+33) | Lula (39 p.p. above share) |
+| 122 | MA | ALTO PARNAÍBA (7099) | 11 | 14 | — | 158 → 127 (−31) | 62.9% | 78.0% | −15.1 | 0.0008 | 128 → 112 (−16) | 15 → 15 (0) | proportional |
+| 123 | PA | VISEU (5657) | 14 | 118 | — | 213 → 164 (−49) | 64.1% | 80.5% | −16.4 | 0.0008 | 172 → 137 (−35) | 29 → 24 (−5) | proportional |
+| 124 | MG | NOVA LIMA (48950) | 194 | 315 | — | 186 → 173 (−13) | 87.8% | 95.0% | −7.2 | 0.0008 | 29 → 34 (+5) | 128 → 132 (+4) | proportional |
+| 125 | PA | MOJU (4936) | 37 | 120 | 2187388 | 53 → 41 (−12) | 74.5% | 94.8% | −20.2 | 0.0008 | 48 → 41 (−7) | 3 → 0 (−3) | proportional |
+| 126 | PR | MALLET (76716) | 37 | 16 | — | 240 → 212 (−28) | 75.2% | 85.0% | −9.8 | 0.0008 | 64 → 66 (+2) | 138 → 138 (0) | proportional |
+| 127 | MG | BIAS FORTES (41351) | 24 | 141 | — | 221 → 199 (−22) | 74.8% | 84.8% | −10.0 | 0.0009 | 109 → 113 (+4) | 84 → 75 (−9) | proportional |
+| 128 | AL | JOAQUIM GOMES (27758) | 53 | 166 | 2473980 | 335 → 358 (+23) | 91.8% | 84.4% | +7.3 | 0.0010 | 270 → 313 (+43) | 32 → 36 (+4) | Lula (103 p.p. above share) |
+| 129 | MT | GENERAL CARNEIRO (90778) | 9 | 481 | 2005852 | 230 → 261 (+31) | 78.1% | 67.5% | +10.7 | 0.0011 | 209 → 244 (+35) | 14 → 14 (0) | proportional |
+| 130 | AP | VITÓRIA DO JARI (6122) | 7 | 183 | — | 262 → 217 (−45) | 78.6% | 91.3% | −12.7 | 0.0011 | 125 → 109 (−16) | 121 → 106 (−15) | proportional |
+| 131 | MG | PIRACEMA (50113) | 208 | 110 | — | 297 → 269 (−28) | 78.7% | 87.3% | −8.6 | 0.0013 | 168 → 153 (−15) | 99 → 106 (+7) | proportional |
+| 132 | SP | SÃO JOSÉ DO RIO PRETO (70971) | 268 | 250 | — | 310 → 293 (−17) | 78.1% | 84.8% | −6.7 | 0.0013 | 69 → 88 (+19) | 184 → 193 (+9) | proportional |
+| 133 | BA | SENTO SÉ (39039) | 96 | 44 | — | 114 → 96 (−18) | 76.8% | 90.5% | −13.7 | 0.0013 | 50 → 48 (−2) | 52 → 42 (−10) | proportional |
+| 134 | RJ | RIO DE JANEIRO (60011) | 188 | 258 | — | 335 → 404 (+69) | 77.0% | 67.7% | +9.3 | 0.0014 | 128 → 203 (+75) | 163 → 189 (+26) | Lula (64 p.p. above share) |
+| 135 | MA | SANTA RITA (9016) | 18 | 274 | — | 251 → 213 (−38) | 71.2% | 83.0% | −11.7 | 0.0015 | 193 → 178 (−15) | 39 → 34 (−5) | proportional |
+| 136 | AM | MANACAPURU (2534) | 6 | 101 | — | 276 → 203 (−73) | 56.4% | 72.6% | −16.2 | 0.0015 | 111 → 100 (−11) | 135 → 94 (−41) | proportional |
+| 137 | BA | ANGUERA (33294) | 157 | 836 | — | 308 → 350 (+42) | 88.4% | 80.8% | +7.6 | 0.0015 | 243 → 286 (+43) | 47 → 56 (+9) | proportional |
+| 138 | MA | PRESIDENTE JUSCELINO (8818) | 110 | 309 | — | 151 → 134 (−17) | 86.5% | 96.3% | −9.8 | 0.0015 | 100 → 98 (−2) | 41 → 34 (−7) | proportional |
+| 139 | MA | PENALVA (8630) | 45 | 68 | — | 175 → 202 (+27) | 87.4% | 73.4% | +14.1 | 0.0017 | 167 → 198 (+31) | 3 → 3 (0) | proportional |
+| 140 | SP | RIBEIRÃO PRETO (69698) | 305 | 333 | — | 63 → 52 (−11) | 73.2% | 89.7% | −16.5 | 0.0017 | 46 → 42 (−4) | 7 → 10 (+3) | proportional |
+| 141 | MG | ARAGUARI (40690) | 16 | 347 | — | 37 → 34 (−3) | 91.9% | 98.9% | −7.0 | 0.0018 | 4 → 5 (+1) | 33 → 29 (−4) | proportional |
+| 142 | MS | DOURADOS (90735) | 43 | 411 | — | 121 → 178 (+57) | 70.1% | 53.5% | +16.5 | 0.0018 | 104 → 158 (+54) | 14 → 19 (+5) | proportional |
+| 143 | RJ | VOLTA REDONDA (59250) | 90 | 235 | — | 258 → 222 (−36) | 70.9% | 82.7% | −11.8 | 0.0018 | 94 → 102 (+8) | 130 → 113 (−17) | proportional |
+| 144 | RJ | RIO DE JANEIRO (60011) | 216 | 133 | 1670980 | 311 → 362 (+51) | 83.8% | 75.2% | +8.6 | 0.0018 | 139 → 190 (+51) | 137 → 165 (+28) | Lula (51 p.p. above share) |
+| 145 | AP | MACAPÁ (6050) | 14 | 389 | — | 255 → 182 (−73) | 58.1% | 75.0% | −16.8 | 0.0019 | 173 → 142 (−31) | 57 → 39 (−18) | proportional |
+| 146 | RS | BAGÉ (85316) | 7 | 35 | 1658605 | 236 → 279 (+43) | 76.6% | 67.2% | +9.5 | 0.0019 | 82 → 136 (+54) | 109 → 133 (+24) | Lula (83 p.p. above share) |
+| 147 | MG | BOM SUCESSO (41599) | 46 | 28 | — | 222 → 200 (−22) | 71.2% | 81.3% | −10.1 | 0.0019 | 114 → 125 (+11) | 80 → 69 (−11) | proportional |
+| 148 | AM | PARINTINS (2690) | 4 | 281 | — | 83 → 67 (−16) | 76.1% | 93.1% | −17.0 | 0.0020 | 60 → 48 (−12) | 22 → 17 (−5) | proportional |
+| 149 | BA | FORMOSA DO RIO PRETO (35211) | 187 | 34 | — | 323 → 370 (+47) | 91.4% | 81.6% | +9.8 | 0.0020 | 232 → 280 (+48) | 72 → 84 (+12) | proportional |
+| 150 | AM | CARAUARI (2216) | 21 | 73 | — | 143 → 107 (−36) | 56.9% | 75.5% | −18.6 | 0.0020 | 82 → 67 (−15) | 52 → 35 (−17) | proportional |
+| 151 | PI | PAU D'ARCO DO PIAUÍ (12718) | 32 | 182 | — | 174 → 150 (−24) | 82.0% | 93.5% | −11.5 | 0.0021 | 112 → 114 (+2) | 43 → 35 (−8) | proportional |
+| 152 | PE | CARUARU (23817) | 106 | 82 | 1656869 | 288 → 347 (+59) | 87.4% | 78.2% | +9.2 | 0.0021 | 127 → 185 (+58) | 131 → 149 (+18) | Lula (49 p.p. above share) |
+| 153 | MG | CARLOS CHAGAS (42730) | 73 | 52 | — | 276 → 303 (+27) | 80.8% | 74.8% | +6.0 | 0.0021 | 147 → 192 (+45) | 85 → 97 (+12) | Lula (108 p.p. above share) |
+| 154 | SP | ITAPEVI (65510) | 359 | 474 | — | 86 → 73 (−13) | 70.2% | 84.7% | −14.5 | 0.0021 | 47 → 50 (+3) | 24 → 22 (−2) | proportional |
+| 155 | GO | CATALÃO (93017) | 8 | 133 | — | 269 → 250 (−19) | 77.6% | 85.4% | −7.8 | 0.0022 | 104 → 114 (+10) | 121 → 130 (+9) | proportional |
+| 156 | PR | GUARAPUAVA (75833) | 43 | 397 | 2462584 | 51 → 38 (−13) | 58.5% | 80.2% | −21.7 | 0.0022 | 23 → 22 (−1) | 19 → 15 (−4) | proportional |
+| 157 | SP | RIBEIRÃO PRETO (69698) | 108 | 346 | — | 26 → 20 (−6) | 71.4% | 92.5% | −21.1 | 0.0022 | 13 → 12 (−1) | 12 → 8 (−4) | proportional |
+| 158 | AC | CRUZEIRO DO SUL (1074) | 4 | 459 | — | 134 → 82 (−52) | 50.6% | 76.4% | −25.8 | 0.0022 | 58 → 43 (−15) | 69 → 35 (−34) | proportional |
+| 159 | BA | MUNDO NOVO (37435) | 54 | 112 | — | 215 → 200 (−15) | 76.9% | 84.5% | −7.6 | 0.0022 | 146 → 153 (+7) | 50 → 42 (−8) | proportional |
+| 160 | SP | MIRANDÓPOLIS (67032) | 153 | 99 | — | 236 → 281 (+45) | 81.4% | 73.3% | +8.2 | 0.0022 | 73 → 107 (+34) | 134 → 161 (+27) | Lula (41 p.p. above share) |
+| 161 | MG | BELO HORIZONTE (41238) | 39 | 168 | 2254078 | 281 → 365 (+84) | 72.9% | 61.7% | +11.2 | 0.0023 | 130 → 192 (+62) | 117 → 160 (+43) | proportional |
+| 162 | MG | SANTA RITA DO SAPUCAÍ (51918) | 248 | 68 | — | 219 → 199 (−20) | 65.2% | 73.9% | −8.6 | 0.0024 | 87 → 83 (−4) | 106 → 108 (+2) | proportional |
+| 163 | SP | SÃO PAULO (71072) | 253 | 387 | — | 271 → 257 (−14) | 83.2% | 89.0% | −5.9 | 0.0024 | 71 → 77 (+6) | 160 → 168 (+8) | proportional |
+| 164 | AC | BRASILÉIA (1058) | 6 | 140 | — | 157 → 117 (−40) | 54.4% | 67.8% | −13.3 | 0.0024 | 29 → 23 (−6) | 122 → 90 (−32) | proportional |
+| 165 | MG | SÃO JOÃO DO ORIENTE (52515) | 128 | 191 | — | 246 → 234 (−12) | 70.9% | 77.0% | −6.1 | 0.0026 | 102 → 105 (+3) | 122 → 124 (+2) | proportional |
+| 166 | RS | BOM PROGRESSO (86444) | 86 | 120 | — | 204 → 179 (−25) | 77.2% | 88.0% | −10.9 | 0.0027 | 106 → 106 (0) | 81 → 70 (−11) | proportional |
+| 167 | RO | PORTO VELHO (35) | 20 | 399 | — | 175 → 158 (−17) | 84.0% | 92.3% | −8.3 | 0.0028 | 39 → 34 (−5) | 129 → 123 (−6) | proportional |
+| 168 | AM | MANACAPURU (2534) | 6 | 217 | 2460892 | 235 → 183 (−52) | 65.8% | 81.4% | −15.6 | 0.0029 | 192 → 151 (−41) | 27 → 25 (−2) | proportional |
+| 169 | RJ | ITABORAÍ (58378) | 151 | 211 | — | 298 → 341 (+43) | 77.5% | 69.0% | +8.5 | 0.0029 | 102 → 141 (+39) | 156 → 183 (+27) | Lula (53 p.p. above share) |
+| 170 | MG | ITABIRITO (46370) | 133 | 148 | — | 170 → 157 (−13) | 84.4% | 91.9% | −7.5 | 0.0029 | 85 → 98 (+13) | 67 → 55 (−12) | proportional |
+| 171 | AP | MACAPÁ (6050) | 10 | 412 | — | 202 → 146 (−56) | 63.8% | 82.8% | −19.1 | 0.0030 | 114 → 90 (−24) | 75 → 55 (−20) | proportional |
+| 172 | BA | BOM JESUS DA LAPA (33774) | 71 | 245 | — | 295 → 282 (−13) | 80.8% | 86.7% | −5.9 | 0.0031 | 190 → 195 (+5) | 79 → 81 (+2) | proportional |
+| 173 | PI | SIGEFREDO PACHECO (10545) | 7 | 228 | — | 230 → 194 (−36) | 73.8% | 83.5% | −9.7 | 0.0031 | 162 → 154 (−8) | 46 → 34 (−12) | proportional |
+| 174 | AP | SANTANA (6157) | 6 | 78 | — | 196 → 135 (−61) | 55.8% | 73.5% | −17.7 | 0.0031 | 88 → 84 (−4) | 81 → 49 (−32) | proportional |
+| 175 | CE | PORTEIRAS (15237) | 70 | 311 | — | 237 → 265 (+28) | 88.0% | 81.2% | +6.9 | 0.0031 | 188 → 223 (+35) | 22 → 31 (+9) | Lula (43 p.p. above share) |
+| 176 | AM | NHAMUNDÁ (2631) | 43 | 41 | 2342641 | 272 → 285 (+13) | 85.1% | 74.6% | +10.4 | 0.0032 | 246 → 258 (+12) | 22 → 21 (−1) | proportional |
+| 177 | BA | CANSANÇÃO (34355) | 50 | 231 | — | 268 → 249 (−19) | 80.3% | 89.1% | −8.8 | 0.0032 | 169 → 170 (+1) | 75 → 66 (−9) | proportional |
+| 178 | CE | PORTEIRAS (15237) | 70 | 313 | — | 226 → 254 (+28) | 87.3% | 80.2% | +7.1 | 0.0033 | 204 → 243 (+39) | 10 → 9 (−1) | Lula (46 p.p. above share) |
+| 179 | RS | CERRO GRANDE DO SUL (85944) | 84 | 16 | — | 272 → 299 (+27) | 84.5% | 77.8% | +6.7 | 0.0033 | 85 → 123 (+38) | 150 → 166 (+16) | Lula (104 p.p. above share) |
+| 180 | PA | ALENQUER (4073) | 21 | 180 | — | 72 → 49 (−23) | 57.6% | 81.3% | −23.6 | 0.0034 | 51 → 34 (−17) | 19 → 14 (−5) | proportional |
+| 181 | SP | TEODORO SAMPAIO (71870) | 330 | 127 | — | 142 → 198 (+56) | 70.2% | 55.6% | +14.6 | 0.0035 | 80 → 119 (+39) | 55 → 76 (+21) | proportional |
+| 182 | SP | MARÍLIA (66818) | 400 | 6 | — | 132 → 117 (−15) | 61.9% | 73.3% | −11.4 | 0.0035 | 52 → 55 (+3) | 64 → 59 (−5) | proportional |
+| 183 | RJ | RIO DE JANEIRO (60011) | 179 | 113 | — | 319 → 388 (+69) | 79.7% | 70.2% | +9.5 | 0.0037 | 155 → 236 (+81) | 121 → 135 (+14) | Lula (62 p.p. above share) |
+| 184 | MA | ARAME (9679) | 104 | 70 | 2383035 | 214 → 231 (+17) | 95.5% | 87.7% | +7.8 | 0.0039 | 209 → 224 (+15) | 1 → 5 (+4) | proportional |
+| 185 | BA | SÃO FRANCISCO DO CONDE (38830) | 162 | 121 | — | 231 → 220 (−11) | 69.2% | 77.1% | −8.0 | 0.0040 | 185 → 188 (+3) | 27 → 24 (−3) | proportional |
+| 186 | PB | SOLEDADE (22233) | 23 | 127 | — | 275 → 262 (−13) | 82.4% | 88.1% | −5.7 | 0.0040 | 160 → 175 (+15) | 78 → 78 (0) | proportional |
+| 187 | SP | BAURU (62197) | 300 | 193 | — | 226 → 212 (−14) | 76.8% | 83.8% | −7.0 | 0.0040 | 84 → 104 (+20) | 99 → 101 (+2) | proportional |
+| 188 | RJ | ARARUAMA (58033) | 92 | 99 | — | 256 → 208 (−48) | 65.2% | 79.5% | −14.3 | 0.0040 | 82 → 82 (0) | 153 → 123 (−30) | proportional |
+| 189 | RJ | VOLTA REDONDA (59250) | 90 | 397 | — | 247 → 209 (−38) | 65.5% | 77.8% | −12.3 | 0.0040 | 83 → 93 (+10) | 136 → 109 (−27) | proportional |
+| 190 | MG | SANTA LUZIA (51551) | 246 | 252 | — | 181 → 167 (−14) | 84.8% | 92.7% | −7.9 | 0.0043 | 70 → 80 (+10) | 89 → 83 (−6) | proportional |
+| 191 | PA | TAILÂNDIA (4022) | 93 | 194 | — | 98 → 80 (−18) | 72.7% | 87.9% | −15.2 | 0.0044 | 67 → 60 (−7) | 19 → 17 (−2) | proportional |
+| 192 | CE | INDEPENDÊNCIA (14133) | 39 | 219 | — | 76 → 55 (−21) | 57.3% | 77.0% | −19.7 | 0.0044 | 57 → 46 (−11) | 17 → 9 (−8) | proportional |
+| 193 | RJ | RIO DE JANEIRO (60011) | 180 | 196 | — | 305 → 362 (+57) | 72.4% | 64.2% | +8.2 | 0.0046 | 127 → 180 (+53) | 142 → 170 (+28) | Lula (47 p.p. above share) |
+| 194 | MG | SANTO HIPÓLITO (52116) | 95 | 102 | 1759680 | 146 → 122 (−24) | 61.9% | 76.5% | −14.6 | 0.0047 | 77 → 81 (+4) | 50 → 39 (−11) | proportional |
+| 195 | AM | MANACAPURU (2534) | 6 | 59 | — | 269 → 198 (−71) | 55.3% | 70.9% | −15.6 | 0.0047 | 116 → 91 (−25) | 131 → 102 (−29) | proportional |
+| 196 | RJ | RIO DE JANEIRO (60011) | 22 | 663 | — | 313 → 373 (+60) | 76.3% | 67.4% | +8.8 | 0.0047 | 143 → 208 (+65) | 133 → 153 (+20) | Lula (57 p.p. above share) |
+| 197 | BA | DOM BASÍLIO (35017) | 101 | 110 | — | 291 → 287 (−4) | 83.4% | 88.7% | −5.3 | 0.0048 | 193 → 201 (+8) | 80 → 79 (−1) | proportional |
+| 198 | RO | PORTO VELHO (35) | 20 | 203 | — | 226 → 200 (−26) | 76.9% | 85.8% | −8.9 | 0.0048 | 150 → 144 (−6) | 55 → 51 (−4) | proportional |
+| 199 | SC | JOINVILLE (81795) | 19 | 708 | — | 316 → 300 (−16) | 79.8% | 85.4% | −5.6 | 0.0049 | 78 → 96 (+18) | 186 → 199 (+13) | proportional |
+| 200 | AC | TARAUACÁ (1473) | 5 | 92 | — | 187 → 113 (−74) | 52.3% | 76.9% | −24.6 | 0.0049 | 30 → 18 (−12) | 148 → 89 (−59) | proportional |
+| 201 | CE | INDEPENDÊNCIA (14133) | 39 | 169 | — | 210 → 184 (−26) | 78.0% | 87.7% | −9.8 | 0.0049 | 145 → 139 (−6) | 56 → 44 (−12) | proportional |
+| 202 | RJ | VOLTA REDONDA (59250) | 90 | 265 | — | 252 → 215 (−37) | 67.0% | 78.8% | −11.9 | 0.0051 | 84 → 96 (+12) | 134 → 107 (−27) | proportional |
+| 203 | PA | GURUPÁ (4618) | 26 | 105 | — | 232 → 153 (−79) | 52.8% | 72.5% | −19.8 | 0.0052 | 130 → 95 (−35) | 89 → 56 (−33) | proportional |
+| 204 | PB | OLHO D'ÁGUA (21091) | 66 | 133 | — | 150 → 139 (−11) | 84.2% | 90.0% | −5.8 | 0.0056 | 108 → 113 (+5) | 30 → 26 (−4) | proportional |
+| 205 | PI | ESPERANTINA (10731) | 41 | 229 | — | 242 → 222 (−20) | 79.3% | 86.9% | −7.6 | 0.0056 | 143 → 153 (+10) | 75 → 60 (−15) | Flávio (46 p.p. above share) |
+| 206 | RS | PASSO FUNDO (87858) | 128 | 483 | — | 23 → 19 (−4) | 79.2% | 94.7% | −15.5 | 0.0060 | 11 → 8 (−3) | 7 → 10 (+3) | proportional |
+| 207 | PI | MIGUEL LEÃO (11258) | 58 | 75 | — | 219 → 180 (−39) | 69.5% | 82.7% | −13.2 | 0.0060 | 120 → 107 (−13) | 84 → 70 (−14) | proportional |
+| 208 | AM | CODAJÁS (2275) | 7 | 51 | — | 121 → 96 (−25) | 68.1% | 82.1% | −14.0 | 0.0060 | 57 → 46 (−11) | 61 → 48 (−13) | proportional |
+| 209 | MS | PORTO MURTINHO (91375) | 20 | 26 | — | 211 → 226 (+15) | 76.1% | 70.1% | +6.0 | 0.0061 | 80 → 94 (+14) | 118 → 128 (+10) | proportional |
+| 210 | AP | LARANJAL DO JARI (6130) | 7 | 91 | — | 219 → 177 (−42) | 68.1% | 78.5% | −10.4 | 0.0062 | 183 → 158 (−25) | 21 → 18 (−3) | proportional |
+| 211 | RS | RIO PARDO (88170) | 38 | 135 | — | 274 → 309 (+35) | 89.0% | 81.1% | +7.9 | 0.0063 | 125 → 171 (+46) | 120 → 130 (+10) | Lula (81 p.p. above share) |
+| 212 | CE | CAUCAIA (13730) | 37 | 628 | — | 57 → 49 (−8) | 80.3% | 93.4% | −13.1 | 0.0065 | 34 → 32 (−2) | 17 → 17 (0) | proportional |
+| 213 | PR | MALLET (76716) | 37 | 25 | — | 187 → 162 (−25) | 70.4% | 81.2% | −10.7 | 0.0065 | 35 → 26 (−9) | 130 → 132 (+2) | proportional |
+| 214 | MG | JUIZ DE FORA (47333) | 349 | 134 | — | 267 → 311 (+44) | 87.9% | 78.7% | +9.1 | 0.0067 | 145 → 201 (+56) | 84 → 94 (+10) | Lula (67 p.p. above share) |
+| 215 | MT | FELIZ NATAL (90786) | 36 | 55 | — | 140 → 163 (+23) | 75.8% | 67.2% | +8.7 | 0.0068 | 26 → 31 (+5) | 110 → 131 (+21) | proportional |
+| 216 | AL | MACEIÓ (27855) | 2 | 189 | — | 272 → 246 (−26) | 75.7% | 85.6% | −9.9 | 0.0069 | 95 → 112 (+17) | 140 → 126 (−14) | proportional |
+| 217 | RJ | SÃO GONÇALO (58971) | 36 | 608 | 2228812 | 330 → 370 (+40) | 84.5% | 77.3% | +7.2 | 0.0071 | 149 → 195 (+46) | 146 → 158 (+12) | Lula (66 p.p. above share) |
+| 218 | RJ | SÃO GONÇALO (58971) | 87 | 203 | — | 260 → 304 (+44) | 72.9% | 64.3% | +8.6 | 0.0071 | 141 → 182 (+41) | 95 → 112 (+17) | Lula (36 p.p. above share) |
+| 219 | BA | ALAGOINHAS (33138) | 163 | 234 | 2169757 | 283 → 338 (+55) | 82.8% | 74.0% | +8.8 | 0.0073 | 175 → 247 (+72) | 61 → 73 (+12) | Lula (63 p.p. above share) |
+| 220 | SP | GUATAPARÁ (61107) | 293 | 214 | — | 256 → 286 (+30) | 80.3% | 74.3% | +6.0 | 0.0073 | 113 → 149 (+36) | 116 → 125 (+9) | Lula (72 p.p. above share) |
+| 221 | CE | PACAJUS (14931) | 49 | 318 | — | 170 → 153 (−17) | 76.1% | 85.7% | −9.6 | 0.0073 | 120 → 119 (−1) | 37 → 32 (−5) | proportional |
+| 222 | GO | APARECIDA DE GOIÂNIA (92274) | 119 | 166 | — | 329 → 389 (+60) | 76.7% | 67.9% | +8.8 | 0.0073 | 136 → 217 (+81) | 123 → 161 (+38) | Lula (86 p.p. above share) |
+| 223 | PA | GURUPÁ (4618) | 26 | 64 | — | 114 → 85 (−29) | 69.7% | 89.9% | −20.2 | 0.0073 | 63 → 49 (−14) | 45 → 36 (−9) | proportional |
+| 224 | MG | TRÊS CORAÇÕES (53856) | 272 | 110 | — | 258 → 238 (−20) | 67.4% | 75.6% | −8.1 | 0.0075 | 102 → 137 (+35) | 108 → 95 (−13) | proportional |
+| 225 | MG | SACRAMENTO (51373) | 243 | 38 | — | 181 → 165 (−16) | 75.0% | 84.2% | −9.2 | 0.0076 | 45 → 53 (+8) | 112 → 105 (−7) | proportional |
+| 226 | PA | MARAPANIM (4871) | 32 | 49 | — | 213 → 165 (−48) | 67.1% | 81.4% | −14.4 | 0.0076 | 166 → 135 (−31) | 40 → 29 (−11) | proportional |
+| 227 | RJ | RIO DE JANEIRO (60011) | 185 | 175 | — | 297 → 347 (+50) | 81.6% | 73.9% | +7.8 | 0.0076 | 94 → 152 (+58) | 152 → 178 (+26) | Lula (78 p.p. above share) |
+| 228 | PA | MARABÁ (4839) | 100 | 128 | — | 138 → 117 (−21) | 72.7% | 85.8% | −13.1 | 0.0077 | 39 → 42 (+3) | 87 → 75 (−12) | proportional |
+| 229 | RJ | RIO DE JANEIRO (60011) | 176 | 23 | 1670692 | 263 → 319 (+56) | 76.3% | 66.5% | +9.8 | 0.0077 | 102 → 152 (+50) | 134 → 159 (+25) | Lula (46 p.p. above share) |
+| 230 | BA | ANGUERA (33294) | 157 | 849 | — | 283 → 271 (−12) | 85.2% | 90.9% | −5.7 | 0.0078 | 182 → 188 (+6) | 90 → 78 (−12) | proportional |
+| 231 | RR | BOA VISTA (3018) | 5 | 278 | — | 293 → 265 (−28) | 84.1% | 91.3% | −7.2 | 0.0079 | 183 → 186 (+3) | 101 → 78 (−23) | Flávio (50 p.p. above share) |
+| 232 | MG | GOVERNADOR VALADARES (45535) | 119 | 157 | — | 126 → 115 (−11) | 79.9% | 88.5% | −8.7 | 0.0079 | 62 → 65 (+3) | 57 → 48 (−9) | proportional |
+| 233 | MA | ARAME (9679) | 104 | 75 | 2395377 | 221 → 236 (+15) | 96.7% | 89.9% | +6.8 | 0.0080 | 210 → 227 (+17) | 5 → 8 (+3) | proportional |
+| 234 | SC | TIMBÉ DO SUL (83933) | 42 | 149 | — | 259 → 282 (+23) | 93.1% | 86.5% | +6.5 | 0.0080 | 74 → 99 (+25) | 154 → 177 (+23) | Lula (77 p.p. above share) |
+| 235 | CE | FORTALEZA (13897) | 94 | 364 | — | 337 → 376 (+39) | 91.0% | 83.7% | +7.4 | 0.0081 | 198 → 249 (+51) | 104 → 114 (+10) | Lula (68 p.p. above share) |
+| 236 | ES | RIO BANANAL (57118) | 51 | 10 | — | 220 → 245 (+25) | 82.8% | 76.9% | +5.9 | 0.0081 | 71 → 86 (+15) | 126 → 147 (+21) | proportional |
+| 237 | RJ | CARDOSO MOREIRA (58068) | 141 | 27 | — | 218 → 189 (−29) | 76.8% | 87.2% | −10.4 | 0.0081 | 70 → 79 (+9) | 122 → 101 (−21) | proportional |
+| 238 | MG | SANTA HELENA DE MINAS (41505) | 4 | 148 | — | 220 → 258 (+38) | 92.5% | 81.5% | +11.0 | 0.0081 | 145 → 178 (+33) | 59 → 76 (+17) | proportional |
+| 239 | MG | BELO HORIZONTE (41238) | 31 | 266 | — | 378 → 423 (+45) | 87.4% | 80.8% | +6.6 | 0.0082 | 143 → 183 (+40) | 177 → 215 (+38) | Lula (48 p.p. above share) |
+| 240 | BA | BAIANÓPOLIS (33499) | 126 | 144 | — | 171 → 141 (−30) | 63.5% | 76.4% | −12.9 | 0.0088 | 97 → 89 (−8) | 64 → 48 (−16) | proportional |
+| 241 | CE | QUITERIANÓPOLIS (13102) | 99 | 99 | — | 214 → 236 (+22) | 92.5% | 84.4% | +8.1 | 0.0088 | 171 → 209 (+38) | 15 → 21 (+6) | Lula (88 p.p. above share) |
+| 242 | SP | SÃO BERNARDO DO CAMPO (70750) | 409 | 238 | — | 236 → 221 (−15) | 81.0% | 88.2% | −7.3 | 0.0089 | 79 → 99 (+20) | 110 → 117 (+7) | proportional |
+| 243 | RS | LAGOA VERMELHA (87270) | 28 | 64 | — | 244 → 270 (+26) | 91.8% | 85.1% | +6.8 | 0.0090 | 46 → 72 (+26) | 176 → 194 (+18) | Lula (77 p.p. above share) |
+| 244 | MG | SABARÁ (51330) | 241 | 66 | — | 260 → 308 (+48) | 80.6% | 71.2% | +9.4 | 0.0090 | 112 → 156 (+44) | 119 → 150 (+31) | Lula (44 p.p. above share) |
+| 245 | MA | BOM JARDIM (9555) | 78 | 283 | — | 181 → 203 (+22) | 94.4% | 83.5% | +10.9 | 0.0091 | 178 → 198 (+20) | 0 → 1 (+1) | proportional |
+| 246 | RR | BOA VISTA (3018) | 5 | 793 | — | 317 → 286 (−31) | 83.1% | 90.3% | −7.1 | 0.0092 | 79 → 83 (+4) | 215 → 196 (−19) | proportional |
+| 247 | BA | ANGUERA (33294) | 157 | 837 | — | 308 → 347 (+39) | 87.8% | 81.0% | +6.9 | 0.0094 | 220 → 265 (+45) | 69 → 72 (+3) | Lula (41 p.p. above share) |
+| 248 | PA | ALENQUER (4073) | 21 | 90 | 1792540 | 95 → 71 (−24) | 64.5% | 83.3% | −18.7 | 0.0094 | 86 → 68 (−18) | 6 → 3 (−3) | proportional |
+| 249 | SP | ALUMÍNIO (61220) | 131 | 318 | — | 232 → 260 (+28) | 83.9% | 76.8% | +7.0 | 0.0095 | 87 → 111 (+24) | 113 → 142 (+29) | Flávio (52 p.p. above share) |
+| 250 | MG | SANTA RITA DO ITUETO (51896) | 233 | 94 | — | 112 → 106 (−6) | 84.8% | 91.1% | −6.3 | 0.0096 | 57 → 62 (+5) | 48 → 43 (−5) | proportional |
+| 251 | SP | CAIEIRAS (62812) | 192 | 418 | — | 285 → 263 (−22) | 73.5% | 81.5% | −8.0 | 0.0096 | 117 → 139 (+22) | 133 → 117 (−16) | proportional |
+| 252 | BA | IBITITÁ (35637) | 104 | 239 | — | 269 → 299 (+30) | 86.2% | 79.0% | +7.2 | 0.0100 | 206 → 237 (+31) | 45 → 56 (+11) | proportional |
+| 253 | RJ | QUEIMADOS (58122) | 138 | 157 | — | 275 → 309 (+34) | 84.9% | 75.7% | +9.1 | 0.0100 | 104 → 134 (+30) | 145 → 166 (+21) | Lula (48 p.p. above share) |
+
+#### A.5.5 🟡 V5. Gain above the ceiling of available votes
+
+**🟡 Informational events — complete list (7)**
+
+| # | State | Municipality | Zone | Section | Machine no. | Finalist | Gain | Ceiling | Excess | Lula R1 → R2 | Flávio R1 → R2 | Others R1 | Blank and null R1 → R2 | Turnout R1 → R2 |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|---|---|
+| 1 | AC | SANTA ROSA DO PURUS (1031) | 3 | 95 | — | Lula | +72 | 21 | +51 | 102 → 174 (+72) | 105 → 47 (−58) | 9 | 4 → 7 (+3) | 220 → 228 (+8) |
+| 2 | AC | MANOEL URBANO (1554) | 3 | 160 | — | Flávio Bolsonaro | +49 | 6 | +43 | 112 → 48 (−64) | 55 → 104 (+49) | 0 | 3 → 21 (+18) | 170 → 173 (+3) |
+| 3 | AM | BARCELOS (2097) | 18 | 37 | — | Lula | +47 | 23 | +24 | 37 → 84 (+47) | 171 → 71 (−100) | 8 | 15 → 35 (+20) | 231 → 190 (−41) |
+| 4 | MA | LAGO DA PEDRA (8133) | 74 | 66 | — | Lula | +46 | 23 | +23 | 124 → 170 (+46) | 86 → 62 (−24) | 10 | 12 → 1 (−11) | 232 → 233 (+1) |
+| 5 | PA | ANAPU (4723) | 80 | 254 | — | Lula | +31 | 6 | +25 | 127 → 158 (+31) | 29 → 4 (−25) | 0 | 2 → 0 (−2) | 158 → 162 (+4) |
+| 6 | PI | SANTO ANTÔNIO DE LISBOA (11878) | 28 | 99 | — | Flávio Bolsonaro | +66 | 17 | +49 | 214 → 146 (−68) | 56 → 122 (+66) | 5 | 12 → 5 (−7) | 287 → 273 (−14) |
+| 7 | RN | RAFAEL GODEIRO (18937) | 37 | 77 | 2344326 | Lula | +35 | 13 | +22 | 155 → 190 (+35) | 117 → 88 (−29) | 8 | 4 → 7 (+3) | 284 → 285 (+1) |
+
+#### A.5.6 🟡 V6. Voter roll changed between rounds
+
+**🟡 Informational events — complete list (28)**
+
+| # | State | Municipality | Zone | Section | Machine no. | Eligible R1 → R2 | Reason | Turnout R1 → R2 |
+|---:|---|---|---:|---:|---|---|---|---|
+| 1 | AL | MACEIÓ (27855) | 1 | 533 | — | 459 → 505 (+46) | eligible voters changed (+46) | 433 → 473 (+40) |
+| 2 | AL | MACEIÓ (27855) | 2 | 415 | — | 276 → 304 (+28) | eligible voters changed (+28) | 230 → 245 (+15) |
+| 3 | AL | MACEIÓ (27855) | 33 | 322 | — | 203 → 180 (−23) | eligible voters changed (−23) | 183 → 163 (−20) |
+| 4 | AP | MACAPÁ (6050) | 10 | 436 | — | 288 → 249 (−39) | eligible voters changed (−39) | 248 → 214 (−34) |
+| 5 | AP | MACAPÁ (6050) | 10 | 493 | — | 285 → 248 (−37) | eligible voters changed (−37) | 248 → 199 (−49) |
+| 6 | BA | CAMAÇARI (34134) | 170 | 262 | 1767510 | 119 → 68 (−51) | eligible voters changed (−51) | 107 → 62 (−45) |
+| 7 | BA | PORTO SEGURO (38075) | 121 | 228 | — | 389 → 331 (−58) | eligible voters changed (−58) | 314 → 269 (−45) |
+| 8 | BA | PORTO SEGURO (38075) | 121 | 230 | — | 388 → 329 (−59) | eligible voters changed (−59) | 325 → 263 (−62) |
+| 9 | MA | SÃO LUÍS (9210) | 2 | 511 | — | 239 → 193 (−46) | eligible voters changed (−46) | 223 → 178 (−45) |
+| 10 | MA | SÃO LUÍS (9210) | 2 | 512 | — | 181 → 142 (−39) | eligible voters changed (−39) | 171 → 134 (−37) |
+| 11 | MA | SÃO LUÍS (9210) | 2 | 513 | — | 181 → 141 (−40) | eligible voters changed (−40) | 168 → 123 (−45) |
+| 12 | MA | TIMON (9377) | 19 | 622 | — | 248 → 220 (−28) | eligible voters changed (−28) | 229 → 202 (−27) |
+| 13 | PE | OLINDA (24910) | 117 | 16 | — | 220 → 136 (−84) | eligible voters changed (−84) | 210 → 129 (−81) |
+| 14 | PE | OLINDA (24910) | 117 | 417 | — | 222 → 139 (−83) | eligible voters changed (−83) | 201 → 127 (−74) |
+| 15 | PE | RECIFE (25313) | 5 | 21 | — | 353 → 312 (−41) | eligible voters changed (−41) | 323 → 293 (−30) |
+| 16 | PE | RECIFE (25313) | 5 | 22 | — | 352 → 310 (−42) | eligible voters changed (−42) | 328 → 297 (−31) |
+| 17 | PE | RECIFE (25313) | 5 | 509 | — | 353 → 311 (−42) | eligible voters changed (−42) | 331 → 294 (−37) |
+| 18 | PE | RECIFE (25313) | 5 | 516 | — | 351 → 310 (−41) | eligible voters changed (−41) | 327 → 292 (−35) |
+| 19 | PE | RECIFE (25313) | 5 | 517 | — | 352 → 310 (−42) | eligible voters changed (−42) | 329 → 294 (−35) |
+| 20 | RJ | ANGRA DOS REIS (58017) | 116 | 282 | — | 282 → 319 (+37) | eligible voters changed (+37) | 224 → 265 (+41) |
+| 21 | SC | CHAPECÓ (80810) | 94 | 393 | — | 310 → 246 (−64) | eligible voters changed (−64) | 288 → 218 (−70) |
+| 22 | SE | PORTO DA FOLHA (32115) | 18 | 182 | — | 104 → 127 (+23) | eligible voters changed (+23) | 95 → 104 (+9) |
+| 23 | SP | GUARULHOS (64777) | 176 | 503 | — | 341 → 306 (−35) | eligible voters changed (−35) | 249 → 265 (+16) |
+| 24 | SP | SÃO PAULO (71072) | 2 | 11 | — | 305 → 338 (+33) | eligible voters changed (+33) | 223 → 262 (+39) |
+| 25 | SP | SÃO PAULO (71072) | 2 | 18 | — | 307 → 338 (+31) | eligible voters changed (+31) | 232 → 267 (+35) |
+| 26 | SP | SÃO PAULO (71072) | 2 | 66 | — | 324 → 359 (+35) | eligible voters changed (+35) | 240 → 283 (+43) |
+| 27 | TO | PALMAS (73440) | 29 | 670 | — | 230 → 206 (−24) | eligible voters changed (−24) | 201 → 185 (−16) |
+| 28 | ZZ | TRÍPOLI (30686) | 1 | 443 | 1808076 | 30 → 0 (−30) | no report in round 2 | 2 → 0 (−2) |
+
+### A.6 Limitations
+
+- The comparison uses votes aggregated by section. The vote is secret and there is no individual voter data: it is not possible to know who changed their vote, nor to separate those who voted in one round and abstained in the other; the tests deal with the net change.
+- The uniform logistic shift is an approximation. Different local profiles (age, income, religion, neighborhood of origin) and local events between rounds (political endorsements, change of polling place, transport, weather) may cause legitimate deviations.
+- The effect thresholds (10 and 5 p.p.), direction (30 p.p.), ceiling (10%) and voter roll (10%) are explicit assumptions of this addendum and can be changed in the script that accompanies the report.
+- Tests V3, V4 and V5 are not independent of each other; simultaneous flags may share the same legitimate cause.
+- As in the rest of the report, the analysis does not examine the voting machines' signed files (.bu, .rdv, .logjez), whose verification is recommended for flagged items.
+
+### A.7 Reproducibility and files
+
+The addendum can be reproduced from the per-section votes published with the site (`site/data/secoes`), extracted from the official Ballot Box Reports by engine v2.1.0, and from the engine's machine lists (`dados/busca_urnas.json`). Same input, same files.
+
+**Command:** `python auditoria-eleicoes-2026-Brasil/variacao_entre_turnos.py --dados site/data --saida auditoria-eleicoes-2026-Brasil/resultados-2turno` (from the repository root folder)
+
+**Script:** `variacao_entre_turnos.py` v1.0.0 — SHA-512 `2949ff280e88d5fc419d142df9cda7aa3b4601502b28cdeba09580c817826cd95c12cc61caf467766e29974ed7c4ec413330c3201f33666b9a3dd4956aaedb93`
+
+| File | Content | SHA-512 |
+|---|---|---|
+| `dados/variacao_turnos_sinalizacoes.csv` | 🔴 and 🟡 items of every test and level | `1c01b4280c3165afe1c762a7380d57761eb76d40753395a66b53c617d675b560b936962f88886a8e6c95008dd14d1b5a4b4130884ca6a6f3b88629ae2977b762` |
+| `dados/variacao_turnos_municipios.csv` | Every municipality: votes, change and test V2 | `8fbd39d2276a9c62e6ec6880b6457e8036f316c7b2c69ca3fad81c031326f8b6e01c48970bf94179f7d5ef15390f9156200a56d51bad87f7d7b9c9716f6488fa` |
+| `dados/variacao_turnos_ufs.csv` | Every state: votes, change and test V1 | `bf7e09f41496e1209cab3c872946d646451ba00909a47009ab1dd1e0f3206def94fef43c3bf8a2067be53f83bd7f2eb8df0cc99dc4f1916063bf64d8d3db37e3` |
+
+*Addendum A generated by the script `variacao_entre_turnos.py` v1.0.0 on 29/10/2026. A statistical anomaly is not proof of fraud.*
+<!-- adendo-variacao:fim -->
 
 ---
 
