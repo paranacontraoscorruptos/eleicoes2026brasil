@@ -1281,6 +1281,142 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
     return htmlInterativo(doc, `${meta.titulo} · ${L.brand}`, nomeArq(meta, "html"));
   }
 
+  // --- 8) site estático: página inicial com resumo, menu e uma parte por resposta; .html (um arquivo) ou .zip (pasta) ----------
+  const CSS_SITE = `body.gs{margin:0}
+.gs-wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+.gs-top{position:sticky;top:0;z-index:20;background:var(--glass);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+.gs-faixa{height:4px;background:var(--brasil)}
+.gs-barra{display:flex;align-items:center;gap:12px;min-height:58px}
+.gs-marca{display:flex;align-items:center;gap:10px;flex:1;min-width:0;color:var(--ink);text-decoration:none}
+.gs-marca span:last-child{min-width:0}
+.gs-marca b{display:block;font:700 1rem var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-marca small{display:block;font-size:.74rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-tema{flex:none;width:40px;height:40px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.gs-tema:hover{border-color:var(--accent)}
+.gs-tema svg{width:18px;height:18px}
+.gs-tema .i-lua,[data-theme="light"] .gs-tema .i-sol{display:none}
+[data-theme="light"] .gs-tema .i-lua{display:block}
+.gs-nav{border-top:1px solid var(--line)}
+.gs-nav .gs-wrap{display:flex;gap:6px;overflow-x:auto;padding-top:8px;padding-bottom:8px;scrollbar-width:thin}
+.gs-nav a{flex:none;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 12px;border-radius:999px;border:1px solid var(--line-2);color:var(--ink-2);text-decoration:none;font-size:.84rem}
+.gs-nav a:hover{border-color:var(--accent);color:var(--ink)}
+.gs-nav a[aria-current]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+main.gs-main{max-width:none;margin:0;padding:0}
+.gs-hero{padding:46px 0 30px;border-bottom:1px solid var(--line);background:radial-gradient(900px 320px at 12% 0,var(--accent-soft),transparent 70%),radial-gradient(700px 260px at 95% 10%,var(--yellow-soft),transparent 70%)}
+.gs-kicker{margin:0 0 10px;font:700 .74rem var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--yellow-text)}
+.gs-hero h1{font-size:clamp(1.9rem,5vw,3rem);margin:0 0 12px;overflow-wrap:anywhere}
+.gs-lead{margin:0 0 10px;max-width:62ch;font-size:1.06rem;color:var(--ink-2)}
+.gs-meta{margin:0 0 4px;font-size:.86rem;color:var(--muted)}
+.gs-resumo-t{margin:26px 0 10px;font:700 .78rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.gs-resumo{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.gs-card{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border:1px solid var(--line-2);border-radius:var(--radius);background:var(--surface);color:var(--ink);text-decoration:none;transition:border-color .2s,transform .2s}
+.gs-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.gs-card .gs-n{font:700 .72rem var(--mono);color:var(--accent)}
+.gs-card b{font:700 1rem var(--display);overflow-wrap:anywhere}
+.gs-card span{font-size:.8rem;color:var(--muted)}
+.gs-card strong{margin-top:6px;font:700 1.3rem var(--display);font-variant-numeric:tabular-nums}
+.gs-card small{font-size:.76rem;color:var(--ink-2)}
+.gs-sec{padding:38px 0 14px;border-bottom:1px solid var(--line)}
+.gs-cab{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px}
+.gs-cab .gs-n{flex:none;margin-top:5px;padding:4px 8px;border-radius:8px;background:var(--accent);color:var(--accent-ink);font:700 .8rem var(--mono)}
+.gs-cab h2{margin:0 0 4px;overflow-wrap:anywhere}
+.gs-cab p{margin:0;font-size:.9rem;color:var(--muted)}
+.gs-sec .doc-corpo{max-width:880px}
+.gs-subir{margin:18px 0 0;font-size:.84rem}
+.gs-rod{padding:30px 0 44px;font-size:.86rem;color:var(--ink-2)}
+.gs-selo{display:flex;gap:12px;align-items:center;margin-bottom:14px;padding:14px 16px;border:1px solid var(--accent);border-radius:var(--radius);background:var(--accent-soft)}
+.gs-selo b{display:block;font:700 1rem var(--display);color:var(--ink)}
+.gs-selo span span{display:block;font-size:.8rem}
+.gs-rod p{margin:0 0 6px}
+@media (max-width:600px){.gs-hero{padding:30px 0 22px}.gs-cab{gap:10px}.gs-sec{padding-top:30px}}
+@media print{.gs-top{position:static}.gs-nav,.gs-tema,.gs-subir{display:none}}`;
+  const TEMA_SITE = `(function(){var h=document.documentElement,t=null;try{t=localStorage.getItem("gs-tema")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";if(t==="light")h.setAttribute("data-theme","light");})();`;
+  const SCRIPT_SITE = `(function(){var h=document.documentElement,b=document.querySelector(".gs-tema");
+if(b)b.addEventListener("click",function(){var l=h.getAttribute("data-theme")!=="light";if(l)h.setAttribute("data-theme","light");else h.removeAttribute("data-theme");try{localStorage.setItem("gs-tema",l?"light":"dark")}catch(e){}});
+var ls=[].slice.call(document.querySelectorAll(".gs-nav a"));if(!ls.length||!("IntersectionObserver" in window))return;var nav=ls[0].parentNode,por={};ls.forEach(function(a){por[a.getAttribute("href").slice(1)]=a;});
+var io=new IntersectionObserver(function(es){es.forEach(function(en){if(!en.isIntersecting)return;var a=por[en.target.id];ls.forEach(function(x){x.removeAttribute("aria-current");});if(a){a.setAttribute("aria-current","true");nav.scrollLeft=a.offsetLeft-nav.clientWidth/2+a.offsetWidth/2;}});},{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll(".gs-sec").forEach(function(s){io.observe(s);});})();`;
+  const base64 = (buf) => { const u = new Uint8Array(buf); let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+  // o: { titulo, partes: [{ titulo, sub, el, destaque: [rótulo, valor], resumo }] } · fmt: "html" ou "zip"
+  async function siteEstatico(o, fmt) {
+    const L = t(), T = L.at, zipar = fmt === "zip";
+    const quando = new Intl.DateTimeFormat(L.locale, { dateStyle: "long", timeStyle: "short" }).format(new Date());
+    const pega = (u, tipo) => fetch(u).then((r) => (r.ok ? r[tipo]() : Promise.reject(new Error(r.status))));
+    const [css, fonte, favicon, ofl] = await Promise.all([pega("site/css/style.css", "text"), pega("site/fonts/space-grotesk-latin-wght-normal.woff2", "arrayBuffer").catch(() => null),
+      pega("site/img/favicon.svg", "text").catch(() => ""), zipar ? pega("site/fonts/OFL-SpaceGrotesk.txt", "text").catch(() => "") : ""]);
+    const FONTE = "space-grotesk-latin-wght-normal.woff2";
+    // .html: a fonte vai dentro do arquivo (funciona sem internet); .zip: fica na pasta fonts/
+    const estilo = (zipar || !fonte ? css.replace(/url\("\.\.\/fonts\/[^"]+"\)/, zipar ? `url("../fonts/${FONTE}")` : `url("${URL_SITE}site/fonts/${FONTE}")`)
+      : css.replace(/url\("\.\.\/fonts\/[^"]+"\)/, `url("data:font/woff2;base64,${base64(fonte)}")`)) + "\n/* site gerado pelo Atlas */\n" + CSS_SITE;
+    const marcaAtlas = `<span class="at-marca" aria-hidden="true">${icone("globe")}</span>`;
+    const ids = o.partes.map((p, i) => `parte-${i + 1}-${nz(p.titulo).slice(0, 40) || "atlas"}`);
+    const num = (i) => String(i + 1).padStart(2, "0");
+    const nav = o.partes.map((p, i) => `<a href="#${ids[i]}">${esc(p.titulo)}</a>`).join("");
+    const cards = o.partes.map((p, i) => `<a class="gs-card" href="#${ids[i]}"><span class="gs-n">${num(i)}</span><b>${esc(p.titulo)}</b>${p.sub ? `<span>${esc(p.sub)}</span>` : ""}${p.destaque ? `<strong>${esc(p.destaque[1])}</strong><small>${esc(p.destaque[0])}</small>` : p.resumo ? `<small>${esc(p.resumo)}</small>` : ""}</a>`).join("");
+    const secoes = o.partes.map((p, i) => `<section class="gs-sec" id="${ids[i]}"><div class="gs-wrap"><header class="gs-cab"><span class="gs-n" aria-hidden="true">${num(i)}</span><div><h2>${esc(p.titulo)}</h2>${p.sub ? `<p>${esc(p.sub)}</p>` : ""}</div></header>
+<div class="doc-corpo">${p.el.innerHTML}</div><p class="gs-subir"><a href="#inicio">↑ ${esc(T.gs_topo)}</a></p></div></section>`).join("\n");
+    const lang = { PT: "pt-BR", EN: "en", ES: "es" }[A.state.lang];
+    const icone_ = zipar ? "img/favicon.svg" : `data:image/svg+xml,${encodeURIComponent(favicon)}`;
+    const pagina = `<!doctype html>
+<html lang="${lang}" class="anim" data-locale="${esc(L.locale)}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="${esc(T.gs_lead)}">
+<meta name="generator" content="Atlas · Paraná Contra os Corruptos (${esc(URL_SITE)})">
+<meta property="og:title" content="${esc(o.titulo)}">
+<meta property="og:description" content="${esc(T.gs_lead)}">
+<title>${esc(o.titulo)}</title>
+${favicon || zipar ? `<link rel="icon" href="${esc(icone_)}">` : ""}
+<script>${TEMA_SITE}<\/script>
+${zipar ? `<link rel="stylesheet" href="css/estilo.css">` : `<style>${estilo}</style>`}
+</head>
+<body class="doc-pagina gs">
+<a class="skip" href="#conteudo">${esc(T.gs_pular)}</a>
+<header class="gs-top"><div class="gs-faixa"></div>
+<div class="gs-wrap gs-barra"><a class="gs-marca" href="#inicio">${marcaAtlas}<span><b>${esc(o.titulo)}</b><small>Atlas · Paraná Contra os Corruptos</small></span></a>
+<button type="button" class="gs-tema" aria-label="${esc(T.gs_tema)}" title="${esc(T.gs_tema)}"><span class="i-sol">${icone("sun")}</span><span class="i-lua">${icone("moon")}</span></button></div>
+${o.partes.length > 1 ? `<nav class="gs-nav" aria-label="${esc(T.gs_nav)}"><div class="gs-wrap">${nav}</div></nav>` : ""}
+</header>
+<main class="gs-main" id="conteudo">
+<section class="gs-hero" id="inicio"><div class="gs-wrap">
+<p class="gs-kicker">${esc(T.gs_kicker)}</p>
+<h1>${esc(o.titulo)}</h1>
+<p class="gs-lead">${esc(T.gs_lead)}</p>
+<p class="gs-meta">${esc(quando)} · ${esc(T.gs_partes(o.partes.length))}</p>
+<p class="doc-selo">${esc(L.badge)}</p>
+${o.partes.length > 1 ? `<p class="gs-resumo-t">${esc(T.gs_neste)}</p><div class="gs-resumo">${cards}</div>` : ""}
+</div></section>
+${secoes}
+</main>
+<footer class="gs-rod"><div class="gs-wrap">
+<div class="gs-selo">${marcaAtlas}<span><b>${esc(T.gs_por)}</b><span>${esc(T.gs_feito(quando))}</span></span></div>
+<p>${esc(T.gs_fonte)}</p>
+<p>${esc(L.badge)}</p>
+<p><a href="${esc(URL_SITE)}" target="_blank" rel="noopener">${esc(URL_SITE.replace(/^https:\/\/|\/$/g, ""))}</a> · <a href="${esc(URL_SITE + "#/atlas")}" target="_blank" rel="noopener">${esc(T.gs_atlas)}</a></p>
+</div></footer>
+${zipar ? `<script src="js/site.js"><\/script>` : `<script>${SCRIPT_DOC}\n${SCRIPT_SITE}<\/script>`}
+</body>
+</html>
+`;
+    const nome = `${(nz(o.titulo) || "site-atlas").slice(0, 50)}-${new Date().toISOString().slice(0, 10)}`;
+    if (!zipar) return baixar(`${nome}.html`, pagina, "text/html;charset=utf-8");
+    const dados = { titulo: o.titulo, gerado: new Date().toISOString(), por: "Atlas · Paraná Contra os Corruptos", site: URL_SITE, aviso: L.badge, fonte: T.gs_fonte,
+      partes: o.partes.map((p, i) => ({ id: ids[i], titulo: p.titulo, sub: p.sub || "", blocos: modelo([p.el]).map((b) => (b.el ? Object.assign({}, b, { el: undefined }) : b)) })) };
+    const arquivos = [
+      { nome: `${nome}/index.html`, dados: pagina },
+      { nome: `${nome}/css/estilo.css`, dados: estilo },
+      { nome: `${nome}/js/site.js`, dados: `/* ${T.gs_por} · ${URL_SITE} */\n${SCRIPT_DOC}\n${SCRIPT_SITE}\n` },
+      { nome: `${nome}/dados/respostas.json`, dados: JSON.stringify(dados, null, 2) },
+      { nome: `${nome}/README.md`, dados: T.gs_leia(o.titulo, quando) },
+    ];
+    if (favicon) arquivos.push({ nome: `${nome}/img/favicon.svg`, dados: favicon });
+    if (fonte) arquivos.push({ nome: `${nome}/fonts/${FONTE}`, dados: new Uint8Array(fonte) });
+    if (ofl) arquivos.push({ nome: `${nome}/fonts/OFL-SpaceGrotesk.txt`, dados: ofl });
+    return baixar(`${nome}.zip`, zip(arquivos));
+  }
+
   // --- gerar um formato a partir da fonte --------------------------------------------------------------------------------------
   // fonte: { elementos: [Element], meta: { titulo, sub, kicker, url, arquivo } }
   async function gerar(fmt, fonte) {
@@ -1300,17 +1436,19 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
   }
 
   // --- janela de exportação ------------------------------------------------------------------------------------------------
-  // o: { titulo, escopos: [{ k, rot }], fonte(k) → fonte, pdf(k), html(k) }
+  // o: { titulo, escopos: [{ k, rot }], fonte(k) → fonte, pdf(k), html(k), extra: [{ k, ic, rot, sub, fn(k) }] }
   function abrir(o) {
     const X = E();
     let esc_ = o.escopos[0].k;
     const d = A.ferramentas.janela(X.title, `<p class="small muted">${esc(X.sub)}</p>
       ${o.escopos.length > 1 ? `<div class="ex-esc" role="radiogroup" aria-label="${esc(X.scope)}">${o.escopos.map((e, i) => `<label><input type="radio" name="ex-esc" value="${e.k}"${i ? "" : " checked"}><span>${esc(e.rot)}</span></label>`).join("")}</div>` : ""}
-      <div class="ex-grid">${FORMATOS.map(([k, ic]) => `<button type="button" class="ex-f" data-ex="${k}">${icone(ic)}<span><b>${esc(X.f[k][0])}</b><small>${esc(X.f[k][1])}</small></span></button>`).join("")}</div>
+      <div class="ex-grid">${FORMATOS.map(([k, ic]) => `<button type="button" class="ex-f" data-ex="${k}">${icone(ic)}<span><b>${esc(X.f[k][0])}</b><small>${esc(X.f[k][1])}</small></span></button>`).join("")}${(o.extra || []).map((x) => `<button type="button" class="ex-f" data-ex-extra="${x.k}">${icone(x.ic)}<span><b>${esc(x.rot)}</b><small>${esc(x.sub)}</small></span></button>`).join("")}</div>
       <p class="small ex-st" aria-live="polite"></p>`, "dlg-ex");
     const st = d.querySelector(".ex-st");
     d.addEventListener("change", (e) => { if (e.target.name === "ex-esc") esc_ = e.target.value; });
     d.addEventListener("click", async (e) => {
+      const xb = e.target.closest("[data-ex-extra]");
+      if (xb) { const x = o.extra.find((y) => y.k === xb.dataset.exExtra); d.close(); setTimeout(() => x.fn(esc_), 120); return; }
       const b = e.target.closest("[data-ex]"); if (!b || b.disabled) return;
       const k = b.dataset.ex;
       if (k === "pdf") { d.close(); setTimeout(() => o.pdf(esc_), 120); return; }
@@ -1342,5 +1480,5 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
   }
   document.addEventListener("click", (e) => { if (e.target.closest("[data-export]")) exportarPagina(); });
 
-  A.exportar = { abrir, gerar, modelo, htmlInterativo, exportarPagina, fontePagina, carrossel, numero, zip, FORMATOS, _paginar: paginar };
+  A.exportar = { abrir, gerar, modelo, htmlInterativo, siteEstatico, exportarPagina, fontePagina, carrossel, numero, zip, FORMATOS, _paginar: paginar };
 })();

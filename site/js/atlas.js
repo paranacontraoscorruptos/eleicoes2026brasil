@@ -501,8 +501,8 @@
     const c = convAtual(); if (c) c.oferta = fn ? { fn } : { q };
     return `<p class="msg-rel at-oferta">${esc(pergunta)}</p>` + (semChip ? "" : fn ? funcChips([fn]) : chipsQ([perg(q)]));
   }
-  // Resposta com números: oferece criar imagem, vídeo, carrossel ou apresentação (não repete nas duas respostas seguintes)
-  const MIDIAS = ["post", "video", "carrossel", "pptx"];
+  // Resposta com números: oferece criar imagem, vídeo, carrossel, apresentação ou site (não repete nas duas respostas seguintes)
+  const MIDIAS = ["post", "video", "carrossel", "pptx", "site"];
   const RE_DADOS = /class="(?:kv|bars|at-sinais)["\s]/;
   const midiaChips = () => `<div class="chips at-midia">${MIDIAS.map((k) => `<button type="button" class="chipq" data-at-md="${k}">${esc(X().md_bt[k])}</button>`).join("")}</div>`;
   function ofertaMidia(h, meta) {
@@ -514,11 +514,12 @@
     return `<p class="msg-rel at-oferta">${esc(umDe(outra ? T.md_of_tb : T.md_of))}</p>` + midiaChips();
   }
   // "vídeo", "o carrossel", "uma apresentação"… logo depois da oferta
-  const RE_SO_MIDIA = /^(?:(?:quero|queria|pode ser|prefiro|faz|faca|cria|crie|gera|gere|manda|i want|i d like|make|create|quiero|prefiero|haz|crea)\s+)?(?:(?:a|o|um|uma|the|an?|el|la|un|una|em|in|en)\s+)?(imagem|image|imagen|post|videos?|carrossel|carousel|carrusel|apresentacao|presentation|presentacion|powerpoint|pptx)(?:\s+(?:por favor|please|pf))?$/;
+  const RE_SO_MIDIA = /^(?:(?:quero|queria|pode ser|prefiro|faz|faca|cria|crie|gera|gere|manda|i want|i d like|make|create|quiero|prefiero|haz|crea)\s+)?(?:(?:a|o|um|uma|the|an?|el|la|un|una|em|in|en)\s+)?(imagem|image|imagen|post|videos?|carrossel|carousel|carrusel|apresentacao|presentation|presentacion|powerpoint|pptx|site|website|sitio(?: web)?)(?:\s+(?:por favor|please|pf))?$/;
   function acaoMidia(k) {
     if (/^(?:imagem|image|imagen|post)$/.test(k)) k = "post";
     else if (/^videos?$/.test(k)) k = "video";
     else if (/^(?:carrossel|carousel|carrusel)$/.test(k)) k = "carrossel";
+    else if (/^(?:site|website|sitio(?: web)?)$/.test(k)) return { k: "site" };
     else if (k !== "post" && k !== "video") k = "pptx";
     return k === "pptx" ? { k: "exportar", fmt: "pptx", todas: false } : k === "carrossel" ? { k: "midia", fmt: "carrossel", tipo: "img", tam: null } : { k: "midia", fmt: k };
   }
@@ -902,7 +903,7 @@
       }
     }
     const d = ultimaResposta();
-    if (!d && !ac.lista.some((a) => a.k === "abrir" || (a.k === "exportar" && a.todas))) {
+    if (!d && !ac.lista.some((a) => a.k === "abrir" || a.k === "site" || (a.k === "exportar" && a.todas))) {
       // sem resposta para usar: a pergunta é sobre a função ("gerar imagem"); a base responde
       if (kbForte(kb)) return false;
       await pensarRapido(T.think.cv);
@@ -931,6 +932,12 @@
   }
   async function executar(a, d, q, resto) {
     const T = X(), m = d && d._m;
+    if (a.k === "site") {
+      if (!respostasSite().length) { S.parou = true; return escrever(`<p>${esc(T.st_vazio)}</p>`, { q, acao: true }); }
+      await escrever(`<p>${esc(T.st_abrir)}</p>`, { q, acao: true });
+      janelaSite(d);
+      return;
+    }
     const midia = (fmt, cr) => A.ferramentas.gerarImagem({ cartao: cartaoResposta(d, m), url: linkResposta(m), titulo: `Atlas · ${m.q || T.title}`, fonte: () => fonteAtlas(d), fmt, cr });
     if (a.k === "midia") {
       const tam = a.tam ? ` ${{ 45: "4:5", 11: "1:1", 916: "9:16", pdf: "PDF" }[a.tam]}` : "";
@@ -988,7 +995,7 @@
   // Várias tarefas numa mensagem: mostra o plano e faz uma de cada vez (o que abre janela fica para o fim)
   async function plano(ps, texto) {
     const T = X(), MT = window.MOTOR;
-    const janela = (p) => MT.acoes(p).lista.some((a) => a.k === "midia" || (a.k === "compartilhar" && SOCIAL.includes(a.rede)));
+    const janela = (p) => MT.acoes(p).lista.some((a) => a.k === "midia" || a.k === "site" || (a.k === "compartilhar" && SOCIAL.includes(a.rede)));
     const ord = ps.map((p, i) => ({ p, i, j: janela(p) ? 1 : 0 })).sort((a, b) => a.j - b.j || a.i - b.i);
     await pensarRapido(T.think.plano);
     await escrever(`<p>${esc(T.pl_lead(ord.length))}</p><ol class="at-plano">${ord.map((x) => `<li>${esc(x.p)}</li>`).join("")}</ol>`, { q: texto, plano: true });
@@ -2393,21 +2400,88 @@
     window.addEventListener("afterprint", limparDoc, { once: true });
   });
 
-  // Página interativa: um arquivo .html com o visual do site, dicas nos gráficos e números e barras animados
-  async function paginaInterativa(d) {
-    const T = X();
-    if (!d && !S.el.log.querySelector(".msg")) return;
-    const vivo = linkVivo(d, URL_SITE);
-    const qr = vivo ? await A.ferramentas.svgQr(vivo).catch(() => "") : "";
-    const doc = montarDoc(d, { base: URL_SITE, qr, html: true });
-    // números dos blocos: o script da página faz a contagem ao aparecer
-    doc.querySelectorAll(".kv dd").forEach((dd) => {
+  // Números dos blocos num arquivo .html: o script do arquivo faz a contagem ao aparecer
+  function contarNoArquivo(raiz) {
+    raiz.querySelectorAll(".kv dd").forEach((dd) => {
       const tn = dd.firstChild, m = tn && tn.nodeType === 3 && tn.nodeValue.match(RE_NUM);
       const n = m ? +m[1].replace(/\D/g, "") : 0;
       if (n < 10 || /^(19|20)\d\d$/.test(m[1])) return;
       const sp = document.createElement("span"); sp.dataset.count = n; sp.textContent = m[1];
       tn.nodeValue = tn.nodeValue.slice(m[1].length); dd.insertBefore(sp, tn);
     });
+    return raiz;
+  }
+
+  // --- criar site: o visitante escolhe as respostas (sem as perguntas) e baixa um site pronto (.html ou .zip) --------------------
+  const respostasSite = () => $$(".at-resp", S.el.log).filter((d) => { const m = d._m; return m && !m.acao && !m.cmd && !m.plano && (!m.fn || m.fn === "roteiro"); });
+  const temDados = (d) => !!(d.querySelector(".kv, .bars, .at-sinais, table, .at-mapa, .at-h, .at-rt") || d._m.kb);
+  const curto = (s, n) => { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s; };
+  // texto corrido de um trecho, com espaço entre blocos (o textContent junta "2026" e "Aptos")
+  const corrido = (el) => { const c = el.cloneNode(true); c.querySelectorAll("p, div, dt, dd, li, h4, td, th, figcaption, .bar-label, .bar-value").forEach((x) => x.append(" ")); return c.textContent; };
+  // Uma resposta como parte do site: título e subtítulo saem do cabeçalho da resposta; botões viram links para o site
+  function parteSite(d) {
+    const c = d.cloneNode(true);
+    c.querySelectorAll(".at-acts, .caret, .msg-rel, .chips, .at-entendi, form").forEach((e) => e.remove());
+    c.querySelectorAll("[style*='display: none']").forEach((e) => { e.style.display = ""; });
+    c.querySelectorAll("[data-count]").forEach((e) => { e.textContent = nf(+e.dataset.count); e.removeAttribute("data-count"); });
+    c.querySelectorAll(".rv").forEach((e) => { e.classList.remove("rv", "rv-l", "rv-s", "in"); e.style.removeProperty("--d"); });
+    let titulo = "", sub = "";
+    const h = c.querySelector(".at-h");
+    if (h) { const b = h.querySelector("b"), mu = h.querySelector(".muted"); titulo = curto((b || h).textContent, 90); sub = mu ? curto(mu.textContent, 90) : ""; h.remove(); }
+    if (!titulo) { const b = c.querySelector("h4, b, strong"), tb = b ? curto(b.textContent, 90) : ""; titulo = tb && tb.length <= 60 ? tb : curto(corrido(c), 60); }
+    const kv = c.querySelector(".kv > div"), br = c.querySelector(".bar-row");
+    const destaque = kv ? [curto(kv.querySelector("dt").textContent, 40), curto(kv.querySelector("dd").textContent, 30)]
+      : br ? [curto(br.querySelector(".bar-label").textContent, 40), curto(br.querySelector(".bar-value").textContent, 30)] : null;
+    A.ferramentas.linkarDoc(c, URL_SITE, true);
+    return { titulo: titulo || "Atlas", sub, el: contarNoArquivo(c), destaque, resumo: curto(corrido(c), 110) };
+  }
+  function janelaSite(dAtual) {
+    const T = X(), lista = respostasSite();
+    if (!lista.length) return;
+    const itens = lista.map((d) => ({ d, p: parteSite(d), on: temDados(d) || d === dAtual }));
+    const fmt = (k, ic) => `<button type="button" class="ex-f" data-st-fmt="${k}">${icone(ic)}<span><b>${esc(T["st_" + k][0])}</b><small>${esc(T["st_" + k][1])}</small></span></button>`;
+    const dlg = A.ferramentas.janela(T.st_title, `<p class="small muted">${esc(T.st_lead)}</p>
+      <label class="st-nome"><span>${esc(T.st_nome)}</span><input type="text" maxlength="90" value="${esc(T.st_nome_def)}"></label>
+      <div class="st-topo"><span class="small st-conta" aria-live="polite"></span><span><button type="button" class="btn btn-sm" data-st="todas">${esc(T.st_marcar)}</button> <button type="button" class="btn btn-sm" data-st="nenhuma">${esc(T.st_desmarcar)}</button></span></div>
+      <ol class="st-lista">${itens.map((x, i) => `<li class="st-it" data-i="${i}"><input type="checkbox" class="st-on"${x.on ? " checked" : ""} aria-label="${esc(x.p.titulo)}">
+        <div class="st-txt"><input type="text" class="st-tit" maxlength="90" value="${esc(x.p.titulo)}" aria-label="${esc(T.st_tit(i + 1))}">
+        <small>${esc(curto(x.p.resumo, 120))}</small>${x.d._m.q ? `<small class="st-q">${esc(T.st_q)}: ${esc(curto(x.d._m.q, 80))}</small>` : ""}</div>
+        <span class="st-ord"><button type="button" class="icon-btn" data-st="sobe" aria-label="${esc(T.st_subir)}" title="${esc(T.st_subir)}">${icone("up")}</button><button type="button" class="icon-btn st-desce" data-st="desce" aria-label="${esc(T.st_descer)}" title="${esc(T.st_descer)}">${icone("up")}</button></span></li>`).join("")}</ol>
+      <div class="ex-grid st-fmts">${fmt("html", "globe")}${fmt("zip", "download")}</div>
+      <p class="small ex-st" aria-live="polite"></p>`, "dlg-ex dlg-site");
+    const lis = () => $$(".st-it", dlg), st = dlg.querySelector(".ex-st");
+    const contar = () => { const n = lis().filter((li) => li.querySelector(".st-on").checked).length; dlg.querySelector(".st-conta").textContent = T.st_conta(n, itens.length); lis().forEach((li) => li.classList.toggle("off", !li.querySelector(".st-on").checked)); };
+    contar();
+    dlg.addEventListener("change", (e) => { if (e.target.matches(".st-on")) contar(); });
+    dlg.addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-st], [data-st-fmt]"); if (!b || b.disabled) return;
+      const k = b.dataset.st;
+      if (k === "todas" || k === "nenhuma") { lis().forEach((li) => { li.querySelector(".st-on").checked = k === "todas"; }); contar(); return; }
+      if (k === "sobe" || k === "desce") {
+        const li = b.closest(".st-it"), viz = k === "sobe" ? li.previousElementSibling : li.nextElementSibling;
+        if (viz) { if (k === "sobe") viz.before(li); else viz.after(li); b.focus(); }
+        return;
+      }
+      const marcados = lis().filter((li) => li.querySelector(".st-on").checked);
+      if (!marcados.length) { st.textContent = T.st_pick; return; }
+      const titulo = dlg.querySelector(".st-nome input").value.trim() || T.st_nome_def;
+      const partes = marcados.map((li) => { const x = itens[+li.dataset.i]; return Object.assign({}, x.p, { titulo: li.querySelector(".st-tit").value.trim() || x.p.titulo }); });
+      $$("[data-st-fmt]", dlg).forEach((x) => { x.disabled = true; });
+      b.classList.add("on"); st.textContent = T.st_wait;
+      try { await A.exportar.siteEstatico({ titulo, partes }, b.dataset.stFmt); st.textContent = T.st_done("." + b.dataset.stFmt); }
+      catch (err) { console.error(err); st.textContent = `${T.st_err} (${err.message})`; }
+      finally { $$("[data-st-fmt]", dlg).forEach((x) => { x.disabled = false; }); b.classList.remove("on"); }
+    });
+    return dlg;
+  }
+
+  // Página interativa: um arquivo .html com o visual do site, dicas nos gráficos e números e barras animados
+  async function paginaInterativa(d) {
+    const T = X();
+    if (!d && !S.el.log.querySelector(".msg")) return;
+    const vivo = linkVivo(d, URL_SITE);
+    const qr = vivo ? await A.ferramentas.svgQr(vivo).catch(() => "") : "";
+    const doc = contarNoArquivo(montarDoc(d, { base: URL_SITE, qr, html: true }));
     const q = d ? (d._m && d._m.q) || T.doc_one : T.doc_all;
     return A.exportar.htmlInterativo(doc, `Atlas · ${q}`, `atlas-${slug(d ? q : T.doc_all)}-${hoje()}.html`);
   }
@@ -2493,7 +2567,8 @@
     const T = X(), xp = t().xp;
     A.ferramentas.svgQr("").catch(() => {});
     const escopos = (m ? [{ k: "uma", rot: xp.one }] : []).concat([{ k: "todas", rot: xp.all }]);
-    A.exportar.abrir({ titulo: T.ac_export, escopos, fonte: (k) => fonteAtlas(k === "uma" ? d : null), pdf: (k) => imprimir(k === "uma" ? d : null), html: (k) => paginaInterativa(k === "uma" ? d : null) });
+    A.exportar.abrir({ titulo: T.ac_export, escopos, fonte: (k) => fonteAtlas(k === "uma" ? d : null), pdf: (k) => imprimir(k === "uma" ? d : null), html: (k) => paginaInterativa(k === "uma" ? d : null),
+      extra: respostasSite().length ? [{ k: "site", ic: "grid", rot: T.st_bt[0], sub: T.st_bt[1], fn: () => janelaSite(d) }] : [] });
   }
   let falando = null;
   function ouvir(btn, m) {

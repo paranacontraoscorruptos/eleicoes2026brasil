@@ -1390,6 +1390,27 @@ body.atlas-on main { flex: 1 1 auto; min-height: 0; width: 100%; max-width: none
 .ex-f:disabled { opacity: .55; cursor: progress; }
 .ex-f.on { border-color: var(--yellow); background: var(--yellow-soft); opacity: 1; }
 .ex-st { min-height: 1.4em; margin: 12px 0 0; color: var(--ink-2); }
+/* Criar site (Atlas): escolher as respostas, títulos e ordem */
+.st-nome { display: grid; gap: 4px; margin: 10px 0 12px; font-size: .85rem; color: var(--ink-2); }
+.st-nome input, .st-tit { width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; }
+.st-nome input:focus, .st-tit:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.st-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.st-conta { color: var(--ink-2); }
+.dlg-body .st-lista { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 8px; max-height: min(46vh, 460px); overflow-y: auto; color: var(--ink); }
+@media (max-width: 600px) { .dlg-body .st-lista { max-height: none; overflow: visible; } .st-it { gap: 8px; padding: 9px; } }
+.st-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--surface); transition: opacity .2s, border-color .2s; }
+.st-it:has(.st-on:checked) { border-color: var(--accent); }
+.st-it.off { opacity: .6; }
+.st-on { width: 20px; height: 20px; margin: 8px 0 0; accent-color: var(--accent); cursor: pointer; }
+.st-txt { display: grid; gap: 4px; min-width: 0; }
+.st-tit { font-weight: 600; padding: 6px 9px; }
+.st-txt small { color: var(--muted); font-size: .78rem; line-height: 1.35; overflow-wrap: anywhere; }
+.st-txt .st-q { font-style: italic; }
+.st-ord { display: grid; gap: 4px; }
+.st-ord .icon-btn { width: 34px; height: 32px; }
+.st-ord .icon-btn svg { width: 16px; height: 16px; }
+.st-desce svg { transform: rotate(180deg); }
+.st-it:first-child [data-st="sobe"], .st-it:last-child [data-st="desce"] { visibility: hidden; }
 
 /* --- Atlas: mapa, ranking, comparação, roteiro, "por que" e vários boletins --------------------------------------- */
 .at-mapa { margin: 12px 0; background: var(--surface); padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 220px); gap: 12px; align-items: start; }
