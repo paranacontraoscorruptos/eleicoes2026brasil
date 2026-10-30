@@ -380,14 +380,14 @@
       if (seguir) log.scrollTop = topo;
     }
   }
-  const escrever = (html) => digitar(msg(html, "bot"));
+  const escrever = (html) => { if (B.pre) { html = B.pre + html; B.pre = ""; } return digitar(msg(html, "bot")); };
 
   // Uma resposta por vez: enquanto o bot "escreve", o envio fica bloqueado
   async function ocupar(fn) {
     if (B.ocupado) return;
     const env = el.form.querySelector(".bot-send");
-    B.ocupado = true; env.disabled = true;
-    try { await fn(); } finally { B.ocupado = false; env.disabled = false; }
+    B.ocupado = true; env.disabled = true; B.pre = "";
+    try { await fn(); } finally { B.ocupado = false; env.disabled = false; B.pre = ""; }
   }
 
   function mostrarEntrada(e, extras) {
@@ -419,6 +419,56 @@
       }
     }
     return { uf, z: mz ? +mz[1] : null, s: ms ? +ms[1] : null };
+  }
+
+  // Saudação, "tudo bem?", obrigado e tchau (PT, EN e ES). Cada linha: [tipo, frase, pode vir antes de uma pergunta].
+  // Frases que também são verbo ou pergunta ("salve o arquivo", "como está a seção") só valem quando a mensagem é só cortesia.
+  const CORTESIA = [
+    ["dia", "bo[mn] dia|bons dias|buen dia|buenos dias|good morning|morning", 1],
+    ["tarde", "boa tarde|buenas tardes|good afternoon|afternoon", 1],
+    ["noite", "boa noite|buenas noches|good evening|evening", 1],
+    ["ola", "ola+|alo+|alou|hello+|hola+|buenas|saludos|greetings|howdy", 1],
+    ["oi", "oi+e*|hi+|hey+|eae|eai|e ai|ei|opa|hiya", 1],
+    ["oi", "salve|fala|yo", 0],
+    ["como", "tudo bem|tudo bom|tudo certo|tudo joia|tudo tranquilo|tudo beleza|td bem|td bom|tdb|como vai(?: voce| vc)?|how are you(?: doing)?|how are things|como estas|como esta usted|todo bien", 1],
+    ["como", "como (?:voce |vc )?esta(?: voce| vc)?|beleza|blz|suave|tranquilo|de boa|e voce|e vc|and you|y tu|y usted|how s it going|how is it going|what s up|whats up|wassup|sup|que tal|como te va|como andas", 0],
+    ["obg", "(?:muito |muitissimo )?obrigad[oa]s?|obg|brigad[oa]|valeu|vlw|agradeco|(?:thank you|thanks)(?: (?:a lot|so much|very much))?|thx|ty|(?:muchas |mil )?gracias", 0],
+    ["tchau", "tchau|xau|ate (?:mais|logo|breve|a proxima)|falou|flw|bye|goodbye|good bye|see you|see ya|adios|chao|hasta (?:luego|pronto|la proxima)|nos vemos", 0],
+    ["", "atlas|bot|amigo|amiga|pessoal|galera|gente|todo mundo|a todos|todos|there|all|everyone|guys|ok|okay|okey|certo|entendi|show|legal|otimo|perfeito|great|perfect|cool|nice|vale|bueno|genial|perfecto|e|and|y|muito|very|tambem|too|tambien", 1],
+  ].map(([k, f, p]) => [k, new RegExp(`^(?:${f})(?: |$)`), p]);
+  const SAUDA = ["dia", "tarde", "noite", "ola", "oi", "como"];
+
+  // null: não é cortesia. so: a mensagem é só cortesia. Senão "resto" é o texto original depois da saudação.
+  function cortesia(texto) {
+    const t = String(texto || "").trim();
+    let n = norm(t);
+    if (!n) return /👋|🙋|✋|🖐/u.test(t) ? { tipos: new Set(["oi"]), so: true } : /🙏/u.test(t) ? { tipos: new Set(["obg"]), so: true } : null;
+    const tipos = new Set();
+    let antes = true;
+    for (let c; (c = CORTESIA.find(([, re]) => re.test(n)));) {
+      if (c[0]) tipos.add(c[0]);
+      if (!c[2]) antes = false;
+      n = n.slice(n.match(c[1])[0].length);
+    }
+    if (!tipos.size) return null;
+    if (!n) return { tipos, so: true };
+    if (!antes || !SAUDA.some((k) => tipos.has(k))) return null;
+    // tira do texto original as mesmas palavras que saíram do normalizado
+    const k = norm(t).split(" ").length - n.split(" ").length;
+    const resto = t.replace(new RegExp(`^(?:[^\\p{L}\\p{N}]*[\\p{L}\\p{N}]+){${k}}[^\\p{L}\\p{N}]*`, "u"), "");
+    return resto ? { tipos, so: false, resto } : { tipos, so: true };
+  }
+  // Texto da resposta: devolve a saudação recebida; "completa" junta o convite (ou o tchau)
+  function cortesiaTexto(c, completa, T = L().cort) {
+    const p = [];
+    const s = SAUDA.slice(0, 5).find((k) => c.tipos.has(k));
+    if (s) p.push(T[s]);
+    if (c.tipos.has("como")) p.push(T.como);
+    if (completa) {
+      if (c.tipos.has("obg")) p.push(T.obg);
+      p.push(c.tipos.has("tchau") ? T.tchau : s || c.tipos.has("como") ? T.ajuda : T.mais);
+    }
+    return p.join(" ");
   }
 
   async function responderSecao(p) {
@@ -465,6 +515,14 @@
   async function responder(texto) {
     const T = L(), esc = window.APP.esc;
     msg(esc(texto), "user");
+    const c = cortesia(texto);
+    if (c && c.so) {
+      await pensando(T.cort.think);
+      await escrever(`<p>${esc(cortesiaTexto(c, true))}</p>` + (c.tipos.has("tchau") ? "" : chips(T.bot_starters.map((x) => ({ txt: x })))));
+      return;
+    }
+    // "Oi, tudo bem? Resultado de Curitiba": a resposta começa devolvendo a saudação
+    if (c) { B.pre = `<p>${esc(cortesiaTexto(c, false))}</p>`; texto = c.resto; }
     const sec = detectarSecao(texto);
     if (sec && (sec.z || (sec.s && sec.uf)) && !/\b(relatorio|report|informe)\b/.test(norm(texto))) { await responderSecao(sec); return; }
     try { await carregar(); } catch (e) { msg(`<p class="alert">Erro: ${esc(e.message)}</p>`, "bot"); return; }
@@ -534,7 +592,7 @@
     abrir: (q) => { if (B.iniciado) abrir(q); },
     fechar: () => { if (B.iniciado && B.aberto) fechar(); },
     // usado pelo Atlas: a mesma base, a mesma busca e o mesmo jeito de pensar e escrever
-    motor: { carregar, buscar, md, rotulo, detectarSecao, norm, entrada: (id) => B.byId[id] },
+    motor: { carregar, buscar, md, rotulo, detectarSecao, cortesia, cortesiaTexto, norm, entrada: (id) => B.byId[id] },
     pensando, digitar,
     _buscar: async (q) => { await carregar(); return buscar(q).map((x) => [x.e.i, +x.sc.toFixed(2), +x.f.toFixed(2)]); },
   };

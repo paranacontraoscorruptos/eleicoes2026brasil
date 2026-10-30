@@ -205,6 +205,15 @@ window.I18N = {
     bot_fallback: "Não encontrei uma resposta para isso na base. Tente com outras palavras ou escolha um tema:",
     bot_fallback_topics: ["O que posso perguntar?", "Quais são os testes?", "Consultar minha seção"],
     bot_maybe: "Talvez você queira saber:",
+    // resposta a saudação, "tudo bem?", obrigado e tchau (bot e Atlas)
+    cort: {
+      oi: "Oi!", ola: "Olá!", dia: "Bom dia!", tarde: "Boa tarde!", noite: "Boa noite!",
+      como: "Tudo certo por aqui, obrigado por perguntar.",
+      obg: "De nada!", tchau: "Até mais! Quando precisar, é só voltar.",
+      ajuda: "Como posso ajudar? Escolha uma opção abaixo ou escreva sua pergunta.",
+      mais: "Precisa de mais alguma coisa? Escolha uma opção abaixo ou escreva sua pergunta.",
+      think: [["Lendo sua mensagem…", "Lendo o que você escreveu…", "Lendo a mensagem…"], ["Separando as opções…", "Preparando as opções…", "Escolhendo os atalhos…"]],
+    },
     bot_need_uf: "Para consultar a seção, informe também a UF. Exemplo: <b>PR zona 177 seção 45</b>.",
     bot_need_zs: "Para consultar a seção, informe a UF, a zona e a seção. Exemplo: <b>PR zona 177 seção 45</b>.",
     bot_think_qa: [
@@ -425,6 +434,14 @@ window.I18N = {
     bot_fallback: "I could not find an answer to that in the base. Try other words or pick a topic:",
     bot_fallback_topics: ["What can I ask?", "Which tests are there?", "Look up my section"],
     bot_maybe: "Maybe you want to know:",
+    cort: {
+      oi: "Hi!", ola: "Hello!", dia: "Good morning!", tarde: "Good afternoon!", noite: "Good evening!",
+      como: "All good here, thanks for asking.",
+      obg: "You're welcome!", tchau: "Bye! Come back whenever you need.",
+      ajuda: "How can I help? Pick an option below or type your question.",
+      mais: "Anything else? Pick an option below or type your question.",
+      think: [["Reading your message…", "Reading what you wrote…", "Reading the message…"], ["Gathering the options…", "Preparing the options…", "Picking the shortcuts…"]],
+    },
     bot_need_uf: "To look up the section, please also give the state. Example: <b>PR zone 177 section 45</b>.",
     bot_need_zs: "To look up a section, give the state, zone and section. Example: <b>PR zone 177 section 45</b>.",
     bot_think_qa: [
@@ -645,6 +662,14 @@ window.I18N = {
     bot_fallback: "No encontré una respuesta para eso en la base. Intente con otras palabras o elija un tema:",
     bot_fallback_topics: ["¿Qué puedo preguntar?", "¿Cuáles son las pruebas?", "Consultar mi sección"],
     bot_maybe: "Quizás quiera saber:",
+    cort: {
+      oi: "¡Hola!", ola: "¡Hola!", dia: "¡Buenos días!", tarde: "¡Buenas tardes!", noite: "¡Buenas noches!",
+      como: "Todo bien por aquí, gracias por preguntar.",
+      obg: "¡De nada!", tchau: "¡Hasta luego! Vuelva cuando lo necesite.",
+      ajuda: "¿En qué puedo ayudar? Elija una opción abajo o escriba su pregunta.",
+      mais: "¿Algo más? Elija una opción abajo o escriba su pregunta.",
+      think: [["Leyendo su mensaje…", "Leyendo lo que escribió…", "Leyendo el mensaje…"], ["Separando las opciones…", "Preparando las opciones…", "Eligiendo los atajos…"]],
+    },
     bot_need_uf: "Para consultar la sección, indique también la UF. Ejemplo: <b>PR zona 177 sección 45</b>.",
     bot_need_zs: "Para consultar una sección, indique la UF, la zona y la sección. Ejemplo: <b>PR zona 177 sección 45</b>.",
     bot_think_qa: [

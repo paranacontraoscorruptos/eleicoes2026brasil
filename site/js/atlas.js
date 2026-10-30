@@ -223,6 +223,7 @@
   const pensar = (etapas, trabalho) => window.BOT.pensando(etapas, trabalho, S.el.log);
   const ATOMOS = "button, svg, img, .chips, .bars, .table-wrap, .kv, a.btn, .at-card";
   async function escrever(h, meta) {
+    if (S.pre) { h = S.pre + h; S.pre = ""; }
     const d = bolha("a", h);
     preparar(d);
     await window.BOT.digitar(d, S.el.log, ATOMOS);
@@ -249,11 +250,11 @@
   // Uma resposta por vez
   async function ocupar(fn) {
     if (S.ocupado) return false;
-    S.ocupado = true; bloquear(true);
+    S.ocupado = true; bloquear(true); S.pre = "";
     try { await fn(); } catch (e) {
       console.error(e);
       if (S.el.log && document.contains(S.el.log)) { const d = bolha("a", `<p class="alert">${esc(X().err)} (${esc(e.message)})</p>`); d.scrollIntoView({ block: "nearest" }); }
-    } finally { S.ocupado = false; bloquear(false); }
+    } finally { S.ocupado = false; bloquear(false); S.pre = ""; }
     return true;
   }
   function perguntar(texto) {
@@ -341,6 +342,10 @@
   const kbForte = (r) => r.length && r[0].sc >= 4 && r[0].f >= 0.34;
 
   async function responder(texto) {
+    const c = motor().cortesia(texto);
+    if (c && c.so) return cortesia(c);
+    // "Oi, tudo bem? Resultado de Curitiba": a resposta começa devolvendo a saudação
+    if (c) { S.pre = `<p>${esc(motor().cortesiaTexto(c, false, t().cort))}</p>`; texto = c.resto; }
     const T = X(), n = nz(texto);
     if (RE_AJUDA.test(n)) return ajuda();
     const mu = n.match(RE_URNA);
@@ -372,6 +377,12 @@
     if (querTse) return pedir(T.tse_which, T.ex.tse);
     if (RE_IBGE.test(n)) return pedir(T.ibge_which, T.ex.ibge);
     return kbResposta(texto, kb);
+  }
+
+  // Saudação, obrigado ou tchau: devolve e oferece as funções
+  async function cortesia(c) {
+    await pensar(t().cort.think);
+    return escrever(`<p>${esc(motor().cortesiaTexto(c, true, t().cort))}</p>` + (c.tipos.has("tchau") ? "" : funcChips(["secao", "municipio", "estado", "qr", "downloads", "ask"])));
   }
 
   async function pedir(txt, exemplos) {
