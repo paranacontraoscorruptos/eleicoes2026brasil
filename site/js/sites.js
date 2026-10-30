@@ -1,9 +1,9 @@
-/* Sites do Atlas: oito tipos de site estático, feitos neste aparelho e baixados prontos (.html, um arquivo só, ou .zip).
-   Com as respostas da conversa: relatório, várias páginas, apresentação e perguntas e respostas.
-   Com os dados (interativos, com troca de idioma PT/EN/ES): comparativo, ranking, painel e mapa clicável.
-   Todos têm compartilhar, imprimir/PDF, baixar os dados (CSV), tema claro/escuro, três estilos e funcionam sem internet.
-   Depois de baixar, o Atlas ajuda a pôr o site no ar no GitHub Pages: passo a passo com as telas já preenchidas (A)
-   ou automático, com uma chave do GitHub que não fica guardada (B). Este arquivo só carrega quando a pessoa abre "Criar site". */
+/* Sites do Atlas: um site estático completo, feito neste aparelho e baixado pronto (index.html, um arquivo só, ou .zip).
+   Tem o Início e as 8 partes, trocadas pelo menu: com as respostas da conversa, relatório, várias páginas, apresentação e
+   perguntas e respostas (as respostas vão uma vez só no arquivo); com os dados do Brasil, dos estados e de todos os municípios,
+   comparativo, ranking, painel e mapa clicável. Tem compartilhar, imprimir/PDF, baixar os dados (CSV), PT/EN/ES, tema claro/escuro,
+   três estilos e funciona sem internet. Depois de baixar, o Atlas ajuda a pôr o site no ar no GitHub Pages: passo a passo com as
+   telas já preenchidas (A) ou automático, com uma chave do GitHub que não fica guardada (B). Só carrega quando a pessoa abre "Criar site". */
 (function () {
   "use strict";
 
@@ -20,7 +20,6 @@
 
   const TIPOS = [["relatorio", "file", "r"], ["paginas", "book", "r"], ["apresentacao", "play", "r"], ["perguntas", "chat", "r"],
     ["comparativo", "swap", "d"], ["ranking", "list", "d"], ["painel", "grid", "d"], ["mapa", "map", "d"]];
-  const grupo = (k) => (TIPOS.find((x) => x[0] === k) || [])[2];
   const ESTILOS = [["padrao", ["#1fc35f", "#ffd400", "#050c08"]], ["jornal", ["#e0b45a", "#f6f1e6", "#16130e"]], ["contraste", ["#b8a6ff", "#ffffff", "#000000"]]];
   const ICO_TELA = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
 
@@ -90,7 +89,25 @@ main.gs-main{max-width:none;margin:0;padding:0}
 .gs-busca:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 .gs-cont{margin:0;min-height:1.2em;font-size:.84rem;color:var(--muted)}
 .gs-nada{color:var(--ink-2)}
-.gs-card[hidden],.gs-q[hidden],.gs-pg[hidden],.gs-slide[hidden],.gs-nada[hidden]{display:none}
+.gs-card[hidden],.gs-q[hidden],.gs-pg[hidden],.gs-slide[hidden],.gs-nada[hidden],.gs-v[hidden]{display:none}
+.gs-hv{padding:30px 0 22px}
+.gs-hv h1{font-size:clamp(1.6rem,4.4vw,2.5rem);margin:0 0 10px}
+.gs-hv .gs-resumo{margin-top:16px}
+.gs-secoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.gs-sc{display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:12px;row-gap:2px;align-items:start}
+.gs-sc-i{grid-row:span 2;display:inline-flex;width:40px;height:40px;border-radius:12px;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent)}
+.gs-sc-i svg{width:20px;height:20px}
+.gs-sec,.gs-q{scroll-margin-top:124px}
+.gd-chips{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.gd-chips li{display:inline-flex;align-items:center;gap:2px;min-height:34px;padding:2px 4px 2px 12px;border:1px solid var(--accent);border-radius:999px;background:var(--accent-soft);font-size:.88rem}
+.gd-chips li:not(:has(button)){padding-right:12px}
+.gd-x{display:inline-flex;width:28px;height:28px;padding:0;border:0;border-radius:50%;align-items:center;justify-content:center;background:transparent;color:var(--ink-2);cursor:pointer}
+.gd-x:hover,.gd-x:focus-visible{background:var(--surface-2);color:var(--ink)}
+.gd-x svg{width:14px;height:14px}
+.gd-links{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.gd-links .btn svg{width:16px;height:16px}
+.gd-rank tbody th a{color:inherit;text-decoration:none}
+.gd-rank tbody th a:hover,.gd-rank tbody th a:focus-visible{color:var(--accent);text-decoration:underline}
 .gs-pg .gs-sec{border-bottom:0}
 .gs-pager{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;margin:26px 0 8px;padding-top:16px;border-top:1px solid var(--line)}
 .gs-pager a{display:inline-flex;flex-direction:column;gap:2px;max-width:46%;padding:10px 14px;border:1px solid var(--line-2);border-radius:12px;color:var(--ink);text-decoration:none;font-size:.9rem;overflow-wrap:anywhere}
@@ -109,10 +126,11 @@ main.gs-main{max-width:none;margin:0;padding:0}
 .gs-q summary b{display:block;font:700 1.02rem var(--display);overflow-wrap:anywhere}
 .gs-q summary small{display:block;margin-top:2px;color:var(--muted);font-size:.82rem}
 .gs-q .doc-corpo{padding:14px 16px 16px;border-top:1px solid var(--line)}
-.gs-apresentacao .gs-top{position:relative}
-.gs-deck{position:relative;display:grid;min-height:calc(100vh - 63px);min-height:calc(100dvh - 63px);outline:none}
+body[data-v="apresentacao"] .gs-top{position:relative}
+body[data-v="apresentacao"] .gs-rod{padding-bottom:90px}
+.gs-deck{position:relative;display:grid;min-height:calc(100vh - 112px);min-height:calc(100dvh - 112px);outline:none}
 .gs-slide{display:grid;align-content:center;padding:26px 16px 96px;animation:gsin .35s ease-out}
-.gs-slide-in{width:100%;max-width:980px;margin:0 auto;max-height:calc(100vh - 200px);max-height:calc(100dvh - 200px);overflow:auto}
+.gs-slide-in{width:100%;max-width:980px;margin:0 auto;max-height:calc(100vh - 240px);max-height:calc(100dvh - 240px);overflow:auto}
 .gs-s-capa h1{font-size:clamp(2rem,6vw,3.6rem);margin:0 0 14px;overflow-wrap:anywhere}
 .gs-ctrl{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:8px;padding:6px;border:1px solid var(--line-2);border-radius:999px;background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .gs-ctrl .gs-bt{border-radius:999px}
@@ -173,7 +191,7 @@ html[data-estilo="contraste"][data-theme="light"]{--bg:#fff;--surface:#fff;--sur
 html[data-estilo="contraste"] .card,html[data-estilo="contraste"] .tile,html[data-estilo="contraste"] .kv div,html[data-estilo="contraste"] .gs-card,html[data-estilo="contraste"] .gs-q{border-width:2px}
 @media (max-width:600px){.gs-hero{padding:30px 0 22px}.gs-cab{gap:10px}.gs-sec{padding-top:30px}.gs-pager a{max-width:100%}}
 @media (max-width:420px){.gs-barra{gap:6px}.gs-ferr{gap:4px}.gs-bt{min-width:36px;height:38px;padding:0 8px}.gs-lang select{height:38px}.gs-marca .at-marca{display:none}}
-@media print{.gs-top{position:static}.gs-nav,.gs-ferr,.gs-subir,.gs-ctrl,.gs-prog,.gd-ctl,.gs-busca,.gs-ferr2,.gs-pager,.gd-nav,.gs-cont{display:none!important}.gs-pg[hidden],.gs-slide[hidden],.gs-q[hidden]{display:block!important}.gs-slide{break-after:page;min-height:0;padding:12px 0;animation:none}.gs-slide-in{max-height:none;overflow:visible}.gs-deck{display:block;min-height:0}.gd-tabela .table-wrap{max-height:none}.gd-rank tbody th{position:static}}`;
+@media print{.gs-top{position:static}.gs-secoes,.gd-links,.gd-chips .gd-x{display:none!important}.gs-nav,.gs-ferr,.gs-subir,.gs-ctrl,.gs-prog,.gd-ctl,.gs-busca,.gs-ferr2,.gs-pager,.gd-nav,.gs-cont{display:none!important}.gs-pg[hidden],.gs-slide[hidden],.gs-q[hidden]{display:block!important}.gs-slide{break-after:page;min-height:0;padding:12px 0;animation:none}.gs-slide-in{max-height:none;overflow:visible}.gs-deck{display:block;min-height:0}.gd-tabela .table-wrap{max-height:none}.gd-rank tbody th{position:static}}`;
   const TEMA_SITE = `(function(){var h=document.documentElement,t=null;try{t=localStorage.getItem("gs-tema")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";if(t==="light")h.setAttribute("data-theme","light");})();`;
 
   // ===== código que roda dentro do site gerado: vai como texto, então não usa nada de fora da própria função =====
@@ -216,7 +234,7 @@ html[data-estilo="contraste"] .card,html[data-estilo="contraste"] .tile,html[dat
     };
     function traduzir() {
       h.lang = HL[GS.lang] || "pt-BR"; h.setAttribute("data-locale", GS.loc());
-      cada("[data-t]", function (el) { el.textContent = GS.t(el.getAttribute("data-t"), { d: GS.quando() }); });
+      cada("[data-t]", function (el) { el.textContent = GS.t(el.getAttribute("data-t"), { d: GS.quando(), n: el.getAttribute("data-n") }); });
       cada("[data-tl]", function (el) { var s = GS.t(el.getAttribute("data-tl")); el.setAttribute("aria-label", s); if (el.hasAttribute("title")) el.title = s; });
       cada("[data-tp]", function (el) { el.placeholder = GS.t(el.getAttribute("data-tp")); });
     }
@@ -278,120 +296,154 @@ html[data-estilo="contraste"] .card,html[data-estilo="contraste"] .tile,html[dat
       });
       if (dl.showModal) dl.showModal(); else dl.setAttribute("open", "");
     }
-    // relatório: o menu acompanha a parte que está na tela
-    if (CFG.tipo !== "relatorio" || !("IntersectionObserver" in window)) return;
-    var ls = [].slice.call(d.querySelectorAll(".gs-nav a")); if (!ls.length) return;
-    var nav = ls[0].parentNode, por = {};
-    ls.forEach(function (a) { por[a.getAttribute("href").slice(1)] = a; });
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var a = por[en.target.id];
-        ls.forEach(function (x) { x.removeAttribute("aria-current"); });
-        if (a) { a.setAttribute("aria-current", "true"); nav.scrollLeft = a.offsetLeft - nav.clientWidth / 2 + a.offsetWidth / 2; }
+  }
+
+  // o site: Início e as partes, trocadas pelo endereço (#/ranking, #/paginas/2, #/apresentacao/3…)
+  // as respostas existem uma vez só no arquivo e vão para a parte aberta (relatório, páginas, apresentação ou perguntas)
+  function rtSite() {
+    var d = document, GS = window.GS, V = {}, atual = null, ultimo = ["inicio", ""];
+    Array.prototype.forEach.call(d.querySelectorAll(".gs-v"), function (v) { V[v.getAttribute("data-v")] = v; });
+    var nav = [].slice.call(d.querySelectorAll(".gs-nav a[data-v]")), partes = [].slice.call(d.querySelectorAll(".gs-parte"));
+    var H = GS.vistas = GS.vistas || {};
+    function focar(el) { if (!el) return; if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); }
+    GS.titular = function (s) { d.title = (s ? s + " · " : "") + GS.cfg.titulo; };
+    // endereço que não é de uma parte (#conteudo, do "pular para o conteúdo") não troca a parte aberta
+    function rota() {
+      var m = location.hash.match(/^#\/([a-z]*)\/?(.*)$/);
+      if (!m) return atual ? ultimo : ["inicio", ""];
+      return V[m[1]] ? [m[1], decodeURIComponent(m[2] || "")] : ["inicio", ""];
+    }
+    // idioma: só traduz o que está aberto, sem rolar a página
+    function mudar(idioma) {
+      var r = rota(), v = r[0], nova = v !== atual, primeira = atual === null;
+      ultimo = r;
+      if (nova) {
+        for (var k in V) V[k].hidden = k !== v;
+        d.body.setAttribute("data-v", v);
+        partes.forEach(function (p, i) { var sl = V[v].querySelector('.gs-slot[data-i="' + i + '"]'); if (sl && p.parentNode !== sl) sl.appendChild(p); });
+        var at = null;
+        nav.forEach(function (a) { if (a.getAttribute("data-v") === v) { a.setAttribute("aria-current", "page"); at = a; } else a.removeAttribute("aria-current"); });
+        if (at) at.parentNode.scrollLeft = at.offsetLeft - at.parentNode.clientWidth / 2 + at.offsetWidth / 2;
+        window.GS_CSV = null; atual = GS.atual = v;
+        if (!primeira) { window.scrollTo(0, 0); focar(V[v].querySelector("h1")); }
+      }
+      GS.titular(v === "inicio" ? "" : GS.t("v_" + v));
+      if (H[v]) H[v](r[1], nova, idioma);
+    }
+    // o mesmo link de novo (sem mudar o endereço) também leva ao lugar
+    d.addEventListener("click", function (e) {
+      var a = e.target.closest('a[href^="#/"]');
+      if (a && a.getAttribute("href") === location.hash) { e.preventDefault(); mudar(); }
+    });
+
+    H.inicio = function () { if (!partes.length && GS.csvTodos) window.GS_CSV = GS.csvTodos; };
+
+    // relatório: todas as respostas numa página; #/relatorio/3 rola até a terceira
+    H.relatorio = function (s, nova, idioma) {
+      var el = !idioma && +s && d.getElementById("rel-" + +s);
+      if (el) { el.scrollIntoView(); focar(el.querySelector("h2")); }
+    };
+
+    // várias páginas: capa com busca e uma página por resposta (#/paginas/2)
+    var pgs = V.paginas ? [].slice.call(V.paginas.querySelectorAll(".gs-pg")) : [], pgN = -1;
+    H.paginas = function (s, nova) {
+      var n = +s || 0; if (!pgs[n]) n = 0;
+      if (n !== pgN || nova) {
+        pgs.forEach(function (p, i) { p.hidden = i !== n; });
+        if (!nova) window.scrollTo(0, 0);
+        if (n) focar(pgs[n].querySelector("h2"));
+        pgN = n;
+      }
+      if (n) GS.titular(pgs[n].getAttribute("data-tit"));
+    };
+    function buscar(raiz, itens, txt) {
+      var q = raiz.querySelector(".gs-busca input"), nada = raiz.querySelector(".gs-nada"), cont = raiz.querySelector(".gs-cont");
+      q.addEventListener("input", function () {
+        var s = GS.norm(q.value), k = 0, ultimoOk = null;
+        itens.forEach(function (x, i) { var ok = !s || txt[i].indexOf(s) >= 0; x.hidden = !ok; if (ok) { k++; ultimoOk = x; } });
+        if (k === 1 && s && ultimoOk.tagName === "DETAILS") ultimoOk.open = true;
+        nada.hidden = k > 0; cont.textContent = s ? GS.t("res", { n: k, t: itens.length }) : "";
       });
-    }, { rootMargin: "-45% 0px -50% 0px" });
-    cada(".gs-sec", function (s) { io.observe(s); });
-  }
-
-  // várias páginas: capa com busca e uma página por resposta, trocadas pelo endereço (#/p/2)
-  function rtPaginas() {
-    var d = document, GS = window.GS, pgs = [].slice.call(d.querySelectorAll(".gs-pg")), nav = [].slice.call(d.querySelectorAll(".gs-nav a"));
-    function mostrar() {
-      var m = location.hash.match(/^#\/p\/(\d+)/), n = m ? +m[1] : 0;
-      if (!pgs[n]) n = 0;
-      pgs.forEach(function (p, i) { p.hidden = i !== n; });
-      var alvo = n ? "#/p/" + n : "#/", at = null;
-      nav.forEach(function (a) { if (a.getAttribute("href") === alvo) { a.setAttribute("aria-current", "page"); at = a; } else a.removeAttribute("aria-current"); });
-      if (at) at.parentNode.scrollLeft = at.offsetLeft - at.parentNode.clientWidth / 2 + at.offsetWidth / 2;
-      d.title = (n ? pgs[n].getAttribute("data-parte") + " · " : "") + GS.cfg.titulo;
-      window.scrollTo(0, 0);
-      var h2 = n && pgs[n].querySelector("h2");
-      if (h2) { h2.setAttribute("tabindex", "-1"); h2.focus({ preventScroll: true }); }
     }
-    addEventListener("hashchange", mostrar);
-    mostrar();
-    var q = d.querySelector(".gs-busca input"); if (!q) return;
-    var cards = [].slice.call(d.querySelectorAll(".gs-capa .gs-card")), nada = d.querySelector(".gs-capa .gs-nada"), cont = d.querySelector(".gs-capa .gs-cont");
-    q.addEventListener("input", function () {
-      var s = GS.norm(q.value), k = 0;
-      cards.forEach(function (c) { var ok = !s || c.getAttribute("data-busca").indexOf(s) >= 0; c.hidden = !ok; if (ok) k++; });
-      nada.hidden = k > 0; cont.textContent = s ? GS.t("res", { n: k, t: cards.length }) : "";
-    });
-  }
+    if (V.paginas) { var cards = [].slice.call(V.paginas.querySelectorAll(".gs-capa .gs-card")); buscar(V.paginas, cards, cards.map(function (c) { return c.getAttribute("data-busca"); })); }
 
-  // apresentação: uma tela por vez; setas, toque, teclado e tela cheia
-  function rtSlides() {
-    var d = document, GS = window.GS, S = [].slice.call(d.querySelectorAll(".gs-slide")), i = 0;
-    var cont = d.querySelector(".gs-ctrl .gs-cont"), prog = d.querySelector(".gs-prog i"), deck = d.querySelector(".gs-deck");
+    // apresentação: uma tela por vez; setas, toque, teclado e tela cheia
+    var S = V.apresentacao ? [].slice.call(V.apresentacao.querySelectorAll(".gs-slide")) : [], si = 0;
     function ir(n) {
-      i = Math.max(0, Math.min(S.length - 1, n));
-      S.forEach(function (s, k) { s.hidden = k !== i; });
-      cont.textContent = GS.t("slide", { n: i + 1, t: S.length });
-      prog.style.width = ((i + 1) / S.length) * 100 + "%";
-      if (location.hash !== "#/" + (i + 1)) history.replaceState(null, "", "#/" + (i + 1));
-      var dentro = S[i].querySelector(".gs-slide-in"); if (dentro) dentro.scrollTop = 0;
+      si = Math.max(0, Math.min(S.length - 1, n));
+      S.forEach(function (s, k) { s.hidden = k !== si; });
+      V.apresentacao.querySelector(".gs-ctrl .gs-cont").textContent = GS.t("slide", { n: si + 1, t: S.length });
+      V.apresentacao.querySelector(".gs-prog i").style.width = ((si + 1) / S.length) * 100 + "%";
+      var h = "#/apresentacao/" + (si + 1);
+      if (location.hash !== h && history.replaceState) history.replaceState(null, "", h);
+      var dentro = S[si].querySelector(".gs-slide-in"); if (dentro) dentro.scrollTop = 0;
     }
-    function cheia() { if (d.fullscreenElement) d.exitFullscreen(); else if (d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(function () { /* sem tela cheia */ }); }
-    d.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-gs]"); if (!b) return;
-      var k = b.getAttribute("data-gs");
-      if (k === "ant") ir(i - 1); else if (k === "prox") ir(i + 1); else if (k === "cheia") cheia();
-    });
-    d.addEventListener("keydown", function (e) {
-      if (e.target.closest("input, select, textarea, dialog") || e.altKey || e.ctrlKey || e.metaKey) return;
-      var k = e.key;
-      if (k === " " && e.target.closest("button, a")) return;
-      if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); ir(i + 1); }
-      else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); ir(i - 1); }
-      else if (k === "Home") ir(0); else if (k === "End") ir(S.length - 1);
-    });
-    var x0 = null, y0 = 0;
-    deck.addEventListener("touchstart", function (e) { if (e.target.closest(".table-wrap, .map, table")) { x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
-    deck.addEventListener("touchend", function (e) {
-      if (x0 == null) return;
-      var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
-      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) ir(i + (dx < 0 ? 1 : -1));
-    }, { passive: true });
-    addEventListener("hashchange", function () { var m = location.hash.match(/^#\/(\d+)/); if (m && +m[1] - 1 !== i) ir(+m[1] - 1); });
-    var m = location.hash.match(/^#\/(\d+)/);
-    ir(m ? +m[1] - 1 : 0);
+    H.apresentacao = function (s) { ir((+s || 1) - 1); };
+    if (S.length) {
+      var deck = V.apresentacao.querySelector(".gs-deck");
+      var cheia = function () { if (d.fullscreenElement) d.exitFullscreen(); else if (d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(function () { /* sem tela cheia */ }); };
+      V.apresentacao.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-gs]"); if (!b) return;
+        var k = b.getAttribute("data-gs");
+        if (k === "ant") ir(si - 1); else if (k === "prox") ir(si + 1); else if (k === "cheia") cheia();
+      });
+      d.addEventListener("keydown", function (e) {
+        if (atual !== "apresentacao" || e.target.closest("input, select, textarea, dialog") || e.altKey || e.ctrlKey || e.metaKey) return;
+        var k = e.key;
+        if (k === " " && e.target.closest("button, a")) return;
+        if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); ir(si + 1); }
+        else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); ir(si - 1); }
+        else if (k === "Home") ir(0); else if (k === "End") ir(S.length - 1);
+      });
+      var x0 = null, y0 = 0;
+      deck.addEventListener("touchstart", function (e) { if (e.target.closest(".table-wrap, .map, table")) { x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      deck.addEventListener("touchend", function (e) {
+        if (x0 == null) return;
+        var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) ir(si + (dx < 0 ? 1 : -1));
+      }, { passive: true });
+    }
+
+    // perguntas e respostas: busca, abrir e fechar todas; #/perguntas/3 abre a terceira
+    var qs = V.perguntas ? [].slice.call(V.perguntas.querySelectorAll(".gs-q")) : [];
+    H.perguntas = function (s, nova, idioma) {
+      var x = !idioma && qs[+s - 1];
+      if (x) { x.open = true; x.scrollIntoView(); focar(x.querySelector("summary")); }
+    };
+    if (qs.length) {
+      buscar(V.perguntas, qs, qs.map(function (x, i) { return GS.norm(x.querySelector("summary").textContent + " " + (partes[i] ? partes[i].textContent : "")); }));
+      V.perguntas.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-gs='abrir'], [data-gs='fechar']"); if (!b) return;
+        var ab = b.getAttribute("data-gs") === "abrir";
+        qs.forEach(function (x) { if (!x.hidden) x.open = ab; });
+      });
+      // na impressão saem todas abertas
+      var antes = null;
+      addEventListener("beforeprint", function () { antes = qs.map(function (x) { return x.open; }); qs.forEach(function (x) { x.open = true; }); });
+      addEventListener("afterprint", function () { if (antes) qs.forEach(function (x, i) { x.open = antes[i]; }); antes = null; });
+    }
+
+    addEventListener("hashchange", function () { mudar(); });
+    GS.ouvir.push(function () { mudar(true); });
+    mudar();
   }
 
-  // perguntas e respostas: busca, abrir e fechar todas; o endereço #q-3 abre a terceira
-  function rtFaq() {
-    var d = document, GS = window.GS, qs = [].slice.call(d.querySelectorAll(".gs-q"));
-    var q = d.querySelector(".gs-busca input"), nada = d.querySelector(".gs-nada"), cont = d.querySelector(".gs-cont");
-    var txt = qs.map(function (x) { return GS.norm(x.textContent); });
-    q.addEventListener("input", function () {
-      var s = GS.norm(q.value), k = 0, ultimo = null;
-      qs.forEach(function (x, i) { var ok = !s || txt[i].indexOf(s) >= 0; x.hidden = !ok; if (ok) { k++; ultimo = x; } });
-      if (k === 1 && s) ultimo.open = true;
-      nada.hidden = k > 0; cont.textContent = s ? GS.t("res", { n: k, t: qs.length }) : "";
-    });
-    d.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-gs='abrir'], [data-gs='fechar']"); if (!b) return;
-      var ab = b.getAttribute("data-gs") === "abrir";
-      qs.forEach(function (x) { if (!x.hidden) x.open = ab; });
-    });
-    function alvo() { var x = location.hash && d.getElementById(location.hash.slice(1)); if (x && x.classList.contains("gs-q")) { x.open = true; x.scrollIntoView(); } }
-    addEventListener("hashchange", alvo);
-    alvo();
-    // na impressão saem todas abertas
-    var antes = null;
-    addEventListener("beforeprint", function () { antes = qs.map(function (x) { return x.open; }); qs.forEach(function (x) { x.open = true; }); });
-    addEventListener("afterprint", function () { if (antes) qs.forEach(function (x, i) { x.open = antes[i]; }); antes = null; });
-  }
-
-  // comparativo, ranking, painel e mapa: os números de cada lugar vêm dentro do arquivo (#gs-dados)
+  // comparativo, ranking, painel e mapa: os números do Brasil, dos estados e de todos os municípios vêm dentro do arquivo (#gs-dados)
   function rtDados() {
-    var d = document, GS = window.GS, E = GS.esc, D = JSON.parse(d.getElementById("gs-dados").textContent), raiz = d.getElementById("gd");
-    var st = { n: 2, ord: "aptos", dir: -1, busca: "", uf: "", lim: 50, sel: null, med: "compP" };
-    var POR = {}; D.un.forEach(function (u) { POR[u.k] = u; });
-    var I = GS.cfg.ico;
-    function nome(u) { if (u.tp === "uf") { var x = D.ufn[u.u]; return x ? x[GS.lang] || x.PT : u.u; } return u.tp === "br" ? GS.t("brasil") : u.n; }
-    function rot(u) { return u.tp === "mun" && D.comUf ? nome(u) + " (" + u.u + ")" : nome(u); }
-    function sub(u) { if (u.tp === "mun") { var x = D.ufn[u.u]; return x ? x[GS.lang] || x.PT : u.u; } return GS.t(u.tp === "uf" ? "estado" : "pais"); }
+    var d = document, GS = window.GS, E = GS.esc, I = GS.cfg.ico, D = JSON.parse(d.getElementById("gs-dados").textContent), ini = D.ini || {};
+    var st = { n: 2, ord: "aptos", dir: -1, busca: "", nivel: ini.nivel || (ini.uf ? "mun" : "uf"), uf: ini.uf || "", lim: 50, sel: ini.sel || ini.uf || "BR",
+      med: "compP", mapa: ini.uf && D.mapas.uf[ini.uf] ? ini.uf : "BR", msel: ini.sel || null, cmp: (ini.cmp || []).slice() };
+    var POR = {}, DE_UF = {}, R = {};
+    [D.br].concat(D.ufs, D.mun).forEach(function (u) { POR[u.k] = u; });
+    D.mun.forEach(function (u) { (DE_UF[u.u] = DE_UF[u.u] || []).push(u); });
+    ["comparativo", "ranking", "painel", "mapa"].forEach(function (k) { R[k] = d.getElementById("gd-" + k); });
+    function ufNome(uf) { var x = D.ufn[uf]; return x ? x[GS.lang] || x.PT : uf; }
+    function nome(u) { return u.tp === "uf" ? ufNome(u.u) : u.tp === "br" ? GS.t("brasil") : u.n; }
+    function rot(u) { return u.tp === "mun" ? u.n + " (" + u.u + ")" : nome(u); }
+    function sub(u) { return u.tp === "mun" ? ufNome(u.u) : GS.t(u.tp === "uf" ? "estado" : "pais"); }
+    function ref(u) { return u.tp === "mun" ? POR[u.u] : u.tp === "uf" ? D.br : null; }
+    function grupoDe(u) { return u.tp === "mun" ? DE_UF[u.u] || [u] : u.tp === "uf" ? D.ufs : [u]; }
+    function ordenar(l) { return l.slice().sort(function (a, b) { return rot(a).localeCompare(rot(b), GS.loc()); }); }
     function cands(n) { return D.cands[n] || []; }
     function iC(n, nr) { var l = cands(n); for (var i = 0; i < l.length; i++) if (l[i][0] === nr) return i; return -1; }
     function vt(u, n, nr) { var x = u.t[n], i = iC(n, nr); return x && i >= 0 ? x[2 + i] || 0 : 0; }
@@ -443,23 +495,46 @@ html[data-estilo="contraste"] .card,html[data-estilo="contraste"] .tile,html[dat
       if (resto) linhas.push({ rot: GS.t("outros"), v: resto, txt: GS.pct(resto / v, 1), dica: GS.t("outros") + "\n" + GS.nf(resto) + " " + GS.t("votos") });
       return barras(linhas) + '<p class="small muted">' + E(GS.t("validos", { v: GS.nf(v) })) + "</p>";
     }
-    function ctlTurno() {
-      return '<div class="gd-seg" role="group" aria-label="' + E(GS.t("turno_t")) + '">' + [2, 1].map(function (n) {
-        return '<button type="button" data-n="' + n + '" aria-pressed="' + (st.n === n) + '">' + E(GS.t("turno", { n: n })) + "</button>";
+    function seg(nome_, attr, ops, atual) {
+      return '<div class="gd-seg" role="group" aria-label="' + E(nome_) + '">' + ops.map(function (o) {
+        return '<button type="button" ' + attr + '="' + o[0] + '" aria-pressed="' + (String(atual) === String(o[0])) + '">' + E(o[1]) + "</button>";
       }).join("") + "</div>";
     }
+    function ctlTurno() { return seg(GS.t("turno_t"), "data-n", [[2, GS.t("turno", { n: 2 })], [1, GS.t("turno", { n: 1 })]], st.n); }
     function nota() { return '<p class="small muted gd-nota">' + E(GS.t("anom_nota")) + "</p>"; }
     function opcao(v, txt, on) { return '<option value="' + E(v) + '"' + (on ? " selected" : "") + ">" + E(txt) + "</option>"; }
-    function refocar(sel) { var el = raiz.querySelector(sel); if (el) el.focus({ preventScroll: true }); }
-    var ordenados = function () { return D.un.slice().sort(function (a, b) { return rot(a).localeCompare(rot(b), GS.loc()); }); };
+    function rotulo(txt, campo, cls) { return '<label class="gd-f' + (cls ? " " + cls : "") + '"><span>' + E(txt) + "</span>" + campo + "</label>"; }
+    function refocar(r, sel) { var el = r.querySelector(sel); if (el) el.focus({ preventScroll: true }); }
+    function link(h, txt, ic) { return '<a class="btn btn-sm" href="' + E(h) + '">' + (ic ? I[ic] + " " : "") + E(txt) + "</a>"; }
+    function marcar(v, s) { var h = "#/" + v + (s ? "/" + s : ""); if (GS.atual === v && location.hash !== h && history.replaceState) history.replaceState(null, "", h); }
+    function achar(txt, l) {
+      var s = GS.norm(txt); if (!s) return null;
+      var f = function (g) { return l.filter(function (o) { return g(GS.norm(rot(o))); })[0]; };
+      return f(function (x) { return x === s; }) || l.filter(function (o) { return GS.norm(nome(o)) === s; })[0] || f(function (x) { return x.indexOf(s) === 0; }) || null;
+    }
+    // lista para achar um lugar digitando (5 mil municípios): montada só quando precisa, no idioma aberto
+    function lista(id, l) {
+      var dl = d.getElementById(id);
+      if (!dl) { dl = d.createElement("datalist"); dl.id = id; d.body.appendChild(dl); }
+      var marca = GS.lang + ":" + l.length + ":" + (l[0] && l[0].k);
+      if (dl.getAttribute("data-m") !== marca) { dl.innerHTML = l.map(function (u) { return '<option value="' + E(rot(u)) + '">'; }).join(""); dl.setAttribute("data-m", marca); }
+    }
 
-    // --- comparativo ---
-    function cmpMontar() { raiz.innerHTML = '<div class="gd-ctl">' + ctlTurno() + '</div><div class="gd-res"></div>' + nota(); cmpAtualizar(); }
-    function cmpAtualizar() {
-      var n = st.n, us = D.un, top = principais(n, n === 1 ? 3 : 2);
+    // --- comparativo: os lugares lado a lado; dá para pôr e tirar lugares ---
+    function cmpMontar() {
+      var r = R.comparativo;
+      st.cmp = st.cmp.filter(function (k, i, l) { return POR[k] && l.indexOf(k) === i; }).slice(0, 6);
+      var us = st.cmp.map(function (k) { return POR[k]; }), n = st.n, top = principais(n, n === 1 ? 3 : 2);
+      lista("gd-dl", [D.br].concat(ordenar(D.ufs), ordenar(D.mun)));
+      r.innerHTML = '<div class="gd-ctl">' + ctlTurno()
+        + '<label class="gd-busca"><span class="gd-f">' + E(GS.t("cmp_add")) + '</span><input type="search" list="gd-dl" data-gd="por" placeholder="' + E(GS.t("achar_ph")) + '"' + (us.length >= 6 ? " disabled" : "") + "></label></div>"
+        + '<ul class="gd-chips">' + us.map(function (u) {
+          var tx = GS.t("tirar", { x: rot(u) });
+          return "<li><span>" + E(rot(u)) + "</span>" + (us.length > 2 ? '<button type="button" class="gd-x" data-gd="tirar" data-k="' + E(u.k) + '" aria-label="' + E(tx) + '" title="' + E(tx) + '">' + I.close + "</button>" : "") + "</li>";
+        }).join("") + '</ul><div class="gd-res"></div>' + nota();
       var Ms = ["aptos", "comp", "compP", "abst", "brancos", "nulos"].concat(top.map(function (c) { return "c:" + c[0]; })).concat(["secoes", "anom", "anomP"]).map(med);
       var graf = ["compP", "abst", "brancos", "nulos"].concat(top.slice(0, 2).map(function (c) { return "c:" + c[0]; })).concat(["anomP"]).map(med);
-      raiz.querySelector(".gd-res").innerHTML = '<div class="gd-cards">' + us.map(function (u) {
+      r.querySelector(".gd-res").innerHTML = '<div class="gd-cards">' + us.map(function (u) {
         return '<article class="card gd-card"><h3>' + E(nome(u)) + '</h3><p class="small muted">' + E(sub(u)) + '</p><dl class="kv">' + ["aptos", "compP", "abst", "anomP"].map(function (k) { return kvi(med(k), u); }).join("") + "</dl></article>";
       }).join("") + "</div>"
         + "<h2>" + E(GS.t("lado")) + '</h2><div class="table-wrap"><table class="num-cols"><thead><tr><th scope="col">' + E(GS.t("medida")) + "</th>" + us.map(function (u) { return '<th scope="col">' + E(nome(u)) + "</th>"; }).join("") + "</tr></thead><tbody>"
@@ -468,163 +543,205 @@ html[data-estilo="contraste"] .card,html[data-estilo="contraste"] .tile,html[dat
           return '<section class="card"><h3>' + E(M.nome) + "</h3>" + barras(us.map(function (u) { return { rot: nome(u), v: M.val(u), txt: fv(M, u), dica: dicaDe(M, u) }; })) + "</section>";
         }).join("") + "</div>"
         + "<h2>" + E(GS.t("candidatos")) + '</h2><div class="gd-grafs">' + us.map(function (u) { return '<section class="card"><h3>' + E(nome(u)) + "</h3>" + barrasCands(u) + "</section>"; }).join("") + "</div>";
-      window.GS_CSV = function () { return [[GS.t("medida")].concat(us.map(nome))].concat(Ms.map(function (M) { return [cabCsv(M)].concat(us.map(function (u) { return csvv(M, u); })); })); };
+      window.GS_CSV = function () { return [[GS.t("medida")].concat(us.map(rot))].concat(Ms.map(function (M) { return [cabCsv(M)].concat(us.map(function (u) { return csvv(M, u); })); })); };
+      marcar("comparativo", st.cmp.join(","));
     }
 
-    // --- ranking ---
+    // --- ranking: estados ou municípios (todos ou de um estado) ---
     function colsRank() { return ["secoes", "aptos", "compP", "abst", "brancos", "nulos"].concat(principais(st.n, 2).map(function (c) { return "c:" + c[0]; })).concat(["anom", "anomP"]); }
+    function rankLista() { return st.nivel === "uf" ? D.ufs : st.uf ? DE_UF[st.uf] || [] : D.mun; }
     function rankMontar() {
-      var ufs = D.comUf ? D.un.map(function (u) { return u.u; }).filter(function (u, i, l) { return l.indexOf(u) === i; }).sort() : [];
-      raiz.innerHTML = '<div class="gd-ctl">' + ctlTurno()
+      var r = R.ranking;
+      r.innerHTML = '<div class="gd-ctl">' + ctlTurno() + seg(GS.t("nivel"), "data-nivel", [["uf", GS.t("estados")], ["mun", GS.t("municipios")]], st.nivel)
+        + (st.nivel === "mun" ? rotulo(GS.t("uf"), '<select data-gd="uf">' + opcao("", GS.t("todos"), !st.uf) + ordenar(D.ufs).map(function (u) { return opcao(u.u, u.u + " – " + nome(u), st.uf === u.u); }).join("") + "</select>") : "")
         + '<label class="gd-busca"><span class="gd-f">' + E(GS.t("buscar")) + '</span><input type="search" data-gd="busca" placeholder="' + E(GS.t("busca_nome")) + '" value="' + E(st.busca) + '"></label>'
-        + (ufs.length ? '<label class="gd-f"><span>' + E(GS.t("uf")) + '</span><select data-gd="uf">' + opcao("", GS.t("todos"), !st.uf) + ufs.map(function (u) { return opcao(u, u, st.uf === u); }).join("") + "</select></label>" : "")
-        + '<label class="gd-f"><span>' + E(GS.t("mostrar")) + '</span><select data-gd="lim">' + [25, 50, 100, 0].map(function (x) { return opcao(x, x ? GS.nf(x) : GS.t("todos"), st.lim === x); }).join("") + "</select></label></div>"
+        + rotulo(GS.t("mostrar"), '<select data-gd="lim">' + [25, 50, 100, 0].map(function (x) { return opcao(x, x ? GS.nf(x) : GS.t("todos"), st.lim === x); }).join("") + "</select>") + "</div>"
         + '<p class="small muted gd-resumo" aria-live="polite"></p><div class="table-wrap"></div><p class="gd-mais"></p>' + nota();
       rankTabela();
     }
     function rankTabela() {
-      var cols = colsRank(); if (cols.indexOf(st.ord) < 0) { st.ord = "aptos"; st.dir = -1; }
+      var r = R.ranking, cols = colsRank(); if (cols.indexOf(st.ord) < 0) { st.ord = "aptos"; st.dir = -1; }
       var Ms = {}; cols.forEach(function (k) { Ms[k] = med(k); });
-      var s = GS.norm(st.busca), Mo = Ms[st.ord];
-      var l = D.un.filter(function (u) { return (!s || GS.norm(rot(u)).indexOf(s) >= 0) && (!st.uf || u.u === st.uf); })
-        .map(function (u) { return { u: u, v: Mo.val(u) }; });
+      var s = GS.norm(st.busca), Mo = Ms[st.ord], comUf = st.nivel === "mun";
+      var l = rankLista().filter(function (u) { return !s || GS.norm(rot(u)).indexOf(s) >= 0; }).map(function (u) { return { u: u, v: Mo.val(u) }; });
       l.sort(function (a, b) { if (a.v == null && b.v == null) return 0; if (a.v == null) return 1; if (b.v == null) return -1; return (st.dir < 0 ? b.v - a.v : a.v - b.v) || rot(a.u).localeCompare(rot(b.u)); });
       var max = Math.max.apply(null, l.map(function (x) { return Math.abs(x.v || 0); }).concat([1e-9])), vis = st.lim ? l.slice(0, st.lim) : l;
-      raiz.querySelector(".table-wrap").innerHTML = '<table class="num-cols gd-rank"><thead><tr><th scope="col">#</th><th scope="col">' + E(GS.t("lugar")) + "</th>" + cols.map(function (k) {
+      r.querySelector(".table-wrap").innerHTML = '<table class="num-cols gd-rank"><thead><tr><th scope="col">#</th><th scope="col">' + E(GS.t("lugar")) + "</th>" + cols.map(function (k) {
         var on = k === st.ord;
         return '<th scope="col" aria-sort="' + (on ? (st.dir < 0 ? "descending" : "ascending") : "none") + '"><button type="button" data-ord="' + k + '" data-tip="' + E(Ms[k].nome) + '">' + E(Ms[k].curto) + (on ? (st.dir < 0 ? " ↓" : " ↑") : "") + "</button></th>";
       }).join("") + "</tr></thead><tbody>" + (vis.length ? vis.map(function (x, i) {
-        return "<tr><td>" + GS.nf(i + 1) + '</td><th scope="row">' + E(rot(x.u)) + "</th>" + cols.map(function (k) {
+        return "<tr><td>" + GS.nf(i + 1) + '</td><th scope="row"><a href="#/painel/' + E(x.u.k) + '" title="' + E(GS.t("no_painel")) + '">' + E(rot(x.u)) + "</a></th>" + cols.map(function (k) {
           var M = Ms[k], v = M.val(x.u);
           return "<td" + (v != null && M.dica ? ' data-tip="' + E(dicaDe(M, x.u)) + '"' : "") + ">" + E(v == null ? "–" : M.txt(v)) + (k === st.ord && v != null ? '<span class="gd-mb" style="--f:' + (Math.abs(v) / max).toFixed(4) + '"></span>' : "") + "</td>";
         }).join("") + "</tr>";
       }).join("") : '<tr><td colspan="' + (cols.length + 2) + '">' + E(GS.t("nenhum")) + "</td></tr>") + "</tbody></table>";
-      raiz.querySelector(".gd-resumo").textContent = GS.t("r_resumo", { n: GS.nf(l.length), m: Mo.nome, o: GS.t(st.dir < 0 ? "maior" : "menor") });
+      r.querySelector(".gd-resumo").textContent = GS.t("r_resumo", { n: GS.nf(l.length), m: Mo.nome, o: GS.t(st.dir < 0 ? "maior" : "menor") });
       var falta = l.length - vis.length;
-      raiz.querySelector(".gd-mais").innerHTML = falta > 0 ? '<button type="button" class="btn btn-sm" data-gd="mais">' + E(GS.t("ver_mais", { n: GS.nf(Math.min(50, falta)) })) + "</button>" : "";
+      r.querySelector(".gd-mais").innerHTML = falta > 0 ? '<button type="button" class="btn btn-sm" data-gd="mais">' + E(GS.t("ver_mais", { n: GS.nf(Math.min(50, falta)) })) + "</button>" : "";
       window.GS_CSV = function () {
-        return [["#", GS.t("lugar")].concat(D.comUf ? [GS.t("uf")] : []).concat(cols.map(function (k) { return cabCsv(Ms[k]); }))]
-          .concat(l.map(function (x, i) { return [i + 1, nome(x.u)].concat(D.comUf ? [x.u.u] : []).concat(cols.map(function (k) { return csvv(Ms[k], x.u); })); }));
+        return [["#", GS.t("lugar")].concat(comUf ? [GS.t("uf")] : []).concat(cols.map(function (k) { return cabCsv(Ms[k]); }))]
+          .concat(l.map(function (x, i) { return [i + 1, nome(x.u)].concat(comUf ? [x.u.u] : []).concat(cols.map(function (k) { return csvv(Ms[k], x.u); })); }));
       };
     }
 
-    // --- painel ---
+    // --- painel: um lugar (Brasil, estado ou município) e os números dele ---
     function painelMontar() {
-      var ord = ordenados();
-      if (!st.sel || !POR[st.sel]) { var m = location.hash.match(/^#k=(.+)$/), k = m ? decodeURIComponent(m[1]) : null; st.sel = k && POR[k] ? k : POR[D.sel] ? D.sel : ord[0].k; }
-      raiz.innerHTML = '<div class="gd-ctl">' + ctlTurno() + '<label class="gd-f gd-lugar"><span>' + E(GS.t("lugar")) + '</span><select data-gd="sel">' + ord.map(function (u) { return opcao(u.k, rot(u), u.k === st.sel); }).join("") + "</select></label>"
-        + '<span class="gd-nav"><button type="button" class="gs-bt" data-gd="ant" aria-label="' + E(GS.t("ant_l")) + '" title="' + E(GS.t("ant_l")) + '">' + I.back + '</button><button type="button" class="gs-bt gs-prx" data-gd="prox" aria-label="' + E(GS.t("prox_l")) + '" title="' + E(GS.t("prox_l")) + '">' + I.back + "</button></span></div>"
-        + '<div class="gd-res"></div>' + nota();
+      var r = R.painel, u = POR[st.sel] || D.br, uf = u.tp === "br" ? "" : u.u;
+      st.sel = u.k;
+      r.innerHTML = '<div class="gd-ctl">' + ctlTurno()
+        + rotulo(GS.t("estado_l"), '<select data-gd="p-uf">' + opcao("BR", GS.t("brasil"), !uf) + ordenar(D.ufs).map(function (x) { return opcao(x.u, nome(x), x.u === uf); }).join("") + "</select>", "gd-lugar")
+        + (uf ? rotulo(GS.t("municipio"), '<select data-gd="p-mun">' + opcao(uf, GS.t("todo_estado"), u.tp === "uf") + ordenar(DE_UF[uf] || []).map(function (x) { return opcao(x.k, x.n, x.k === u.k); }).join("") + "</select>", "gd-lugar") : "")
+        + (grupoDe(u).length > 1 ? '<span class="gd-nav"><button type="button" class="gs-bt" data-gd="ant" aria-label="' + E(GS.t("ant_l")) + '" title="' + E(GS.t("ant_l")) + '">' + I.back + '</button><button type="button" class="gs-bt gs-prx" data-gd="prox" aria-label="' + E(GS.t("prox_l")) + '" title="' + E(GS.t("prox_l")) + '">' + I.back + "</button></span>" : "")
+        + '</div><div class="gd-res"></div>' + nota();
       painelAtualizar();
     }
     function painelAtualizar() {
-      var u = POR[st.sel], n = st.n, R = D.ref, top = principais(n, 2).map(function (c) { return "c:" + c[0]; });
+      var r = R.painel, u = POR[st.sel], n = st.n, Rf = ref(u), G = grupoDe(u), top = principais(n, 2).map(function (c) { return "c:" + c[0]; });
       var tiles = [["aptos", "users"], ["compP", "vote"], ["abst", "users"], ["brancos", "file"], ["nulos", "file"], ["secoes", "grid"], ["anom", "flag"]];
       var cmp = ["compP", "abst", "brancos", "nulos"].concat(top);
       var pos = ["aptos", "compP", "abst", "brancos", "nulos"].concat(top).concat(["anomP"]);
-      raiz.querySelector(".gd-res").innerHTML = '<h2 class="gd-nome">' + E(nome(u)) + '</h2><p class="small muted">' + E(sub(u)) + " · " + E(GS.t("turno", { n: n })) + "</p>"
+      r.querySelector(".gd-res").innerHTML = '<h2 class="gd-nome">' + E(nome(u)) + '</h2><p class="small muted">' + E(sub(u)) + " · " + E(GS.t("turno", { n: n })) + "</p>"
+        + '<p class="gd-links">' + link("#/mapa/" + (u.tp === "mun" ? u.u : "BR") + (u.tp === "br" ? "" : "/" + u.k), GS.t("no_mapa"), "map") + link("#/comparativo/" + u.k + (Rf ? "," + Rf.k : ""), GS.t("comparar"), "swap") + "</p>"
         + '<div class="tiles">' + tiles.map(function (x) {
           var M = med(x[0]);
           return '<div class="tile" tabindex="0" data-tip="' + E(dicaDe(M, u)) + '"><div class="tile-top">' + I[x[1]] + '</div><div class="tile-v">' + E(fv(M, u))
             + (x[0] === "anom" && M.val(u) != null ? " <small>" + E(GS.t("por_mil", { v: fv(med("anomP"), u) })) + "</small>" : "") + '</div><div class="tile-l">' + E(M.nome) + "</div></div>";
         }).join("") + "</div>"
         + '<section class="card"><h3>' + E(GS.t("candidatos")) + "</h3>" + barrasCands(u) + "</section>"
-        + (R ? '<section class="card"><h3>' + E(GS.t("comparado", { r: nome(R) })) + '</h3><div class="gd-grafs gd-mini">' + cmp.map(function (k) {
+        + (Rf ? '<section class="card"><h3>' + E(GS.t("comparado", { r: nome(Rf) })) + '</h3><div class="gd-grafs gd-mini">' + cmp.map(function (k) {
           var M = med(k);
-          return "<div><h4>" + E(M.nome) + "</h4>" + barras([{ rot: nome(u), v: M.val(u), txt: fv(M, u), dica: dicaDe(M, u) }, { rot: nome(R), v: M.val(R), txt: fv(M, R), dica: dicaDe(M, R), cls: "gd-ref" }]) + "</div>";
+          return "<div><h4>" + E(M.nome) + "</h4>" + barras([{ rot: nome(u), v: M.val(u), txt: fv(M, u), dica: dicaDe(M, u) }, { rot: nome(Rf), v: M.val(Rf), txt: fv(M, Rf), dica: dicaDe(M, Rf), cls: "gd-ref" }]) + "</div>";
         }).join("") + "</div></section>" : "")
-        + (D.un.length > 1 ? '<section class="card"><h3>' + E(GS.t("posicoes", { n: GS.nf(D.un.length) })) + '</h3><ul class="gd-pos">' + pos.map(function (k) {
+        + (G.length > 1 ? '<section class="card"><h3>' + E(GS.t(u.tp === "mun" ? "posicoes_m" : "posicoes", { n: GS.nf(G.length), uf: ufNome(u.u) })) + '</h3><ul class="gd-pos">' + pos.map(function (k) {
           var M = med(k), v = M.val(u); if (v == null) return "";
-          var p = 1 + D.un.filter(function (o) { var w = M.val(o); return w != null && w > v; }).length;
-          return "<li><span>" + E(M.nome) + "</span><b>" + E(GS.t("pos", { p: GS.nf(p), t: GS.nf(D.un.length) })) + "</b></li>";
+          var p = 1 + G.filter(function (o) { var w = M.val(o); return w != null && w > v; }).length;
+          return "<li><span>" + E(M.nome) + "</span><b>" + E(GS.t("pos", { p: GS.nf(p), t: GS.nf(G.length) })) + "</b></li>";
         }).join("") + '</ul><p class="small muted">' + E(GS.t("pos_nota")) + "</p></section>" : "");
-      if (history.replaceState) history.replaceState(null, "", "#k=" + encodeURIComponent(u.k));
       var todas = ["aptos", "comp", "compP", "abst", "brancos", "nulos"].concat(principais(n, 99).map(function (c) { return "c:" + c[0]; })).concat(["secoes", "anom", "anomP"]).map(med);
-      window.GS_CSV = function () { return [[GS.t("medida"), nome(u)].concat(R ? [nome(R)] : [])].concat(todas.map(function (M) { return [cabCsv(M), csvv(M, u)].concat(R ? [csvv(M, R)] : []); })); };
+      window.GS_CSV = function () { return [[GS.t("medida"), nome(u)].concat(Rf ? [nome(Rf)] : [])].concat(todas.map(function (M) { return [cabCsv(M), csvv(M, u)].concat(Rf ? [csvv(M, Rf)] : []); })); };
+      if (GS.atual === "painel") GS.titular(GS.t("v_painel") + " · " + rot(u));
+      marcar("painel", u.k);
     }
     function mover(passo) {
-      var ord = ordenados(), i = ord.findIndex(function (u) { return u.k === st.sel; });
+      var ord = ordenar(grupoDe(POR[st.sel])), i = ord.findIndex(function (u) { return u.k === st.sel; });
       st.sel = ord[(i + passo + ord.length) % ord.length].k;
-      var s = raiz.querySelector('[data-gd="sel"]'); if (s) s.value = st.sel;
+      var s = R.painel.querySelector(st.sel.indexOf("-") > 0 ? '[data-gd="p-mun"]' : '[data-gd="p-uf"]'); if (s) s.value = st.sel;
       painelAtualizar();
     }
 
-    // --- mapa ---
+    // --- mapa: Brasil (estados) ou os municípios de um estado ---
     function classes(vals) {
       var pos = vals.filter(function (v) { return v > 0; }).sort(function (a, b) { return a - b; }), zero = vals.some(function (v) { return v <= 0; });
       if (!pos.length) return { cls: function () { return 0; }, faixas: [], zero: zero };
       var q = [0.25, 0.5, 0.75].map(function (p) { return pos[Math.min(pos.length - 1, Math.floor(p * pos.length))]; });
       var lim = q.filter(function (x, i) { return q.indexOf(x) === i && x < pos[pos.length - 1]; });
-      var faixas = [], ini = pos[0];
-      lim.forEach(function (x) { faixas.push([ini, x]); ini = pos.filter(function (v) { return v > x; })[0]; });
-      faixas.push([ini, pos[pos.length - 1]]);
+      var faixas = [], ini_ = pos[0];
+      lim.forEach(function (x) { faixas.push([ini_, x]); ini_ = pos.filter(function (v) { return v > x; })[0]; });
+      faixas.push([ini_, pos[pos.length - 1]]);
       return { cls: function (v) { return v <= 0 ? 0 : 1 + lim.filter(function (x) { return v > x; }).length; }, faixas: faixas, zero: zero };
     }
     function opsMapa() { return ["compP", "abst", "brancos", "nulos"].concat(principais(st.n, st.n === 1 ? 5 : 2).map(function (c) { return "c:" + c[0]; })).concat(["anomP"]); }
+    function mapaUns() { return st.mapa === "BR" ? D.ufs : DE_UF[st.mapa] || []; }
+    function chaveMapa(pk) { return st.mapa === "BR" ? pk : st.mapa + "-" + pk; }
+    function noMapa(u) { return u && (st.mapa === "BR" ? u.tp === "uf" : u.tp === "mun" && u.u === st.mapa); }
     function mapaMontar() {
-      var ops = opsMapa(); if (ops.indexOf(st.med) < 0) st.med = "compP";
-      if (!st.sel) { var m = location.hash.match(/^#k=(.+)$/), k = m ? decodeURIComponent(m[1]) : null; if (k && POR[k]) st.sel = k; }
-      raiz.innerHTML = '<div class="gd-ctl">' + ctlTurno() + '<label class="gd-f"><span>' + E(GS.t("medida")) + '</span><select data-gd="med">' + ops.map(function (k) { return opcao(k, med(k).nome, k === st.med); }).join("") + "</select></label>"
-        + '<label class="gd-busca"><span class="gd-f">' + E(GS.t("achar")) + '</span><input type="search" list="gd-dl" data-gd="achar" placeholder="' + E(GS.t("achar_ph")) + '"></label><datalist id="gd-dl">' + ordenados().map(function (u) { return '<option value="' + E(rot(u)) + '">'; }).join("") + "</datalist></div>"
-        + '<div class="map-wrap gd-mapa"><div class="map' + (D.mapaUf ? " map-uf" : "") + '"></div><div class="map-side"></div></div>'
+      var r = R.mapa, ops = opsMapa(); if (ops.indexOf(st.med) < 0) st.med = "compP";
+      if (st.mapa !== "BR" && !D.mapas.uf[st.mapa]) st.mapa = "BR";
+      if (st.msel && !noMapa(POR[st.msel])) st.msel = null;
+      lista("gd-dlm", ordenar(mapaUns()));
+      r.innerHTML = '<div class="gd-ctl">' + ctlTurno()
+        + rotulo(GS.t("mapa_de"), '<select data-gd="m-niv">' + opcao("BR", GS.t("mapa_br"), st.mapa === "BR") + ordenar(D.ufs).filter(function (x) { return D.mapas.uf[x.u]; }).map(function (x) { return opcao(x.u, GS.t("mapa_uf", { uf: nome(x) }), st.mapa === x.u); }).join("") + "</select>")
+        + rotulo(GS.t("medida"), '<select data-gd="med">' + ops.map(function (k) { return opcao(k, med(k).nome, k === st.med); }).join("") + "</select>")
+        + '<label class="gd-busca"><span class="gd-f">' + E(GS.t("achar")) + '</span><input type="search" list="gd-dlm" data-gd="achar" placeholder="' + E(GS.t("achar_ph")) + '"></label></div>'
+        + '<div class="map-wrap gd-mapa"><div class="map' + (st.mapa !== "BR" ? " map-uf" : "") + '"></div><div class="map-side"></div></div>'
         + '<details class="gd-tabela"><summary>' + E(GS.t("ver_tabela")) + '</summary><div class="table-wrap"></div></details>' + nota();
       mapaAtualizar();
     }
     function mapaAtualizar() {
-      var M = med(st.med), vals = {}, l = [];
-      D.un.forEach(function (u) { var v = M.val(u); vals[u.k] = v; if (v != null) l.push(v); });
-      var C = classes(l), P = D.mapa.p;
-      raiz.querySelector(".map").innerHTML = '<svg viewBox="0 0 ' + D.mapa.vb[0] + " " + D.mapa.vb[1] + '" role="group" aria-label="' + E(M.nome) + '">' + Object.keys(P).map(function (k) {
-        var u = POR[k]; if (!u) return "";
+      var r = R.mapa, M = med(st.med), vals = {}, l = [], us = mapaUns(), MP = st.mapa === "BR" ? D.mapas.br : D.mapas.uf[st.mapa], P = MP.p;
+      us.forEach(function (u) { var v = M.val(u); vals[u.k] = v; if (v != null) l.push(v); });
+      var C = classes(l), sel = st.msel;
+      r.querySelector(".map").innerHTML = '<svg viewBox="0 0 ' + MP.vb[0] + " " + MP.vb[1] + '" role="group" aria-label="' + E(M.nome) + '">' + Object.keys(P).map(function (pk) {
+        var k = chaveMapa(pk), u = POR[k]; if (!u) return "";
         var v = vals[k], tx = v == null ? "–" : M.txt(v);
-        return '<a class="mp-uf q' + (v == null ? 0 : C.cls(v)) + (k === st.sel ? " mp-dest" : "") + '" data-k="' + E(k) + '" role="button" tabindex="0" aria-label="' + E(rot(u) + ": " + tx) + '" data-tip="' + E(dicaDe(M, u)) + '"><path d="' + P[k] + '"/></a>';
-      }).join("") + (st.sel && P[st.sel] ? '<path class="mp-dest-c" d="' + P[st.sel] + '"/>' : "") + "</svg>";
-      var u = st.sel && POR[st.sel];
-      raiz.querySelector(".map-side").innerHTML = '<p class="small"><b>' + E(M.nome) + " · " + E(GS.t("turno", { n: st.n })) + '</b></p><ul class="seq-leg">'
+        return '<a class="mp-uf q' + (v == null ? 0 : C.cls(v)) + (k === sel ? " mp-dest" : "") + '" data-k="' + E(k) + '" role="button" tabindex="0" aria-label="' + E(rot(u) + ": " + tx) + '" data-tip="' + E(dicaDe(M, u)) + '"><path d="' + P[pk] + '"/></a>';
+      }).join("") + (sel && P[sel.replace(st.mapa + "-", "")] ? '<path class="mp-dest-c" d="' + P[sel.replace(st.mapa + "-", "")] + '"/>' : "") + "</svg>";
+      var u = sel && POR[sel];
+      r.querySelector(".map-side").innerHTML = '<p class="small"><b>' + E(M.nome) + " · " + E(GS.t("turno", { n: st.n })) + '</b></p><ul class="seq-leg">'
         + (C.zero ? '<li><span class="sw q0"></span>' + E(GS.t("zero")) + "</li>" : "")
         + C.faixas.map(function (f, i) { return '<li><span class="sw q' + (i + 1) + '"></span>' + E(f[0] === f[1] ? M.txt(f[0]) : M.txt(f[0]) + " – " + M.txt(f[1])) + "</li>"; }).join("")
         + '</ul><p class="small muted">' + E(GS.t("leg_nota")) + "</p>"
-        + (u ? '<div class="card"><h3>' + E(rot(u)) + '</h3><dl class="kv">' + ["aptos", "compP", "abst", "brancos", "nulos", "anom"].map(function (k) { return kvi(med(k), u); }).join("") + "</dl>" + barrasCands(u) + "</div>"
-          : '<p class="small muted">' + E(GS.t("toque")) + "</p>");
-      var ord = D.un.map(function (o) { return { u: o, v: vals[o.k] }; }).filter(function (x) { return x.v != null; }).sort(function (a, b) { return b.v - a.v; });
-      raiz.querySelector(".gd-tabela .table-wrap").innerHTML = '<table class="num-cols"><thead><tr><th scope="col">#</th><th scope="col">' + E(GS.t("lugar")) + '</th><th scope="col">' + E(M.nome) + "</th></tr></thead><tbody>"
+        + (u ? '<div class="card"><h3>' + E(rot(u)) + '</h3><dl class="kv">' + ["aptos", "compP", "abst", "brancos", "nulos", "anom"].map(function (k) { return kvi(med(k), u); }).join("") + "</dl>" + barrasCands(u)
+          + '<p class="gd-links">' + (u.tp === "uf" && D.mapas.uf[u.u] ? '<button type="button" class="btn btn-sm" data-gd="m-abrir" data-uf="' + E(u.u) + '">' + I.map + " " + E(GS.t("ver_muns")) + "</button>" : "") + link("#/painel/" + u.k, GS.t("no_painel"), "grid") + "</p></div>"
+          : st.mapa !== "BR" ? '<p class="small muted">' + E(GS.t("toque")) + '</p><p class="gd-links"><button type="button" class="btn btn-sm" data-gd="m-abrir" data-uf="BR">' + I.back + " " + E(GS.t("mapa_br")) + "</button></p>" : '<p class="small muted">' + E(GS.t("toque")) + "</p>");
+      var ord = us.map(function (o) { return { u: o, v: vals[o.k] }; }).filter(function (x) { return x.v != null; }).sort(function (a, b) { return b.v - a.v; });
+      r.querySelector(".gd-tabela .table-wrap").innerHTML = '<table class="num-cols"><thead><tr><th scope="col">#</th><th scope="col">' + E(GS.t("lugar")) + '</th><th scope="col">' + E(M.nome) + "</th></tr></thead><tbody>"
         + ord.map(function (x, i) { return "<tr><td>" + GS.nf(i + 1) + "</td><td>" + E(rot(x.u)) + "</td><td>" + E(M.txt(x.v)) + "</td></tr>"; }).join("") + "</tbody></table>";
-      if (u && history.replaceState) history.replaceState(null, "", "#k=" + encodeURIComponent(u.k));
-      window.GS_CSV = function () { return [[GS.t("lugar")].concat(D.comUf ? [GS.t("uf")] : []).concat([cabCsv(M)])].concat(ord.map(function (x) { return [nome(x.u)].concat(D.comUf ? [x.u.u] : []).concat([csvv(M, x.u)]); })); };
-    }
-    function achar(txt) {
-      var s = GS.norm(txt); if (!s) return;
-      var u = D.un.filter(function (o) { return GS.norm(rot(o)) === s; })[0] || D.un.filter(function (o) { return GS.norm(rot(o)).indexOf(s) === 0; })[0];
-      if (!u) { GS.aviso(GS.t("nenhum")); return; }
-      st.sel = u.k; mapaAtualizar();
+      window.GS_CSV = function () { return [[GS.t("lugar"), GS.t("uf"), cabCsv(M)]].concat(ord.map(function (x) { return [nome(x.u), x.u.u, csvv(M, x.u)]; })); };
+      marcar("mapa", st.mapa + (u ? "/" + u.k : ""));
     }
 
-    var VISTAS = { comparativo: cmpMontar, ranking: rankMontar, painel: painelMontar, mapa: mapaMontar };
-    function montar() { VISTAS[D.tipo](); GS.animar(raiz); }
-    raiz.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-n]");
-      if (b) { st.n = +b.getAttribute("data-n"); montar(); refocar('[data-n="' + st.n + '"]'); return; }
-      b = e.target.closest("[data-ord]");
-      if (b) { var k = b.getAttribute("data-ord"); if (st.ord === k) st.dir = -st.dir; else { st.ord = k; st.dir = -1; } rankTabela(); refocar('[data-ord="' + k + '"]'); return; }
-      b = e.target.closest("[data-gd]");
-      if (b) { var g = b.getAttribute("data-gd"); if (g === "mais") { st.lim += 50; rankTabela(); } else if (g === "ant" || g === "prox") { mover(g === "prox" ? 1 : -1); GS.animar(raiz); } return; }
-      var a = e.target.closest(".mp-uf[data-k]");
-      if (a) { st.sel = a.getAttribute("data-k"); mapaAtualizar(); GS.animar(raiz.querySelector(".map-side")); }
+    // todos os lugares numa planilha só (o botão CSV no Início, quando o site não tem respostas)
+    GS.csvTodos = function () {
+      var n = st.n, Ms = ["aptos", "comp", "compP", "abst", "brancos", "nulos"].concat(principais(n, 99).map(function (c) { return "c:" + c[0]; })).concat(["secoes", "anom", "anomP"]).map(med);
+      return [[GS.t("lugar"), GS.t("uf"), GS.t("nivel")].concat(Ms.map(cabCsv))].concat([D.br].concat(D.ufs, D.mun).map(function (u) {
+        return [nome(u), u.u || "", GS.t(u.tp === "mun" ? "municipio" : u.tp === "uf" ? "estado" : "pais")].concat(Ms.map(function (M) { return csvv(M, u); }));
+      }));
+    };
+
+    var MONTAR = { comparativo: cmpMontar, ranking: rankMontar, painel: painelMontar, mapa: mapaMontar };
+    function montar(v) { MONTAR[v](); GS.animar(R[v]); }
+    GS.vistas = GS.vistas || {};
+    GS.vistas.comparativo = function (s) { var l = s ? s.split(",").filter(function (k) { return POR[k]; }) : []; if (l.length) st.cmp = l; montar("comparativo"); };
+    GS.vistas.ranking = function () { montar("ranking"); };
+    GS.vistas.painel = function (s) { if (POR[s]) st.sel = s; montar("painel"); };
+    GS.vistas.mapa = function (s) {
+      var p = s ? s.split("/") : [];
+      if (p[0] && (p[0] === "BR" || D.mapas.uf[p[0]])) { st.mapa = p[0]; st.msel = POR[p[1]] ? p[1] : null; }
+      montar("mapa");
+    };
+    Object.keys(R).forEach(function (v) {
+      var r = R[v];
+      r.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-n]");
+        if (b) { st.n = +b.getAttribute("data-n"); montar(v); refocar(r, '[data-n="' + st.n + '"]'); return; }
+        b = e.target.closest("[data-nivel]");
+        if (b) { st.nivel = b.getAttribute("data-nivel"); st.lim = 50; montar(v); refocar(r, '[data-nivel="' + st.nivel + '"]'); return; }
+        b = e.target.closest("[data-ord]");
+        if (b) { var k = b.getAttribute("data-ord"); if (st.ord === k) st.dir = -st.dir; else { st.ord = k; st.dir = -1; } rankTabela(); refocar(r, '[data-ord="' + k + '"]'); return; }
+        b = e.target.closest("[data-gd]");
+        if (b) {
+          var g = b.getAttribute("data-gd");
+          if (g === "mais") { st.lim += 50; rankTabela(); }
+          else if (g === "ant" || g === "prox") { mover(g === "prox" ? 1 : -1); GS.animar(r); }
+          else if (g === "tirar") { st.cmp = st.cmp.filter(function (x) { return x !== b.getAttribute("data-k"); }); montar(v); refocar(r, '[data-gd="por"]'); }
+          else if (g === "m-abrir") { st.mapa = b.getAttribute("data-uf"); st.msel = null; montar(v); refocar(r, '[data-gd="m-niv"]'); }
+          return;
+        }
+        var a = e.target.closest(".mp-uf[data-k]");
+        if (a) { st.msel = a.getAttribute("data-k"); mapaAtualizar(); GS.animar(r.querySelector(".map-side")); }
+      });
+      r.addEventListener("keydown", function (e) {
+        var a = e.target.closest && e.target.closest(".mp-uf[data-k]");
+        if (a && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); st.msel = a.getAttribute("data-k"); mapaAtualizar(); refocar(r, '.mp-uf[data-k="' + st.msel + '"]'); }
+      });
+      r.addEventListener("input", function (e) { if (e.target.getAttribute("data-gd") === "busca") { st.busca = e.target.value; rankTabela(); } });
+      r.addEventListener("change", function (e) {
+        var g = e.target.getAttribute("data-gd"), val = e.target.value, u;
+        if (g === "uf") { st.uf = val; st.lim = 50; rankTabela(); }
+        else if (g === "lim") { st.lim = +val; rankTabela(); }
+        else if (g === "p-uf" || g === "p-mun") { st.sel = val; montar(v); refocar(r, '[data-gd="' + (g === "p-uf" && val !== "BR" ? "p-mun" : g) + '"]'); }
+        else if (g === "m-niv") { st.mapa = val; st.msel = null; montar(v); refocar(r, '[data-gd="m-niv"]'); }
+        else if (g === "med") { st.med = val; mapaAtualizar(); }
+        else if (g === "achar") { u = achar(val, mapaUns()); e.target.value = ""; if (!u) { GS.aviso(GS.t("nenhum")); return; } st.msel = u.k; mapaAtualizar(); }
+        else if (g === "por") {
+          u = achar(val, [D.br].concat(D.ufs, D.mun)); e.target.value = "";
+          if (!u) { GS.aviso(GS.t("nenhum")); return; }
+          if (st.cmp.indexOf(u.k) < 0 && st.cmp.length < 6) st.cmp.push(u.k);
+          montar(v); refocar(r, '[data-gd="por"]');
+        }
+      });
     });
-    raiz.addEventListener("keydown", function (e) {
-      var a = e.target.closest && e.target.closest(".mp-uf[data-k]");
-      if (a && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); st.sel = a.getAttribute("data-k"); mapaAtualizar(); refocar('.mp-uf[data-k="' + st.sel + '"]'); }
-    });
-    raiz.addEventListener("input", function (e) { if (e.target.getAttribute("data-gd") === "busca") { st.busca = e.target.value; rankTabela(); } });
-    raiz.addEventListener("change", function (e) {
-      var g = e.target.getAttribute("data-gd"), v = e.target.value;
-      if (g === "uf") { st.uf = v; rankTabela(); } else if (g === "lim") { st.lim = +v; rankTabela(); }
-      else if (g === "sel") { st.sel = v; painelAtualizar(); GS.animar(raiz); }
-      else if (g === "med") { st.med = v; mapaAtualizar(); }
-      else if (g === "achar") { achar(v); e.target.value = ""; }
-    });
-    GS.ouvir.push(montar);
-    montar();
   }
 
   // --- recursos do site (CSS, fonte, ícone e licença da fonte): baixados uma vez ------------------------------------------------
@@ -644,26 +761,25 @@ html[data-estilo="contraste"] .card,html[data-estilo="contraste"] .tile,html[dat
     const fonte = zipar ? `url("../fonts/${FONTE}")` : R.fonte ? `url("data:font/woff2;base64,${base64(R.fonte)}")` : `url("${URL_SITE}site/fonts/${FONTE}")`;
     return R.css.replace(/url\("\.\.\/fonts\/[^"]+"\)/, fonte) + "\n/* site gerado pelo Atlas · " + URL_SITE + " */\n" + CSS_GS;
   }
-  const ICOS = ["share", "print", "download", "chat", "send", "link", "close", "back", "users", "vote", "file", "grid", "flag"];
-  const RT = { base: rtBase, paginas: rtPaginas, apresentacao: rtSlides, perguntas: rtFaq, dados: rtDados };
+  const ICOS = ["share", "print", "download", "chat", "send", "link", "close", "back", "users", "vote", "file", "grid", "flag", "map", "swap"];
+  const RT = { base: rtBase, dados: rtDados, site: rtSite };
   const rtTexto = (nomes) => nomes.map((k) => `(${RT[k].toString()})();`).join("\n");
 
-  // --- a página: cabeçalho com as ferramentas, conteúdo e rodapé com o carimbo ---------------------------------------------------
-  // o: { tipo, titulo, lang, langs, estilo, quando, R, zipar, nav, corpo, dados, feito, rodape }
+  // --- a página: cabeçalho com as ferramentas e o menu das partes, conteúdo e rodapé com o carimbo ------------------------------
+  // o: { titulo, lang, estilo, quando, R, zipar, arq, nav, corpo, dados, feito, lead }
   function pagina(o) {
     const G = window.I18N[o.lang].at.gx, g = (k, p) => esc(preencher(G[k], p));
     const quandoTxt = new Intl.DateTimeFormat(HTML_LANG[o.lang], { dateStyle: "long", timeStyle: "short" }).format(o.quando);
     const marca = `<span class="at-marca" aria-hidden="true">${icone("globe")}</span>`;
     const bt = (k, ic, tk) => `<button type="button" class="gs-bt" data-gs="${k}" data-tl="${tk}" aria-label="${g(tk)}" title="${g(tk)}">${icone(ic)}<span data-t="${tk}">${g(tk)}</span></button>`;
-    const inicio = o.tipo === "paginas" ? "#/" : o.tipo === "apresentacao" ? "#/1" : "#inicio";
-    const cfg = { tipo: o.tipo, titulo: o.titulo, lang: o.lang, langs: o.langs ? LANGS : [o.lang], quando: o.quando.toISOString(), arq: o.arq,
-      t: Object.fromEntries((o.langs ? LANGS : [o.lang]).map((l) => [l, window.I18N[l].at.gx])), ico: Object.fromEntries(ICOS.map((k) => [k, icone(k)])) };
+    const cfg = { titulo: o.titulo, lang: o.lang, langs: LANGS, quando: o.quando.toISOString(), arq: o.arq,
+      t: Object.fromEntries(LANGS.map((l) => [l, window.I18N[l].at.gx])), ico: Object.fromEntries(ICOS.map((k) => [k, icone(k)])) };
     const host = URL_SITE.replace(/^https:\/\/|\/$/g, "");
     const rodape = `<div class="gs-selo">${marca}<span><b data-t="por">${g("por")}</b><span data-t="${o.feito}">${g(o.feito, { d: quandoTxt })}</span></span></div>
 <p data-t="fonte">${g("fonte")}</p><p data-t="badge">${g("badge")}</p>
 <p><a href="${URL_SITE}" target="_blank" rel="noopener">${host}</a> · <a href="${URL_SITE}#/atlas" target="_blank" rel="noopener" data-t="atlas">${g("atlas")}</a></p>`;
     const corpo = typeof o.corpo === "function" ? o.corpo(rodape) : o.corpo;
-    const scripts = [A.exportar.SCRIPT_DOC, rtTexto(["base"].concat(o.rt || []))].join("\n");
+    const scripts = [A.exportar.SCRIPT_DOC, rtTexto(["base", "dados", "site"])].join("\n");
     const icone_ = o.zipar ? "img/favicon.svg" : o.R.favicon ? `data:image/svg+xml,${encodeURIComponent(o.R.favicon)}` : "";
     const html = `<!doctype html>
 <html lang="${HTML_LANG[o.lang]}" class="anim" data-locale="${esc(t().locale)}" data-estilo="${esc(o.estilo)}">
@@ -680,19 +796,21 @@ ${icone_ ? `<link rel="icon" href="${esc(icone_)}">` : ""}
 <script>${TEMA_SITE}<\/script>
 ${o.zipar ? `<link rel="stylesheet" href="css/estilo.css">` : `<style>${estiloCss(o.R, false)}</style>`}
 </head>
-<body class="doc-pagina gs gs-${o.tipo}">
+<body class="doc-pagina gs" data-v="inicio">
 <a class="skip" href="#conteudo" data-t="pular">${g("pular")}</a>
 <header class="gs-top"><div class="gs-faixa"></div>
-<div class="gs-wrap gs-barra"><a class="gs-marca" href="${inicio}">${marca}<span><b>${esc(o.titulo)}</b><small data-t="marca">${g("marca")}</small></span></a>
-<div class="gs-ferr">${o.langs ? `<label class="gs-lang"><span class="sr-only" data-t="idioma">${g("idioma")}</span><select>${LANGS.map((l) => `<option value="${l}"${l === o.lang ? " selected" : ""}>${l}</option>`).join("")}</select></label>` : ""}${bt("share", "share", "comp")}${bt("print", "print", "imp")}${bt("csv", "download", "csv")}<button type="button" class="gs-bt gs-tema" data-tl="tema" aria-label="${g("tema")}" title="${g("tema")}"><span class="i-sol">${icone("sun")}</span><span class="i-lua">${icone("moon")}</span></button></div></div>
+<div class="gs-wrap gs-barra"><a class="gs-marca" href="#/">${marca}<span><b>${esc(o.titulo)}</b><small data-t="marca">${g("marca")}</small></span></a>
+<div class="gs-ferr"><label class="gs-lang"><span class="sr-only" data-t="idioma">${g("idioma")}</span><select>${LANGS.map((l) => `<option value="${l}"${l === o.lang ? " selected" : ""}>${l}</option>`).join("")}</select></label>${bt("share", "share", "comp")}${bt("print", "print", "imp")}${bt("csv", "download", "csv")}<button type="button" class="gs-bt gs-tema" data-tl="tema" aria-label="${g("tema")}" title="${g("tema")}"><span class="i-sol">${icone("sun")}</span><span class="i-lua">${icone("moon")}</span></button></div></div>
 ${o.nav || ""}
 </header>
 <main class="gs-main" id="conteudo">
 ${corpo}
 </main>
-${o.semRodape ? "" : `<footer class="gs-rod"><div class="gs-wrap">\n${rodape}\n</div></footer>`}
+<footer class="gs-rod"><div class="gs-wrap">
+${rodape}
+</div></footer>
 <script type="application/json" id="gs-cfg">${json(cfg)}<\/script>
-${o.dados ? `<script type="application/json" id="gs-dados">${json(o.dados)}<\/script>` : ""}
+<script type="application/json" id="gs-dados">${json(o.dados)}<\/script>
 ${o.zipar ? `<script src="js/site.js"><\/script>` : `<script>${scripts}<\/script>`}
 </body>
 </html>
@@ -700,51 +818,44 @@ ${o.zipar ? `<script src="js/site.js"><\/script>` : `<script>${scripts}<\/script
     return { html, scripts };
   }
 
-  // --- conteúdo de cada tipo ---------------------------------------------------------------------------------------------------
+  // --- o conteúdo: Início e as partes do site (as 4 das respostas só quando há respostas) -----------------------------------------
+  const partesSite = (temResp) => TIPOS.filter((x) => x[2] === "d" || temResp);
   const sub_ = (p) => (p.sub ? `<p>${esc(p.sub)}</p>` : "");
   const cabParte = (p, i) => `<header class="gs-cab"><span class="gs-n" aria-hidden="true">${num(i)}</span><div><h2>${esc(p.titulo)}</h2>${sub_(p)}</div></header>`;
-  const cartoes = (partes, href) => partes.map((p, i) => `<a class="gs-card" href="${href(i)}" data-busca="${esc(norm(`${p.titulo} ${p.sub || ""} ${p.texto || ""}`))}"><span class="gs-n">${num(i)}</span><b>${esc(p.titulo)}</b>${p.sub ? `<span>${esc(p.sub)}</span>` : ""}${p.destaque ? `<strong>${esc(p.destaque[1])}</strong><small>${esc(p.destaque[0])}</small>` : p.resumo ? `<small>${esc(p.resumo)}</small>` : ""}</a>`).join("");
-  function heroResp(o, G, lead, extra) {
-    const g = (k, p) => esc(preencher(G[k], p));
-    return `<p class="gs-kicker" data-t="k_r">${g("k_r")}</p><h1>${esc(o.titulo)}</h1><p class="gs-lead" data-t="${lead}">${g(lead)}</p>
-<p class="gs-meta">${esc(o.quandoTxt)} · ${g("partes", { n: o.partes.length })}</p><p class="doc-selo" data-t="badge">${g("badge")}</p>${extra || ""}`;
-  }
+  const cartoes = (partes, href, busca_) => partes.map((p, i) => `<a class="gs-card" href="${href(i)}"${busca_ ? ` data-busca="${esc(norm(`${p.titulo} ${p.sub || ""} ${p.texto || ""}`))}"` : ""}><span class="gs-n">${num(i)}</span><b>${esc(p.titulo)}</b>${p.sub ? `<span>${esc(p.sub)}</span>` : ""}${p.destaque ? `<strong>${esc(p.destaque[1])}</strong><small>${esc(p.destaque[0])}</small>` : p.resumo ? `<small>${esc(p.resumo)}</small>` : ""}</a>`).join("");
   const busca = (G) => `<label class="gs-busca">${icone("search")}<span class="sr-only" data-t="buscar">${esc(G.buscar)}</span><input type="search" data-tp="busca_ph" placeholder="${esc(G.busca_ph)}"></label><p class="gs-cont" aria-live="polite"></p>`;
 
-  function corpoResp(o) {
-    const G = window.I18N[o.lang].at.gx, P = o.partes, g = (k) => esc(G[k]);
-    if (o.tipo === "relatorio") {
-      const ids = P.map((p, i) => `parte-${i + 1}-${nz(p.titulo).slice(0, 40) || "atlas"}`);
-      return {
-        nav: P.length > 1 ? `<nav class="gs-nav" data-tl="nav" aria-label="${g("nav")}"><div class="gs-wrap">${P.map((p, i) => `<a href="#${ids[i]}">${esc(p.titulo)}</a>`).join("")}</div></nav>` : "",
-        corpo: `<section class="gs-hero" id="inicio"><div class="gs-wrap">${heroResp(o, G, "lead_r", P.length > 1 ? `<p class="gs-resumo-t" data-t="neste">${g("neste")}</p><div class="gs-resumo">${cartoes(P, (i) => `#${ids[i]}`)}</div>` : "")}</div></section>
-${P.map((p, i) => `<section class="gs-sec" id="${ids[i]}" data-parte="${esc(p.titulo)}"><div class="gs-wrap">${cabParte(p, i)}
-<div class="doc-corpo">${p.el.innerHTML}</div><p class="gs-subir"><a href="#inicio">↑ <span data-t="topo">${g("topo")}</span></a></p></div></section>`).join("\n")}`,
-      };
-    }
-    if (o.tipo === "paginas") {
-      const pager = (i) => `<nav class="gs-pager">${i ? `<a href="#/p/${i}"><small data-t="ant">${g("ant")}</small>${esc(P[i - 1].titulo)}</a>` : `<a href="#/"><small data-t="inicio">${g("inicio")}</small>${esc(o.titulo)}</a>`}${i < P.length - 1 ? `<a class="gs-px" href="#/p/${i + 2}"><small data-t="prox">${g("prox")}</small>${esc(P[i + 1].titulo)}</a>` : ""}</nav>`;
-      return {
-        nav: `<nav class="gs-nav" data-tl="nav" aria-label="${g("nav")}"><div class="gs-wrap"><a href="#/" data-t="inicio">${g("inicio")}</a>${P.map((p, i) => `<a href="#/p/${i + 1}">${esc(p.titulo)}</a>`).join("")}</div></nav>`,
-        corpo: `<section class="gs-pg gs-capa"><div class="gs-hero" id="inicio"><div class="gs-wrap">${heroResp(o, G, "pag_lead", `${busca(G)}<p class="gs-resumo-t" data-t="neste">${g("neste")}</p><div class="gs-resumo">${cartoes(P, (i) => `#/p/${i + 1}`)}</div><p class="gs-nada" hidden data-t="nada">${g("nada")}</p>`)}</div></div></section>
-${P.map((p, i) => `<section class="gs-pg" hidden data-parte="${esc(p.titulo)}"><div class="gs-sec"><div class="gs-wrap">${cabParte(p, i)}<div class="doc-corpo">${p.el.innerHTML}</div>${pager(i)}</div></div></section>`).join("\n")}`,
-      };
-    }
-    if (o.tipo === "apresentacao") {
+  // o: { titulo, lang, partes, quandoTxt, lead }
+  function corpoSite(o) {
+    const G = window.I18N[o.lang].at.gx, P = o.partes, g = (k, p) => esc(preencher(G[k], p)), vs = partesSite(P.length > 0);
+    const tx = (k, p) => `<span data-t="${k}"${p && p.n != null ? ` data-n="${p.n}"` : ""}>${g(k, p)}</span>`;
+    const nPartes = P.length ? tx("partes", { n: P.length }) : "";
+    const hv = (k, lead, extra) => `<div class="gs-hero gs-hv"><div class="gs-wrap"><p class="gs-kicker">${esc(o.titulo)}</p><h1 data-t="v_${k}">${g("v_" + k)}</h1><p class="gs-lead" data-t="${lead}">${g(lead)}</p>${extra || ""}</div></div>`;
+    const slot = (i, dentro) => `<div class="gs-slot" data-i="${i}">${dentro || ""}</div>`;
+    const V = {};
+    V.inicio = `<div class="gs-hero" id="inicio"><div class="gs-wrap"><p class="gs-kicker" data-t="k_r">${g("k_r")}</p><h1>${esc(o.titulo)}</h1><p class="gs-lead" data-t="${o.lead}">${g(o.lead)}</p>
+<p class="gs-meta">${esc(o.quandoTxt)}${P.length ? ` · ${nPartes}` : ""}</p><p class="doc-selo" data-t="badge">${g("badge")}</p>
+<p class="gs-resumo-t" data-t="neste">${g("neste")}</p><div class="gs-secoes">${vs.map(([k, ic]) => `<a class="gs-card gs-sc" href="#/${k}"><span class="gs-sc-i" aria-hidden="true">${icone(ic)}</span><b data-t="v_${k}">${g("v_" + k)}</b><small data-t="dv_${k}">${g("dv_" + k)}</small></a>`).join("")}</div></div></div>`;
+    if (P.length) {
+      // as respostas vão uma vez só, dentro do relatório; as outras partes recebem o mesmo conteúdo quando abrem
+      V.relatorio = hv("relatorio", "lead_rel", `<p class="gs-meta">${nPartes}</p>${P.length > 1 ? `<div class="gs-resumo">${cartoes(P, (i) => `#/relatorio/${i + 1}`)}</div>` : ""}`)
+        + P.map((p, i) => `<section class="gs-sec" id="rel-${i + 1}"><div class="gs-wrap">${cabParte(p, i)}${slot(i, `<div class="doc-corpo gs-parte" data-i="${i}" data-parte="${esc(p.titulo)}">${p.el.innerHTML}</div>`)}<p class="gs-subir"><a href="#/relatorio">↑ ${tx("topo")}</a></p></div></section>`).join("\n");
+      const pager = (i) => `<nav class="gs-pager">${i ? `<a href="#/paginas/${i}"><small data-t="ant">${g("ant")}</small>${esc(P[i - 1].titulo)}</a>` : `<a href="#/paginas"><small data-t="v_paginas">${g("v_paginas")}</small>${esc(o.titulo)}</a>`}${i < P.length - 1 ? `<a class="gs-px" href="#/paginas/${i + 2}"><small data-t="prox">${g("prox")}</small>${esc(P[i + 1].titulo)}</a>` : ""}</nav>`;
+      V.paginas = `<section class="gs-pg gs-capa">${hv("paginas", "pag_lead", `${busca(G)}<div class="gs-resumo">${cartoes(P, (i) => `#/paginas/${i + 1}`, true)}</div><p class="gs-nada" hidden data-t="nada">${g("nada")}</p>`)}</section>
+${P.map((p, i) => `<section class="gs-pg" hidden data-tit="${esc(p.titulo)}"><div class="gs-sec"><div class="gs-wrap">${cabParte(p, i)}${slot(i)}${pager(i)}</div></div></section>`).join("\n")}`;
       const ctl = `<div class="gs-ctrl"><button type="button" class="gs-bt" data-gs="ant" data-tl="ant_l" aria-label="${g("ant_l")}" title="${g("ant_l")}">${icone("back")}</button><span class="gs-cont" aria-live="polite"></span><button type="button" class="gs-bt gs-prx" data-gs="prox" data-tl="prox_l" aria-label="${g("prox_l")}" title="${g("prox_l")}">${icone("back")}</button><button type="button" class="gs-bt" data-gs="cheia" data-tl="tela" aria-label="${g("tela")}" title="${g("tela")}">${ICO_TELA}</button></div><div class="gs-prog" aria-hidden="true"><i></i></div>`;
-      return {
-        semRodape: true,
-        corpo: (rodape) => `<div class="gs-deck" aria-roledescription="carousel">
-<section class="gs-slide gs-s-capa gs-hero" aria-roledescription="slide"><div class="gs-slide-in">${heroResp(o, G, "apr_lead")}</div></section>
-${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide" data-parte="${esc(p.titulo)}"><div class="gs-slide-in">${cabParte(p, i)}<div class="doc-corpo">${p.el.innerHTML}</div></div></section>`).join("\n")}
-<section class="gs-slide gs-s-fim" hidden aria-roledescription="slide"><div class="gs-slide-in gs-rod">${rodape}</div></section>
-</div>${ctl}`,
-      };
+      V.apresentacao = `<div class="gs-deck" aria-roledescription="carousel">
+<section class="gs-slide gs-s-capa gs-hero" aria-roledescription="slide"><div class="gs-slide-in"><p class="gs-kicker" data-t="v_apresentacao">${g("v_apresentacao")}</p><h1>${esc(o.titulo)}</h1><p class="gs-lead" data-t="apr_lead">${g("apr_lead")}</p><p class="gs-meta">${esc(o.quandoTxt)} · ${nPartes}</p></div></section>
+${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"><div class="gs-slide-in">${cabParte(p, i)}${slot(i)}</div></section>`).join("\n")}
+<section class="gs-slide gs-s-fim" hidden aria-roledescription="slide"><div class="gs-slide-in"><p class="gs-kicker">${esc(o.titulo)}</p><h2 data-t="fim">${g("fim")}</h2><p class="gs-lead" data-t="badge">${g("badge")}</p><p class="gs-ferr2"><a class="btn" href="#/apresentacao/1" data-t="rever">${g("rever")}</a><a class="btn" href="#/" data-t="v_inicio">${g("v_inicio")}</a></p></div></section>
+</div>${ctl}`;
+      V.perguntas = hv("perguntas", "faq_lead", `${busca(G)}<div class="gs-ferr2"><button type="button" class="btn btn-sm" data-gs="abrir" data-t="abrir_todas">${g("abrir_todas")}</button><button type="button" class="btn btn-sm" data-gs="fechar" data-t="fechar_todas">${g("fechar_todas")}</button></div>`)
+        + `<div class="gs-wrap"><div class="gs-faq">${P.map((p, i) => `<details class="gs-q" id="q-${i + 1}"><summary><span class="gs-n" aria-hidden="true">${num(i)}</span><span><b>${esc(p.titulo)}</b>${p.sub ? `<small>${esc(p.sub)}</small>` : ""}</span></summary>${slot(i)}</details>`).join("\n")}</div><p class="gs-nada" hidden data-t="nada">${g("nada")}</p></div>`;
     }
-    // perguntas e respostas
+    ["comparativo", "ranking", "painel", "mapa"].forEach((k) => { V[k] = hv(k, `l_${k}`) + `<section class="gd"><div class="gs-wrap" id="gd-${k}"></div></section>`; });
     return {
-      corpo: `<section class="gs-hero" id="inicio"><div class="gs-wrap">${heroResp(o, G, "faq_lead", `${busca(G)}<div class="gs-ferr2"><button type="button" class="btn btn-sm" data-gs="abrir" data-t="abrir_todas">${g("abrir_todas")}</button><button type="button" class="btn btn-sm" data-gs="fechar" data-t="fechar_todas">${g("fechar_todas")}</button></div>`)}</div></section>
-<div class="gs-wrap"><div class="gs-faq">${P.map((p, i) => `<details class="gs-q" id="q-${i + 1}" data-parte="${esc(p.titulo)}"><summary><span class="gs-n" aria-hidden="true">${num(i)}</span><span><b>${esc(p.titulo)}</b>${p.sub ? `<small>${esc(p.sub)}</small>` : ""}</span></summary><div class="doc-corpo">${p.el.innerHTML}</div></details>`).join("\n")}</div><p class="gs-nada" hidden data-t="nada">${g("nada")}</p></div>`,
+      nav: `<nav class="gs-nav" data-tl="nav" aria-label="${g("nav")}"><div class="gs-wrap"><a href="#/" data-v="inicio" data-t="v_inicio">${g("v_inicio")}</a>${vs.map(([k]) => `<a href="#/${k}" data-v="${k}" data-t="v_${k}">${g("v_" + k)}</a>`).join("")}</div></nav>`,
+      corpo: [["inicio"]].concat(vs).map(([k]) => `<section class="gs-v" data-v="${k}"${k === "inicio" ? "" : " hidden"}>\n${V[k]}\n</section>`).join("\n"),
     };
   }
 
@@ -768,63 +879,51 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
     return o;
   }
   const ufNomes = () => Object.fromEntries(Object.entries(window.UF_NOMES).map(([k, v]) => [k, typeof v === "string" ? { PT: v, EN: v, ES: v } : v]));
-  const cacheDados = {};
+  // o site leva o Brasil, os estados e todos os municípios, com os mapas: dá para ver qualquer lugar
+  let BASE_DADOS = null;
+  async function baseDados() {
+    if (BASE_DADOS) return BASE_DADOS;
+    const Q = A.consulta, dado = A.paginasExtra.dado;
+    const [br, ufs, mun, mapaBr] = await Promise.all([Q.linhaLugar({ tipo: "br" }), Q.estados({}), Q.municipios(null, {}), dado("site/data/mapa.json")]);
+    const lista = ufs.filter((r) => r.uf !== "ZZ").map(curto);
+    const mapas = { br: { vb: mapaBr.vb, p: mapaBr.uf }, uf: {} };
+    await Promise.all(lista.map((u) => dado(`site/data/mapas/${u.u}.json`).then((M) => { mapas.uf[u.u] = { vb: M.vb, p: M.m }; }, () => null)));
+    BASE_DADOS = { br: curto(br), ufs: lista, mun: mun.filter((r) => r.uf !== "ZZ").map(curto), mapas, cands: candidatos(), ufn: ufNomes() };
+    return BASE_DADOS;
+  }
+  // o que já vem escolhido no site: os lugares da conversa (ou do pedido)
   async function dadosSite(c) {
-    const Q = A.consulta, chave = JSON.stringify([c.tipo, c.esc, c.uf, c.lugs.map(chaveLug)]);
-    if (cacheDados[chave]) return cacheDados[chave];
-    let un, ref = null, mapa = null, comUf = false, mapaUf = false, sel = null;
-    if (c.tipo === "comparativo") {
-      un = (await Promise.all(c.lugs.map((x) => Q.linhaLugar(x.tipo === "br" ? { tipo: "br" } : x)))).filter(Boolean).map(curto);
-      comUf = c.lugs.some((x) => x.tipo === "mun");
-    } else {
-      const esc_ = c.tipo === "ranking" ? c.esc : c.esc === "br" ? "muns" : c.esc;
-      if (esc_ === "ufs") { un = (await Q.estados({})).filter((r) => r.uf !== "ZZ").map(curto); ref = curto(await Q.linhaLugar({ tipo: "br" })); }
-      else if (esc_ === "br") { un = (await Q.municipios(null, {})).filter((r) => r.uf !== "ZZ").map(curto); ref = curto(await Q.linhaLugar({ tipo: "br" })); comUf = true; }
-      else { un = (await Q.municipiosUf(c.uf, {})).map(curto); const e = (await Q.estados({})).find((r) => r.uf === c.uf); ref = e ? curto(e) : null; }
-      const l0 = c.lugs.find((x) => (esc_ === "ufs" ? x.tipo === "uf" : x.tipo === "mun" && x.uf === c.uf));
-      if (l0) sel = l0.tipo === "uf" ? l0.uf : `${l0.uf}-${l0.cod}`;
-      if (c.tipo === "mapa") {
-        const M = esc_ === "ufs" ? await A.paginasExtra.dado("site/data/mapa.json") : await A.paginasExtra.dado(`site/data/mapas/${c.uf}.json`);
-        mapa = { vb: M.vb, p: esc_ === "ufs" ? M.uf : Object.fromEntries(Object.entries(M.m).map(([cod, d]) => [`${c.uf}-${cod}`, d])) };
-        mapaUf = esc_ !== "ufs";
-      }
-    }
-    const D = { tipo: c.tipo, un, ref, cands: candidatos(), ufn: ufNomes(), comUf, mapaUf, sel, mapa };
-    cacheDados[chave] = D;
-    return D;
+    const B = await baseDados(), tem = (k) => k === "BR" || B.ufs.some((u) => u.k === k) || B.mun.some((u) => u.k === k);
+    const ks = c.lugs.map((x) => (x.tipo === "br" ? "BR" : x.tipo === "uf" ? x.uf : `${x.uf}-${x.cod}`)).filter(tem);
+    const l0 = c.lugs.find((x) => x.tipo !== "br");
+    const cmp = ks.slice(0, 5);
+    if (cmp.length < 2 && l0 && l0.tipo === "mun" && !cmp.includes(l0.uf)) cmp.push(l0.uf);
+    if (cmp.length < 2 && !cmp.includes("BR")) cmp.push("BR");
+    if (cmp.length < 2) B.ufs.slice().sort((a, b) => ((b.t[2] || [0])[0] - (a.t[2] || [0])[0])).slice(0, 3).forEach((u) => cmp.push(u.k));
+    const ini = { cmp, sel: ks.find((k) => k !== "BR") || null, uf: l0 ? l0.uf : "", nivel: c.nivel || (l0 ? "mun" : "uf") };
+    return Object.assign({}, B, { ini });
   }
 
-  // --- montar o site: { nome, html } (um arquivo) ou { nome, blob } (.zip) -------------------------------------------------------
-  // c: { tipo, titulo, estilo, lang, partes, lugs, esc, uf }
+  // --- montar o site: { nome, html } (um arquivo, index.html) ou { nome, blob } (.zip) ---------------------------------------------
+  // c: { titulo, estilo, lang, partes, lugs, nivel }
   async function montar(c, zipar) {
-    const T = X(), R = await recursos(), quando = new Date(), dados = grupo(c.tipo) === "d";
+    const T = X(), R = await recursos(), quando = new Date();
     const nome = `${(nz(c.titulo) || "site-atlas").slice(0, 50)}-${quando.toISOString().slice(0, 10)}`;
-    const base = { tipo: c.tipo, titulo: c.titulo, lang: c.lang, estilo: c.estilo, quando, R, zipar, arq: nome };
-    let o;
-    if (dados) {
-      const D = await dadosSite(c);
-      o = Object.assign(base, { langs: true, dados: D, rt: ["dados"], feito: "feito_d", lead: `l_${c.tipo}`,
-        corpo: (() => { const G = window.I18N[c.lang].at.gx, g = (k, p) => esc(preencher(G[k], p));
-          const quandoTxt = new Intl.DateTimeFormat(HTML_LANG[c.lang], { dateStyle: "long", timeStyle: "short" }).format(quando);
-          return `<section class="gs-hero" id="inicio"><div class="gs-wrap"><p class="gs-kicker" data-t="k_${c.tipo}">${g(`k_${c.tipo}`)}</p><h1>${esc(c.titulo)}</h1><p class="gs-lead" data-t="l_${c.tipo}">${g(`l_${c.tipo}`)}</p>
-<p class="gs-meta" data-t="feito_d">${g("feito_d", { d: quandoTxt })}</p><p class="doc-selo" data-t="badge">${g("badge")}</p></div></section>
-<section class="gd"><div class="gs-wrap" id="gd"></div></section>`; })() });
-    } else {
-      const quandoTxt = new Intl.DateTimeFormat(HTML_LANG[c.lang], { dateStyle: "long", timeStyle: "short" }).format(quando);
-      const partes = c.partes.map((p) => Object.assign({}, p, { texto: p.texto || "" }));
-      const r = corpoResp({ tipo: c.tipo, titulo: c.titulo, lang: c.lang, partes, quandoTxt });
-      o = Object.assign(base, { langs: false, partes, rt: c.tipo === "relatorio" ? [] : [c.tipo], feito: "feito_r", lead: "lead_r" }, r);
-    }
-    const pg = pagina(o);
+    const D = await dadosSite(c);
+    const quandoTxt = new Intl.DateTimeFormat(HTML_LANG[c.lang], { dateStyle: "long", timeStyle: "short" }).format(quando);
+    const partes = (c.partes || []).map((p) => Object.assign({}, p, { texto: p.texto || "" }));
+    const lead = partes.length ? "lead_s" : "lead_d";
+    const r = corpoSite({ titulo: c.titulo, lang: c.lang, partes, quandoTxt, lead });
+    const pg = pagina({ titulo: c.titulo, lang: c.lang, estilo: c.estilo, quando, R, zipar, arq: nome, dados: D, nav: r.nav, corpo: r.corpo, feito: partes.length ? "feito_s" : "feito_d", lead });
     if (!zipar) return { nome, html: pg.html };
     const arquivos = [
       { nome: `${nome}/index.html`, dados: pg.html },
       { nome: `${nome}/css/estilo.css`, dados: estiloCss(R, true) },
       { nome: `${nome}/js/site.js`, dados: `/* ${window.I18N[c.lang].at.gx.por} · ${URL_SITE} */\n${pg.scripts}\n` },
       { nome: `${nome}/README.md`, dados: T.gs_leia(c.titulo, new Intl.DateTimeFormat(HTML_LANG[c.lang], { dateStyle: "long" }).format(quando)) },
+      { nome: `${nome}/dados/dados.json`, dados: JSON.stringify(D) },
     ];
-    if (dados) arquivos.push({ nome: `${nome}/dados/dados.json`, dados: JSON.stringify(o.dados) });
-    else arquivos.push({ nome: `${nome}/dados/respostas.json`, dados: JSON.stringify({ titulo: c.titulo, gerado: quando.toISOString(), por: "Atlas · Paraná Contra os Corruptos", site: URL_SITE, aviso: t().badge,
+    if (partes.length) arquivos.push({ nome: `${nome}/dados/respostas.json`, dados: JSON.stringify({ titulo: c.titulo, gerado: quando.toISOString(), por: "Atlas · Paraná Contra os Corruptos", site: URL_SITE, aviso: t().badge,
       partes: c.partes.map((p) => ({ titulo: p.titulo, sub: p.sub || "", blocos: A.exportar.modelo([p.el]).map((b) => (b.el ? Object.assign({}, b, { el: undefined }) : b)) })) }, null, 2) });
     if (R.favicon) arquivos.push({ nome: `${nome}/img/favicon.svg`, dados: R.favicon });
     if (R.fonte) arquivos.push({ nome: `${nome}/fonts/${FONTE}`, dados: new Uint8Array(R.fonte) });
@@ -832,73 +931,38 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
     return { nome, blob: A.exportar.zip(arquivos) };
   }
 
-  // --- lugares: nomes, chave e busca pelo nome digitado ------------------------------------------------------------------------
   const chaveLug = (x) => `${x.tipo}|${x.uf || ""}|${x.cod || ""}`;
+
   function nomeLug(x) { const T = X(); return x.tipo === "br" ? T.sb_br : x.tipo === "uf" ? A.ufNome(x.uf) : `${x.nome || x.cod} (${x.uf})`; }
-  let LISTA_LUG = null;
-  async function listaLugares() {
-    if (LISTA_LUG) return LISTA_LUG;
-    const T = X(), muns = await A.municipios(), l = [{ rot: T.sb_br, ref: { tipo: "br" } }];
-    Object.keys(window.UF_NOMES).filter((u) => u !== "ZZ").sort().forEach((u) => l.push({ rot: `${A.ufNome(u)} (${T.sb_estado})`, ref: { tipo: "uf", uf: u } }));
-    Object.entries(muns).forEach(([uf, ms]) => { if (uf === "ZZ") return; Object.entries(ms).forEach(([cod, v]) => { const nome = A.titulo(v[0]); l.push({ rot: `${nome} (${uf})`, ref: { tipo: "mun", uf, cod, nome } }); }); });
-    // o motor da página também passa a conhecer os municípios (para achar "Londrina" escrito de outro jeito)
-    try { window.MOTOR.configurar({ muns }); } catch (e) { /* sem motor */ }
-    LISTA_LUG = l;
-    return l;
-  }
-  function acharLugar(txt, lista) {
-    const s = norm(txt); if (!s) return null;
-    const exato = lista.find((x) => norm(x.rot) === s);
-    if (exato) return exato.ref;
-    try {
-      const r = (window.MOTOR.lugares(txt) || []).find((x) => (x.tipo === "mun" && x.cod) || x.tipo === "uf" || x.tipo === "br");
-      if (r) return r.tipo === "mun" ? { tipo: "mun", uf: r.uf, cod: r.cod, nome: r.nome } : r.tipo === "uf" ? { tipo: "uf", uf: r.uf } : { tipo: "br" };
-    } catch (e) { /* motor ainda não carregou */ }
-    const ini = lista.filter((x) => norm(x.rot).startsWith(s));
-    return ini.length === 1 ? ini[0].ref : null;
-  }
 
   // --- janela "Criar site" -----------------------------------------------------------------------------------------------------
+  // O site já vem completo: Início e as 8 partes (as 4 com as respostas só quando há respostas). A pessoa escolhe as respostas,
+  // o título e o estilo. Os lugares da conversa (ou do pedido) só deixam o comparativo, o painel e o mapa já abertos neles.
   // o: { itens: [{ d, p, on }], atual, lugares: [ref], pedido: { tipo, lugares, texto } }
   function abrir(o) {
     const T = X(), itens = o.itens || [], temResp = itens.length > 0, ped = o.pedido || {};
-    let tipo = TIPOS.some((x) => x[0] === ped.tipo) ? ped.tipo : temResp ? "relatorio" : "painel";
-    if (grupo(tipo) === "r" && !temResp) tipo = "painel";
     const vistos = new Set(), pedidos = !!(ped.lugares && ped.lugares.length);
     // os da conversa vêm do mais recente para o mais antigo: os 5 últimos, na ordem em que foram perguntados
     const cit = (pedidos ? ped.lugares : (o.lugares || []).slice(0, 5).reverse())
       .filter((x) => x && ((x.tipo === "mun" && x.cod && x.uf !== "ZZ") || (x.tipo === "uf" && x.uf !== "ZZ") || x.tipo === "br"))
       .map((x) => (x.tipo === "mun" ? { tipo: "mun", uf: x.uf, cod: x.cod, nome: x.nome } : x.tipo === "uf" ? { tipo: "uf", uf: x.uf } : { tipo: "br" }))
       .filter((x) => { const k = chaveLug(x); if (vistos.has(k)) return false; vistos.add(k); return true; });
-    const S = { tipo, estilo: "padrao", lugs: cit.slice(0, 5), esc: "ufs", uf: "PR", editado: false, ultimo: null, cfg: null };
-    const l0 = cit.find((x) => x.tipo !== "br");
-    if (l0) { S.esc = "muns"; S.uf = l0.uf; }
-    const pt = norm(ped.texto || "");
-    if (/\b(?:estados|states|ufs)\b/.test(pt)) S.esc = "ufs";
-    else if (/\b(?:municipios|cidades|municipalities|cities|ciudades)\b/.test(pt) && /\b(?:brasil|brazil|pais|country|todo|todos|all)\b/.test(pt) && !l0) S.esc = "br";
+    const pt = norm(ped.texto || ""), l0 = cit.find((x) => x.tipo !== "br");
+    const nivel = /\b(?:estados|states|ufs)\b/.test(pt) ? "uf" : /\b(?:municipios|cidades|municipalities|cities|ciudades)\b/.test(pt) ? "mun" : null;
+    const S = { estilo: "padrao", lugs: cit.slice(0, 5), nivel, editado: false, ultimo: null, zip: false, cfg: null };
 
-    const tipoCard = ([k, ic, g]) => { const off = g === "r" && !temResp; return `<label class="sb-tipo${off ? " off" : ""}"><input type="radio" name="sb-tipo" value="${k}"${k === S.tipo ? " checked" : ""}${off ? " disabled" : ""}>${icone(ic)}<span><b>${esc(T.sb_tipos[k][0])}</b><small>${esc(T.sb_tipos[k][1])}</small></span></label>`; };
+    const parteLi = ([k, ic, g]) => { const off = g === "r" && !temResp; return `<li${off ? ' class="off"' : ""}><span class="sb-inc-i" aria-hidden="true">${icone(ic)}</span><span><b>${esc(T.sb_tipos[k][0])}</b><small>${esc(T.sb_tipos[k][1])}</small></span></li>`; };
     const estiloCard = ([k, cs]) => `<label class="sb-est"><input type="radio" name="sb-est" value="${k}"${k === S.estilo ? " checked" : ""}><span class="sb-sw" aria-hidden="true">${cs.map((c) => `<i style="background:${c}"></i>`).join("")}</span><span><b>${esc(T.sb_estilos[k][0])}</b><small>${esc(T.sb_estilos[k][1])}</small></span></label>`;
     const fmt = (k, ic) => `<button type="button" class="ex-f" data-st-fmt="${k}">${icone(ic)}<span><b>${esc(T["st_" + k][0])}</b><small>${esc(T["st_" + k][1])}</small></span></button>`;
-    const ufsOpt = Object.keys(window.UF_NOMES).filter((u) => u !== "ZZ").sort().map((u) => `<option value="${u}"${u === S.uf ? " selected" : ""}>${u} – ${esc(A.ufNome(u))}</option>`).join("");
     const lista = itens.map((x, i) => `<li class="st-it" data-i="${i}"><input type="checkbox" class="st-on"${x.on ? " checked" : ""} aria-label="${esc(x.p.titulo)}">
         <div class="st-txt"><input type="text" class="st-tit" maxlength="90" value="${esc(x.p.titulo)}" aria-label="${esc(T.st_tit(i + 1))}">
         <small>${esc(curtoTxt(x.p.resumo, 120))}</small>${x.d._m.q ? `<small class="st-q">${esc(T.st_q)}: ${esc(curtoTxt(x.d._m.q, 80))}</small>` : ""}</div>
         <span class="st-ord"><button type="button" class="icon-btn" data-st="sobe" aria-label="${esc(T.st_subir)}" title="${esc(T.st_subir)}">${icone("up")}</button><button type="button" class="icon-btn st-desce" data-st="desce" aria-label="${esc(T.st_descer)}" title="${esc(T.st_descer)}">${icone("up")}</button></span></li>`).join("");
-    const dlg = A.ferramentas.janela(T.st_title, `<p class="small muted">${esc(T.sb_lead)}</p>
-      <fieldset class="sb-fs"><legend>${esc(T.sb_tipo)}</legend>
-        <p class="sb-g">${esc(T.sb_g_resp)}</p><div class="sb-grade">${TIPOS.filter((x) => x[2] === "r").map(tipoCard).join("")}</div>${temResp ? "" : `<p class="small muted sb-aviso">${esc(T.sb_sem_resp)}</p>`}
-        <p class="sb-g">${esc(T.sb_g_dados)}</p><div class="sb-grade">${TIPOS.filter((x) => x[2] === "d").map(tipoCard).join("")}</div>
-      </fieldset>
-      <div class="sb-parte" data-sb="r"><p class="small muted">${esc(T.st_lead)}</p>
+    const dlg = A.ferramentas.janela(T.st_title, `<p class="small muted">${esc(temResp ? T.sb_lead : T.sb_lead_d)}</p>
+      <div class="sb-inc"><p class="sb-g">${esc(T.sb_inclui)}</p><ul class="sb-inc-l">${TIPOS.map(parteLi).join("")}</ul>${temResp ? "" : `<p class="small muted sb-aviso">${esc(T.sb_sem_resp)}</p>`}</div>
+      ${temResp ? `<div class="sb-parte"><p class="sb-g">${esc(T.sb_resp_t)}</p><p class="small muted">${esc(T.st_lead)}</p>
         <div class="st-topo"><span class="small st-conta" aria-live="polite"></span><span><button type="button" class="btn btn-sm" data-st="todas">${esc(T.st_marcar)}</button> <button type="button" class="btn btn-sm" data-st="nenhuma">${esc(T.st_desmarcar)}</button></span></div>
-        <ol class="st-lista">${lista}</ol></div>
-      <div class="sb-parte" data-sb="lug" hidden><p class="sb-g">${esc(T.sb_lug_t)}</p><ul class="sb-chips" aria-live="polite"></ul>
-        <label class="st-nome"><span>${esc(T.sb_lug_add)}</span><span class="sb-add"><input type="text" class="sb-lug-in" list="sb-dl" placeholder="${esc(T.sb_lug_ph)}" autocomplete="off"><button type="button" class="btn btn-sm" data-sb="add">${icone("plus")} ${esc(T.sb_add)}</button></span></label>
-        <datalist id="sb-dl"></datalist></div>
-      <div class="sb-parte sb-esc" data-sb="esc" hidden>
-        <label class="st-nome"><span>${esc(T.sb_esc_t)}</span><select name="sb-esc">${["ufs", "muns", "br"].map((k) => `<option value="${k}"${k === S.esc ? " selected" : ""}>${esc(T.sb_esc[k])}</option>`).join("")}</select></label>
-        <label class="st-nome sb-uf"><span>${esc(T.sb_uf)}</span><select name="sb-uf">${ufsOpt}</select></label></div>
+        <ol class="st-lista">${lista}</ol></div>` : ""}
       <label class="st-nome"><span>${esc(T.st_nome)}</span><input type="text" name="sb-titulo" maxlength="90"></label>
       <fieldset class="sb-fs"><legend>${esc(T.sb_estilo)}</legend><div class="sb-ests">${ESTILOS.map(estiloCard).join("")}</div></fieldset>
       <p class="sb-g">${esc(T.sb_fmt)}</p>
@@ -906,60 +970,22 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
       <p class="small ex-st" aria-live="polite"></p>
       <section class="sb-pub" hidden></section>`, "dlg-ex dlg-site");
 
-    const q = (s) => dlg.querySelector(s), st = q(".ex-st"), inTit = q('[name="sb-titulo"]'), selEsc = q('[name="sb-esc"]'), selUf = q('[name="sb-uf"]');
+    const q = (s) => dlg.querySelector(s), st = q(".ex-st"), inTit = q('[name="sb-titulo"]');
     const lis = () => $$(".st-it", dlg);
-    const escNome = () => (S.esc === "muns" ? A.ufNome(S.uf) : T.sb_br);
-    const tituloPadrao = () => (grupo(S.tipo) === "r" ? T.st_nome_def : T.sb_tit(S.tipo, S.esc, S.tipo === "comparativo" ? S.lugs.map((x) => (x.tipo === "mun" ? x.nome || x.cod : nomeLug(x))).join(" × ") || "…" : escNome()));
+    const tituloPadrao = () => (temResp ? T.st_nome_def : T.sb_tit_def(l0 ? nomeLug(l0) : T.sb_br));
     const contar = () => { if (!temResp) return; const n = lis().filter((li) => li.querySelector(".st-on").checked).length; q(".st-conta").textContent = T.st_conta(n, itens.length); lis().forEach((li) => li.classList.toggle("off", !li.querySelector(".st-on").checked)); };
-    function chips() {
-      q(".sb-chips").innerHTML = S.lugs.length ? S.lugs.map((x, i) => `<li><span>${esc(nomeLug(x))}</span><button type="button" class="icon-btn" data-sb-rm="${i}" aria-label="${esc(T.sb_lug_rm(nomeLug(x)))}" title="${esc(T.sb_lug_rm(nomeLug(x)))}">${icone("close")}</button></li>`).join("")
-        : `<li class="sb-vazio">${esc(T.sb_lug_min)}</li>`;
-    }
-    function mostrar() {
-      const g = grupo(S.tipo);
-      q('[data-sb="r"]').hidden = g !== "r";
-      q('[data-sb="lug"]').hidden = S.tipo !== "comparativo";
-      q('[data-sb="esc"]').hidden = g !== "d" || S.tipo === "comparativo";
-      selEsc.querySelector('[value="br"]').hidden = S.tipo !== "ranking";
-      selEsc.querySelector('[value="br"]').disabled = S.tipo !== "ranking";
-      if (S.esc === "br" && S.tipo !== "ranking") { S.esc = "muns"; selEsc.value = "muns"; }
-      q(".sb-uf").hidden = S.esc !== "muns";
-      if (!S.editado) inTit.value = tituloPadrao();
-      $$(".sb-tipo", dlg).forEach((l) => l.classList.toggle("on", l.querySelector("input").checked));
-      $$(".sb-est", dlg).forEach((l) => l.classList.toggle("on", l.querySelector("input").checked));
-      chips();
-    }
-    contar(); mostrar();
-    // a lista de lugares (5.570 municípios) entra no campo de busca só quando a pessoa vai usar
-    let lugaresProntos = null;
-    const carregarLugares = () => (lugaresProntos = lugaresProntos || listaLugares().then((l) => { q("#sb-dl").innerHTML = l.map((x) => `<option value="${esc(x.rot)}">`).join(""); return l; }));
-    if (S.tipo === "comparativo") carregarLugares();
-    async function adicionar() {
-      const inp = q(".sb-lug-in"), v = inp.value.trim(); if (!v) return;
-      const ref = acharLugar(v, await carregarLugares());
-      if (!ref) { st.textContent = T.sb_lug_nao; return; }
-      if (S.lugs.some((x) => chaveLug(x) === chaveLug(ref))) { inp.value = ""; return; }
-      if (S.lugs.length >= 5) { st.textContent = T.sb_lug_max; return; }
-      S.lugs.push(ref); inp.value = ""; st.textContent = ""; mostrar();
-    }
+    const marcarEst = () => $$(".sb-est", dlg).forEach((l) => l.classList.toggle("on", l.querySelector("input").checked));
+    inTit.value = tituloPadrao();
+    contar(); marcarEst();
     dlg.addEventListener("change", (e) => {
       const el = e.target;
       if (el.matches(".st-on")) contar();
-      else if (el.name === "sb-tipo") { S.tipo = el.value; if (S.tipo === "comparativo") carregarLugares(); mostrar(); }
-      else if (el.name === "sb-est") { S.estilo = el.value; mostrar(); }
-      else if (el.name === "sb-esc") { S.esc = el.value; mostrar(); }
-      else if (el.name === "sb-uf") { S.uf = el.value; mostrar(); }
-      else if (el.matches(".sb-lug-in") && el.value.trim()) adicionar();
+      else if (el.name === "sb-est") { S.estilo = el.value; marcarEst(); }
     });
     inTit.addEventListener("input", () => { S.editado = !!inTit.value.trim(); });
-    q(".sb-lug-in").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); adicionar(); } });
-    q(".sb-lug-in").addEventListener("focus", carregarLugares);
-    const cfgAtual = () => ({ tipo: S.tipo, estilo: S.estilo, lang: A.state.lang, titulo: (inTit.value.trim() || tituloPadrao()).slice(0, 90), lugs: S.lugs.slice(), esc: S.esc, uf: S.uf,
-      partes: grupo(S.tipo) === "r" ? lis().filter((li) => li.querySelector(".st-on").checked).map((li) => { const x = itens[+li.dataset.i]; return Object.assign({}, x.p, { titulo: li.querySelector(".st-tit").value.trim() || x.p.titulo, texto: corrido(x.p.el) }); }) : null });
+    const cfgAtual = () => ({ estilo: S.estilo, lang: A.state.lang, titulo: (inTit.value.trim() || tituloPadrao()).slice(0, 90), lugs: S.lugs.slice(), nivel: S.nivel,
+      partes: temResp ? lis().filter((li) => li.querySelector(".st-on").checked).map((li) => { const x = itens[+li.dataset.i]; return Object.assign({}, x.p, { titulo: li.querySelector(".st-tit").value.trim() || x.p.titulo, texto: corrido(x.p.el) }); }) : [] });
     dlg.addEventListener("click", async (e) => {
-      const rm = e.target.closest("[data-sb-rm]");
-      if (rm) { S.lugs.splice(+rm.dataset.sbRm, 1); mostrar(); return; }
-      if (e.target.closest('[data-sb="add"]')) { adicionar(); return; }
       const b = e.target.closest("[data-st], [data-st-fmt]"); if (!b || b.disabled) return;
       const k = b.dataset.st;
       if (k === "todas" || k === "nenhuma") { lis().forEach((li) => { li.querySelector(".st-on").checked = k === "todas"; }); contar(); return; }
@@ -969,16 +995,17 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
         return;
       }
       const c = cfgAtual();
-      if (c.partes && !c.partes.length) { st.textContent = T.st_pick; return; }
-      if (c.tipo === "comparativo" && c.lugs.length < 2) { st.textContent = T.sb_lug_min; q(".sb-lug-in").focus(); return; }
+      if (temResp && !c.partes.length) { st.textContent = T.st_pick; return; }
       const zipar = b.dataset.stFmt === "zip";
       $$("[data-st-fmt]", dlg).forEach((x) => { x.disabled = true; });
-      b.classList.add("on"); st.textContent = grupo(c.tipo) === "d" ? T.sb_carregando : T.st_wait;
+      b.classList.add("on"); st.textContent = T.sb_carregando;
       try {
         const r = await montar(c, zipar);
-        if (zipar) A.exportar.baixar(`${r.nome}.zip`, r.blob); else A.exportar.baixar(`${r.nome}.html`, r.html, "text/html;charset=utf-8");
-        S.cfg = c; S.ultimo = zipar ? null : r.html;
-        st.textContent = T.st_done("." + b.dataset.stFmt);
+        // o .html já sai com o nome que o GitHub Pages precisa: é só enviar, sem baixar de novo
+        const arq = zipar ? `${r.nome}.zip` : "index.html";
+        if (zipar) A.exportar.baixar(arq, r.blob); else A.exportar.baixar(arq, r.html, "text/html;charset=utf-8");
+        S.cfg = c; S.ultimo = zipar ? null : r.html; S.zip = zipar; S.arq = arq;
+        st.textContent = T.st_done(arq);
         publicacao(dlg, S);
       } catch (err) { console.error(err); st.textContent = `${T.st_err} (${err.message})`; }
       finally { $$("[data-st-fmt]", dlg).forEach((x) => { x.disabled = false; }); b.classList.remove("on"); }
@@ -999,11 +1026,19 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
     sec.hidden = false;
     // já montada (outro download na mesma janela): só acompanha o novo título, se a pessoa não mudou o nome
     if (sec._atualizar) { const r = sec.querySelector('[name="pb-repo"]'); if (!r.dataset.editado) r.value = slugRepo(S.cfg.titulo); sec._atualizar(); return; }
-    // o HTML de um arquivo só é o que vai para o GitHub (também quando a pessoa baixou o .zip)
+    // no automático, o HTML de um arquivo só é o que vai para o GitHub (também quando a pessoa baixou o .zip)
     const htmlPub = async () => { if (!S.ultimo) S.ultimo = (await montar(S.cfg, false)).html; return S.ultimo; };
     const user0 = A.ler(GH_USER) || "";
-    const passo = (n, k, botao) => `<li><span class="sb-pn" aria-hidden="true">${n}</span><div><b>${esc(T[k][0])}</b><small>${esc(T[k][1])}</small>${botao || ""}</div></li>`;
+    const passo = (n, k, botao) => `<li><span class="sb-pn" aria-hidden="true">${n}</span><div><b>${esc(T[k][0])}</b><small>${rotulos(T[k][1])}</small>${botao || ""}</div></li>`;
     const ghBt = (k, ic) => `<a class="btn btn-sm" data-pb="${k}" href="#" target="_blank" rel="noopener">${icone(ic)} ${esc(T.pb_gh)}</a>`;
+    // os nomes dos botões do GitHub ficam em “aspas” e em negrito (inglês / português, para quem usa o tradutor do navegador)
+    const rotulos = (s) => esc(s).replace(/“([^”]+)”/g, "<b>“$1”</b>");
+    const M = T.pb_mock, ligar = `<li data-pb-li="pages"><span class="sb-pn" aria-hidden="true">3</span><div><b>${esc(T.pb_p4[0])}</b><small>${rotulos(T.pb_p4[1])}</small>
+          <ol class="sb-sub">${T.pb_p4_itens.map((x) => `<li>${rotulos(x)}</li>`).join("")}</ol>
+          <div class="sb-gh" aria-hidden="true"><p class="sb-gh-t">${icone("globe")} ${esc(M.tela)}</p><p class="sb-gh-l">${esc(M.branch)}</p>
+            <div class="sb-gh-row"><span class="sb-gh-c"><i>1</i>${esc(M.none)} ▾</span><span class="sb-gh-seta">→</span><span class="sb-gh-c sb-gh-on">main ▾</span><span class="sb-gh-c sb-gh-dim">/ (root) ▾</span><span class="sb-gh-c sb-gh-ok"><i>2</i>${esc(M.save)}</span></div>
+            <p class="sb-gh-v"><i>3</i><span>${esc(M.live)} <span data-pb="url2"></span></span></p></div>
+          <small>${rotulos(T.pb_p4_nota)}</small>${ghBt("pages", "globe")}</div></li>`;
     sec.innerHTML = `<h3>${icone("upload")} ${esc(T.pb_t)}</h3><p class="small muted">${esc(T.pb_lead)}</p>
       <label class="st-nome"><span>${esc(T.pb_repo)}</span><input type="text" name="pb-repo" maxlength="80" value="${esc(slugRepo(S.cfg.titulo))}" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
       <label class="sb-chk"><input type="checkbox" name="pb-raiz"><span><b>${esc(T.pb_raiz)}</b><small>${esc(T.pb_raiz_nota)}</small></span></label>
@@ -1011,8 +1046,9 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
       <div class="sb-tabp" id="sb-tp-a" role="tabpanel" aria-labelledby="sb-tab-a">
         <p class="small">${esc(T.pb_conta)} <a href="https://github.com/signup" target="_blank" rel="noopener">${esc(T.pb_conta_bt)}</a></p>
         <label class="st-nome"><span>${esc(T.pb_user)}</span><input type="text" name="pb-user" value="${esc(user0)}" placeholder="${esc(T.pb_user_ph)}" autocapitalize="off" autocomplete="username" spellcheck="false"><small class="muted">${esc(T.pb_user_nota)}</small></label>
-        <ol class="sb-passos">${passo(1, "pb_p1", ghBt("novo", "plus"))}${passo(2, "pb_p2", `<button type="button" class="btn btn-sm" data-pb="baixar">${icone("download")} index.html</button>`)}${passo(3, "pb_p3", ghBt("enviar", "upload"))}
-          <li data-pb-li="pages"><span class="sb-pn" aria-hidden="true">4</span><div><b>${esc(T.pb_p4[0])}</b><small>${esc(T.pb_p4[1])}</small>${ghBt("pages", "globe")}</div></li>
+        <ol class="sb-passos">${passo(1, "pb_p1", ghBt("novo", "plus"))}
+          <li><span class="sb-pn" aria-hidden="true">2</span><div><b>${esc(T.pb_p2[0])}</b><small data-pb="p2"></small>${ghBt("enviar", "upload")}</div></li>
+          ${ligar}
           <li><span class="sb-pn" aria-hidden="true">${icone("check")}</span><div><b>${esc(T.pb_p5[0])}</b><small>${esc(T.pb_p5[1])}</small><code class="sb-url" data-pb="url"></code><span class="sb-acts"><button type="button" class="btn btn-sm" data-pb="copiar">${icone("copy")} ${esc(T.pb_copiar)}</button><a class="btn btn-sm" data-pb="abrir" href="#" target="_blank" rel="noopener">${icone("globe")} ${esc(T.pb_abrir)}</a></span></div></li></ol>
         <p class="small ex-st" data-pb="msg" aria-live="polite"></p></div>
       <div class="sb-tabp" id="sb-tp-b" role="tabpanel" aria-labelledby="sb-tab-b" hidden>
@@ -1031,7 +1067,9 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
       const lk = { novo: `https://github.com/new?name=${encodeURIComponent(r)}&description=${encodeURIComponent(T.pb_desc)}&visibility=public`,
         enviar: ok ? `https://github.com/${u}/${r}/upload/main` : "#", pages: ok ? `https://github.com/${u}/${r}/settings/pages` : "#", abrir: ok ? urlSite(u, r) : "#" };
       Object.entries(lk).forEach(([k, v]) => { q(`[data-pb="${k}"]`).href = v; });
-      q('[data-pb="url"]').textContent = urlSite(ok ? u : T.pb_user_x, r);
+      q('[data-pb="url"]').textContent = q('[data-pb="url2"]').textContent = urlSite(ok ? u : T.pb_user_x, r);
+      // o arquivo já baixado: o index.html, ou o que vem dentro do .zip
+      q('[data-pb="p2"]').innerHTML = rotulos(S.zip ? T.pb_p2_zip : T.pb_p2_html);
       q('[data-pb-li="pages"]').hidden = raiz();
       if (ok) { try { localStorage.setItem(GH_USER, u); } catch (e) { /* sem armazenamento */ } }
     }
@@ -1045,8 +1083,7 @@ ${P.map((p, i) => `<section class="gs-slide" hidden aria-roledescription="slide"
       const b = e.target.closest("[data-pb]"); if (!b) return;
       const k = b.dataset.pb, u = user();
       if ((k === "enviar" || k === "pages" || k === "abrir") && !RE_USER.test(u)) { e.preventDefault(); msg.textContent = T.pb_falta_user; q('[name="pb-user"]').focus(); return; }
-      if (k === "baixar") { A.exportar.baixar("index.html", await htmlPub(), "text/html;charset=utf-8"); msg.textContent = T.pb_baixado; }
-      else if (k === "copiar") { if (!RE_USER.test(u)) { msg.textContent = T.pb_falta_user; return; } const ok = await copiarTexto(urlSite(u, repo(u))); msg.textContent = ok ? T.pb_copiado : urlSite(u, repo(u)); }
+      if (k === "copiar") { if (!RE_USER.test(u)) { msg.textContent = T.pb_falta_user; return; } const ok = await copiarTexto(urlSite(u, repo(u))); msg.textContent = ok ? T.pb_copiado : urlSite(u, repo(u)); }
       else if (k === "publicar") publicarAuto(sec, S, htmlPub, { repo, raiz, urlSite });
       else if (k === "forcar") publicarAuto(sec, S, htmlPub, { repo, raiz, urlSite }, true);
     });
