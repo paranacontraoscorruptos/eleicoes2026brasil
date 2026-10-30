@@ -230,7 +230,12 @@
     el.log.addEventListener("click", (e) => {
       const fa = e.target.closest(".msg-speak"); if (fa) { falar(fa); return; }
       const c = e.target.closest("[data-q]"); if (c) { perguntar(c.dataset.q); return; }
-      const i = e.target.closest("[data-id]"); if (i) { mostrarEntrada(B.byId[i.dataset.id], true); return; }
+      const i = e.target.closest("[data-id]");
+      if (i) {
+        const en = B.byId[i.dataset.id];
+        ocupar(async () => { msg(window.APP.esc(rotulo(en)), "user"); await pensando(L().bot_think_qa, tempo(en.a)); mostrarEntrada(en); });
+        return;
+      }
       const g = e.target.closest("[data-go]"); if (g) { location.hash = g.dataset.go; if (window.matchMedia("(max-width: 640px)").matches) fechar(); }
     });
     bub.addEventListener("click", (e) => {
@@ -286,9 +291,34 @@
 
   const rotulo = (e) => { const q = e.q[0]; return q.charAt(0).toUpperCase() + q.slice(1) + (/[?]$/.test(q) ? "" : "?"); };
 
-  function mostrarEntrada(e, comoPergunta, extras) {
+  // Antes de responder: três pontinhos e as etapas da busca, trocando uma a uma.
+  // Fica na tela pelo menos "ms" e até o "trabalho" (se houver) terminar.
+  const aguardar = (ms) => new Promise((r) => setTimeout(r, ms));
+  const tempo = (resp) => 1600 + Math.min(String(resp || "").length * 1.5, 1200) + Math.random() * 400;
+
+  async function pensando(etapas, ms, trabalho) {
+    const d = document.createElement("div");
+    d.className = "msg msg-bot msg-typing";
+    d.innerHTML = `<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>`;
+    el.log.appendChild(d);
+    el.log.scrollTop = el.log.scrollHeight;
+    const etapa = (txt) => { d.querySelector(".typing-txt")?.remove(); d.insertAdjacentHTML("beforeend", `<span class="typing-txt">${window.APP.esc(txt)}</span>`); };
+    let i = 0;
+    etapa(etapas[0]);
+    const tm = setInterval(() => { if (i < etapas.length - 1) etapa(etapas[++i]); }, ms / etapas.length);
+    try { return (await Promise.all([trabalho, aguardar(ms)]))[0]; } finally { clearInterval(tm); d.remove(); }
+  }
+
+  // Uma resposta por vez: enquanto o bot "escreve", o envio fica bloqueado
+  async function ocupar(fn) {
+    if (B.ocupado) return;
+    const env = el.form.querySelector(".bot-send");
+    B.ocupado = true; env.disabled = true;
+    try { await fn(); } finally { B.ocupado = false; env.disabled = false; }
+  }
+
+  function mostrarEntrada(e, extras) {
     const T = L(), esc = window.APP.esc;
-    if (comoPergunta) msg(esc(rotulo(e)), "user");
     let h = md(e.a);
     if (e.act && e.act.go) h += `<p><button type="button" class="btn btn-sm" data-go="${esc(e.act.go)}">${esc(T.bot_open)}</button></p>`;
     h += `<p class="msg-src">${esc(T.bot_source)}: ${esc(e.s)}</p>`;
@@ -320,11 +350,8 @@
 
   async function responderSecao(p) {
     const T = L(), A = window.APP, esc = A.esc;
-    if (!p.z || !p.s) { msg(T.bot_need_zs, "bot"); return; }
-    if (!p.uf) { msg(T.bot_need_uf, "bot"); return; }
-    const espera = msg(`<p class="muted">${esc(T.bot_loading)}</p>`, "bot");
-    const d = await A.consultarSecao(p.uf, p.z, p.s);
-    espera.remove();
+    if (!p.z || !p.s || !p.uf) { await pensando(T.bot_think_qa.slice(0, 1), 1100); msg(!p.z || !p.s ? T.bot_need_zs : T.bot_need_uf, "bot"); return; }
+    const d = await pensando(T.bot_think_sec, 2200 + Math.random() * 600, A.consultarSecao(p.uf, p.z, p.s));
     const I = window.I18N[B.lang];
     if (d.erro === "zona") { msg(esc(I.lk_nozone), "bot"); return; }
     if (d.erro === "secao") {
@@ -357,7 +384,12 @@
     msg(h, "bot");
   }
 
-  async function perguntar(texto) {
+  function perguntar(texto) {
+    if (B.ocupado) { el.inp.value = texto; return; }
+    ocupar(() => responder(texto));
+  }
+
+  async function responder(texto) {
     const T = L(), esc = window.APP.esc;
     msg(esc(texto), "user");
     const sec = detectarSecao(texto);
@@ -367,11 +399,13 @@
     if (!r.length || r[0].sc < 4 || r[0].f < 0.34) {
       const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3).map((x) => ({ id: x.e.i, txt: rotulo(x.e) }));
       const top = sug.length ? sug : T.bot_fallback_topics.map((x) => ({ txt: x }));
+      await pensando(T.bot_think_none, tempo());
       msg(`<p>${esc(sug.length ? T.bot_maybe : T.bot_fallback)}</p>` + chips(top), "bot");
       return;
     }
     const outros = r.slice(1, 3).filter((x) => x.sc >= r[0].sc * 0.75).map((x) => x.e);
-    mostrarEntrada(r[0].e, false, outros);
+    await pensando(T.bot_think_qa, tempo(r[0].e.a));
+    mostrarEntrada(r[0].e, outros);
   }
 
   function saudacao() {
