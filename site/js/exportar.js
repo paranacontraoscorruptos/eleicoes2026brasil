@@ -112,7 +112,8 @@
         return;
       }
       if (tag === "svg") { if (!ehIcone(el)) out.push({ t: "img", el, alt: el.getAttribute("aria-label") || "" }); return; }
-      if (tag === "IMG") { if ((el.naturalWidth || el.width) > 60 && !el.closest(".brand")) out.push({ t: "img", src: el.currentSrc || el.src, el, alt: el.alt || "" }); return; }
+      // imagem que ainda não carregou (carregamento sob demanda, comum no celular) entra também: é carregada na exportação
+      if (tag === "IMG") { if ((el.naturalWidth > 60 || (!el.complete && (el.currentSrc || el.src))) && !el.closest(".brand")) out.push({ t: "img", src: el.currentSrc || el.src, el, alt: el.alt || "" }); return; }
       if (tag === "PRE") { out.push({ t: "code", txt: el.textContent.replace(/\n$/, "") }); return; }
       if (tag === "DETAILS") { const s = el.querySelector("summary"); if (s) out.push({ t: "h", n: 3, txt: limpo(txt(s)) }); el.childNodes.forEach((c) => { if (c !== s) bloco(c); }); return; }
       if (el.matches(".tile-v")) return;
@@ -735,19 +736,132 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
   // --- 6) imagem longa (.png): tudo numa imagem vertical, no visual dos cartões -------------------------------------------
   const F_DISP = '"Space Grotesk", system-ui, sans-serif', F_SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif", F_MONO = "ui-monospace, Menlo, Consolas, monospace";
   const MAX_ALTURA = 14000;
+  const CHIP = { red: ["rgba(239,68,68,.22)", "#ff6b6b"], amber: ["rgba(245,180,0,.2)", "#ffc83d"], green: ["rgba(31,195,95,.2)", "#3ddc84"] };
+  const SEQ = { q0: "#1c2b44", q1: "#24457e", q2: "#2f63bb", q3: "#5689e8", q4: "#a4c3f7" };
   function quebrar(ctx, s, larg) {
     const out = [];
-    String(s).split("\n").forEach((par_) => { let at = ""; par_.split(" ").forEach((p) => { const x = at ? at + " " + p : p; if (ctx.measureText(x).width > larg && at) { out.push(at); at = p; } else at = x; }); out.push(at); });
+    String(s).split("\n").forEach((par_) => {
+      let at = "";
+      par_.split(" ").forEach((p) => {
+        const x = at ? at + " " + p : p;
+        if (ctx.measureText(x).width <= larg || !at && ctx.measureText(p).width <= larg) { at = x; return; }
+        if (at) out.push(at);
+        // palavra mais larga que a linha (hash, endereço): quebra por letra
+        at = "";
+        for (const c of p) { if (at && ctx.measureText(at + c).width > larg) { out.push(at); at = c; } else at += c; }
+      });
+      out.push(at);
+    });
     return out;
   }
   function cortar(ctx, s, larg) { s = String(s); if (ctx.measureText(s).width <= larg) return s; while (s.length > 1 && ctx.measureText(s + "…").width > larg) s = s.slice(0, -1); return s + "…"; }
+  async function carregarFontes() { try { await Promise.all([document.fonts.load(`700 52px ${F_DISP}`), document.fonts.load(`600 30px ${F_DISP}`)]); } catch (e) { /* fonte do sistema */ } }
+  // Imagens e QR Code decodificados antes de desenhar no canvas
+  async function decodificar(M) {
+    await Promise.all(M.blocos.filter((b) => b.t === "img").map(async (b) => { const im = new Image(); im.src = b.png.url; try { await im.decode(); b._im = im; } catch (e) { b._im = null; } }));
+    if (M.qr) { const im = new Image(); im.src = M.qr.url; try { await im.decode(); M._qrIm = im; } catch (e) { M._qrIm = null; } }
+  }
+  function fundoSlide(ctx, w, h) {
+    const g = ctx.createLinearGradient(0, 0, w, h); g.addColorStop(0, "#07130c"); g.addColorStop(1, "#0c1a12"); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    const rg = ctx.createRadialGradient(w * 0.9, 0, 10, w * 0.9, 0, 700); rg.addColorStop(0, "rgba(255,212,0,.16)"); rg.addColorStop(1, "rgba(255,212,0,0)"); ctx.fillStyle = rg; ctx.fillRect(0, 0, w, Math.min(h, 900));
+    const rg2 = ctx.createRadialGradient(0, Math.min(h, 1400) * 0.2, 10, 0, Math.min(h, 1400) * 0.2, 760); rg2.addColorStop(0, "rgba(0,156,59,.2)"); rg2.addColorStop(1, "rgba(0,156,59,0)"); ctx.fillStyle = rg2; ctx.fillRect(0, 0, w, Math.min(h, 1400));
+    ctx.strokeStyle = "rgba(255,255,255,.035)"; ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += 48) { ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, h); ctx.stroke(); }
+    for (let y = 0; y < h; y += 48) { ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(w, y + 0.5); ctx.stroke(); }
+    const fx = ctx.createLinearGradient(0, 0, w, 0); fx.addColorStop(0, "#009c3b"); fx.addColorStop(0.5, "#ffdf00"); fx.addColorStop(1, "#002776"); ctx.fillStyle = fx; ctx.fillRect(0, 0, w, 14); ctx.fillRect(0, h - 14, w, 14);
+  }
+  // Desenha um bloco a partir de y (ou só mede, com medir) e devolve onde o próximo começa
+  function pintarBloco(ctx, b, y, medir, PAD, LW) {
+    const X = E();
+    const T_ = (s, font, cor, x, yy) => { if (medir) return; ctx.font = font; ctx.fillStyle = cor; ctx.fillText(s, x, yy); };
+    const linhas = (s, font, cor, lh, x, w) => { ctx.font = font; const ls = quebrar(ctx, s, w || LW); ls.forEach((l) => { y += lh; T_(l, font, cor, x || PAD, y); }); };
+    ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+    if (b.t === "quem") { y += 18; linhas(b.eu ? `${X.you}: ${b.txt}` : b.txt, `600 30px ${F_DISP}`, b.eu ? "#ffd400" : "#3ddc84", 40); y += 8; }
+    else if (b.t === "h") { y += b.n <= 2 ? 30 : 18; if (!medir) { ctx.fillStyle = "#1fc35f"; ctx.fillRect(PAD, y + 8, 8, b.n <= 2 ? 40 : 30); } const lh = b.n <= 2 ? 48 : 38; ctx.font = `700 ${b.n <= 2 ? 40 : 32}px ${F_DISP}`; quebrar(ctx, b.txt, LW - 24).forEach((l) => { y += lh; T_(l, `700 ${b.n <= 2 ? 40 : 32}px ${F_DISP}`, "#ffffff", PAD + 24, y); }); if (b.sub) linhas(b.sub, `400 24px ${F_SANS}`, "#a8bfb0", 32, PAD + 24, LW - 24); y += 10; }
+    else if (b.t === "kicker") linhas(b.txt.toUpperCase(), `600 22px ${F_SANS}`, "#3ddc84", 30);
+    else if (b.t === "p") { linhas(textoTrechos(b.runs), `400 28px ${F_SANS}`, "#dfeee5", 40); y += 12; }
+    else if (b.t === "nota" || b.t === "fonte") { linhas(b.txt, `400 22px ${F_SANS}`, b.cor ? "#ff8a8a" : "#8fa79a", 30); y += 10; }
+    else if (b.t === "kv") {
+      // valores longos: uma coluna, com o texto quebrado em linhas
+      ctx.font = `700 36px ${F_DISP}`;
+      const cols = b.itens.some(([, v]) => ctx.measureText(v).width > (LW - 20) / 2 - 36) ? 1 : 2, gw = (LW - 20 * (cols - 1)) / cols;
+      if (cols === 2) {
+        const hh = 112;
+        b.itens.forEach(([k, v], j) => {
+          const x = PAD + (j % cols) * (gw + 20), yy = y + Math.floor(j / cols) * (hh + 16);
+          if (!medir) {
+            ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.beginPath(); ctx.roundRect(x, yy, gw, hh, 18); ctx.fill();
+            ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#a8bfb0"; ctx.fillText(cortar(ctx, k, gw - 36), x + 18, yy + 38);
+            ctx.font = `700 36px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ctx.fillText(cortar(ctx, v, gw - 36), x + 18, yy + 86);
+          }
+        });
+        y += Math.ceil(b.itens.length / cols) * (hh + 16) + 8;
+      } else {
+        b.itens.forEach(([k, v]) => {
+          ctx.font = `700 30px ${F_DISP}`;
+          const ls = quebrar(ctx, v, gw - 36), hh = 60 + ls.length * 38;
+          if (!medir) {
+            ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.beginPath(); ctx.roundRect(PAD, y, gw, hh, 18); ctx.fill();
+            ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#a8bfb0"; ctx.fillText(cortar(ctx, k, gw - 36), PAD + 18, y + 36);
+            ctx.font = `700 30px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ls.forEach((l, i) => ctx.fillText(l, PAD + 18, y + 76 + i * 38));
+          }
+          y += hh + 14;
+        });
+        y += 8;
+      }
+    } else if (b.t === "bars") {
+      b.itens.forEach((x) => {
+        y += 34;
+        if (!medir) { ctx.font = `500 24px ${F_SANS}`; ctx.fillStyle = "#dfeee5"; ctx.fillText(cortar(ctx, x.rot, LW), PAD, y); }
+        y += 12;
+        if (!medir) {
+          ctx.font = `700 22px ${F_SANS}`; const vw = ctx.measureText(x.txt).width + 20, tw = LW - vw, bw = Math.max(6, tw * Math.max(0, Math.min(1, x.f)));
+          ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.beginPath(); ctx.roundRect(PAD, y, tw, 30, 8); ctx.fill();
+          const g = ctx.createLinearGradient(PAD, 0, PAD + bw, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#7ee2a6"); ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(PAD, y, bw, 30, 8); ctx.fill();
+          ctx.fillStyle = "#ffffff"; ctx.fillText(x.txt, PAD + bw + 12, y + 23);
+        }
+        y += 38;
+      });
+      y += 10;
+    } else if (b.t === "tab") {
+      const ls = (b.cab.length ? [b.cab] : []).concat(b.linhas.slice(0, 40)), n = Math.max(...ls.map((l) => l.length), 1);
+      ctx.font = `400 22px ${F_SANS}`;
+      // larguras das colunas pelo texto mais longo de cada uma (b.pesos: as mesmas em todas as partes de uma tabela dividida)
+      const pesos = b.pesos || Array.from({ length: n }, (_, j) => Math.max(6, ...ls.map((l) => Math.min(30, String(l[j] || "").length)))), soma = pesos.reduce((a, x) => a + x, 0);
+      const cw = pesos.map((p_) => (LW * p_) / soma);
+      ls.forEach((l, i) => {
+        y += 40;
+        if (!medir) {
+          const cab_ = i === 0 && b.cab.length;
+          if (cab_) { ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(PAD, y - 30, LW, 40); }
+          let x = PAD;
+          l.forEach((c, j) => { ctx.font = `${cab_ ? 600 : 400} 21px ${F_SANS}`; ctx.fillStyle = cab_ ? "#a8bfb0" : "#e6f2ea"; const s = cortar(ctx, c, cw[j] - 14); ctx.textAlign = j ? "right" : "left"; ctx.fillText(s, j ? x + cw[j] - 6 : x + 6, y); ctx.textAlign = "left"; x += cw[j]; });
+          ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.fillRect(PAD, y + 10, LW, 1);
+        }
+      });
+      if (b.linhas.length > 40) { y += 34; T_(`… +${A.nf(b.linhas.length - 40)}`, `400 22px ${F_SANS}`, "#8fa79a", PAD, y); }
+      y += 22;
+    } else if (b.t === "lista") { b.itens.forEach((rs, j) => { const pre = b.ord ? `${(b.ini || 0) + j + 1}.` : "•"; const sw = rs[0] && rs[0].cor && SEQ[rs[0].cor]; ctx.font = `400 26px ${F_SANS}`; const ls = quebrar(ctx, textoTrechos(rs), LW - 44); ls.forEach((l, k) => { y += 36; if (!medir) { if (!k) { ctx.fillStyle = sw || "#3ddc84"; ctx.fillText(sw ? "■" : pre, PAD, y); } ctx.fillStyle = "#dfeee5"; ctx.fillText(l, PAD + 40, y); } }); }); y += 14; }
+    else if (b.t === "chips") {
+      let x = PAD; y += 10; ctx.font = `600 22px ${F_SANS}`;
+      b.itens.forEach((c) => { const w = ctx.measureText(c.txt).width + 56; if (x + w > PAD + LW) { x = PAD; y += 54; } if (!medir) { const [bg, fg] = CHIP[c.cor] || CHIP.green; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x, y, w, 44, 22); ctx.fill(); ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(x + 22, y + 22, 6, 0, 7); ctx.fill(); ctx.fillText(c.txt, x + 36, y + 30); } x += w + 12; });
+      y += 62;
+    } else if (b.t === "img") {
+      // b.maxH (carrossel): a imagem diminui e fica centrada para caber na altura
+      let w = LW, h = (LW * b.png.h) / b.png.w;
+      if (b.maxH && h > b.maxH) { w = (w * b.maxH) / h; h = b.maxH; }
+      y += 12;
+      if (!medir && b._im) { const x = PAD + (LW - w) / 2; ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 16); ctx.clip(); ctx.drawImage(b._im, x, y, w, h); ctx.restore(); }
+      y += h + 18;
+    }
+    else if (b.t === "code") { ctx.font = `400 20px ${F_MONO}`; const ls = b.txt.split("\n").slice(0, 40); if (!medir) { ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(PAD, y + 8, LW, ls.length * 28 + 24); } ls.forEach((l) => { y += 28; T_(cortar(ctx, l, LW - 30), `400 20px ${F_MONO}`, "#cfe8d8", PAD + 16, y + 10); }); y += 34; }
+    return y;
+  }
   async function imagemLonga(M) {
     await prepararImagens(M);
-    try { await Promise.all([document.fonts.load(`700 52px ${F_DISP}`), document.fonts.load(`600 30px ${F_DISP}`)]); } catch (e) { /* fonte do sistema */ }
+    await carregarFontes();
     const L = t(), X = E(), W = 1080, PAD = 64, LW = W - 2 * PAD;
-    const CHIP = { red: ["rgba(239,68,68,.22)", "#ff6b6b"], amber: ["rgba(245,180,0,.2)", "#ffc83d"], green: ["rgba(31,195,95,.2)", "#3ddc84"] };
-    const SEQ = { q0: "#1c2b44", q1: "#24457e", q2: "#2f63bb", q3: "#5689e8", q4: "#a4c3f7" };
-    // desenha (ou só mede, quando ctx.medir) e devolve a altura usada
+    // desenha (ou só mede, quando medir) e devolve a altura usada
     function desenhar(ctx, medir) {
       let y = 70;
       const T_ = (s, font, cor, x, yy) => { if (medir) return; ctx.font = font; ctx.fillStyle = cor; ctx.fillText(s, x, yy); };
@@ -760,79 +874,7 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       y += 26;
       if (!medir) { ctx.strokeStyle = "rgba(255,212,0,.6)"; ctx.lineWidth = 2; ctx.font = `600 22px ${F_SANS}`; const w = ctx.measureText(L.badge).width + 36; ctx.beginPath(); ctx.roundRect(PAD, y - 8, w, 44, 22); ctx.stroke(); ctx.fillStyle = "#ffd400"; ctx.fillText(L.badge, PAD + 18, y + 22); }
       y += 64;
-      M.blocos.forEach((b) => {
-        if (b.t === "quem") { y += 18; linhas(b.eu ? `${X.you}: ${b.txt}` : b.txt, `600 30px ${F_DISP}`, b.eu ? "#ffd400" : "#3ddc84", 40); y += 8; }
-        else if (b.t === "h") { y += b.n <= 2 ? 30 : 18; if (!medir) { ctx.fillStyle = "#1fc35f"; ctx.fillRect(PAD, y + 8, 8, b.n <= 2 ? 40 : 30); } const lh = b.n <= 2 ? 48 : 38; ctx.font = `700 ${b.n <= 2 ? 40 : 32}px ${F_DISP}`; quebrar(ctx, b.txt, LW - 24).forEach((l) => { y += lh; T_(l, `700 ${b.n <= 2 ? 40 : 32}px ${F_DISP}`, "#ffffff", PAD + 24, y); }); if (b.sub) linhas(b.sub, `400 24px ${F_SANS}`, "#a8bfb0", 32, PAD + 24, LW - 24); y += 10; }
-        else if (b.t === "kicker") linhas(b.txt.toUpperCase(), `600 22px ${F_SANS}`, "#3ddc84", 30);
-        else if (b.t === "p") { linhas(textoTrechos(b.runs), `400 28px ${F_SANS}`, "#dfeee5", 40); y += 12; }
-        else if (b.t === "nota" || b.t === "fonte") { linhas(b.txt, `400 22px ${F_SANS}`, b.cor ? "#ff8a8a" : "#8fa79a", 30); y += 10; }
-        else if (b.t === "kv") {
-          // valores longos: uma coluna, com o texto quebrado em linhas
-          ctx.font = `700 36px ${F_DISP}`;
-          const cols = b.itens.some(([, v]) => ctx.measureText(v).width > (LW - 20) / 2 - 36) ? 1 : 2, gw = (LW - 20 * (cols - 1)) / cols;
-          if (cols === 2) {
-            const hh = 112;
-            b.itens.forEach(([k, v], j) => {
-              const x = PAD + (j % cols) * (gw + 20), yy = y + Math.floor(j / cols) * (hh + 16);
-              if (!medir) {
-                ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.beginPath(); ctx.roundRect(x, yy, gw, hh, 18); ctx.fill();
-                ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#a8bfb0"; ctx.fillText(cortar(ctx, k, gw - 36), x + 18, yy + 38);
-                ctx.font = `700 36px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ctx.fillText(cortar(ctx, v, gw - 36), x + 18, yy + 86);
-              }
-            });
-            y += Math.ceil(b.itens.length / cols) * (hh + 16) + 8;
-          } else {
-            b.itens.forEach(([k, v]) => {
-              ctx.font = `700 30px ${F_DISP}`;
-              const ls = quebrar(ctx, v, gw - 36), hh = 60 + ls.length * 38;
-              if (!medir) {
-                ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.beginPath(); ctx.roundRect(PAD, y, gw, hh, 18); ctx.fill();
-                ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#a8bfb0"; ctx.fillText(cortar(ctx, k, gw - 36), PAD + 18, y + 36);
-                ctx.font = `700 30px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ls.forEach((l, i) => ctx.fillText(l, PAD + 18, y + 76 + i * 38));
-              }
-              y += hh + 14;
-            });
-            y += 8;
-          }
-        } else if (b.t === "bars") {
-          b.itens.forEach((x) => {
-            y += 34;
-            if (!medir) { ctx.font = `500 24px ${F_SANS}`; ctx.fillStyle = "#dfeee5"; ctx.fillText(cortar(ctx, x.rot, LW), PAD, y); }
-            y += 12;
-            if (!medir) {
-              ctx.font = `700 22px ${F_SANS}`; const vw = ctx.measureText(x.txt).width + 20, tw = LW - vw, bw = Math.max(6, tw * Math.max(0, Math.min(1, x.f)));
-              ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.beginPath(); ctx.roundRect(PAD, y, tw, 30, 8); ctx.fill();
-              const g = ctx.createLinearGradient(PAD, 0, PAD + bw, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#7ee2a6"); ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(PAD, y, bw, 30, 8); ctx.fill();
-              ctx.fillStyle = "#ffffff"; ctx.fillText(x.txt, PAD + bw + 12, y + 23);
-            }
-            y += 38;
-          });
-          y += 10;
-        } else if (b.t === "tab") {
-          const ls = (b.cab.length ? [b.cab] : []).concat(b.linhas.slice(0, 40)), n = Math.max(...ls.map((l) => l.length), 1);
-          ctx.font = `400 22px ${F_SANS}`;
-          const pesos = Array.from({ length: n }, (_, j) => Math.max(6, ...ls.map((l) => Math.min(30, String(l[j] || "").length)))), soma = pesos.reduce((a, x) => a + x, 0);
-          const cw = pesos.map((p_) => (LW * p_) / soma);
-          ls.forEach((l, i) => {
-            y += 40;
-            if (!medir) {
-              const cab_ = i === 0 && b.cab.length;
-              if (cab_) { ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(PAD, y - 30, LW, 40); }
-              let x = PAD;
-              l.forEach((c, j) => { ctx.font = `${cab_ ? 600 : 400} 21px ${F_SANS}`; ctx.fillStyle = cab_ ? "#a8bfb0" : "#e6f2ea"; const s = cortar(ctx, c, cw[j] - 14); ctx.textAlign = j ? "right" : "left"; ctx.fillText(s, j ? x + cw[j] - 6 : x + 6, y); ctx.textAlign = "left"; x += cw[j]; });
-              ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.fillRect(PAD, y + 10, LW, 1);
-            }
-          });
-          if (b.linhas.length > 40) { y += 34; T_(`… +${A.nf(b.linhas.length - 40)}`, `400 22px ${F_SANS}`, "#8fa79a", PAD, y); }
-          y += 22;
-        } else if (b.t === "lista") { b.itens.forEach((rs, j) => { const pre = b.ord ? `${(b.ini || 0) + j + 1}.` : "•"; const sw = rs[0] && rs[0].cor && SEQ[rs[0].cor]; ctx.font = `400 26px ${F_SANS}`; const ls = quebrar(ctx, textoTrechos(rs), LW - 44); ls.forEach((l, k) => { y += 36; if (!medir) { if (!k) { ctx.fillStyle = sw || "#3ddc84"; ctx.fillText(sw ? "■" : pre, PAD, y); } ctx.fillStyle = "#dfeee5"; ctx.fillText(l, PAD + 40, y); } }); }); y += 14; }
-        else if (b.t === "chips") {
-          let x = PAD; y += 10; ctx.font = `600 22px ${F_SANS}`;
-          b.itens.forEach((c) => { const w = ctx.measureText(c.txt).width + 56; if (x + w > W - PAD) { x = PAD; y += 54; } if (!medir) { const [bg, fg] = CHIP[c.cor] || CHIP.green; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x, y, w, 44, 22); ctx.fill(); ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(x + 22, y + 22, 6, 0, 7); ctx.fill(); ctx.fillText(c.txt, x + 36, y + 30); } x += w + 12; });
-          y += 62;
-        } else if (b.t === "img") { const h = (LW * b.png.h) / b.png.w; y += 12; if (!medir) { const im = b._im; if (im) { ctx.save(); ctx.beginPath(); ctx.roundRect(PAD, y, LW, h, 16); ctx.clip(); ctx.drawImage(im, PAD, y, LW, h); ctx.restore(); } } y += h + 18; }
-        else if (b.t === "code") { ctx.font = `400 20px ${F_MONO}`; const ls = b.txt.split("\n").slice(0, 40); if (!medir) { ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(PAD, y + 8, LW, ls.length * 28 + 24); } ls.forEach((l) => { y += 28; T_(cortar(ctx, l, LW - 30), `400 20px ${F_MONO}`, "#cfe8d8", PAD + 16, y + 10); }); y += 34; }
-      });
+      M.blocos.forEach((b) => { y = pintarBloco(ctx, b, y, medir, PAD, LW); });
       y += 30;
       linhas(L.at.sg_note, `400 22px ${F_SANS}`, "#8fa79a", 30);
       y += 24;
@@ -843,21 +885,11 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       y = Math.max(y, qrY + (M._qrIm ? 210 : 0)) + 50;
       return y;
     }
-    // imagens decodificadas antes de desenhar
-    await Promise.all(M.blocos.filter((b) => b.t === "img").map(async (b) => { const im = new Image(); im.src = b.png.url; try { await im.decode(); b._im = im; } catch (e) { b._im = null; } }));
-    if (M.qr) { const im = new Image(); im.src = M.qr.url; try { await im.decode(); M._qrIm = im; } catch (e) { M._qrIm = null; } }
+    await decodificar(M);
     const med = document.createElement("canvas").getContext("2d");
     const H = Math.ceil(desenhar(med, true));
-    const fundo = (ctx, w, h) => {
-      const g = ctx.createLinearGradient(0, 0, w, h); g.addColorStop(0, "#07130c"); g.addColorStop(1, "#0c1a12"); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-      const rg = ctx.createRadialGradient(w * 0.9, 0, 10, w * 0.9, 0, 700); rg.addColorStop(0, "rgba(255,212,0,.16)"); rg.addColorStop(1, "rgba(255,212,0,0)"); ctx.fillStyle = rg; ctx.fillRect(0, 0, w, 900);
-      ctx.strokeStyle = "rgba(255,255,255,.035)"; ctx.lineWidth = 1;
-      for (let x = 0; x < w; x += 48) { ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, h); ctx.stroke(); }
-      for (let y = 0; y < h; y += 48) { ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(w, y + 0.5); ctx.stroke(); }
-      const fx = ctx.createLinearGradient(0, 0, w, 0); fx.addColorStop(0, "#009c3b"); fx.addColorStop(0.5, "#ffdf00"); fx.addColorStop(1, "#002776"); ctx.fillStyle = fx; ctx.fillRect(0, 0, w, 14); ctx.fillRect(0, h - 14, w, 14);
-    };
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-    const ctx = cv.getContext("2d"); fundo(ctx, W, H); desenhar(ctx, false);
+    const ctx = cv.getContext("2d"); fundoSlide(ctx, W, H); desenhar(ctx, false);
     // muito comprida para um arquivo só: corta em partes e entrega num .zip
     if (H <= MAX_ALTURA) return new Promise((ok) => cv.toBlob(ok, "image/png"));
     const n = Math.ceil(H / MAX_ALTURA), arqs = [];
@@ -868,6 +900,234 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       arqs.push({ nome: `${String(i + 1).padStart(2, "0")}.png`, dados: new Uint8Array(await b.arrayBuffer()) });
     }
     const z = zip(arqs); z.partes = n; return z;
+  }
+
+  // --- 6b) carrossel: várias imagens do mesmo tamanho (capa, conteúdo e fim), ou um PDF com uma página por imagem ----------
+  const CARROSSEL = { "45": [1080, 1350], "11": [1080, 1080], "916": [1080, 1920], pdf: [1080, 1350] };
+  const MAX_IMGS = { "45": 20, "11": 20, "916": 20, pdf: 40 }; // o Instagram aceita até 20 imagens num carrossel
+  // Partes de um bloco que podem ir para imagens diferentes: linhas de tabela e de barras, itens de lista e números, frases
+  function pedacos(M, med, LW) {
+    const X = E(), out = [];
+    const perguntas = M.blocos.filter((b) => b.t === "quem" && b.eu).length;
+    let sec = "", grp = 0;
+    M.blocos.forEach((b) => {
+      grp++;
+      const add = (p) => out.push(Object.assign(p, { sec, grp }));
+      if (b.t === "fonte") return;
+      if (b.t === "quem") { if (b.eu && perguntas > 1) { sec = b.txt; add({ t: "quem", eu: true, txt: b.txt, quebra: 2 }); } return; }
+      if (b.t === "h" && b.n <= 2) { if (!out.length && b.txt === M.meta.titulo) return; sec = b.txt; add(Object.assign({}, b, { quebra: 1 })); return; }
+      // o que já está na capa (rótulo, título e linha de apoio) e no fim (aviso) não se repete; links soltos não servem numa imagem
+      if (b.t === "kicker" && b.txt === M.meta.kicker) return;
+      if (b.t === "p" && M.meta.sub && textoTrechos(b.runs).trim() === M.meta.sub) return;
+      if (b.t === "p" && b.runs.every((r) => r.href || !r.txt.trim())) return;
+      if (b.t === "nota" && b.txt === t().at.sg_note) return;
+      // números do topo da página (antes do primeiro título) vão para a capa
+      if (b.t === "kv" && !M.capa && !out.some((x) => x.t === "h" || x.t === "quem") && b.itens.length >= 2 && b.itens.every(([k, v]) => String(v).length <= 24 && String(k).length <= 40)) { M.capa = b.itens.slice(0, 4); if (b.itens.length > 4) add({ t: "kv", itens: b.itens.slice(4) }); return; }
+      if (b.t === "p" && pintarBloco(med, b, 0, true, 0, LW) > 520) { dividirTexto(textoTrechos(b.runs), 280).forEach((s) => add({ t: "p", runs: [{ txt: s }] })); return; }
+      const mais = (n) => { if (n > MAX_SLIDE) add({ t: "nota", txt: X.more_rows(A.nf(n - MAX_SLIDE)) }); };
+      if (b.t === "kv") { b.itens.forEach((it) => add({ t: "kv", itens: [it] })); return; }
+      if (b.t === "bars") { b.itens.slice(0, MAX_SLIDE).forEach((it) => add({ t: "bars", itens: [it] })); mais(b.itens.length); return; }
+      if (b.t === "tab") {
+        const ls = (b.cab.length ? [b.cab] : []).concat(b.linhas.slice(0, MAX_SLIDE)), n = Math.max(...ls.map((l) => l.length), 1);
+        const pesos = Array.from({ length: n }, (_, j) => Math.max(6, ...ls.map((l) => Math.min(30, String(l[j] || "").length))));
+        b.linhas.slice(0, MAX_SLIDE).forEach((l) => add({ t: "tab", cab: b.cab, linhas: [l], pesos }));
+        mais(b.linhas.length); return;
+      }
+      if (b.t === "lista") { b.itens.forEach((it, j) => add({ t: "lista", ord: b.ord, ini: (b.ini || 0) + j, itens: [it] })); return; }
+      if (b.t === "code") { const ls = b.txt.split("\n"); for (let i = 0; i < ls.length; i += 12) add({ t: "code", txt: ls.slice(i, i + 12).join("\n") }); return; }
+      add(Object.assign({}, b));
+    });
+    // título sem nada até o próximo título do mesmo nível (ou acima) sai
+    return out.filter((p, i) => {
+      if (p.t !== "h") return true;
+      const nv = (x) => (x.t === "quem" ? 0 : x.t === "h" ? x.n : 9), prox = out[i + 1];
+      return prox && nv(prox) > p.n;
+    });
+  }
+  // Partes vizinhas do mesmo bloco, na mesma imagem, voltam a ser um bloco só
+  function juntar(ps) {
+    const out = [];
+    ps.forEach((p) => {
+      const u = out[out.length - 1];
+      if (u && u.grp === p.grp && u.t === p.t && /^(kv|bars|tab|lista)$/.test(p.t)) {
+        if (p.t === "tab") u.linhas = u.linhas.concat(p.linhas); else u.itens = u.itens.concat(p.itens);
+      } else out.push(Object.assign({}, p, p.itens ? { itens: p.itens.slice() } : {}, p.linhas ? { linhas: p.linhas.slice() } : {}));
+    });
+    return out;
+  }
+  async function carrossel(fonte, fmt, aoAvancar) {
+    const quando = new Intl.DateTimeFormat(t().locale, { dateStyle: "long", timeStyle: "short" }).format(new Date());
+    const M = { meta: Object.assign({ quando }, fonte.meta), blocos: modelo(fonte.elementos) };
+    await prepararImagens(M);
+    await carregarFontes();
+    await decodificar(M);
+    const L = t(), X = E(), [W, H] = CARROSSEL[fmt], alto = H > 1500, PAD = 72, LW = W - 2 * PAD;
+    // Story: o topo e a base ficam livres porque a interface dos apps cobre essas faixas
+    const topo = alto ? 210 : 56, base = alto ? 240 : 44, CAB = 128, ROD = 118;
+    const y0 = topo + CAB, y1 = H - base - ROD, livre = y1 - y0;
+    const med = document.createElement("canvas").getContext("2d");
+    const ps = pedacos(M, med, LW);
+    const conta = {};
+    for (let i = ps.length - 1; i >= 0; i--) { const p = ps[i]; conta[p.grp] = (conta[p.grp] || 0) + 1; p.resta = conta[p.grp]; if (p.t === "img") p.maxH = Math.round(livre * 0.8); }
+    const altura = (l) => juntar(l).reduce((y, b) => pintarBloco(med, b, y, true, PAD, LW), 0);
+    const titulo = (p) => p.t === "h" || p.t === "quem" || p.t === "kicker";
+    // conteúdo distribuído nas imagens: cada uma recebe o que cabe; um título nunca fica sozinho no fim de uma imagem
+    const telas = [];
+    let at = [];
+    ps.forEach((p) => {
+      if (at.length && (p.quebra === 2 || (p.quebra === 1 && altura(at) > livre * 0.45))) { telas.push(at); at = []; }
+      if (p.t === "img" && at.length && altura(at.concat(p)) > livre) { const sobra = livre - altura(at) - 40; if (sobra >= livre * 0.45) p.maxH = Math.min(p.maxH, sobra); }
+      if (at.length && altura(at.concat(p)) > livre) {
+        const leva = [];
+        // a última linha de uma tabela (ou lista) não vai sozinha para a próxima imagem
+        if (p.resta === 1 && at.length >= 3 && at[at.length - 1].grp === p.grp && at[at.length - 2].grp === p.grp) leva.unshift(at.pop());
+        while (at.length > 1 && titulo(at[at.length - 1])) leva.unshift(at.pop());
+        telas.push(at); at = leva;
+      }
+      at.push(p);
+    });
+    if (at.length) telas.push(at);
+    const cabe = MAX_IMGS[fmt] - 2, cortado = telas.length > cabe;
+    if (cortado) telas.length = cabe;
+    const total = telas.length + 2, fontes = [...new Set(M.blocos.filter((b) => b.t === "fonte").map((b) => b.txt))];
+    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d");
+    let dominio = (M.meta.url || URL_SITE).replace(/^https:\/\//, "").replace(/\/$/, "");
+    try { dominio = decodeURI(dominio).replace(/%20/g, " "); } catch (e) { /* fica como está */ }
+
+    const marca = (x, y, s) => {
+      ctx.fillStyle = "#009c3b"; ctx.beginPath(); ctx.roundRect(x, y, s, s, s / 4); ctx.fill();
+      ctx.strokeStyle = "#ffdf00"; ctx.lineWidth = s / 10.6; ctx.lineCap = "round";
+      [[.25, .75, .44], [.42, .75, .25], [.58, .75, .5], [.75, .75, .59]].forEach(([fx, a, b]) => { ctx.beginPath(); ctx.moveTo(x + fx * s, y + a * s); ctx.lineTo(x + fx * s, y + b * s); ctx.stroke(); });
+      ctx.lineCap = "butt";
+    };
+    const pilula = (txt, x, y, cor, fundo, font, centro) => {
+      ctx.font = font; const w = ctx.measureText(txt).width + 44;
+      const x0 = centro ? x - w / 2 : x;
+      ctx.fillStyle = fundo; ctx.beginPath(); ctx.roundRect(x0, y, w, 52, 26); ctx.fill();
+      ctx.fillStyle = cor; ctx.textBaseline = "middle"; ctx.fillText(txt, x0 + 22, y + 27); ctx.textBaseline = "alphabetic";
+      return w;
+    };
+    // cabeçalho (marca e número da imagem) e rodapé (aviso, endereço e "arraste")
+    function moldura(k, contexto) {
+      fundoSlide(ctx, W, H);
+      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      marca(PAD, topo + 4, 46);
+      ctx.fillStyle = "#eef6f0"; ctx.font = `700 28px ${F_DISP}`; ctx.fillText(L.brand, PAD + 62, topo + 38);
+      ctx.font = `600 24px ${F_MONO}`; ctx.fillStyle = "#ffd84d"; ctx.textAlign = "right"; ctx.fillText(`${k} / ${total}`, W - PAD, topo + 38); ctx.textAlign = "left";
+      if (contexto) { ctx.font = `700 21px ${F_MONO}`; ctx.fillStyle = "#3ddc84"; ctx.fillText(cortar(ctx, contexto.toUpperCase(), LW), PAD, topo + 96); }
+      const yr = H - base - ROD + 30;
+      ctx.fillStyle = "rgba(255,255,255,.1)"; ctx.fillRect(PAD, yr, LW, 1);
+      ctx.font = `600 20px ${F_SANS}`; ctx.fillStyle = "#ffd84d"; ctx.fillText(cortar(ctx, L.badge, LW - (k < total ? 230 : 0)), PAD, yr + 40);
+      ctx.font = `500 21px ${F_MONO}`; ctx.fillStyle = "#b8ccbf"; ctx.fillText(cortar(ctx, dominio, LW - (k < total ? 230 : 0)), PAD, yr + 74);
+      if (k < total) { ctx.font = `700 24px ${F_SANS}`; const w = ctx.measureText(L.cr_swipe + "  →").width + 44; pilula(L.cr_swipe + "  →", W - PAD - w, yr + 22, "#07130c", "#3ddc84", `700 24px ${F_SANS}`); }
+    }
+    function capa() {
+      moldura(1, "");
+      ctx.fillStyle = "#ffd84d"; ctx.font = `600 22px ${F_SANS}`; ctx.fillText(L.brand_sub.toUpperCase(), PAD + 62, topo + 70);
+      // título: a letra diminui até caber em 6 linhas
+      const quadrado = H <= W;
+      let tt = alto ? 84 : 76, tl;
+      ctx.font = `700 ${tt}px ${F_DISP}`; tl = quebrar(ctx, M.meta.titulo, LW);
+      while (tl.length > (alto ? 7 : quadrado ? 4 : 5) && tt > 44) { tt -= 6; ctx.font = `700 ${tt}px ${F_DISP}`; tl = quebrar(ctx, M.meta.titulo, LW); }
+      ctx.font = `400 30px ${F_SANS}`;
+      const sub = M.meta.sub ? quebrar(ctx, M.meta.sub, LW).slice(0, quadrado ? 2 : 4) : [];
+      if (M.meta.sub && sub.length < quebrar(ctx, M.meta.sub, LW).length) sub[sub.length - 1] = cortar(ctx, sub[sub.length - 1] + " …", LW);
+      ctx.font = `600 24px ${F_MONO}`;
+      const kick = quebrar(ctx, String(M.meta.kicker || L.brand).toUpperCase(), LW).slice(0, 2);
+      const cap = M.capa || [], hCap = cap.length ? Math.ceil(cap.length / 2) * 120 + 24 : 0;
+      const hBloco = kick.length * 34 + 24 + tl.length * (tt + 8) + 40 + sub.length * 40 + 30 + 34 + hCap;
+      let y = y0 + Math.max(0, (livre - hBloco - 150) / 2);
+      ctx.fillStyle = "#3ddc84"; kick.forEach((l) => { y += 34; ctx.fillText(l, PAD, y); });
+      y += 24;
+      ctx.fillStyle = "#ffffff"; ctx.font = `700 ${tt}px ${F_DISP}`; tl.forEach((l) => { y += tt + 8; ctx.fillText(l, PAD, y); });
+      y += 28;
+      const g = ctx.createLinearGradient(PAD, 0, PAD + 200, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#ffd400"); ctx.fillStyle = g; ctx.fillRect(PAD, y, 200, 7);
+      y += 12;
+      ctx.font = `400 30px ${F_SANS}`; ctx.fillStyle = "#cfe0d5"; sub.forEach((l) => { y += 40; ctx.fillText(l, PAD, y); });
+      if (cap.length) { y += 24; y = pintarBloco(ctx, { t: "kv", itens: cap }, y, false, PAD, LW) - 8; }
+      y += 30; ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#8fa79a"; ctx.fillText(X.made(M.meta.quando), PAD, y + 4);
+      y += 44;
+      ctx.strokeStyle = "rgba(255,212,0,.6)"; ctx.lineWidth = 2; ctx.font = `600 22px ${F_SANS}`;
+      const bw = Math.min(LW, ctx.measureText(L.badge).width + 40); ctx.beginPath(); ctx.roundRect(PAD, y, bw, 48, 24); ctx.stroke();
+      ctx.fillStyle = "#ffd400"; ctx.fillText(cortar(ctx, L.badge, LW - 40), PAD + 20, y + 32);
+      pilula(L.cr_swipe_cover(total), W / 2, y1 - 70, "#eef6f0", "rgba(31,195,95,.22)", `600 26px ${F_SANS}`, true);
+    }
+    function conteudo(k, tela) {
+      const ini = tela[0], contexto = titulo(ini) ? "" : ini.sec || M.meta.titulo;
+      moldura(k, contexto);
+      const bl = juntar(tela), h = bl.reduce((y, b) => pintarBloco(med, b, y, true, PAD, LW), 0);
+      // pouco conteúdo: fica um pouco acima do meio
+      let y = y0 - 10 + (titulo(ini) && h < livre * 0.7 ? (livre - h) * 0.35 : 0);
+      ctx.save(); ctx.beginPath(); ctx.rect(0, y0 - 20, W, livre + 30); ctx.clip();
+      bl.forEach((b) => { y = pintarBloco(ctx, b, y, false, PAD, LW); });
+      ctx.restore();
+    }
+    // fim: fonte, aviso e QR Code (no PDF o QR e o endereço viram link)
+    function fim() {
+      moldura(total, "");
+      let y = y0;
+      ctx.fillStyle = "#1fc35f"; ctx.fillRect(PAD, y + 4, 8, 44);
+      ctx.fillStyle = "#ffffff"; ctx.font = `700 44px ${F_DISP}`; ctx.fillText(X.slide_end, PAD + 26, y + 42);
+      y += 70;
+      const linhas = (s, font, cor, lh) => { ctx.font = font; ctx.fillStyle = cor; quebrar(ctx, s, LW).forEach((l) => { y += lh; ctx.fillText(l, PAD, y); }); };
+      (fontes.length ? fontes : [L.cd_src]).slice(0, 3).forEach((f) => linhas(`${X.src}: ${f}`, `400 24px ${F_SANS}`, "#b8ccbf", 34));
+      y += 14;
+      linhas(L.at.sg_note, `400 26px ${F_SANS}`, "#dfeee5", 38);
+      if (cortado) { y += 10; linhas(L.cr_more, `600 24px ${F_SANS}`, "#ffd84d", 34); }
+      y += 30;
+      const q = Math.max(150, Math.min(alto ? 360 : 300, y1 - y - 90));
+      const qx = (W - q) / 2;
+      if (M._qrIm) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(qx, y, q, q, 18); ctx.fill(); ctx.imageSmoothingEnabled = false; ctx.drawImage(M._qrIm, qx + 14, y + 14, q - 28, q - 28); ctx.imageSmoothingEnabled = true; }
+      const link = { x: qx, y, w: q, h: q + 80 };
+      y += (M._qrIm ? q : 0) + 46;
+      ctx.textAlign = "center"; ctx.font = `700 26px ${F_SANS}`; ctx.fillStyle = "#3ddc84"; ctx.fillText(X.open, W / 2, y);
+      ctx.font = `500 24px ${F_MONO}`; ctx.fillStyle = "#eef6f0"; ctx.fillText(cortar(ctx, dominio, LW), W / 2, y + 36); ctx.textAlign = "left";
+      if (!M._qrIm) { link.y = y - 34; link.h = 80; }
+      link.x = Math.min(link.x, PAD); link.w = Math.max(link.w, LW);
+      return link;
+    }
+    const pdf = fmt === "pdf", out = [];
+    let link = null;
+    const salvar = async () => {
+      const b = await new Promise((ok) => cv.toBlob(ok, pdf ? "image/jpeg" : "image/png", 0.9));
+      out.push(b);
+      if (aoAvancar) aoAvancar(out.length, total);
+    };
+    capa(); await salvar();
+    for (let i = 0; i < telas.length; i++) { conteudo(i + 2, telas[i]); await salvar(); }
+    link = fim(); await salvar();
+    const r = { imgs: out, W, H, total, cortado, nome: nz(M.meta.arquivo || M.meta.titulo).slice(0, 50) || "auditoria-bu-2026" };
+    if (pdf) r.pdf = await pdfImagens(out, W, H, M.meta, Object.assign(link, { url: M.meta.url || URL_SITE }));
+    return r;
+  }
+
+  // PDF feito à mão: uma página por imagem JPEG (2 px por ponto) e, na última, um link para o site
+  async function pdfImagens(jpgs, W, H, meta, link) {
+    const enc = new TextEncoder(), partes = [], offs = [];
+    let pos = 0;
+    const add = (x) => { const b = typeof x === "string" ? enc.encode(x) : x; partes.push(b); pos += b.length; };
+    const pw = W / 2, ph = H / 2, n = jpgs.length;
+    const hex = (s) => "<FEFF" + Array.from(String(s)).map((c) => { const k = c.codePointAt(0); return k > 0xffff ? [0xd800 + ((k - 0x10000) >> 10), 0xdc00 + ((k - 0x10000) & 0x3ff)] : [k]; }).flat().map((k) => k.toString(16).padStart(4, "0")).join("") + ">";
+    const lit = (s) => "(" + String(s).replace(/[\\()]/g, (c) => "\\" + c).replace(/[^\x20-\x7e]/g, "") + ")";
+    const obj = (k, corpo) => { offs[k] = pos; add(`${k} 0 obj\n`); corpo(); add("\nendobj\n"); };
+    const annot = 4 + 3 * n;
+    add("%PDF-1.4\n%âã\n");
+    obj(1, () => add("<< /Type /Catalog /Pages 2 0 R >>"));
+    obj(2, () => add(`<< /Type /Pages /Count ${n} /Kids [${jpgs.map((_, i) => `${4 + 3 * i} 0 R`).join(" ")}] >>`));
+    obj(3, () => add(`<< /Title ${hex(meta.titulo || "")} /Author ${hex(t().brand)} /Subject ${hex(t().badge)} /Producer ${hex(URL_SITE)} >>`));
+    for (let i = 0; i < n; i++) {
+      const p = 4 + 3 * i, dados = new Uint8Array(await jpgs[i].arrayBuffer()), cs = `q ${pw} 0 0 ${ph} 0 0 cm /Im0 Do Q`;
+      obj(p, () => add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /Im0 ${p + 2} 0 R >> >> /Contents ${p + 1} 0 R${i === n - 1 && link ? ` /Annots [${annot} 0 R]` : ""} >>`));
+      obj(p + 1, () => { add(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`); });
+      obj(p + 2, () => { add(`<< /Type /XObject /Subtype /Image /Width ${W} /Height ${H} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${dados.length} >>\nstream\n`); add(dados); add("\nendstream"); });
+    }
+    const r = link ? [link.x / 2, ph - (link.y + link.h) / 2, (link.x + link.w) / 2, ph - link.y / 2].map((v) => +v.toFixed(2)) : null;
+    if (r) obj(annot, () => add(`<< /Type /Annot /Subtype /Link /Rect [${r.join(" ")}] /Border [0 0 0] /A << /S /URI /URI ${lit(link.url)} >> >>`));
+    const tot = (r ? annot : annot - 1) + 1, xref = pos;
+    add(`xref\n0 ${tot}\n0000000000 65535 f \n` + Array.from({ length: tot - 1 }, (_, i) => `${String(offs[i + 1]).padStart(10, "0")} 00000 n \n`).join(""));
+    add(`trailer\n<< /Size ${tot} /Root 1 0 R /Info 3 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+    return new Blob(partes, { type: "application/pdf" });
   }
 
   // --- 7) página interativa (.html) — usada pelas páginas e pelo Atlas --------------------------------------------------------
@@ -980,5 +1240,5 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
   }
   document.addEventListener("click", (e) => { if (e.target.closest("[data-export]")) exportarPagina(); });
 
-  A.exportar = { abrir, gerar, modelo, htmlInterativo, exportarPagina, numero, zip, FORMATOS, _paginar: paginar };
+  A.exportar = { abrir, gerar, modelo, htmlInterativo, exportarPagina, fontePagina, carrossel, numero, zip, FORMATOS, _paginar: paginar };
 })();

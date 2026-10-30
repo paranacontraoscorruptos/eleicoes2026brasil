@@ -116,14 +116,14 @@
     });
     d.addEventListener("click", (e) => {
       const b = e.target.closest("[data-post]");
-      if (b) { principal.hidden = true; post.hidden = false; painelPost(post, b.dataset.post, url, o.cartao || cartaoAtual(site)); post.scrollIntoView({ block: "start" }); return; }
+      if (b) { principal.hidden = true; post.hidden = false; painelPost(post, b.dataset.post, url, o.cartao || cartaoAtual(site), o.fonte || (site || !A.exportar ? null : A.exportar.fontePagina)); post.scrollIntoView({ block: "start" }); return; }
       if (e.target.closest("[data-voltar]")) { limparMidia(post); post.hidden = true; post.innerHTML = ""; principal.hidden = false; }
     });
     d.addEventListener("close", () => limparMidia(post));
   }
 
   // Passo a passo para postar numa rede que não recebe link: formato, arquivo, texto e abrir a rede
-  function painelPost(box, k, url, c) {
+  function painelPost(box, k, url, c, fonte) {
     const L = t(), ap = L.sh_apps[k], [urlApp, fmt] = APPS_POST[k];
     box.innerHTML = `<button class="btn btn-sm btn-ghost sh-voltar" type="button" data-voltar>‹ ${esc(L.sh_back)}</button>
       <h3 class="sh-post-t">${icoRede(k)}<span>${esc(ap.titulo)}</span></h3>
@@ -135,7 +135,7 @@
       <h4 class="sh-passo">${esc(L.md_step3)}</h4>
       <div class="btn-row"><a class="btn btn-primary" href="${urlApp}" target="_blank" rel="noopener">${icoRede(k)} ${esc(ap.abrir)}</a></div>
       ${toque() ? "" : `<div class="sh-qrcel"></div>`}`;
-    painelMidia(box.querySelector(".md"), c, fmt, url);
+    painelMidia(box.querySelector(".md"), c, fmt, url, fonte);
     box.querySelector("[data-cptx]").addEventListener("click", async (e) => {
       const bt = e.currentTarget;
       const ok = await copiarTexto(textoPost(url));
@@ -519,15 +519,17 @@
 
   // Painel de mídia: formato (post, story ou vídeo), prévia, baixar e enviar para um app
   function limparMidia(box) { (box._urls || []).forEach((u) => URL.revokeObjectURL(u)); box._urls = []; }
-  function painelMidia(box, c, fmtIni, url) {
+  // fonte (opcional): função que devolve o conteúdo da página ou da resposta, para o carrossel
+  const TAM_ARQ = { "45": "4x5", "11": "1x1", "916": "9x16" };
+  function painelMidia(box, c, fmtIni, url, fonte) {
     const L = t(), feitos = {};
     const slug = c.slug || location.hash.replace(/^#\/?/, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "inicio";
     const raiz = box.closest(".sh-post") || box.closest(".dlg-body") || box;
     raiz._urls = raiz._urls || [];
-    box.innerHTML = `<div class="md-fmt" role="group" aria-label="${esc(L.md_fmt)}">${["post", "story", "video"].map((f) => `<button type="button" class="chipq" data-fmt="${f}" aria-pressed="false">${esc(L["md_fmt_" + f])}</button>`).join("")}</div>
+    box.innerHTML = `<div class="md-fmt" role="group" aria-label="${esc(L.md_fmt)}">${["post", "story", "video"].concat(fonte ? ["carrossel"] : []).map((f) => `<button type="button" class="chipq" data-fmt="${f}" aria-pressed="false">${esc(L["md_fmt_" + f])}</button>`).join("")}</div>
       <div class="md-prev"></div><p class="small muted md-nota"></p><div class="btn-row md-acoes"></div>`;
     const prev = box.querySelector(".md-prev"), nota = box.querySelector(".md-nota"), acoes = box.querySelector(".md-acoes");
-    let atual = null, som = A.ler("bu-som") !== "0";
+    let atual = null, tamCr = "45", som = A.ler("bu-som") !== "0";
     const botoes = (blob, nome, tipo, rotDl) => {
       const u = URL.createObjectURL(blob); raiz._urls.push(u);
       const arq = new File([blob], nome, { type: tipo });
@@ -540,9 +542,10 @@
     const mostrar = async (fmt) => {
       atual = fmt;
       box.querySelectorAll("[data-fmt]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.fmt === fmt)));
-      prev.className = "md-prev " + (fmt === "post" ? "" : "alto");
-      nota.textContent = L["md_note_" + fmt];
+      prev.className = "md-prev " + (fmt === "post" ? "" : fmt === "carrossel" ? "md-cr" : "alto");
+      nota.textContent = L["md_note_" + fmt] || "";
       acoes.innerHTML = "";
+      if (fmt === "carrossel") { mostrarCarrossel(tamCr); return; }
       if (fmt !== "video") {
         prev.innerHTML = `<p class="muted">${esc(L.lk_loading)}</p>`;
         if (!feitos[fmt]) feitos[fmt] = await imagemCartao(c, fmt);
@@ -584,6 +587,51 @@
       prev.querySelector("[data-som]").addEventListener("change", (e) => { som = e.target.checked; A.guardar("bu-som", som ? "1" : "0"); });
       prev.querySelector("[data-gravar]").addEventListener("click", gravar);
     };
+    // Carrossel: várias imagens (ou um PDF) com a página ou a resposta inteira, divididas em capa, conteúdo e fim
+    const mostrarCarrossel = async (tam) => {
+      tamCr = tam;
+      const ainda = () => atual === "carrossel" && tamCr === tam, chave = "cr" + tam;
+      nota.textContent = L.cr_note[tam];
+      acoes.innerHTML = "";
+      prev.innerHTML = `<div class="cr-tam" role="group" aria-label="${esc(L.cr_size)}">${Object.keys(L.cr_tam).map((k) => `<button type="button" class="chipq" data-cr="${k}" aria-pressed="${k === tam}">${esc(L.cr_tam[k])}</button>`).join("")}</div>
+        <div class="cr-corpo"><p class="muted cr-load" aria-live="polite">${esc(L.lk_loading)}</p></div>`;
+      const corpo = prev.querySelector(".cr-corpo"), st = corpo.querySelector(".cr-load");
+      st.textContent = L.cr_making(1, "…");
+      if (!feitos[chave]) {
+        feitos[chave] = A.exportar.carrossel(fonte(), tam, (k, n) => { if (ainda() && k < n) st.textContent = L.cr_making(k + 1, n); })
+          .catch((e) => { console.error(e); return null; });
+      }
+      const r = await feitos[chave];
+      if (!ainda()) return;
+      if (!r) { delete feitos[chave]; corpo.innerHTML = `<p class="muted">${esc(L.xp.err)}</p>`; return; }
+      const n = r.imgs.length;
+      r.urls = r.urls || r.imgs.map((b) => { const u = URL.createObjectURL(b); raiz._urls.push(u); return u; });
+      corpo.innerHTML = `<div class="cr-tira" tabindex="0" role="region" aria-label="${esc(L.md_fmt_carrossel)}">${r.urls.map((u, i) => `<figure class="cr-it${r.H > 1500 ? " alto" : ""}"><img src="${u}" alt="${esc(L.cr_img(i + 1, n))}" width="${r.W / 4}" height="${r.H / 4}"><figcaption>${i + 1} / ${n}</figcaption></figure>`).join("")}</div>
+        <div class="cr-nav"><button type="button" class="btn btn-sm btn-ghost" data-crv="-1" aria-label="${esc(L.cr_prev)}">‹</button><span class="cr-n">1 / ${n}</span><button type="button" class="btn btn-sm btn-ghost" data-crv="1" aria-label="${esc(L.cr_next)}">›</button></div>`;
+      const tira = corpo.querySelector(".cr-tira"), cont = corpo.querySelector(".cr-n");
+      const idx = () => { const c = tira.scrollLeft + tira.clientWidth / 2; let k = 0; Array.from(tira.children).forEach((it, i) => { if (it.offsetLeft <= c) k = i; }); return k; };
+      tira.addEventListener("scroll", () => { cont.textContent = `${idx() + 1} / ${n}`; }, { passive: true });
+      corpo.querySelectorAll("[data-crv]").forEach((b) => b.addEventListener("click", () => {
+        const it = tira.children[Math.max(0, Math.min(n - 1, idx() + +b.dataset.crv))];
+        tira.scrollTo({ left: it.offsetLeft - (tira.clientWidth - it.clientWidth) / 2, behavior: "smooth" });
+      }));
+      if (tam === "pdf") { botoes(r.pdf, `${r.nome}-carrossel.pdf`, "application/pdf", L.cr_dl_pdf); return; }
+      // imagens: no celular vão todas juntas para o app; no computador, um .zip (ou uma por uma)
+      const arqs = r.imgs.map((b, i) => new File([b], `${r.nome}-${String(i + 1).padStart(2, "0")}.png`, { type: "image/png" }));
+      if (!r.zip) r.zip = A.exportar.zip(await Promise.all(arqs.map(async (f) => ({ nome: f.name, dados: new Uint8Array(await f.arrayBuffer()) }))));
+      if (!ainda()) return;
+      const uz = r.uz || (r.uz = URL.createObjectURL(r.zip)); if (!raiz._urls.includes(uz)) raiz._urls.push(uz);
+      const pode = navigator.canShare && navigator.canShare({ files: arqs });
+      acoes.innerHTML = `${pode ? `<button class="btn btn-primary" type="button" data-env>${icone("share")} ${esc(L.cr_send(n))}</button>` : ""}
+        <a class="btn${pode ? "" : " btn-primary"}" href="${uz}" download="${esc(`${r.nome}-carrossel-${TAM_ARQ[tam]}.zip`)}">${icone("download")} ${esc(L.cr_dl_zip(n))}</a>
+        <button class="btn btn-ghost" type="button" data-cada>${icone("image")} ${esc(L.cr_dl_each)}</button>`;
+      const env = acoes.querySelector("[data-env]");
+      if (env) env.addEventListener("click", async () => { try { await navigator.share({ files: arqs, title: c.titulo, text: textoPost(url || urlPagina()) }); } catch (e) { /* cancelado */ } });
+      acoes.querySelector("[data-cada]").addEventListener("click", () => {
+        r.urls.forEach((u, i) => setTimeout(() => { const a = document.createElement("a"); a.href = u; a.download = arqs[i].name; document.body.appendChild(a); a.click(); a.remove(); }, i * 350));
+      });
+    };
+    prev.addEventListener("click", (e) => { const b = e.target.closest("[data-cr]"); if (b && atual === "carrossel" && b.dataset.cr !== tamCr) mostrarCarrossel(b.dataset.cr); });
     box.querySelector(".md-fmt").addEventListener("click", (e) => { const b = e.target.closest("[data-fmt]"); if (b && !b.disabled) mostrar(b.dataset.fmt); });
     mostrar(fmtIni || "post");
   }
@@ -596,7 +644,7 @@
       <textarea class="sh-texto" rows="3" readonly aria-label="${esc(L.md_copy_text)}">${esc(textoPost(url))}</textarea>
       <div class="btn-row"><button class="btn" type="button" data-cptx>${icone("copy")} ${esc(L.md_copy_text)}</button><button class="btn btn-ghost" type="button" ${o.url ? "data-mais" : "data-share"}>${icone("share")} ${esc(L.md_more_nets)}</button></div>`, "dlg-img");
     const corpo = d.querySelector(".dlg-body");
-    painelMidia(d.querySelector(".md"), c, "post", url);
+    painelMidia(d.querySelector(".md"), c, "post", url, o.fonte || (A.exportar && A.exportar.fontePagina));
     d.querySelector("[data-cptx]").addEventListener("click", async (e) => {
       const bt = e.currentTarget;
       const ok = await copiarTexto(textoPost(url));

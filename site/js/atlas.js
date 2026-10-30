@@ -1905,7 +1905,7 @@
         if (k === "copiar") { A.ferramentas.copiarTexto(paraTexto(m.h) + "\n\n" + linkResposta(m)).then((ok) => status(d, ok ? t().copied : "")); return; }
         if (k === "ouvir") { ouvir(ac, m); return; }
         if (k === "compartilhar") { compartilharResposta(ac, d, m); return; }
-        if (k === "imagem") { A.ferramentas.gerarImagem({ cartao: cartaoResposta(d, m), url: linkResposta(m), titulo: `Atlas · ${m.q || X().title}` }); return; }
+        if (k === "imagem") { A.ferramentas.gerarImagem({ cartao: cartaoResposta(d, m), url: linkResposta(m), titulo: `Atlas · ${m.q || X().title}`, fonte: () => fonteAtlas(d) }); return; }
         if (k === "exportar") { exportarMenu(ac, d, m); return; }
         if (k === "automacao") { enviarAutomacao(m, d); return; }
         if (k === "reportar") { reportar(m); return; }

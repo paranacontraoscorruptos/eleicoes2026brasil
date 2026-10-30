@@ -1160,7 +1160,7 @@ Object.assign(window.I18N.ES, {
 
 // Compartilhar em mais redes; imagem e vídeo para Instagram, TikTok, YouTube, Kwai e Status
 Object.assign(window.I18N.PT, {
-  im_btn: "Gerar imagem ou vídeo", im_title: "Imagem e vídeo para redes sociais",
+  im_btn: "Gerar imagem ou vídeo", im_title: "Imagem, carrossel e vídeo para redes sociais",
   sh_sec_link: "Enviar o link", sh_sec_post: "Postar com imagem ou vídeo", sh_sec_more: "Mais formas",
   sh_post_note: "Instagram, TikTok, YouTube e Kwai não recebem link enviado por um site. Aqui o site cria a imagem ou o vídeo desta página, copia o texto com o link e abre a rede para você postar.",
   sh_system: "Outros apps do computador", sh_qr_title: "Abrir no celular",
@@ -1192,9 +1192,22 @@ Object.assign(window.I18N.PT, {
   md_nosound: "Este navegador não gravou o som; o vídeo saiu sem áudio.",
   md_step1: "1. Escolha o formato e baixe o arquivo", md_step2: "2. Copie o texto com o link", md_step3: "3. Abra a rede e poste",
   md_copy_text: "Copiar texto com o link", md_text_title: "Texto para a legenda", md_more_nets: "Mais redes",
+  md_fmt_carrossel: "Carrossel (várias imagens)", cr_size: "Tamanho do carrossel",
+  cr_tam: { "45": "Feed 4:5", "11": "Quadrado 1:1", "916": "Stories 9:16", pdf: "PDF (LinkedIn)" },
+  cr_note: {
+    "45": "Imagens de 1080 × 1350 para carrossel do Instagram e do Facebook. No app, toque em + e selecione as imagens na ordem dos números.",
+    "11": "Imagens de 1080 × 1080 para X, LinkedIn, Threads, Bluesky e WhatsApp.",
+    "916": "Imagens de 1080 × 1920 para Stories e Status: poste uma depois da outra, na ordem dos números.",
+    pdf: "Um PDF com uma página por imagem. No LinkedIn, publique como documento e ele vira carrossel. O QR Code da última página é um link.",
+  },
+  cr_making: (k, n) => `Criando a imagem ${k} de ${n}…`, cr_img: (k, n) => `Imagem ${k} de ${n} do carrossel`,
+  cr_prev: "Imagem anterior", cr_next: "Próxima imagem", cr_send: (n) => `Enviar as ${n} imagens para um app`,
+  cr_dl_zip: (n) => `Baixar as ${n} imagens (.zip)`, cr_dl_each: "Baixar uma por uma", cr_dl_pdf: "Baixar PDF",
+  cr_swipe: "Arraste", cr_swipe_cover: (n) => `Arraste para o lado · ${n} imagens  →`,
+  cr_more: "Este carrossel mostra só o começo. O conteúdo completo está no site.",
 });
 Object.assign(window.I18N.EN, {
-  im_btn: "Create image or video", im_title: "Image and video for social media",
+  im_btn: "Create image or video", im_title: "Image, carousel and video for social media",
   sh_sec_link: "Send the link", sh_sec_post: "Post with an image or video", sh_sec_more: "More ways",
   sh_post_note: "Instagram, TikTok, YouTube and Kwai do not accept links sent by a website. Here the site creates the image or video of this page, copies the text with the link and opens the network for you to post.",
   sh_system: "Other apps on this computer", sh_qr_title: "Open on your phone",
@@ -1226,9 +1239,22 @@ Object.assign(window.I18N.EN, {
   md_nosound: "This browser did not record the sound; the video has no audio.",
   md_step1: "1. Choose the format and download the file", md_step2: "2. Copy the text with the link", md_step3: "3. Open the network and post",
   md_copy_text: "Copy text with the link", md_text_title: "Caption text", md_more_nets: "More networks",
+  md_fmt_carrossel: "Carousel (several images)", cr_size: "Carousel size",
+  cr_tam: { "45": "Feed 4:5", "11": "Square 1:1", "916": "Stories 9:16", pdf: "PDF (LinkedIn)" },
+  cr_note: {
+    "45": "1080 × 1350 images for an Instagram or Facebook carousel. In the app, tap + and select the images in numbered order.",
+    "11": "1080 × 1080 images for X, LinkedIn, Threads, Bluesky and WhatsApp.",
+    "916": "1080 × 1920 images for Stories and Status: post them one after another, in numbered order.",
+    pdf: "A PDF with one page per image. On LinkedIn, post it as a document and it becomes a carousel. The QR code on the last page is a link.",
+  },
+  cr_making: (k, n) => `Creating image ${k} of ${n}…`, cr_img: (k, n) => `Carousel image ${k} of ${n}`,
+  cr_prev: "Previous image", cr_next: "Next image", cr_send: (n) => `Send the ${n} images to an app`,
+  cr_dl_zip: (n) => `Download the ${n} images (.zip)`, cr_dl_each: "Download one by one", cr_dl_pdf: "Download PDF",
+  cr_swipe: "Swipe", cr_swipe_cover: (n) => `Swipe sideways · ${n} images  →`,
+  cr_more: "This carousel shows only the beginning. The full content is on the website.",
 });
 Object.assign(window.I18N.ES, {
-  im_btn: "Crear imagen o video", im_title: "Imagen y video para redes sociales",
+  im_btn: "Crear imagen o video", im_title: "Imagen, carrusel y video para redes sociales",
   sh_sec_link: "Enviar el enlace", sh_sec_post: "Publicar con imagen o video", sh_sec_more: "Más formas",
   sh_post_note: "Instagram, TikTok, YouTube y Kwai no reciben enlaces enviados por un sitio. Aquí el sitio crea la imagen o el video de esta página, copia el texto con el enlace y abre la red para que usted publique.",
   sh_system: "Otras apps de la computadora", sh_qr_title: "Abrir en el celular",
@@ -1260,6 +1286,19 @@ Object.assign(window.I18N.ES, {
   md_nosound: "Este navegador no grabó el sonido; el video salió sin audio.",
   md_step1: "1. Elija el formato y descargue el archivo", md_step2: "2. Copie el texto con el enlace", md_step3: "3. Abra la red y publique",
   md_copy_text: "Copiar texto con el enlace", md_text_title: "Texto para la descripción", md_more_nets: "Más redes",
+  md_fmt_carrossel: "Carrusel (varias imágenes)", cr_size: "Tamaño del carrusel",
+  cr_tam: { "45": "Feed 4:5", "11": "Cuadrado 1:1", "916": "Historias 9:16", pdf: "PDF (LinkedIn)" },
+  cr_note: {
+    "45": "Imágenes de 1080 × 1350 para carrusel de Instagram y Facebook. En la app, toque + y seleccione las imágenes en el orden de los números.",
+    "11": "Imágenes de 1080 × 1080 para X, LinkedIn, Threads, Bluesky y WhatsApp.",
+    "916": "Imágenes de 1080 × 1920 para Historias y Estado: publíquelas una tras otra, en el orden de los números.",
+    pdf: "Un PDF con una página por imagen. En LinkedIn, publíquelo como documento y se convierte en carrusel. El código QR de la última página es un enlace.",
+  },
+  cr_making: (k, n) => `Creando la imagen ${k} de ${n}…`, cr_img: (k, n) => `Imagen ${k} de ${n} del carrusel`,
+  cr_prev: "Imagen anterior", cr_next: "Imagen siguiente", cr_send: (n) => `Enviar las ${n} imágenes a una app`,
+  cr_dl_zip: (n) => `Descargar las ${n} imágenes (.zip)`, cr_dl_each: "Descargar una por una", cr_dl_pdf: "Descargar PDF",
+  cr_swipe: "Deslice", cr_swipe_cover: (n) => `Deslice hacia el lado · ${n} imágenes  →`,
+  cr_more: "Este carrusel muestra solo el comienzo. El contenido completo está en el sitio.",
 });
 
 // Votos do 1º para o 2º turno (Presidente) e testes V1 a V6 do Adendo A do Relatório Técnico do 2º turno
