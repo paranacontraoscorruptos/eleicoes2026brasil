@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Thu, 29 Oct 2026 12:59:00 -0300</lastBuildDate>
+  <lastBuildDate>Fri, 30 Oct 2026 12:00:00 -0300</lastBuildDate>
+  <item>
+    <title>Nova página: Atlas</title>
+    <link>https://paranacontraoscorruptos.org/#/atlas</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-30-10</guid>
+    <pubDate>Fri, 30 Oct 2026 12:00:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Uma conversa para consultar qualquer estado, município, zona, seção ou urna; conferir o QR Code do boletim impresso, o SHA-512 de arquivos, uma lista de seções e a sua própria apuração (CSV), tudo lido só no seu aparelho; e baixar o relatório, o motor ou os dados com um botão. Conexões opcionais: compartilhar, exportar em PDF ou planilha, IBGE, TSE (dados abertos), GitHub e automação (Zapier, Make, n8n). Endereço: paranacontraoscorruptos.org/atlas.</description>
+  </item>
   <item>
     <title>Relatório do 2º turno: Adendo A (variação entre turnos)</title>
     <link>https://paranacontraoscorruptos.org/#/variacao</link>

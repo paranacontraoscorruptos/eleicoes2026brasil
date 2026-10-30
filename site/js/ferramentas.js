@@ -685,5 +685,5 @@
     contar();
   });
 
-  A.ferramentas = { compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca };
+  A.ferramentas = { janela, copiarTexto, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca };
 })();

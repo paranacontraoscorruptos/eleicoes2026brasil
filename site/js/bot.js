@@ -304,7 +304,7 @@
     return x;
   }
 
-  async function pensando(etapas, trabalho) {
+  async function pensando(etapas, trabalho, log = el.log) {
     const ms = 5000 + Math.random() * 1000;
     const seq = etapas.map(sortear);
     if (Math.random() < 0.5) seq.splice(-1, 0, sortear(L().bot_think_wait));
@@ -312,8 +312,8 @@
     const d = document.createElement("div");
     d.className = "msg msg-bot msg-typing";
     d.innerHTML = `<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>`;
-    el.log.appendChild(d);
-    el.log.scrollTop = el.log.scrollHeight;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
     const etapa = (txt) => { d.querySelector(".typing-txt")?.remove(); d.insertAdjacentHTML("beforeend", `<span class="typing-txt">${window.APP.esc(txt)}</span>`); };
     etapa(seq[0]);
     let t = 0;
@@ -323,14 +323,14 @@
 
   // Resposta "digitada": o texto aparece aos poucos, com cursor piscando, e os
   // botões surgem na ordem em que estão. Tocar na resposta mostra tudo de uma vez.
-  async function digitar(d) {
+  async function digitar(d, log = el.log, atomos = "button, svg, img, .chips") {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const passos = [];
     const andar = (n) => {
       for (const c of [...n.childNodes]) {
         if (c.nodeType === 3 && c.nodeValue.trim()) { passos.push({ t: c, txt: c.nodeValue }); c.nodeValue = ""; }
         else if (c.nodeType === 1) {
-          const bloco = c.matches("button, svg, img, .chips");
+          const bloco = c.matches(atomos);
           passos.push({ el: c, disp: c.style.display, bloco });
           c.style.display = "none";
           if (!bloco) andar(c);
@@ -342,13 +342,13 @@
     const vel = N / Math.min(7000, Math.max(900, N * 12));
     const cursor = document.createElement("span");
     cursor.className = "caret"; cursor.setAttribute("aria-hidden", "true");
-    const topo = Math.max(0, d.offsetTop - el.log.offsetTop - 12);
+    const topo = Math.max(0, d.offsetTop - log.offsetTop - 12);
     let pular = false, seguir = true;
     const pare = () => { pular = true; }, solto = () => { seguir = false; };
     d.addEventListener("click", pare);
-    el.log.addEventListener("wheel", solto, { passive: true });
-    el.log.addEventListener("touchmove", solto, { passive: true });
-    el.log.setAttribute("aria-busy", "true");
+    log.addEventListener("wheel", solto, { passive: true });
+    log.addEventListener("touchmove", solto, { passive: true });
+    log.setAttribute("aria-busy", "true");
     try {
       // a cada "tique" escreve algumas letras, passando de um trecho para o próximo
       let k = 0, i = 0;
@@ -367,17 +367,17 @@
           resto -= j - i; i = j;
           if (i >= x.txt.length) { k++; i = 0; }
         }
-        if (seguir) el.log.scrollTop = topo;
+        if (seguir) log.scrollTop = topo;
         await aguardar(tick + pausa);
       }
     } finally {
       passos.forEach((x) => { if (x.el) x.el.style.display = x.disp; else x.t.nodeValue = x.txt; });
       cursor.remove();
       d.removeEventListener("click", pare);
-      el.log.removeEventListener("wheel", solto);
-      el.log.removeEventListener("touchmove", solto);
-      el.log.removeAttribute("aria-busy");
-      if (seguir) el.log.scrollTop = topo;
+      log.removeEventListener("wheel", solto);
+      log.removeEventListener("touchmove", solto);
+      log.removeAttribute("aria-busy");
+      if (seguir) log.scrollTop = topo;
     }
   }
   const escrever = (html) => digitar(msg(html, "bot"));
@@ -484,7 +484,8 @@
   function saudacao() {
     const T = L();
     el.log.innerHTML = "";
-    msg(`<p>${T.bot_hello}</p>` + chips(T.bot_starters.map((x) => ({ txt: x }))), "bot");
+    msg(`<p>${T.bot_hello}</p>` + chips(T.bot_starters.map((x) => ({ txt: x })))
+      + `<p class="msg-rel">${window.APP.esc(T.bot_atlas)}</p><p><button type="button" class="btn btn-sm" data-go="#/atlas">${window.APP.icone("star")} ${window.APP.esc(T.bot_atlas_btn)}</button></p>`, "bot");
   }
 
   function abrir(pergunta) {
@@ -531,6 +532,10 @@
       if (B.aberto) carregar().catch(() => {});
     },
     abrir: (q) => { if (B.iniciado) abrir(q); },
+    fechar: () => { if (B.iniciado && B.aberto) fechar(); },
+    // usado pelo Atlas: a mesma base, a mesma busca e o mesmo jeito de pensar e escrever
+    motor: { carregar, buscar, md, rotulo, detectarSecao, norm, entrada: (id) => B.byId[id] },
+    pensando, digitar,
     _buscar: async (q) => { await carregar(); return buscar(q).map((x) => [x.e.i, +x.sc.toFixed(2), +x.f.toFixed(2)]); },
   };
 })();

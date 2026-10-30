@@ -149,6 +149,11 @@
       link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4L11.5 6M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.5-1.4"/>',
       rss: '<path d="M5 19a1 1 0 1 0 0-.01M5 11a8 8 0 0 1 8 8M5 4.5A14.5 14.5 0 0 1 19.5 19"/>',
       swap: '<path d="M4 8h14m0 0-3.5-3.5M18 8l-3.5 3.5M20 16H6m0 0 3.5-3.5M6 16l3.5 3.5"/>',
+      globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5z"/>',
+      sidebar: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/>',
+      plus: '<path d="M12 5v14M5 12h14"/>',
+      plug: '<path d="M9 3v5m6-5v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21"/>',
+      back: '<path d="M19 12H5m5-5-5 5 5 5"/>',
     }[n];
     return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
   }
@@ -261,6 +266,7 @@
         <div class="float-chip c3"><span class="fc-ico">${icone("check")}</span><span><b>2</b>${esc(L.hero_chip_rounds)}</span></div>
       </div>
     </section>
+    ${destaqueAtlas()}
     ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
     ${destaqueUnanimidade()}
     ${botCta(false)}
@@ -284,6 +290,16 @@
     <section class="card" aria-labelledby="h-lk"><h2 id="h-lk">${esc(L.lookup_cta_title)}</h2><p>${esc(L.lookup_cta_text)}</p>${formSecao(true)}</section>
     <section aria-labelledby="h-leg"><h2 id="h-leg">${esc(L.legend_title)}</h2>
       <ul class="legend">${L.legend.map(([c, n, d]) => `<li>${chip(c, n)} <span class="muted">${esc(d)}</span></li>`).join("")}</ul>
+    </section>`;
+  }
+
+  // Destaque: o Atlas, página de consultas e conferências
+  function destaqueAtlas() {
+    const L = t(), X = L.at;
+    return `<section class="at-dest" aria-labelledby="at-dest-h">
+      <div class="at-dest-txt"><p class="kicker">${esc(X.dest_kicker)}</p><h2 id="at-dest-h"><span class="at-marca" aria-hidden="true">${icone("globe")}</span> Atlas</h2><p>${esc(X.dest_txt)}</p>
+        <div class="btn-row"><a class="btn btn-bot btn-lg" href="#/atlas">${icone("globe")} ${esc(X.dest_btn)}</a></div></div>
+      <ul class="at-dest-l">${X.dest_itens.map(([ic, txt]) => `<li>${icone(ic)}<span>${esc(txt)}</span></li>`).join("")}</ul>
     </section>`;
   }
 
@@ -673,9 +689,9 @@
   }
 
   const PAGINAS = [["home", "#/"], ["r1", "#/turno/1"], ["r2", "#/turno/2"], ["tests", "#/testes"], ["lookup", "#/secao"], ["replicate", "#/replicar"], ["downloads", "#/downloads"], ["limits", "#/limitacoes"]];
-  const ICO_MAIS = { vary: "swap", map: "map", states: "pin", list: "list", charts: "chart", glossary: "book", verify: "hash", ballot: "qr", saved: "star", updates: "bell" };
+  const ICO_MAIS = { atlas: "globe", vary: "swap", map: "map", states: "pin", list: "list", charts: "chart", glossary: "book", verify: "hash", ballot: "qr", saved: "star", updates: "bell" };
   // Páginas do menu "Mais" (ferramentas e consultas)
-  const MAIS = [["vary", "#/variacao"], ["map", "#/mapa"], ["states", "#/uf"], ["list", "#/lista"], ["charts", "#/graficos"], ["glossary", "#/glossario"], ["verify", "#/conferir"],
+  const MAIS = [["atlas", "#/atlas"], ["vary", "#/variacao"], ["map", "#/mapa"], ["states", "#/uf"], ["list", "#/lista"], ["charts", "#/graficos"], ["glossary", "#/glossario"], ["verify", "#/conferir"],
     ["ballot", "#/boletim"], ["saved", "#/salvas"], ["updates", "#/atualizacoes"]];
 
   function montarCabecalho() {
@@ -1087,6 +1103,6 @@
 
   const paginas = {};
   window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, consultarSecao, votosTurno, icone, json, tabela, tile, barras, chip, chipStatus,
-    status, botCta, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
+    status, botCta, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
   document.addEventListener("DOMContentLoaded", iniciar);
 })();
