@@ -3,7 +3,7 @@
   "use strict";
 
   const REPO = "https://github.com/paranacontraoscorruptos/eleicoes2026brasil";
-  const BLOB = REPO + "/blob/main/auditoria-eleicoes-2026-Brasil/auditoria_eleicoes_2026.py";
+  const BLOB = REPO + "/blob/6638cbfa6cbdf0f3ddc5d8fc83370cab666012e4/auditoria-eleicoes-2026-Brasil/auditoria_eleicoes_2026.py"; // v2.1.0: linhas de resumo.motor.funcoes
   const ZIP = REPO + "/archive/refs/heads/main.zip";
   const PASTA = "auditoria-eleicoes-2026-Brasil";
   const TSE_PORTAL = "https://dadosabertos.tse.jus.br/";
