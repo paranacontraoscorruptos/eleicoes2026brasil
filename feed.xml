@@ -3,14 +3,14 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
   <title>Auditoria BU 2026 · Atualizações</title>
-  <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/</link>
-  <atom:link href="https://paranacontraoscorruptos.github.io/eleicoes2026brasil/feed.xml" rel="self" type="application/rss+xml"/>
+  <link>https://paranacontraoscorruptos.org/</link>
+  <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
   <lastBuildDate>Thu, 29 Oct 2026 12:59:00 -0300</lastBuildDate>
   <item>
     <title>Relatório do 2º turno: Adendo A (variação entre turnos)</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/variacao</link>
+    <link>https://paranacontraoscorruptos.org/#/variacao</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-9</guid>
     <pubDate>Thu, 29 Oct 2026 12:59:00 -0300</pubDate>
     <category>Dados</category>
@@ -18,7 +18,7 @@
   </item>
   <item>
     <title>Nova página: votos do 1º para o 2º turno</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/variacao</link>
+    <link>https://paranacontraoscorruptos.org/#/variacao</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-8</guid>
     <pubDate>Thu, 29 Oct 2026 12:58:00 -0300</pubDate>
     <category>Site</category>
@@ -26,7 +26,7 @@
   </item>
   <item>
     <title>Mais formas de compartilhar</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/</link>
+    <link>https://paranacontraoscorruptos.org/#/</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-7</guid>
     <pubDate>Thu, 29 Oct 2026 12:57:00 -0300</pubDate>
     <category>Site</category>
@@ -34,7 +34,7 @@
   </item>
   <item>
     <title>Testes 13, 14 e 15 em todas as consultas</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/lista?teste=T15</link>
+    <link>https://paranacontraoscorruptos.org/#/lista?teste=T15</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-6</guid>
     <pubDate>Thu, 29 Oct 2026 12:56:00 -0300</pubDate>
     <category>Site</category>
@@ -42,7 +42,7 @@
   </item>
   <item>
     <title>Novas ferramentas e consultas</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/mapa</link>
+    <link>https://paranacontraoscorruptos.org/#/mapa</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-29-5</guid>
     <pubDate>Thu, 29 Oct 2026 12:55:00 -0300</pubDate>
     <category>Site</category>
@@ -50,7 +50,7 @@
   </item>
   <item>
     <title>Grupo do Telegram</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/</link>
+    <link>https://paranacontraoscorruptos.org/#/</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-4</guid>
     <pubDate>Wed, 28 Oct 2026 12:54:00 -0300</pubDate>
     <category>Site</category>
@@ -58,7 +58,7 @@
   </item>
   <item>
     <title>Site no ar</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/secao</link>
+    <link>https://paranacontraoscorruptos.org/#/secao</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-3</guid>
     <pubDate>Wed, 28 Oct 2026 12:53:00 -0300</pubDate>
     <category>Site</category>
@@ -66,7 +66,7 @@
   </item>
   <item>
     <title>Relatório Técnico do 2º turno</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/turno/2</link>
+    <link>https://paranacontraoscorruptos.org/#/turno/2</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-28-2</guid>
     <pubDate>Wed, 28 Oct 2026 12:52:00 -0300</pubDate>
     <category>Dados</category>
@@ -74,7 +74,7 @@
   </item>
   <item>
     <title>Relatório Técnico do 1º turno</title>
-    <link>https://paranacontraoscorruptos.github.io/eleicoes2026brasil/#/turno/1</link>
+    <link>https://paranacontraoscorruptos.org/#/turno/1</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-24-1</guid>
     <pubDate>Sat, 24 Oct 2026 12:51:00 -0300</pubDate>
     <category>Dados</category>

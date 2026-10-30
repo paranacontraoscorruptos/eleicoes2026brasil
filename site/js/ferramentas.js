@@ -6,7 +6,7 @@
   const A = window.APP;
   const { esc, icone, $, $$ } = A;
   const t = () => A.t();
-  const URL_SITE = "https://paranacontraoscorruptos.github.io/eleicoes2026brasil/";
+  const URL_SITE = "https://paranacontraoscorruptos.org/";
   // Contador de visitas (GoatCounter, sem cookies). Fica desligado enquanto o código da conta estiver vazio.
   const GOATCOUNTER = "";
 
@@ -296,7 +296,7 @@
     const dest = fase(4.6, .8);
     if (dest > 0 && tm !== Infinity) { ctx.fillStyle = `rgba(31,195,95,${.18 * dest})`; ctx.beginPath(); ctx.roundRect(P + 40, yb - 98, W - 2 * P - 80, 52, 26); ctx.fill(); }
     ctx.fillStyle = "#eef6f0"; ctx.font = `600 25px ${F_MONO}`;
-    ctx.fillText(URL_SITE.replace("https://", ""), W / 2, yb - 64);
+    ctx.fillText(URL_SITE.replace(/^https:\/\/|\/$/g, ""), W / 2, yb - 64);
     ctx.textAlign = "left"; ctx.globalAlpha = 1;
   }
 
