@@ -1524,8 +1524,8 @@ Object.assign(window.I18N.EN, { bot_atlas: "For full lookups, file checks and da
 Object.assign(window.I18N.ES, { bot_atlas: "Para consultas completas, verificar archivos y descargar datos, use Atlas.", bot_atlas_btn: "Abrir Atlas" });
 
 window.I18N.PT.at = {
-  title: "Atlas", tse_nt: "nulo técnico no TSE (candidato com votos anulados)", side_aria: "Menu do Atlas", side_open: "Abrir menu", side_close: "Fechar menu", side_collapse: "Recolher menu", side_expand: "Expandir menu",
-  back: "Voltar ao site", new_chat: "Nova conversa", funcs_t: "Funções", hist_t: "Conversas", hist_none: "Nenhuma conversa ainda.", untitled: "Conversa",
+  title: "Atlas", tse_nt: "nulo técnico no TSE (candidato com votos anulados)", side_aria: "Menu do Atlas", side_open: "Abrir funções e conversas", side_close: "Fechar menu", side_collapse: "Recolher menu", side_expand: "Expandir menu",
+  new_chat: "Nova conversa", funcs_t: "Funções", hist_t: "Conversas", hist_none: "Nenhuma conversa ainda.", untitled: "Conversa",
   hist_del: "Apagar conversa", hist_clear: "Apagar todas", hist_clear_q: "Apagar todas as conversas deste aparelho?",
   hist_local: "As conversas ficam só neste aparelho.", hist_save: "Salvar conversas neste aparelho", hist_save_sub: "Desligado, a conversa some ao fechar a página. Nada vai para servidor.",
   conn_t: "Conexões", conn_open: "Abrir conexões", conn_sub: "Ligue só o que quiser usar. Cada conexão diz o que faz e para onde vai.", priv_t: "Privacidade",
@@ -1679,8 +1679,8 @@ window.I18N.PT.at = {
   },
 };
 window.I18N.EN.at = {
-  title: "Atlas", tse_nt: "technical null at the TSE (candidate with annulled votes)", side_aria: "Atlas menu", side_open: "Open menu", side_close: "Close menu", side_collapse: "Collapse menu", side_expand: "Expand menu",
-  back: "Back to the site", new_chat: "New chat", funcs_t: "Functions", hist_t: "Chats", hist_none: "No chats yet.", untitled: "Chat",
+  title: "Atlas", tse_nt: "technical null at the TSE (candidate with annulled votes)", side_aria: "Atlas menu", side_open: "Open functions and chats", side_close: "Close menu", side_collapse: "Collapse menu", side_expand: "Expand menu",
+  new_chat: "New chat", funcs_t: "Functions", hist_t: "Chats", hist_none: "No chats yet.", untitled: "Chat",
   hist_del: "Delete chat", hist_clear: "Delete all", hist_clear_q: "Delete all chats on this device?",
   hist_local: "Chats stay on this device only.", hist_save: "Save chats on this device", hist_save_sub: "When off, the chat is gone when you close the page. Nothing goes to a server.",
   conn_t: "Connections", conn_open: "Open connections", conn_sub: "Turn on only what you want to use. Each connection says what it does and where it goes.", priv_t: "Privacy",
@@ -1834,8 +1834,8 @@ window.I18N.EN.at = {
   },
 };
 window.I18N.ES.at = {
-  title: "Atlas", tse_nt: "nulo técnico en el TSE (candidato con votos anulados)", side_aria: "Menú de Atlas", side_open: "Abrir menú", side_close: "Cerrar menú", side_collapse: "Contraer menú", side_expand: "Expandir menú",
-  back: "Volver al sitio", new_chat: "Nueva conversación", funcs_t: "Funciones", hist_t: "Conversaciones", hist_none: "Aún no hay conversaciones.", untitled: "Conversación",
+  title: "Atlas", tse_nt: "nulo técnico en el TSE (candidato con votos anulados)", side_aria: "Menú de Atlas", side_open: "Abrir funciones y conversaciones", side_close: "Cerrar menú", side_collapse: "Contraer menú", side_expand: "Expandir menú",
+  new_chat: "Nueva conversación", funcs_t: "Funciones", hist_t: "Conversaciones", hist_none: "Aún no hay conversaciones.", untitled: "Conversación",
   hist_del: "Borrar conversación", hist_clear: "Borrar todas", hist_clear_q: "¿Borrar todas las conversaciones de este dispositivo?",
   hist_local: "Las conversaciones quedan solo en este dispositivo.", hist_save: "Guardar conversaciones en este dispositivo", hist_save_sub: "Apagado, la conversación se pierde al cerrar la página. Nada va a un servidor.",
   conn_t: "Conexiones", conn_open: "Abrir conexiones", conn_sub: "Active solo lo que quiera usar. Cada conexión dice qué hace y adónde va.", priv_t: "Privacidad",

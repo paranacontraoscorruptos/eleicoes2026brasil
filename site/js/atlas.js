@@ -114,7 +114,6 @@
   }
 
   // --- página ----------------------------------------------------------------------------------------------
-  const escuro = () => document.documentElement.getAttribute("data-theme") !== "light";
   function menuMais() {
     const T = X();
     return MAIS.filter((k) => k !== "camera" || podeCamera).map((k) => `<button type="button" role="menuitem" data-at-arq="${k}">${icone(ICO_ARQ[k])}<span><b>${esc(T.up[k][0])}</b><small>${esc(T.up[k][1])}</small></span></button>`).join("")
@@ -143,13 +142,9 @@
       <div class="at-veu" data-at="gaveta-fechar" aria-hidden="true"></div>
       <section class="at-main" aria-label="Atlas">
         <header class="at-top">
-          <button class="at-ib at-menu" type="button" data-at="gaveta" aria-label="${esc(T.side_open)}" aria-expanded="false" aria-controls="at-side">${icone("menu")}</button>
-          <a class="at-voltar" href="#/">${icone("back")}<span>${esc(T.back)}</span></a>
-          <span class="at-selo">${esc(L.badge)}</span>
+          <button class="at-menu" type="button" data-at="gaveta" aria-label="${esc(T.side_open)}" aria-expanded="false" aria-controls="at-side">${icone("sidebar")}<span>${esc(T.funcs_t)}</span></button>
           <div class="at-ferr">
             <button class="at-ib" type="button" data-at="exportar-conversa" aria-label="${esc(T.exp_conv)}" title="${esc(T.exp_conv)}" aria-haspopup="menu" aria-expanded="false">${icone("download")}</button>
-            <div class="lang" role="group" aria-label="${esc(L.lang)}">${["PT", "EN", "ES"].map((l) => `<button type="button" data-lang="${l}" aria-pressed="${l === A.state.lang}">${l}</button>`).join("")}</div>
-            <button class="at-ib at-tema" type="button" data-at="tema" aria-label="${esc(L.theme)}" title="${esc(L.theme)}">${icone(escuro() ? "sun" : "moon")}</button>
           </div>
         </header>
         <div class="at-vazio" id="at-vazio">
@@ -1435,7 +1430,6 @@
       }
       if (k === "gaveta") { root.classList.add("gaveta"); at.setAttribute("aria-expanded", "true"); setTimeout(() => { const f = root.querySelector(".at-side .at-nova"); if (f) f.focus(); }, 50); return; }
       if (k === "gaveta-fechar") { fecharGaveta(); return; }
-      if (k === "tema") { A.tema(true); at.innerHTML = icone(escuro() ? "sun" : "moon"); return; }
       if (k === "mais") {
         const abrir = S.el.mais.hidden; fecharMenus();
         S.el.mais.hidden = !abrir; at.setAttribute("aria-expanded", String(abrir));

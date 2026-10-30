@@ -1106,10 +1106,12 @@ a.tag:hover { border-color: var(--accent); }
 @keyframes piscar { to { visibility: hidden; } }
 
 /* --- Atlas: página própria de conversa ------------------------------------------------------------ */
-body.atlas-on { overflow: hidden; }
-body.atlas-on .site-head, body.atlas-on .badge-bar, body.atlas-on .site-foot, body.atlas-on .bot-launcher, body.atlas-on .bot-bubble, body.atlas-on .bot, body.atlas-on .skip { display: none !important; }
-body.atlas-on main { max-width: none; padding: 0; }
-.atlas { --lado: 278px; position: fixed; inset: 0; z-index: 30; display: grid; grid-template-columns: var(--lado) minmax(0, 1fr); height: 100vh; height: 100dvh; background: var(--bg); color: var(--ink); }
+/* cabeçalho e aviso do site em cima; a conversa ocupa o resto da tela */
+body.atlas-on { overflow: hidden; display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+body.atlas-on .site-head, body.atlas-on .badge-bar { flex: none; }
+body.atlas-on .site-foot, body.atlas-on .bot-launcher, body.atlas-on .bot-bubble, body.atlas-on .bot { display: none !important; }
+body.atlas-on main { flex: 1 1 auto; min-height: 0; width: 100%; max-width: none; margin: 0; padding: 0; }
+.atlas { --lado: 278px; position: relative; display: grid; grid-template-columns: var(--lado) minmax(0, 1fr); height: 100%; background: var(--bg); color: var(--ink); }
 .at-marca { width: 34px; height: 34px; border-radius: 11px; display: inline-grid; place-items: center; flex: none; color: #fff; background: conic-gradient(from 210deg, #009c3b, #1fc35f, #ffd400, #1f4bc4, #009c3b); box-shadow: 0 6px 18px -6px rgba(31, 195, 95, .6); }
 .at-marca svg { width: 21px; height: 21px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35)); }
 .at-ib { border: 1px solid transparent; background: transparent; color: var(--ink-2); width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; flex: none; transition: background .2s, color .2s, transform .2s; }
@@ -1117,7 +1119,7 @@ body.atlas-on main { max-width: none; padding: 0; }
 .at-ib.treme { animation: treme .4s; }
 @keyframes treme { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 /* barra lateral */
-.at-side { display: flex; flex-direction: column; gap: 6px; min-height: 0; padding: 12px 10px 10px; background: var(--surface); border-right: 1px solid var(--line); overflow: hidden; }
+.at-side { display: flex; flex-direction: column; gap: 6px; min-height: 0; padding: 12px 10px 10px; background: var(--surface); border-right: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
 .at-side-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 2px 6px; }
 .at-logo { display: flex; align-items: center; gap: 10px; border: 0; background: none; color: var(--ink); font: 700 1.2rem var(--display); cursor: pointer; padding: 2px; border-radius: 12px; min-width: 0; }
 .at-fechar-lado { display: none; }
@@ -1125,12 +1127,13 @@ body.atlas-on main { max-width: none; padding: 0; }
 .at-nova:hover { border-color: var(--accent); background: var(--surface-3); }
 .at-nova svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
 .at-side-h { font: 700 .68rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 12px 10px 4px; }
-.at-funcs { display: flex; flex-direction: column; gap: 1px; overflow-y: auto; flex: 0 1 auto; min-height: 150px; scrollbar-width: thin; }
+/* a barra inteira rola; Conexões fica presa embaixo */
+.at-funcs { display: flex; flex-direction: column; gap: 1px; flex: none; }
 .at-fn { display: flex; align-items: center; gap: 11px; width: 100%; border: 0; background: transparent; color: var(--ink-2); font: 500 .89rem var(--font); padding: 7px 10px; border-radius: 10px; cursor: pointer; text-align: left; white-space: nowrap; transition: background .15s, color .15s; }
 .at-fn svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
 .at-fn span { overflow: hidden; text-overflow: ellipsis; }
 .at-fn:hover { background: var(--surface-2); color: var(--ink); }
-.at-hist { flex: 1 1 0; min-height: 96px; overflow-y: auto; scrollbar-width: thin; }
+.at-hist { flex: 1 0 auto; min-height: 96px; }
 .at-hist ul { list-style: none; margin: 0; padding: 0; }
 .at-hist li { display: flex; align-items: center; border-radius: 10px; }
 .at-hist li.on, .at-hist li:hover { background: var(--surface-2); }
@@ -1146,7 +1149,7 @@ body.atlas-on main { max-width: none; padding: 0; }
 .at-h-vazio { color: var(--muted); font-size: .84rem; padding: 4px 10px; }
 .at-h-limpar button { border: 0; background: none; color: var(--muted); font: .78rem var(--font); padding: 6px 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .at-h-limpar button:hover { color: var(--red); }
-.at-side-foot { border-top: 1px solid var(--line); padding-top: 6px; }
+.at-side-foot { position: sticky; bottom: -10px; z-index: 1; border-top: 1px solid var(--line); padding: 6px 0 10px; margin-bottom: -10px; background: var(--surface); }
 .at-local { display: flex; gap: 8px; align-items: flex-start; font-size: .74rem; color: var(--muted); margin: 6px 10px 0; line-height: 1.4; }
 .at-local svg { width: 14px; height: 14px; flex: none; margin-top: 2px; }
 @media (min-width: 861px) {
@@ -1158,12 +1161,10 @@ body.atlas-on main { max-width: none; padding: 0; }
 }
 /* coluna da conversa */
 .at-main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.at-top { flex: none; display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 75%, transparent); }
-.at-menu { display: none; }
-.at-voltar { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: .9rem; color: var(--ink-2); text-decoration: none; padding: 7px 10px; border-radius: 10px; white-space: nowrap; }
-.at-voltar:hover { background: var(--surface-2); color: var(--ink); }
-.at-voltar svg { width: 18px; height: 18px; }
-.at-selo { font-size: .74rem; font-weight: 600; color: var(--yellow-text); border: 1px solid color-mix(in srgb, var(--yellow) 40%, transparent); background: var(--yellow-soft); padding: 3px 10px; border-radius: 999px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.at-top { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px 14px 0; }
+.at-menu { display: none; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); font: 600 .88rem var(--font); padding: 7px 14px 7px 11px; border-radius: 999px; cursor: pointer; transition: border-color .2s; }
+.at-menu svg { width: 18px; height: 18px; color: var(--accent); }
+.at-menu:hover { border-color: var(--accent); }
 .at-ferr { margin-left: auto; display: flex; align-items: center; gap: 6px; position: relative; }
 .at-vazio { display: none; text-align: center; padding: 0 16px; }
 .atlas.vazio .at-vazio { display: block; margin-top: auto; }
@@ -1265,7 +1266,7 @@ body.atlas-on main { max-width: none; padding: 0; }
 .at-solte div { display: grid; gap: 6px; justify-items: center; text-align: center; padding: 16px; }
 .at-solte svg { width: 42px; height: 42px; color: var(--accent); }
 .at-solte span { color: var(--muted); font-size: .88rem; }
-.at-cam { position: absolute; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(0, 0, 0, .82); padding: 16px; }
+.at-cam { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(0, 0, 0, .82); padding: 16px; }
 .at-cam-in { width: min(520px, 100%); display: grid; gap: 10px; justify-items: center; text-align: center; color: #fff; }
 .at-cam-v { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; }
 .at-cam-v video { display: block; width: 100%; height: auto; max-height: 62vh; object-fit: cover; }
@@ -1303,15 +1304,14 @@ body.atlas-on main { max-width: none; padding: 0; }
 .at-veu { display: none; }
 @media (max-width: 860px) {
   .atlas { grid-template-columns: minmax(0, 1fr); }
-  .at-side { position: fixed; z-index: 40; top: 0; bottom: 0; left: 0; width: min(316px, 86vw); transform: translateX(-104%); transition: transform .28s cubic-bezier(.2, .8, .2, 1); box-shadow: 0 0 60px rgba(0, 0, 0, .5); visibility: hidden; }
+  .at-side { position: fixed; z-index: 42; top: 0; bottom: 0; left: 0; width: min(316px, 86vw); transform: translateX(-104%); transition: transform .28s cubic-bezier(.2, .8, .2, 1); box-shadow: 0 0 60px rgba(0, 0, 0, .5); visibility: hidden; }
   .atlas.gaveta .at-side { transform: none; visibility: visible; }
-  .at-veu { display: block; position: fixed; inset: 0; z-index: 35; background: rgba(0, 0, 0, .5); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .at-veu { display: block; position: fixed; inset: 0; z-index: 41; background: rgba(0, 0, 0, .5); opacity: 0; pointer-events: none; transition: opacity .25s; }
   .atlas.gaveta .at-veu { opacity: 1; pointer-events: auto; }
-  .at-menu { display: grid; }
+  .at-menu { display: inline-flex; }
   .at-recolher { display: none; }
   .at-fechar-lado { display: grid; }
-  .at-top { flex-wrap: wrap; padding: 6px 8px; gap: 4px; }
-  .at-selo { order: 9; flex: 1 0 100%; text-align: center; font-size: .7rem; white-space: normal; }
+  .at-top { padding: 8px 10px 0; }
   .at-log { padding-top: 16px; gap: 16px; }
   .at-log .msg-bot { padding-left: 0; padding-top: 40px; }
   .at-log .msg-typing { padding-top: 6px; padding-left: 42px; }
@@ -1319,14 +1319,10 @@ body.atlas-on main { max-width: none; padding: 0; }
   .at-chip { padding: 7px 12px; font-size: .82rem; }
   .at-hook { margin-left: 0; }
 }
-@media (max-width: 420px) {
-  .at-voltar span { display: none; }
-  .at-top .lang button { min-width: 28px; padding: 5px 4px; }
-}
 @media (prefers-reduced-motion: reduce) { .at-side { transition: none; } }
 /* impressão / PDF de uma resposta ou da conversa */
 @media print {
-  body.atlas-on { overflow: visible; }
+  body.atlas-on { overflow: visible; display: block; height: auto; }
   body.atlas-on .at-side, body.atlas-on .at-veu, body.atlas-on .at-top, body.atlas-on .at-comp, body.atlas-on .at-acts, body.atlas-on .at-vazio, body.atlas-on .at-solte, body.atlas-on .at-cam, body.atlas-on .at-btns, body.atlas-on .chips, body.atlas-on .msg-rel { display: none !important; }
   body.atlas-on .atlas { position: static; display: block; height: auto; }
   body.atlas-on .at-main { display: block; }
