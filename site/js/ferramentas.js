@@ -8,7 +8,7 @@
   const t = () => A.t();
   const URL_SITE = "https://paranacontraoscorruptos.org/";
   // Contador de visitas (GoatCounter, sem cookies). Fica desligado enquanto o código da conta estiver vazio.
-  const GOATCOUNTER = "";
+  const GOATCOUNTER = "paranacontraoscorruptos";
 
   // --- janela (dialog) ---------------------------------------------------------------------------------------
   function janela(titulo, corpo, cls) {
