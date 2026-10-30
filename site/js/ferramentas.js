@@ -559,7 +559,8 @@
   function limparMidia(box) { (box._urls || []).forEach((u) => URL.revokeObjectURL(u)); box._urls = []; }
   // fonte (opcional): função que devolve o conteúdo da página ou da resposta, para o carrossel
   const TAM_ARQ = { "45": "4x5", "11": "1x1", "916": "9x16" };
-  function painelMidia(box, c, fmtIni, url, fonte) {
+  // crIni (pedido por texto no Atlas): { tipo: "img" | "vid", tam: "45" | "11" | "916" | "pdf" }
+  function painelMidia(box, c, fmtIni, url, fonte, crIni) {
     const L = t(), feitos = {};
     const slug = c.slug || location.hash.replace(/^#\/?/, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "inicio";
     const raiz = box.closest(".sh-post") || box.closest(".dlg-body") || box;
@@ -567,7 +568,8 @@
     box.innerHTML = `<div class="md-fmt" role="group" aria-label="${esc(L.md_fmt)}">${["post", "story", "video"].concat(fonte ? ["carrossel"] : []).map((f) => `<button type="button" class="chipq" data-fmt="${f}" aria-pressed="false">${esc(L["md_fmt_" + f])}</button>`).join("")}</div>
       <div class="md-prev"></div><p class="small muted md-nota"></p><div class="btn-row md-acoes"></div>`;
     const prev = box.querySelector(".md-prev"), nota = box.querySelector(".md-nota"), acoes = box.querySelector(".md-acoes");
-    let atual = null, tamCr = "45", tipoCr = "img", som = A.ler("bu-som") !== "0";
+    let atual = null, tamCr = (crIni && crIni.tam) || "45", tipoCr = (crIni && crIni.tipo) || "img", som = A.ler("bu-som") !== "0";
+    if (tipoCr === "vid" && tamCr === "pdf") tamCr = "45";
     const botoes = (blob, nome, tipo, rotDl) => {
       const u = URL.createObjectURL(blob); raiz._urls.push(u);
       const arq = new File([blob], nome, { type: tipo });
@@ -754,7 +756,7 @@
       <textarea class="sh-texto" rows="3" readonly aria-label="${esc(L.md_copy_text)}">${esc(textoPost(url))}</textarea>
       <div class="btn-row"><button class="btn" type="button" data-cptx>${icone("copy")} ${esc(L.md_copy_text)}</button><button class="btn btn-ghost" type="button" ${o.url ? "data-mais" : "data-share"}>${icone("share")} ${esc(L.md_more_nets)}</button></div>`, "dlg-img");
     const corpo = d.querySelector(".dlg-body");
-    painelMidia(d.querySelector(".md"), c, "post", url, o.fonte || (A.exportar && A.exportar.fontePagina));
+    painelMidia(d.querySelector(".md"), c, o.fmt || "post", url, o.fonte || (A.exportar && A.exportar.fontePagina), o.cr);
     d.querySelector("[data-cptx]").addEventListener("click", async (e) => {
       const bt = e.currentTarget;
       const ok = await copiarTexto(textoPost(url));

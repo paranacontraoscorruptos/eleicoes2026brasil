@@ -272,7 +272,7 @@
   // Uma resposta por vez
   async function ocupar(fn) {
     if (S.ocupado) return false;
-    S.ocupado = true; bloquear(true); S.pre = "";
+    S.ocupado = true; bloquear(true); S.pre = ""; S.parou = false;
     try { await fn(); } catch (e) {
       console.error(e);
       if (S.el.log && document.contains(S.el.log)) { const d = bolha("a", `<p class="alert">${esc(X().err)} (${esc(e.message)})</p>`); d.scrollIntoView({ block: "nearest" }); }
@@ -290,30 +290,64 @@
   const RE_DL = /\b(baixar|baixe|download|downloads|descargar|descargue|bajar)\b/;
   const RE_AJUDA = /^(?:ajuda|help|ayuda|menu|funcoes|functions|funciones|o que (?:voce|vc) (?:faz|sabe(?: fazer)?)|what can you do|que (?:puede|puedes) hacer|quem e voce|who are you|quien eres|o que e o atlas|what is atlas|que es atlas)$/;
   // --- memória da conversa: o assunto da última resposta, para "e no 1º turno?", "e em Londrina?", "e a seção 51?" -----
-  function ctxAtual() { const c = S.convs.find((x) => x.id === S.atual); return (c && c.ctx) || null; }
+  const convAtual = () => S.convs.find((x) => x.id === S.atual) || null;
+  function ctxAtual() { const c = convAtual(); return (c && c.ctx) || null; }
+  // Memória da conversa inteira: lugares e seções citados (o mais recente primeiro) e a última lista mostrada
+  function memoria() { const c = convAtual(); if (!c) return null; if (!c.mem) c.mem = { lug: [], sec: [], lista: [] }; return c.mem; }
+  const chaveLug = (x) => `${x.tipo}|${x.uf || ""}|${x.cod || ""}|${x.z || ""}|${x.s || ""}`;
+  function guardarEm(l, x) { const k = chaveLug(x), i = l.findIndex((y) => chaveLug(y) === k); if (i >= 0) l.splice(i, 1); l.unshift(x); if (l.length > 15) l.length = 15; }
   function lembrar(o) {
-    const c = S.convs.find((x) => x.id === S.atual); if (!c) return;
+    const c = convAtual(); if (!c) return;
     c.ctx = JSON.parse(JSON.stringify(o));
+    const mm = memoria();
+    [].concat(o.lugares || [], o.lugar ? [o.lugar] : []).filter((x) => x && (x.tipo === "mun" || x.tipo === "uf" || x.tipo === "br"))
+      .forEach((x) => guardarEm(mm.lug, { tipo: x.tipo, uf: x.uf || null, cod: x.cod || null, nome: x.nome || null }));
+    if (o.sec && o.sec.uf && o.sec.z) guardarEm(mm.sec, o.sec.s ? { tipo: "secao", uf: o.sec.uf, z: o.sec.z, s: o.sec.s } : { tipo: "zona", uf: o.sec.uf, z: o.sec.z });
+    guardarConversas();
+  }
+  // Itens de uma lista mostrada (ranking, filtro, comparação…), para "o segundo", "o último"
+  function listar(itens) {
+    const mm = memoria(); if (!mm) return;
+    mm.lista = itens.filter(Boolean).slice(0, 100).map((r) => ({ tipo: r.tipo, uf: r.uf || null, cod: r.cod || null, nome: r.nome || null, z: r.z || null, s: r.s || null }));
     guardarConversas();
   }
   const lugarCtx = (lg) => (lg.muns && lg.muns.length === 1 ? Object.assign({ tipo: "mun" }, lg.muns[0]) : lg.uf ? { tipo: "uf", uf: lg.uf, nome: A.ufNome(lg.uf) } : null);
   function ctxDe(E, extra) {
-    return Object.assign({ intencao: E.intencao, turno: E.turno, metrica: E.metrica, unidade: E.unidade, ordem: E.ordem, n: E.n, nivel: E.nivel, testes: E.testes, op: E.op, cand: E.cand,
-      lugar: lugarCtx(E.lugar) || (E.br ? { tipo: "br" } : null), sec: E.sec && E.sec.uf && E.sec.z ? E.sec : null, lugares: E.lugares }, extra || {});
+    return Object.assign({ q: E.texto, intencao: E.intencao, turno: E.turno, metrica: E.metrica, unidade: E.unidade, ordem: E.ordem, n: E.n, off: E.off || 0, nivel: E.nivel, testes: E.testes, op: E.op,
+      cand: E.cand, taxa: E.taxa, urna: E.urna || null, lugar: lugarCtx(E.lugar) || (E.br ? { tipo: "br" } : null), sec: E.sec && E.sec.uf && E.sec.z ? E.sec : null, lugares: E.lugares, secs: E.secs }, extra || {});
   }
 
   const kbEntradas = (r) => r.map((x) => ({ sc: x.sc, f: x.f, e: motor().entrada(x.i) })).filter((x) => x.e);
   const kbForte = (r) => r.length && r[0].sc >= 4 && r[0].f >= 0.34;
 
-  async function responder(texto) {
+  // op.etapa: parte de um pedido com várias tarefas · op.semAcao: só os dados (a ação vem depois)
+  async function responder(texto, op) {
+    op = op || {};
     const c = motor().cortesia(texto);
     if (c && c.so) return cortesia(c);
     // "Oi, tudo bem? Resultado de Curitiba": a resposta começa devolvendo a saudação
-    if (c) { S.pre = `<p>${esc(motor().cortesiaTexto(c, false, t().cort))}</p>`; texto = c.resto; }
-    const T = X(), n = nz(texto);
-    if (RE_AJUDA.test(n)) return ajuda();
-    const [an] = await Promise.all([motor().analisar(texto, ctxAtual()), motor().carregar().catch(() => {})]);
+    if (c) { S.pre += `<p>${esc(motor().cortesiaTexto(c, false, t().cort))}</p>`; texto = c.resto; }
+    const T = X(), MT = window.MOTOR, cv = convAtual(), oferta = cv && cv.oferta;
+    if (oferta && !op.etapa) { cv.oferta = null; guardarConversas(); }
+    // pedido sobre a resposta anterior ("resume", "mais 10", "agora em inglês", "sim")
+    const cmd = MT.comando(texto);
+    if (cmd) { const r = await comandoResp(cmd, op.etapa ? null : oferta, texto); if (r !== false) return r; }
+    const calc = MT.calculo(texto);
+    if (calc) return calculoResp(calc, texto);
+    if (!op.etapa) { const ps = MT.etapas(texto); if (ps.length > 1) return plano(ps, texto); }
+    if (RE_AJUDA.test(nz(texto))) return ajuda();
+    // "o segundo da lista", "a anterior", "aquela seção"
+    const ref = resolver(texto);
+    if (ref.semRef) { await pensarRapido(T.think.cv); S.parou = true; return escrever(`<p>${esc(T.ref_none)}</p>` + funcChips(["municipio", "estado", "secao"]), { q: texto, acao: true }); }
+    if (ref.nota) entendi(ref.nota);
+    texto = ref.texto;
+    const n = nz(texto), ctx = ctxAtual();
+    const [an] = await Promise.all([motor().analisar(texto, ctx), motor().carregar().catch(() => {})]);
     const E = an.E, kb = kbEntradas(an.kb);
+    if (!op.semAcao && E.acoes && E.acoes.lista.length) { const r = await acoesResp(E.acoes, texto, kb); if (r !== false) return r; }
+    preferirUf(E, ctx);
+    if (E.conta) return contaResp(E.conta, E, texto);
+    if (E.continuou && E.seguimento === "conector" && ctx && ctx.intencao) { const p = mudou(E, ctx); if (p.length) entendi(T.en_cont(p.join(" · "))); }
     if (E.urna) { lembrar(ctxDe(E, { intencao: "urna" })); return urna(E.urna, texto); }
     if (E.intencao === "roteiro" && !(an.forte && !/\b(roteiro|checklist|guia)\b/.test(n) && !/\b(secao|urna|boletim|section|ballot|seccion|boletin)\b/.test(n))) return roteiro(texto);
     if (RE_DL.test(n) && E.intencao !== "relatorio") return downloads(texto);
@@ -350,7 +384,7 @@
     if (E.br && forte) { lembrar(ctxDe(E, { intencao: "lugar", lugar: { tipo: "br" } })); return querTse ? tseComparar({ tipo: "br", nome: T.br_name }, texto) : brasil(texto); }
     if (querTse) return pedir(T.tse_which, T.ex.tse);
     if (E.querIbge) return pedir(T.ibge_which, T.ex.ibge);
-    return kbResposta(texto, kb);
+    return kbResposta(texto, kb, E);
   }
 
   // Saudação, obrigado ou tchau: devolve e oferece as funções
@@ -360,6 +394,7 @@
   }
 
   async function pedir(txt, exemplos) {
+    S.parou = true;
     await pensar(X().think.guia);
     return escrever(`<p>${esc(txt)}</p>` + chipsQ((exemplos || []).map((q) => perg(q))));
   }
@@ -379,19 +414,35 @@
     if (rel.length) h += `<p class="msg-rel">${esc(L.bot_related)}:</p><div class="chips">${rel.map((x) => `<button type="button" class="chipq" data-at-id="${esc(x.i)}">${esc(M.rotulo(x))}</button>`).join("")}</div>`;
     return h;
   }
-  async function kbResposta(texto, r) {
+  // Entendi só uma parte (uma medida, um teste, um candidato): sugere perguntas completas
+  function esclarecer(E) {
+    if (!E) return [];
+    const T = X(), out = [];
+    const fr = E.metrica && T.rk_frase[E.metrica] ? T.rk_frase[E.metrica](E.ordem || "desc", E.cand && A.titulo(E.cand.nome)) : "";
+    if (fr) out.push(`${T.rk_base("uf")} ${fr}`, `${T.rk_base("mun", "PR")} ${fr}`);
+    if (E.testes && E.testes.length) out.push(T.cl_ft(E.testes.map((x) => A.numTeste(x)).join(` ${T.w_and} `)), T.cl_teste(A.numTeste(E.testes[0])));
+    else if (E.nivel === "a") out.push(T.ex.filtro[1]);
+    if (E.cand && !fr) out.push(`${T.rk_base("mun", "PR")} ${T.rk_frase.cand("desc", A.titulo(E.cand.nome))}`);
+    return [...new Set(out)].slice(0, 4);
+  }
+  async function kbResposta(texto, r, E) {
     const L = t(), T = X(), M = motor();
     if (!kbForte(r)) {
       window.BOT.semResposta.guardar(texto);
-      const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3);
+      S.parou = true;
+      const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3), cl = esclarecer(E);
       await pensar([L.bot_think_qa[0], L.bot_think_qa[1], ...L.bot_think_none]);
-      return escrever(`<p>${esc(sug.length ? L.bot_maybe : T.fallback)}</p>`
+      if (cl.length) {
+        return escrever(`<p>${esc(umDe(T.cl_lead))}</p>` + chipsQ(cl.map((q) => perg(q)))
+          + (sug.length ? `<p class="msg-rel">${esc(L.bot_maybe)}</p><div class="chips">${sug.map((x) => `<button type="button" class="chipq" data-at-id="${esc(x.e.i)}">${esc(M.rotulo(x.e))}</button>`).join("")}</div>` : ""), { q: texto });
+      }
+      return escrever(`<p>${esc(sug.length ? L.bot_maybe : umDe(T.fallback_v))}</p>`
         + (sug.length ? `<div class="chips">${sug.map((x) => `<button type="button" class="chipq" data-at-id="${esc(x.e.i)}">${esc(M.rotulo(x.e))}</button>`).join("")}</div>` : "")
         + `<p class="msg-rel">${esc(T.fallback_fn)}</p>` + funcChips(["secao", "municipio", "estado", "downloads", "qr"]), { q: texto });
     }
     const outros = r.slice(1, 3).filter((x) => x.sc >= r[0].sc * 0.75).map((x) => x.e);
     await pensar(L.bot_think_qa);
-    return escrever(htmlEntrada(r[0].e, outros), { q: texto });
+    return escrever(htmlEntrada(r[0].e, outros), { q: texto, kb: r[0].e.i });
   }
   const funcChips = (ks) => `<div class="chips">${ks.map((k) => `<button type="button" class="chipq" data-at-fn="${k}">${esc(X().fn[k][0])}</button>`).join("")}</div>`;
 
@@ -399,6 +450,7 @@
     const T = X();
     await pensar(T.think.guia);
     const h = `<p>${esc(T.help_lead)}</p><ul class="at-lista">${FUNCS.map(([k, ic]) => `<li><b>${esc(T.fn[k][0])}</b> — ${esc(T.fn[k][1])}</li>`).join("")}</ul>
+      <h4 class="at-t">${esc(T.help_conv_t)}</h4><ul class="at-lista">${T.help_conv.map(([a, b]) => `<li><b>${esc(a)}</b> — ${esc(b)}</li>`).join("")}</ul>
       <p>${esc(T.help_files)}</p>${funcChips(["secao", "municipio", "qr", "downloads"])}${botoes([btnCon()])}`;
     return escrever(h, { q: T.fn.ask[0], fn: "ask" });
   }
@@ -408,9 +460,12 @@
     const T = X();
     fecharGaveta();
     if (S.ocupado) return;
-    if (k === "roteiro") { ocupar(async () => { usuario(T.fn[k][0]); await roteiro(T.fn[k][0]); }); return; }
-    ocupar(async () => {
-      usuario(T.fn[k][0]);
+    ocupar(async () => { usuario(T.fn[k][0]); await guiaFuncao(k); });
+  }
+  async function guiaFuncao(k) {
+    const T = X();
+    if (k === "roteiro") return roteiro(T.fn[k][0]);
+    {
       await pensar(T.think.guia);
       let h = `<p>${esc(T.guia[k])}</p>`;
       if (T.ex[k]) h += chipsQ(T.ex[k].map((q) => perg(q)));
@@ -420,14 +475,648 @@
       if (k === "apuracao") h += kv([[T.fmt, `<code>uf;zona;secao;turno;aptos;votaram;13;22;brancos;nulos</code>`]]) + botoes([btnArq("apuracao", T.pick), `<button type="button" class="btn btn-sm" data-at="modelo-apuracao">${icone("download")} ${esc(T.template)}</button>`]);
       if (ARQ_PRIV.includes(k)) h += `<p class="small muted">${esc(T.privacy)}</p>`;
       if ((k === "tse" && !S.con.tse) || (k === "ibge" && !S.con.ibge)) h += `<p class="note small">${esc(T.con_off[k])}</p>` + botoes([btnCon()]);
-      await escrever(h, { q: T.fn[k][0], fn: k });
-    });
+      return escrever(h, { q: T.fn[k][0], fn: k });
+    }
   }
   const ARQ_PRIV = ["qr", "hash", "lista", "apuracao"];
+
+  // --- diálogo: "entendi", referências, comandos sobre a resposta, ações, várias etapas e contas -----------------------
+  const pensarRapido = (etapas, trabalho) => window.BOT.pensando(etapas, trabalho, S.el.log, true);
+  const ditas = new Map();
+  // Uma frase de um grupo, sem repetir a da vez anterior
+  function umDe(l) {
+    if (!Array.isArray(l)) return l;
+    const op = l.length > 1 ? l.filter((x) => x !== ditas.get(l)) : l, x = op[Math.floor(Math.random() * op.length)];
+    ditas.set(l, x);
+    return x;
+  }
+  // Linha curta antes da resposta: o que o Atlas entendeu
+  const entendi = (txt) => { S.pre += `<p class="at-entendi">${esc(txt)}</p>`; };
+  const obsHtml = (l) => { const x = l.filter(Boolean); return x.length ? `<p class="at-obs">${esc(x.join(" "))}</p>` : ""; };
+  // Próximo passo sugerido: fica guardado para um "sim" na próxima mensagem
+  function oferecer(pergunta, q, fn, semChip) {
+    const c = convAtual(); if (c) c.oferta = fn ? { fn } : { q };
+    return `<p class="msg-rel at-oferta">${esc(pergunta)}</p>` + (semChip ? "" : fn ? funcChips([fn]) : chipsQ([perg(q)]));
+  }
+  // Lugar, zona ou seção: o texto que o motor entende ("Londrina PR", "PR zona 3 seção 50") e o nome para mostrar
+  function rotRef(x) {
+    const T = X();
+    if (x.tipo === "secao") return `${x.uf} ${T.w_zone} ${x.z} ${T.w_section} ${x.s}`;
+    if (x.tipo === "zona") return `${x.uf} ${T.w_zone} ${x.z}`;
+    if (x.tipo === "mun") return Object.keys(window.UF_NOMES).some((u) => nz(A.ufNome(u)) === nz(x.nome)) ? `${T.w_city} ${x.nome} ${x.uf}` : `${x.nome} ${x.uf}`;
+    if (x.tipo === "uf") return A.ufNome(x.uf);
+    return T.br_name;
+  }
+  function nomeRef(x) {
+    const L = t();
+    if (x.tipo === "secao") return `${x.uf} · ${L.th_zone} ${x.z} · ${L.th_section} ${x.s}`;
+    if (x.tipo === "zona") return `${x.uf} · ${L.th_zone} ${x.z}`;
+    if (x.tipo === "mun") return `${x.nome} (${x.uf})`;
+    if (x.tipo === "uf") return `${A.ufNome(x.uf)} (${x.uf})`;
+    return X().br_name;
+  }
+  const igualRef = (a, b) => !!(a && b) && chaveLug(a) === chaveLug(b);
+  function atualRef(ctx, tipo) {
+    if (!ctx) return null;
+    if (tipo === "secao") return ctx.sec && ctx.sec.s ? { tipo: "secao", uf: ctx.sec.uf, z: ctx.sec.z, s: ctx.sec.s } : null;
+    if (tipo === "zona") return ctx.sec && ctx.sec.z ? { tipo: "zona", uf: ctx.sec.uf, z: ctx.sec.z } : null;
+    return ctx.lugar && (!tipo || ctx.lugar.tipo === tipo) ? ctx.lugar : null;
+  }
+  // "o segundo", "a anterior", "aquela seção", "dessa cidade": troca pelo que foi citado antes na conversa
+  const REF_SOBRA = new Set(("e and y o a os as the el la los las mostra mostre me abre abra ver veja show open see muestra muestrame detalhes details detalles sobre about dados data datos quero fala "
+    + "info resultado result resultados do da de of del que tal what how volta voltar back go to para pra pro vuelve volver ao al um one uno").split(" "));
+  function resolver(texto) {
+    const MT = window.MOTOR, mm = memoria(), ctx = ctxAtual(), T = X();
+    if (!mm) return { texto };
+    let r = null;
+    const o = mm.lista.length ? MT.ordinal(texto) : null;
+    if (o) {
+      const i = o.i < 0 ? mm.lista.length + o.i : o.i - 1, x = mm.lista[i];
+      if (x) r = { ini: o.ini, fim: o.fim, x, nota: T.ref_ord(i + 1, nomeRef(x)) };
+    }
+    if (!r) {
+      const a = MT.anterior(texto);
+      if (a) {
+        const l = a.alvo === "secao" || a.alvo === "zona" ? mm.sec.filter((x) => x.tipo === a.alvo) : mm.lug.filter((x) => !a.alvo || x.tipo === a.alvo);
+        // sem tipo dito ("a anterior"): primeiro um lugar do mesmo tipo do atual (cidade com cidade)
+        const atual = atualRef(ctx, a.alvo), outros = l.filter((y) => !igualRef(y, atual));
+        const x = (!a.alvo && atual && outros.find((y) => y.tipo === atual.tipo)) || outros[0];
+        if (x) r = { ini: a.ini, fim: a.fim, x, nota: T.ref_prev(nomeRef(x)) };
+        else return { texto, semRef: true };
+      }
+    }
+    if (!r) {
+      const d = MT.demonstrativo(texto);
+      if (d && d.alvo) {
+        const l = d.alvo === "secao" || d.alvo === "zona" ? mm.sec.filter((x) => x.tipo === d.alvo) : mm.lug.filter((x) => x.tipo === d.alvo);
+        const atual = atualRef(ctx, d.alvo);
+        // "essa cidade": a do assunto atual; "aquela cidade": a de antes
+        const x = d.longe ? l.find((y) => !igualRef(y, atual)) || atual : atual || l[0];
+        if (x) r = { ini: d.ini, fim: d.fim, x, nota: T.ref_this(nomeRef(x)), prep: d.prep };
+      }
+    }
+    if (!r) return { texto };
+    const trecho = texto.slice(r.ini, r.fim), antes = texto.slice(0, r.ini), depois = texto.slice(r.fim);
+    const sobra = nz(antes + " " + depois).split(" ").filter(Boolean);
+    if (sobra.every((w) => REF_SOBRA.has(w))) return { texto: rotRef(r.x), nota: r.nota };
+    const pre = (trecho.match(/^\s*(com|with|con|para|pra|pro|to|sobre|about|entre|between)\s/i) || [])[1] || "";
+    const prep = r.prep === "de" ? T.w_of : r.prep === "em" ? T.w_in : "";
+    return { texto: [antes, pre, prep, rotRef(r.x), depois].join(" ").replace(/\s+/g, " ").trim(), nota: r.nota };
+  }
+  // Pergunta de continuação: o que mudou em relação à anterior ("e em SC?" → "SC")
+  function mudou(E, ctx) {
+    const L = t(), p = [];
+    const lg = lugarCtx(E.lugar) || (E.br ? { tipo: "br" } : null);
+    if (lg && !igualRef(lg, ctx.lugar)) p.push(nomeRef(lg));
+    if (E.turno && E.turno !== ctx.turno) p.push(L.round(E.turno));
+    if (E.sec && E.sec.z && (!ctx.sec || ctx.sec.z !== E.sec.z || ctx.sec.s !== E.sec.s)) p.push(nomeRef(E.sec.s ? { tipo: "secao", uf: E.sec.uf || "", z: E.sec.z, s: E.sec.s } : { tipo: "zona", uf: E.sec.uf || "", z: E.sec.z }));
+    return p;
+  }
+  // "Cascavel" depois de falar do Paraná: entre os municípios com esse nome, fica o do estado da conversa
+  function preferirUf(E, ctx) {
+    const uf = ctx && ((ctx.lugar && ctx.lugar.uf) || (ctx.sec && ctx.sec.uf));
+    if (!uf) return;
+    const um = (l) => { const f = l.filter((m) => m.uf === uf); return f.length === 1 && new Set(l.map((m) => m.uf)).size > 1 ? f[0] : null; };
+    const m = E.lugar.muns.length > 1 ? um(E.lugar.muns) : null;
+    if (m) { E.lugar = Object.assign({}, E.lugar, { muns: [m] }); entendi(X().ref_uf(`${m.nome} (${m.uf})`)); }
+    (E.lugares || []).forEach((x, i) => {
+      const a = x.alternativas && um(x.alternativas);
+      if (a) { E.lugares[i] = Object.assign({ tipo: "mun" }, a); entendi(X().ref_uf(`${a.nome} (${a.uf})`)); }
+    });
+  }
+  // O que o Atlas entendeu de uma pergunta, em poucas palavras
+  function descrever(ctx) {
+    const T = X(), L = t(), p = [];
+    const lg = ctx.lugar;
+    const nomes = { ranking: T.fn.ranking[0], comparar: T.fn.comparar[0], filtro: T.fn.filtro[0], porque: T.fn.porque[0], relatorio: T.fn.relatorio[0], mapa: T.fn.mapa[0], secao: T.fn.secao[0],
+      zona: T.fn.zona[0], urna: T.fn.urna[0], roteiro: T.fn.roteiro[0], conta: T.cv_conta, lugar: lg ? T.fn[lg.tipo === "mun" ? "municipio" : lg.tipo === "uf" ? "estado" : "brasil"][0] : "" };
+    if (nomes[ctx.intencao]) p.push(nomes[ctx.intencao]);
+    if (ctx.lugares && ctx.lugares.length > 1) p.push(ctx.lugares.map(nomeRef).join(" × "));
+    else if (ctx.sec && ctx.sec.z) p.push(nomeRef(ctx.sec.s ? Object.assign({ tipo: "secao" }, ctx.sec) : { tipo: "zona", uf: ctx.sec.uf, z: ctx.sec.z }));
+    else if (lg) p.push(nomeRef(lg));
+    if (ctx.metrica) p.push(Q().medida(ctx.metrica, { cand: ctx.cand && ctx.cand.nr, candNome: ctx.cand && A.titulo(ctx.cand.nome), nivel: ctx.nivel }).nome);
+    if (ctx.turno) p.push(L.round(ctx.turno));
+    return p.join(" · ");
+  }
+  // Refaz a resposta guardada na memória, com mudanças (mais itens, outra ordem, outro idioma, mais detalhes)
+  function eDeCtx(c, mod) {
+    const lg = c.lugar || null;
+    const E = { texto: c.q || "", turno: c.turno || 0, sec: c.sec || null, secs: c.secs || [], nivel: c.nivel || "", metrica: c.metrica || null, taxa: !!c.taxa, ordem: c.ordem || null, n: c.n || null,
+      off: c.off || 0, unidade: c.unidade || null, cand: c.cand || null, intencao: c.intencao, testes: c.testes || [], op: c.op || "e", lugares: c.lugares || [], br: !!(lg && lg.tipo === "br"),
+      minha: false, urna: c.urna || null, querTse: false, querIbge: false,
+      lugar: { uf: lg && lg.tipo === "uf" ? lg.uf : null, muns: lg && lg.tipo === "mun" ? [{ uf: lg.uf, cod: lg.cod, nome: lg.nome }] : [], forte: true, homonimos: [] } };
+    return Object.assign(E, mod || {});
+  }
+  async function refazer(ctx, mod) {
+    const E = eDeCtx(ctx, mod), q = ctx.q || "";
+    switch (E.intencao) {
+      case "ranking": return rankingResp(E, q);
+      case "comparar": return compararResp(E, q);
+      case "filtro": return filtroResp(E, q);
+      case "relatorio": return relatorioResp(E, q);
+      case "mapa": return mapaResp(E, q);
+      case "porque": return porque(E, q);
+      case "secao": return E.sec && E.sec.s ? secao(E.sec, q) : false;
+      case "zona": return E.sec && E.sec.z ? zona(E.sec, q) : false;
+      case "urna": return E.urna ? urna(E.urna, q) : false;
+      case "roteiro": return roteiro(q);
+      case "conta": return ctx.conta ? contaResp(ctx.conta, E, q) : false;
+      case "lugar": {
+        const lg = ctx.lugar; if (!lg) return false;
+        return lg.tipo === "mun" ? municipio(lg, { q }) : lg.tipo === "uf" ? estado(lg.uf, { q }) : brasil(q);
+      }
+    }
+    return false;
+  }
+
+  // Última resposta com conteúdo (sem contar avisos de ação, planos e comandos)
+  function ultimaResposta() {
+    const l = $$(".at-resp", S.el.log);
+    for (let i = l.length - 1; i >= 0; i--) { const m = l[i]._m; if (m && !m.acao && !m.plano && !m.cmd && !m.fn) return l[i]; }
+    return null;
+  }
+  // "resume", "explica mais simples", "mais detalhes", "só os números", "mais 10", "inverte", "agora em inglês", "sim", "não foi isso"…
+  async function comandoResp(cmd, oferta, q) {
+    const T = X(), ctx = ctxAtual();
+    if (cmd.k === "sim") {
+      if (oferta && oferta.fn) return guiaFuncao(oferta.fn);
+      if (oferta && oferta.q) return responder(oferta.q);
+      await pensarRapido(T.think.cv);
+      return escrever(`<p>${esc(umDe(T.cv_ok))}</p>` + funcChips(["secao", "municipio", "ranking", "comparar"]), { q, acao: true });
+    }
+    if (cmd.k === "nao") { await pensarRapido(T.think.cv); return escrever(`<p>${esc(umDe(T.cv_nao))}</p>` + funcChips(["secao", "municipio", "estado", "ask"]), { q, acao: true }); }
+    if (cmd.k === "idioma") return idiomaResp(cmd.lang, q);
+    if (cmd.k === "conversa") return conversaResp(q);
+    const d = ultimaResposta();
+    // sem resposta antes: segue como uma pergunta comum
+    if (!d) return false;
+    if (cmd.k === "errado") return erradoResp(q, ctx, d);
+    if (cmd.k === "resumo") return resumoResp(d, q);
+    if (cmd.k === "simples") return simplesResp(d, ctx, q);
+    if (cmd.k === "detalhes") return detalhesResp(d, ctx, q);
+    if (cmd.k === "numeros") return numerosResp(d, q);
+    if (cmd.k === "mais") return maisResp(d, ctx, cmd.n, q);
+    return ordemResp(ctx, cmd.k, q);
+  }
+  const divDe = (h) => { const d = document.createElement("div"); d.innerHTML = h; return d; };
+  const txtDe = (e) => (e ? e.textContent.replace(/\s+/g, " ").trim() : "");
+  // Resumo de uma resposta: a frase principal e os números de cada parte
+  function resumir(h) {
+    const dv = divDe(h);
+    dv.querySelectorAll("button, .chips, .at-btns, .at-acts, svg, figure, .msg-rel, .msg-src, .at-entendi, .at-oferta, .note").forEach((x) => x.remove());
+    const out = [];
+    let parte = "", nParte = 0;
+    const lead = Array.from(dv.children).find((p) => p.matches("p") && !p.matches(".at-h, .small, .muted, .at-obs") && txtDe(p).length > 12);
+    if (lead) out.push(txtDe(lead));
+    dv.querySelectorAll("h4.at-t, .kv > div, .bar-row, .at-sinais > li, table, .at-obs, .at-card").forEach((e) => {
+      if (out.length >= 10) return;
+      if (e.matches("h4")) { parte = txtDe(e).replace(txtDe(e.querySelector(".muted")), "").trim(); nParte = 0; return; }
+      if (e.matches(".at-obs")) { out.push(txtDe(e)); return; }
+      if ((e.closest(".at-card") && !e.matches(".at-card")) || nParte >= 3) return;
+      const pre = parte ? parte + " · " : "";
+      if (e.matches(".kv > div")) out.push(`${pre}${txtDe(e.querySelector("dt"))}: ${txtDe(e.querySelector("dd"))}`);
+      else if (e.matches(".bar-row")) out.push(`${pre}${txtDe(e.querySelector(".bar-label"))}: ${txtDe(e.querySelector(".bar-value"))}`);
+      else if (e.matches("li")) out.push(pre + txtDe(e));
+      else if (e.matches(".at-card")) out.push(pre + txtDe(e.querySelector("p")));
+      else if (e.matches("table")) {
+        Array.from(e.rows).slice(1, 4).forEach((tr) => {
+          const cs = Array.from(tr.cells).map(txtDe).filter((x) => x && x !== X().ft_why);
+          if (cs.length) out.push(cs.length > 1 && !/^\d+$/.test(cs[0]) ? `${pre}${cs[0]}: ${cs.slice(1).join(" · ")}` : pre + cs.join(" · "));
+        });
+        nParte += 2;
+      }
+      nParte++;
+    });
+    if (out.length <= 1) {
+      dv.querySelectorAll("p, li").forEach((e) => {
+        const x = txtDe(e);
+        if (out.length < 5 && x && !out.includes(x) && !e.matches(".small, .at-h")) out.push(x.length > 220 ? x.slice(0, 217).replace(/\s+\S*$/, "") + "…" : x);
+      });
+    }
+    return { tit: txtDe(dv.querySelector(".at-h b")), itens: out.filter(Boolean).slice(0, 10) };
+  }
+  async function resumoResp(d, q) {
+    const T = X(), r = resumir(d._m.h);
+    await pensarRapido(T.think.cv);
+    if (!r.itens.length) return escrever(`<p>${esc(T.cv_nada)}</p>`, { q, cmd: true });
+    return escrever(cab(esc(T.cv_resumo), esc(r.tit)) + `<ul class="at-lista">${r.itens.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`, { q, cmd: true });
+  }
+  // Explicação em palavras simples: frases feitas com os números e o significado dos termos da resposta
+  function frasesLugar(r, n, nome) {
+    const T = X(), L = t(), x = r.t && r.t[n];
+    if (!x) return [];
+    const taxa = x.comp / (x.aptos || 1), fr = [T.sp_lugar(nome, nf(x.aptos), nf(x.comp), pct(taxa, 1), L.round(n)), T.sp_100(Math.round(taxa * 100))];
+    const nomes = nomesTurno(n), vv = Q().validos(x) || 1;
+    const cs = Object.keys(x.v).filter((nr) => nr !== "95" && nr !== "96" && x.v[nr] > 0).sort((a, b) => x.v[b] - x.v[a]);
+    if (cs.length >= 2) fr.push(T.sp_cands(A.titulo(nomes[cs[0]] || cs[0]), pct(x.v[cs[0]] / vv, 1), A.titulo(nomes[cs[1]] || cs[1]), pct(x.v[cs[1]] / vv, 1)));
+    const b = (x.v["95"] || 0) + (x.v["96"] || 0);
+    fr.push(T.sp_bn(nf(b), pct(b / (x.comp || 1), 1)));
+    if (r.sec) fr.push(T.sp_sinal(r.sn[n].a, nf(r.sn[n].a), nf(r.sec)));
+    return fr;
+  }
+  function frasesSecao(sd) {
+    const T = X(), L = t(), rec = sd.rec, n = rec[2] ? 2 : 1, tv = rec[n], f = (rec[3] || {})[String(n)];
+    const fr = [T.sp_secao(nf(tv[0]), nf(tv[1]), L.round(n))];
+    const { v, nomes } = A.votosTurno(n, tv), vv = Object.keys(v).reduce((a, nr) => a + (nr === "95" || nr === "96" ? 0 : v[nr]), 0) || 1;
+    const cs = Object.keys(v).filter((nr) => nr !== "95" && nr !== "96" && v[nr] > 0).sort((a, b) => v[b] - v[a]);
+    if (cs.length >= 2) fr.push(T.sp_cands(A.titulo(nomes[cs[0]] || cs[0]), pct(v[cs[0]] / vv, 1), A.titulo(nomes[cs[1]] || cs[1]), pct(v[cs[1]] / vv, 1)));
+    fr.push(f && f.o.length ? T.sp_sec_flag(f.o.map((o) => `${A.numTeste(o[0])}. ${A.nomeTeste(o[0])}`).filter((x, i, l) => l.indexOf(x) === i).join("; ")) : T.sp_sec_ok);
+    return fr;
+  }
+  function frasesRanking(h) {
+    const T = X(), dv = divDe(h), tb = dv.querySelector("table");
+    if (!tb) return [];
+    const rs = Array.from(tb.rows).slice(1), c = (tr, i) => txtDe(tr.cells[i]);
+    if (!rs.length) return [];
+    const fr = [T.sp_rank(txtDe(dv.querySelector(".at-h b")), txtDe(dv.querySelector(".at-h .muted"))), T.sp_rank_1(c(rs[0], 0), c(rs[0], 1), c(rs[0], 2))];
+    const u = rs[rs.length - 1];
+    if (rs.length > 1) fr.push(T.sp_rank_1(c(u, 0), c(u, 1), c(u, 2)));
+    fr.push(T.sp_rank_note);
+    return fr;
+  }
+  function glossario(h) {
+    const n = " " + nz(paraTexto(h)) + " ";
+    return X().gloss.filter(([re]) => new RegExp(re).test(n)).slice(0, 6).map(([, a, b]) => [a, b]);
+  }
+  async function simplesResp(d, ctx, q) {
+    const T = X(), m = d._m, it = ctx && ctx.intencao, n = (ctx && ctx.turno) || 2;
+    const trab = (async () => {
+      if (m.kb || !ctx) return [];
+      if ((it === "lugar" || it === "relatorio" || it === "mapa") && ctx.lugar) { const r = await Q().linhaLugar(ctx.lugar); return r ? frasesLugar(r, n, nomeRef(ctx.lugar)) : []; }
+      if ((it === "secao" || it === "porque") && ctx.sec && ctx.sec.s) { const sd = await A.consultarSecao(ctx.sec.uf, ctx.sec.z, ctx.sec.s); return sd.rec ? frasesSecao(sd) : []; }
+      if (it === "ranking") return frasesRanking(m.h);
+      if (it === "comparar" && ctx.lugares && ctx.lugares.length >= 2) {
+        const rs = (await Promise.all(ctx.lugares.slice(0, 4).map((x) => Q().linhaLugar(x)))).filter(Boolean);
+        return rs.map((r, i) => (r.t[n] ? T.sp_cmp(nomeRef(ctx.lugares[i]), pct(r.t[n].comp / (r.t[n].aptos || 1), 1), nf(r.sn[n].a)) : "")).filter(Boolean).concat([T.sp_cmp_note]);
+      }
+      return [];
+    })();
+    const fr = await pensarRapido(T.think.cv, trab);
+    let h = cab(esc(T.cv_simples), "");
+    if (fr.length) h += fr.map((x) => `<p>${esc(x)}</p>`).join("");
+    else {
+      const e = m.kb && motor().entrada(m.kb + "_simples");
+      if (e) h += motor().md(e.a);
+      else {
+        const dv = divDe(m.h); dv.querySelectorAll(".at-h, .small, .muted, .msg-rel, .msg-src, .chips, .at-btns").forEach((x) => x.remove());
+        const p = Array.from(dv.querySelectorAll("p, li")).map(txtDe).filter((x) => x.length > 10).slice(0, 2);
+        h += p.length ? `<p>${esc(T.sp_geral)} ${esc(p.join(" "))}</p>` : `<p>${esc(T.cv_nada)}</p>`;
+      }
+    }
+    const gl = glossario(m.h);
+    if (gl.length) h += `<h4 class="at-t">${esc(T.cv_gloss)}</h4>` + kv(gl.map(([a, b]) => [a, esc(b)]));
+    return escrever(h, { q, cmd: true });
+  }
+  async function detalhesResp(d, ctx, q) {
+    const T = X(), m = d._m, it = ctx && ctx.intencao, mm = memoria();
+    if (m.kb) {
+      const e = motor().entrada(m.kb), rel = e && (e.r || []).map((id) => motor().entrada(id)).find((x) => x && !x.ns);
+      if (rel) { await pensarRapido(t().bot_think_qa); entendi(T.cv_det_kb(motor().rotulo(rel))); return escrever(htmlEntrada(rel), { q: motor().rotulo(rel), kb: rel.i }); }
+    }
+    if ((it === "lugar" || it === "mapa") && ctx.lugar && ctx.lugar.tipo !== "br") { entendi(T.cv_det_rel); return refazer(ctx, { intencao: "relatorio" }); }
+    if (it === "secao") return refazer(ctx, { intencao: "porque" });
+    if (it === "zona") return refazer(ctx, { intencao: "filtro" });
+    if (it === "ranking") { entendi(T.cv_det_rank); return refazer(ctx, { n: Math.min(50, Math.max(30, (ctx.n || 10) * 2)), off: 0 }); }
+    if (it === "filtro" && mm && mm.lista[0] && mm.lista[0].tipo === "secao") { const x = mm.lista[0]; entendi(T.cv_det_ft(nomeRef(x))); return refazer({ intencao: "porque", sec: { uf: x.uf, z: x.z, s: x.s }, q: T.pq_q(x.uf, x.z, x.s) }); }
+    await pensarRapido(T.think.cv);
+    const qs = ((ctx && ctx.lugares) || []).filter((x) => x.tipo === "mun" || x.tipo === "uf").map((x) => `${T.rl_word} ${rotRef(x)}`);
+    if (it === "porque") (m.h.match(/<b>(\d{1,2})\. /g) || []).forEach((x) => qs.push(T.cl_teste(x.replace(/\D/g, ""))));
+    return escrever(`<p>${esc(it === "relatorio" ? T.cv_det_done : T.cv_nodet)}</p>` + chipsQ([...new Set(qs)].slice(0, 5).map((x) => perg(x)))
+      + botoes([`<button type="button" class="btn btn-sm" data-at="exportar-ult">${icone("download")} ${esc(T.ac_export)}</button>`]), { q, cmd: true });
+  }
+  async function numerosResp(d, q) {
+    const T = X(), dv = divDe(d._m.h), SEL = ".at-h, h4.at-t, .kv, .bars, .table-wrap, .at-sinais, .at-card > p:first-child";
+    const partes = Array.from(dv.querySelectorAll(SEL)).filter((e) => !e.parentElement.closest(".kv, .bars, .table-wrap, .at-sinais"));
+    await pensarRapido(T.think.cv);
+    if (partes.filter((e) => !e.matches(".at-h, h4")).length < 1) return escrever(`<p>${esc(T.cv_nonum)}</p>`, { q, cmd: true });
+    return escrever(partes.map((e) => e.outerHTML).join("") + fonte(T.src_site), { q, cmd: true });
+  }
+  async function maisResp(d, ctx, n, q) {
+    const T = X(), m = d._m, it = ctx && ctx.intencao;
+    if (it === "ranking") return refazer(ctx, { off: (ctx.off || 0) + (ctx.n || 10), n: Math.min(50, n || ctx.n || 10) });
+    await pensarRapido(T.think.cv);
+    if (m.kb) {
+      const e = motor().entrada(m.kb), rel = ((e && e.r) || []).map((id) => motor().entrada(id)).filter((x) => x && !x.ns);
+      if (rel.length) return escrever(`<p>${esc(T.cv_more_kb)}</p><div class="chips">${rel.map((x) => `<button type="button" class="chipq" data-at-id="${esc(x.i)}">${esc(motor().rotulo(x))}</button>`).join("")}</div>`, { q, cmd: true });
+    }
+    const bt = d.querySelector(".at-btns");
+    return escrever(`<p>${esc(it === "filtro" ? T.cv_more_filtro : T.cv_more_none)}</p>` + (bt ? `<div class="at-btns">${bt.innerHTML}</div>` : ""), { q, cmd: true });
+  }
+  async function ordemResp(ctx, k, q) {
+    const T = X();
+    if (!ctx || ctx.intencao !== "ranking") { await pensarRapido(T.think.cv); return escrever(`<p>${esc(T.cv_noorder)}</p>` + chipsQ(T.ex.ranking.slice(0, 2).map((x) => perg(x))), { q, cmd: true }); }
+    const ordem = k === "asc" ? "asc" : k === "desc" ? "desc" : ctx.ordem === "asc" ? "desc" : "asc";
+    entendi(T.cv_ordem(ordem));
+    return refazer(ctx, { ordem, off: 0 });
+  }
+  // Troca o idioma do site e refaz a última resposta no idioma novo
+  async function idiomaResp(lang, q) {
+    if (lang === A.state.lang) { const T = X(); await pensarRapido(T.think.cv); return escrever(`<p>${esc(T.cv_lang_same)}</p>`, { q, cmd: true }); }
+    const ctx = ctxAtual(), d = ultimaResposta(), kbId = d && d._m && d._m.kb;
+    const b = document.querySelector(`#lang [data-lang="${lang}"]`);
+    if (!b) return false;
+    const log0 = S.el.log;
+    b.click();
+    for (let i = 0; i < 40 && (S.el.log === log0 || !document.contains(S.el.log)); i++) await new Promise((r) => setTimeout(r, 50));
+    const T = X();
+    entendi(T.cv_lang_ok);
+    if (kbId) {
+      await motor().carregar();
+      const e = motor().entrada(kbId);
+      if (e) { await pensarRapido(t().bot_think_qa); return escrever(htmlEntrada(e), { q: motor().rotulo(e), kb: e.i }); }
+    }
+    if (ctx && ctx.intencao) { const r = await refazer(ctx); if (r !== false) return r; }
+    await pensarRapido(T.think.cv);
+    return escrever(`<p>${esc(T.hello)} ${esc(T.cv_lang_hi)}</p>` + funcChips(["secao", "municipio", "estado", "ask"]), { q, cmd: true });
+  }
+  async function conversaResp(q) {
+    const T = X(), c = convAtual(), mm = memoria();
+    await pensarRapido(T.think.cv);
+    const us = c ? c.m.filter((x) => x.r === "u" && x.txt) : [];
+    const qs = us.slice(0, -1).map((x) => x.txt).slice(-10);
+    let h = cab(esc(T.cv_conv_t), esc(T.cv_conv_n(Math.max(0, us.length - 1))));
+    const lug = mm ? mm.lug : [], sec = mm ? mm.sec : [];
+    if (!lug.length && !sec.length) h += `<p>${esc(T.cv_conv_none)}</p>`;
+    if (lug.length) h += `<p class="msg-rel">${esc(T.cv_conv_lug)}</p>` + chipsQ(lug.map((x) => perg(rotRef(x), nomeRef(x))));
+    if (sec.length) h += `<p class="msg-rel">${esc(T.cv_conv_sec)}</p>` + chipsQ(sec.map((x) => perg(rotRef(x), nomeRef(x))));
+    if (qs.length) h += `<h4 class="at-t">${esc(T.cv_conv_q)}</h4><ol class="at-lista">${qs.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>`;
+    h += botoes([`<button type="button" class="btn btn-sm" data-at="exportar-conversa">${icone("download")} ${esc(T.exp_conv)}</button>`]);
+    return escrever(h, { q, cmd: true });
+  }
+  async function erradoResp(q, ctx, d) {
+    const T = X(), m = d._m;
+    let alts = [];
+    if (m.q) { try { const an = await motor().analisar(m.q, null); alts = kbEntradas(an.kb).filter((x) => x.e.i !== m.kb && !x.e.ns && x.f >= 0.5 && x.sc >= 3).slice(0, 3); } catch (e) { /* segue sem alternativas */ } }
+    await pensarRapido(T.think.cv);
+    let h = `<p>${esc(umDe(T.er_lead))}</p>`;
+    const desc = ctx && ctx.intencao ? descrever(ctx) : m.kb ? motor().rotulo(motor().entrada(m.kb) || { q: [m.q || ""] }) : "";
+    if (desc && m.q) h += `<p class="small">${esc(T.er_entendi(m.q, desc))}</p>`;
+    if (alts.length) h += `<p class="msg-rel">${esc(T.er_alts)}</p><div class="chips">${alts.map((x) => `<button type="button" class="chipq" data-at-id="${esc(x.e.i)}">${esc(motor().rotulo(x.e))}</button>`).join("")}</div>`;
+    const ex = (ctx && ctx.intencao && T.ex[ctx.intencao]) || T.ex.ask;
+    h += `<p class="msg-rel">${esc(T.er_rephrase)}</p>` + chipsQ(ex.slice(0, 3).map((x) => perg(x)));
+    h += botoes([S.con.github ? `<button type="button" class="btn btn-sm" data-at="reportar-ult">${icone("alert")} ${esc(T.ac_report)}</button>` : ""]);
+    window.BOT.semResposta.guardar(m.q || q);
+    return escrever(h, { q, cmd: true });
+  }
+
+  // --- ações pedidas por texto: imagem, vídeo, carrossel, exportar, ouvir, compartilhar, copiar, abrir página -------------
+  const SOCIAL = ["instagram", "tiktok", "kwai", "youtube", "facebook"];
+  async function acoesResp(ac, texto, kb) {
+    const T = X();
+    // a ação vem junto de um pedido de dados ("imagem do relatório de Curitiba"): primeiro a resposta, depois a ação
+    if (ac.resto && !ac.lista.every((a) => a.k === "abrir")) {
+      const an = await motor().analisar(ac.resto, ctxAtual()), E2 = an.E;
+      if (E2.intencao || E2.lugar.uf || E2.lugar.muns.length || (E2.sec && E2.sec.z) || E2.br || E2.urna || E2.conta || an.forte) {
+        S.parou = false;
+        await responder(ac.resto, { etapa: true, semAcao: true });
+        if (S.parou) return true;
+      }
+    }
+    const d = ultimaResposta();
+    if (!d && !ac.lista.some((a) => a.k === "abrir" || (a.k === "exportar" && a.todas))) {
+      // sem resposta para usar: a pergunta é sobre a função ("gerar imagem"); a base responde
+      if (kbForte(kb)) return false;
+      await pensarRapido(T.think.cv);
+      S.parou = true;
+      return escrever(`<p>${esc(T.ac_need)}</p>` + funcChips(["secao", "municipio", "estado", "ranking"]), { q: texto, acao: true });
+    }
+    for (const a of ac.lista) await executar(a, d, texto, ac.resto);
+    return true;
+  }
+  function itensCompartilhar(m) {
+    const T = X(), L = t();
+    const link = linkResposta(m), txt = paraTexto(m.h), titulo = `Atlas · ${m.q || T.title}`;
+    const curto = (n) => (txt.length > n ? txt.slice(0, n - 1).trimEnd() + "…" : txt);
+    return [
+      { k: "whatsapp", href: `https://wa.me/?text=${enc(`*${titulo}*\n\n${curto(900)}\n\n${link}\n${L.badge}`)}`, ic: rede("whatsapp"), txt: "WhatsApp" },
+      { k: "telegram", href: `https://t.me/share/url?url=${enc(link)}&text=${enc(`${titulo}\n\n${curto(900)}\n${L.badge}`)}`, ic: rede("telegram"), txt: "Telegram" },
+      { k: "x", href: `https://twitter.com/intent/tweet?text=${enc(`${titulo}: ${curto(160)}`)}&url=${enc(link)}`, ic: rede("x"), txt: "X (Twitter)" },
+      { k: "email", href: `mailto:?subject=${enc(titulo)}&body=${enc(`${curto(1800)}\n\n${link}\n\n${L.badge}`)}`, ic: rede("email"), txt: L.sh_email },
+    ];
+  }
+  const NOME_REDE = { instagram: "Instagram", tiktok: "TikTok", kwai: "Kwai", youtube: "YouTube", facebook: "Facebook", whatsapp: "WhatsApp", telegram: "Telegram", x: "X (Twitter)", email: "e-mail" };
+  function nomePagina(dest) {
+    const L = t(), N = L.nav;
+    return { "#/mapa": N.map, "#/downloads": N.downloads, "#/testes": N.tests, "#/graficos": N.charts, "#/glossario": N.glossary, "#/limitacoes": N.limits, "#/replicar": N.replicate,
+      "#/atualizacoes": N.updates, "#/lista": N.list, "#/variacao": L.pg2.vary[0], "#/turno/1": L.round(1), "#/turno/2": L.round(2), "#/": N.home }[dest] || dest;
+  }
+  async function executar(a, d, q, resto) {
+    const T = X(), m = d && d._m;
+    const midia = (fmt, cr) => A.ferramentas.gerarImagem({ cartao: cartaoResposta(d, m), url: linkResposta(m), titulo: `Atlas · ${m.q || T.title}`, fonte: () => fonteAtlas(d), fmt, cr });
+    if (a.k === "midia") {
+      const tam = a.tam ? ` ${{ 45: "4:5", 11: "1:1", 916: "9:16", pdf: "PDF" }[a.tam]}` : "";
+      await escrever(`<p>${esc(a.fmt === "carrossel" ? T.ac_midia[a.tipo === "vid" ? "cvid" : "cimg"](tam) : T.ac_midia[a.fmt])}</p>`, { q, acao: true });
+      midia(a.fmt, a.fmt === "carrossel" ? { tipo: a.tipo, tam: a.tam } : null);
+      return;
+    }
+    if (a.k === "exportar") {
+      const alvo = a.todas ? null : d, nome = (t().xp.f[a.fmt] || [a.fmt.toUpperCase()])[0];
+      if (a.fmt === "pdf") { await escrever(`<p>${esc(T.ac_pdf)}</p>`, { q, acao: true }); await imprimir(alvo); return; }
+      try {
+        if (a.fmt === "html") await paginaInterativa(alvo); else await A.exportar.gerar(a.fmt, fonteAtlas(alvo));
+        return escrever(`<p>${esc(T.ac_exp_ok(nome, a.todas))}</p>` + botoes([`<button type="button" class="btn btn-sm" data-at="exportar-ult">${icone("download")} ${esc(T.ac_exp_more)}</button>`]), { q, acao: true });
+      } catch (e) { console.error(e); return escrever(`<p class="alert">${esc(T.ac_exp_err(e.message))}</p>`, { q, acao: true }); }
+    }
+    if (a.k === "ouvir") {
+      const b = d.querySelector('[data-at-ac="ouvir"]');
+      if (!podeFalar || !b) return escrever(`<p>${esc(T.ac_ouvir_no)}</p>`, { q, acao: true });
+      await escrever(`<p>${esc(T.ac_ouvir)}</p>`, { q, acao: true });
+      ouvir(b, m);
+      return;
+    }
+    if (a.k === "compartilhar") {
+      if (SOCIAL.includes(a.rede)) {
+        await escrever(`<p>${esc(T.ac_social(NOME_REDE[a.rede]))}</p>`, { q, acao: true });
+        midia(["youtube", "tiktok", "kwai"].includes(a.rede) ? "video" : "post", null);
+        return;
+      }
+      const its = itensCompartilhar(m).filter((x) => !a.rede || x.k === a.rede);
+      return escrever(`<p>${esc(a.rede ? T.ac_share_one(NOME_REDE[a.rede]) : T.ac_share)}</p><div class="at-btns">${its.map((x) => `<a class="btn btn-sm" href="${esc(x.href)}" target="_blank" rel="noopener">${x.ic} ${esc(x.txt)}</a>`).join("")}</div>`, { q, acao: true });
+    }
+    if (a.k === "copiar") {
+      const ok = await A.ferramentas.copiarTexto(a.link ? linkResposta(m) : paraTexto(m.h) + "\n\n" + linkResposta(m));
+      return escrever(`<p>${esc(ok ? (a.link ? T.ac_copy_link : T.ac_copy_ok) : T.ac_copy_fail)}</p>`, { q, acao: true });
+    }
+    if (a.k === "abrir") {
+      let dest = a.destino, nome;
+      if (dest === "lugar") {
+        // "abre a página de Londrina" ou a do assunto atual
+        let alvo = null;
+        if (resto) { const an = await motor().analisar(resto, null); alvo = lugarCtx(an.E.lugar) || (an.E.sec && an.E.sec.s && an.E.sec.uf ? Object.assign({ tipo: "secao" }, an.E.sec) : null); }
+        const ctx = ctxAtual();
+        if (!alvo && ctx) alvo = ctx.sec && ctx.sec.s ? { tipo: "secao", uf: ctx.sec.uf, z: ctx.sec.z, s: ctx.sec.s } : ctx.lugar;
+        // pediu "a página do município" (ou do estado) e o assunto é uma seção: sobe para o município (ou o estado) dela
+        if (alvo && alvo.tipo === "secao" && a.alvo === "mun") { const sd = await A.consultarSecao(alvo.uf, alvo.z, alvo.s).catch(() => null); if (sd && sd.mun) alvo = { tipo: "mun", uf: alvo.uf, cod: sd.mun[0], nome: A.titulo(sd.mun[1]) }; }
+        if (alvo && alvo.tipo !== "uf" && a.alvo === "uf" && alvo.uf) alvo = { tipo: "uf", uf: alvo.uf };
+        if (!alvo || alvo.tipo === "br") { await pensarRapido(T.think.cv); S.parou = true; return escrever(`<p>${esc(T.ac_open_none)}</p>`, { q, acao: true }); }
+        dest = alvo.tipo === "mun" ? `#/uf/${alvo.uf}/${alvo.cod}` : alvo.tipo === "uf" ? `#/uf/${alvo.uf}` : `#/secao/${alvo.uf}/${alvo.z}/${alvo.s}`;
+        nome = nomeRef(alvo);
+      } else nome = nomePagina(dest);
+      await escrever(`<p>${esc(T.ac_open(nome))}</p>`, { q, acao: true });
+      setTimeout(() => { location.hash = dest; }, 700);
+    }
+  }
+  // Várias tarefas numa mensagem: mostra o plano e faz uma de cada vez (o que abre janela fica para o fim)
+  async function plano(ps, texto) {
+    const T = X(), MT = window.MOTOR;
+    const janela = (p) => MT.acoes(p).lista.some((a) => a.k === "midia" || (a.k === "compartilhar" && SOCIAL.includes(a.rede)));
+    const ord = ps.map((p, i) => ({ p, i, j: janela(p) ? 1 : 0 })).sort((a, b) => a.j - b.j || a.i - b.i);
+    await pensarRapido(T.think.plano);
+    await escrever(`<p>${esc(T.pl_lead(ord.length))}</p><ol class="at-plano">${ord.map((x) => `<li>${esc(x.p)}</li>`).join("")}</ol>`, { q: texto, plano: true });
+    for (let k = 0; k < ord.length; k++) {
+      S.parou = false;
+      S.pre = `<p class="at-entendi">${esc(T.pl_step(k + 1, ord.length, ord[k].p))}</p>`;
+      await responder(ord[k].p, { etapa: true });
+      S.pre = "";
+      if (S.parou && k < ord.length - 1) { await escrever(`<p>${esc(T.pl_stop(k + 1))}</p>` + chipsQ(ord.slice(k + 1).map((x) => perg(x.p))), { q: texto, acao: true }); return; }
+    }
+  }
+
+  // --- contas: média, soma, mediana, maior e menor; filtros com limiar; diferença entre dois lugares; conta simples -------
+  const CAPITAL = { AC: "Rio Branco", AL: "Maceió", AM: "Manaus", AP: "Macapá", BA: "Salvador", CE: "Fortaleza", DF: "Brasília", ES: "Vitória", GO: "Goiânia", MA: "São Luís", MG: "Belo Horizonte",
+    MS: "Campo Grande", MT: "Cuiabá", PA: "Belém", PB: "João Pessoa", PE: "Recife", PI: "Teresina", PR: "Curitiba", RJ: "Rio de Janeiro", RN: "Natal", RO: "Porto Velho", RR: "Boa Vista",
+    RS: "Porto Alegre", SC: "Florianópolis", SE: "Aracaju", SP: "São Paulo", TO: "Palmas" };
+  const TAXA = new Set(["comp", "abst", "brancos", "nulos", "bn", "cand_pct"]);
+  // Numerador e denominador de uma medida num lugar e turno (seções e sinalizações vêm da linha inteira)
+  function partesDe(r, k, n, cand) {
+    if (k === "secoes") return { num: r.sec, den: null };
+    if (k === "sinal") return { num: r.sn[n].a, den: r.sec || null };
+    const x = r.t && r.t[n];
+    if (!x) return null;
+    const v = (nr) => x.v[nr] || 0;
+    if (k === "comp") return { num: x.comp, den: x.aptos };
+    if (k === "abst") return { num: x.aptos - x.comp, den: x.aptos };
+    if (k === "brancos") return { num: v("95"), den: x.comp };
+    if (k === "nulos") return { num: v("96"), den: x.comp };
+    if (k === "bn") return { num: v("95") + v("96"), den: x.comp };
+    if (k === "cand_pct" || k === "cand") return { num: v(cand), den: Q().validos(x) };
+    if (k === "aptos") return { num: x.aptos, den: null };
+    return null;
+  }
+  async function linhasGrupo(g) {
+    const fora = (l) => l.filter((r) => r.uf !== "ZZ");
+    const reg = g.regiao ? window.MOTOR.REGIOES[g.regiao] : null;
+    if (g.unidade === "uf") { const l = fora(await Q().estados({})); return reg ? l.filter((r) => reg.includes(r.uf)) : l; }
+    const ufs = g.uf ? [g.uf] : reg || Object.keys(window.UF_NOMES).filter((u) => u !== "ZZ");
+    const l = await Q().municipios(ufs, {});
+    return g.capitais ? l.filter((r) => CAPITAL[r.uf] && nz(r.nome) === nz(CAPITAL[r.uf])) : fora(l);
+  }
+  function grupoTxt(g) {
+    const T = X();
+    const quem = g.capitais ? T.ct_cap : T.rk_unid[g.unidade === "uf" ? "uf" : "mun"];
+    return `${quem} · ${g.uf ? `${A.ufNome(g.uf)} (${g.uf})` : g.regiao ? T.ct_reg[g.regiao] : T.br_name}`;
+  }
+  const usaTaxa = (c) => c.pct || (TAXA.has(c.metrica) && c.v <= 100);
+  function condTexto(c, nome) {
+    const T = X(), f = (v) => (usaTaxa(c) ? `${A.nf(v)}%` : nf(v));
+    return c.op === "bt" ? T.ct_cond.bt(nome, f(c.v), f(c.v2)) : T.ct_cond[c.op](nome, f(c.v));
+  }
+  async function contaResp(cq, E, q) {
+    const T = X(), L = t(), g = cq.grupo || {};
+    let n = cq.turno || 2;
+    const cand = cq.cand, cn = cand && cand.nr, candNome = cand && A.titulo(cand.nome);
+    if (cand && !turnoTem(n, cn)) { if (cq.turno) return faltando(T.rk_cand_round(candNome, L.round(n)), [`${q} ${L.round(1)}`]); n = 1; }
+    if (cq.tipo === "dif") return difResp(cq, n, q);
+    if (g.unidade === "mun" && !g.uf && !g.regiao && !g.capitais && !g.br) {
+      return faltando(T.ct_ask_scope, [`${q} ${T.w_in} ${A.ufNome("PR")}`, `${q} ${T.w_in} ${A.ufNome("SP")}`, `${q} ${T.ct_q_cap}`, `${q} ${T.w_in} ${T.br_name}`]);
+    }
+    const rows = await pensar(T.think.conta, linhasGrupo(g));
+    lembrar({ q, intencao: "conta", conta: cq, turno: cq.turno, lugar: g.uf ? { tipo: "uf", uf: g.uf, nome: A.ufNome(g.uf) } : null });
+    if (!rows.length) return escrever(`<p>${esc(T.ct_none)}</p>`, { q });
+    const nomeMed = (k) => Q().medida(k, { cand: cn, candNome }).nome;
+    const sub = `${grupoTxt(g)} · ${L.round(n)}`, como = [];
+    let h;
+    if (cq.tipo === "agg") {
+      const k = cq.metrica, taxa = TAXA.has(k);
+      const vals = rows.map((r) => ({ r, p: partesDe(r, k, n, cn) })).filter((x) => x.p && x.p.num != null && (!taxa || x.p.den));
+      if (!vals.length) return escrever(`<p>${esc(T.ct_none)}</p>`, { q });
+      const v = (x) => (taxa ? x.p.num / x.p.den : x.p.num), f = (x) => (taxa ? pct(x, 2) : nf(Math.round(x * 10) / 10));
+      const ord = vals.slice().sort((a, b) => v(a) - v(b)), N = ord.length;
+      const soma = ord.reduce((a, x) => a + x.p.num, 0), somaDen = ord.reduce((a, x) => a + (x.p.den || 0), 0);
+      const media = ord.reduce((a, x) => a + v(x), 0) / N, mediana = N % 2 ? v(ord[(N - 1) / 2]) : (v(ord[N / 2 - 1]) + v(ord[N / 2])) / 2;
+      const maior = ord[N - 1], menor = ord[0];
+      const res = { media: f(media), soma: nf(soma), mediana: f(mediana), max: `${nomeTxt(maior.r)}, ${f(v(maior))}`, min: `${nomeTxt(menor.r)}, ${f(v(menor))}` }[cq.op];
+      h = cab(esc(`${T.ct_op[cq.op]} · ${nomeMed(k)}`), esc(sub)) + `<p>${esc(T.ct_lead(T.ct_op[cq.op], nomeMed(k), res, N))}</p>`;
+      h += kv([[T.ct_kv.media(N), esc(f(media))], taxa ? [T.ct_kv.pond, esc(pct(soma / (somaDen || 1), 2))] : [T.ct_kv.soma, esc(nf(soma))], [T.ct_kv.mediana, esc(f(mediana))],
+        [T.ct_kv.max, esc(`${nomeTxt(maior.r)} · ${f(v(maior))}`)], [T.ct_kv.min, esc(`${nomeTxt(menor.r)} · ${f(v(menor))}`)]]);
+      const barra = ord.slice().reverse().slice(0, N <= 30 ? N : 15), topo = v(barra[0]) || 1;
+      h += `<h4 class="at-t">${esc(N <= 30 ? T.ct_todos(N) : T.ct_top(15, N))}</h4>` + A.barras(barra.map((x) => ({ rotulo: nomeTxt(x.r), valor: v(x) / topo, texto: f(v(x)), dica: `${nomeTxt(x.r)}\n${nomeMed(k)}: ${f(v(x))}` })));
+      listar(barra.map((x) => x.r));
+      como.push(T.ct_f[k](candNome), T.ct_h_media, taxa ? T.ct_h_pond : T.ct_h_soma, T.ct_h_mediana);
+      if (!g.regiao && !g.capitais && T.rk_frase[k]) h += oferecer(T.of_ct_rank, `${T.rk_base(g.unidade, g.uf)} ${T.rk_frase[k](cq.op === "min" ? "asc" : "desc", candNome)}`);
+    } else {
+      const conds = cq.conds || [];
+      const valor = (r, c) => { const p = partesDe(r, c.metrica, n, cn); if (!p || p.num == null) return null; if (!usaTaxa(c)) return p.num; return p.den ? (p.num / p.den) * 100 : null; };
+      const passa = (r, c) => { const x = valor(r, c); return x != null && (c.op === "gt" ? x > c.v : c.op === "lt" ? x < c.v : x >= c.v && x <= c.v2); };
+      const ok = rows.filter((r) => conds.every((c) => passa(r, c)));
+      const c0 = conds[0];
+      if (c0) ok.sort((a, b) => (c0.op === "lt" ? valor(a, c0) - valor(b, c0) : valor(b, c0) - valor(a, c0)));
+      const un = (g.capitais ? T.ct_cap : T.rk_unid[g.unidade === "uf" ? "uf" : "mun"]).toLowerCase();
+      const condTxt = conds.map((c) => condTexto(c, nomeMed(c.metrica))).join(` ${T.w_and} `);
+      h = cab(esc(conds.length ? T.ct_lim_t(condTxt) : T.ct_count_t), esc(sub));
+      h += `<p>${esc(conds.length ? (ok.length ? T.ct_lim_lead(nf(ok.length), nf(rows.length), un) : T.ct_lim_none) : T.ct_count(nf(rows.length), un))}</p>`;
+      if (!ok.length && c0) {
+        // perto do limite: os mais próximos de passar na primeira condição
+        const perto = rows.filter((r) => conds.slice(1).every((c) => passa(r, c)) && valor(r, c0) != null).sort((a, b) => (c0.op === "lt" ? valor(a, c0) - valor(b, c0) : valor(b, c0) - valor(a, c0))).slice(0, 5);
+        if (perto.length) h += obsHtml([T.ct_perto(nomeMed(c0.metrica).toLowerCase(), perto.map((r) => `${nomeTxt(r)} (${usaTaxa(c0) ? `${A.nf(Math.round(valor(r, c0) * 10) / 10)}%` : nf(valor(r, c0))})`).join(", "))]);
+        como.push(T.ct_h_lim(condTxt));
+        if (T.rk_frase[c0.metrica] && !g.regiao && !g.capitais) h += oferecer(T.of_ct_rank, `${T.rk_base(g.unidade, g.uf)} ${T.rk_frase[c0.metrica](c0.op === "lt" ? "asc" : "desc", candNome)}`);
+      }
+      if (ok.length && conds.length) {
+        const mets = conds.filter((c, i) => conds.findIndex((x) => x.metrica === c.metrica) === i), mostra = ok.slice(0, MAX_FILTRO);
+        h += tabela(["#", T.rk_th_nome].concat(mets.map((c) => nomeMed(c.metrica)), [L.st_secoes]), mostra.map((r, i) => [String(i + 1), nomeLinha(r)].concat(mets.map((c) => {
+          const p = partesDe(r, c.metrica, n, cn);
+          return p ? esc(usaTaxa(c) ? pct(p.num / (p.den || 1), 2) : nf(p.num)) : "—";
+        }), [nf(r.sec)])), "num-cols at-rank");
+        if (ok.length > MAX_FILTRO) h += `<p class="small muted">${esc(T.ft_more(nf(MAX_FILTRO), nf(ok.length)))}</p>`;
+        listar(mostra);
+        mets.forEach((c) => como.push(T.ct_f[c.metrica](candNome)));
+        como.push(T.ct_h_lim(condTxt));
+        h += botoes([`<button type="button" class="btn btn-sm" data-at-csv>${icone("download")} ${esc(T.ct_csv)}</button>`]);
+        if (ok[0].tipo === "mun" || ok[0].tipo === "uf") h += oferecer(T.of_rel(nomeTxt(ok[0])), `${T.rl_word} ${rotRef(ok[0])}`);
+      }
+    }
+    como.push(T.ct_h_src(L.round(n)));
+    h += `<h4 class="at-t">${esc(T.ct_how)}</h4><ul class="at-lista small">${como.filter(Boolean).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    h += fonte(T.src_site);
+    return escrever(h, { q });
+  }
+  async function difResp(cq, n, q) {
+    const T = X(), L = t(), k = cq.metrica, cn = cq.cand && cq.cand.nr, candNome = cq.cand && A.titulo(cq.cand.nome);
+    const rs = await pensar(T.think.conta, Promise.all(cq.lugares.map((x) => Q().linhaLugar(x))));
+    lembrar({ q, intencao: "conta", conta: cq, turno: cq.turno, lugares: cq.lugares, lugar: cq.lugares[cq.lugares.length - 1] });
+    const taxa = TAXA.has(k), ps = rs.map((r) => (r ? partesDe(r, k, n, cn) : null));
+    if (ps.some((p) => !p || p.num == null || (taxa && !p.den))) return escrever(`<p>${esc(T.ct_none)}</p>`, { q });
+    const nome = (r) => (r.tipo === "br" ? T.br_name : nomeTxt(r)), nomeMed = Q().medida(k, { cand: cn, candNome }).nome;
+    const vs = ps.map((p) => (taxa ? p.num / p.den : p.num)), dif = vs[0] - vs[1];
+    const fmt = (x) => (taxa ? pct(x, 2) : nf(x));
+    const difTxt = taxa ? `${A.nf(Math.round(Math.abs(dif) * 10000) / 100)} ${T.ct_pp}` : nf(Math.abs(dif));
+    const a = dif >= 0 ? 0 : 1, b = 1 - a;
+    let h = cab(esc(T.ct_dif_t(nome(rs[0]), nome(rs[1]))), esc(`${nomeMed} · ${L.round(n)}`));
+    h += `<p>${esc(dif === 0 ? T.ct_dif_igual(nomeMed) : T.ct_dif_lead(nome(rs[a]), nome(rs[b]), difTxt, nomeMed))}</p>`;
+    const linhas = rs.map((r, i) => [nome(r), esc(fmt(vs[i]) + (taxa ? ` · ${nf(ps[i].num)}` : ""))]).concat([[T.ct_dif, esc(difTxt)]]);
+    if (!taxa && vs[0] > 0 && vs[1] > 0) linhas.push([T.ct_razao, esc(T.ct_vezes(A.nf(Math.round((Math.max(...vs) / Math.min(...vs)) * 100) / 100)))]);
+    h += kv(linhas);
+    const topo = Math.max(...vs.map(Math.abs)) || 1;
+    h += A.barras(rs.map((r, i) => ({ rotulo: nome(r), valor: Math.abs(vs[i]) / topo, texto: fmt(vs[i]), dica: `${nome(r)}\n${nomeMed}: ${fmt(vs[i])}` })));
+    listar(cq.lugares);
+    h += `<h4 class="at-t">${esc(T.ct_how)}</h4><ul class="at-lista small">${[T.ct_f[k](candNome), T.ct_h_dif, T.ct_h_src(L.round(n))].map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    h += oferecer(T.of_cmp_full, `${rotRef(cq.lugares[0])} x ${rotRef(cq.lugares[1])}`);
+    h += fonte(T.src_site);
+    return escrever(h, { q });
+  }
+  async function calculoResp(c, q) {
+    const T = X(), fmtN = (x) => new Intl.NumberFormat(t().locale, { maximumFractionDigits: 6 }).format(x);
+    await pensarRapido(T.think.calc);
+    const expr = c.seq.map((x) => (typeof x === "number" ? fmtN(x) : { "*": "×", "/": "÷", de: T.w_of }[x] || x)).join(" ").replace(/\( /g, "(").replace(/ \)/g, ")").replace(/ %/g, "%");
+    return escrever(cab(esc(T.ct_calc_t), "") + kv([[expr, `<b>${esc(fmtN(c.valor))}</b>`]]) + `<p class="small muted">${esc(T.ct_calc_note)}</p>`, { q, cmd: true });
+  }
 
   // --- dados: município, estado, zona, seção, urna, Brasil -------------------------------------------------
   async function escolherMun(muns, texto) {
     const T = X();
+    S.parou = true;
+    listar(muns.map((m) => Object.assign({ tipo: "mun" }, m)));
     await pensar(T.think.mun.slice(0, 1));
     return escrever(`<p>${esc(T.mun_many)}</p>` + chipsQ(muns.map((m) => perg(`${m.nome} ${m.uf}`, `${m.nome} (${m.uf})`))), { q: texto });
   }
@@ -438,9 +1127,9 @@
     const trab = (async () => {
       const [U, s] = await Promise.all([ext().dado(`site/data/ufs/${m.uf}.json`), sinais((o) => o[0] === m.uf && o[1] === m.cod)]);
       const [ib, mapa] = await Promise.all([S.con.ibge && m.uf !== "ZZ" ? ibge(m).catch((e) => ({ erro: e.message })) : null, blocoMapa(m.uf, 2, m.cod).catch(() => "")]);
-      return { x: U.m[m.cod], s, ib, mapa };
+      return { x: U.m[m.cod], U, s, ib, mapa };
     })();
-    const { x, s, ib, mapa } = await pensar(etapas, trab);
+    const { x, U, s, ib, mapa } = await pensar(etapas, trab);
     if (!x) return escrever(`<p>${esc(L.mu_none)}</p>`, { q: opts.q });
     let h = cab(`${esc(m.nome)} (${esc(m.uf)})`, esc(A.ufNome(m.uf)), `#/uf/${m.uf}/${m.cod}`);
     h += `<p>${esc(T.mun_lead(nf(x[0]), x[1].length, x[1].join(", ")))}</p>`;
@@ -449,6 +1138,10 @@
     if (mapa) h += mapa;
     if (ib) h += blocoIbge(ib, m);
     else if (opts.querIbge && m.uf !== "ZZ") h += `<p class="note small">${esc(T.con_off.ibge)}</p>`;
+    // destaque: comparecimento do município × estado no 2º turno; sugestão: seções com anomalia ou o relatório
+    const t2 = x[3], tu = Object.values(U.m).reduce((a, mm) => (mm[3] ? [a[0] + mm[3][0], a[1] + mm[3][1]] : a), [0, 0]);
+    if (t2 && tu[0] && m.uf !== "ZZ") { const a = t2[1] / (t2[0] || 1), b = tu[1] / tu[0]; h += obsHtml([T.ob_mun_comp(m.nome, pct(a, 1), pct(b, 1), a >= b), s[2].a.size ? T.ob_anom(s[2].a.size, nf(s[2].a.size)) : ""]); }
+    h += s[2].a.size ? oferecer(T.of_ft(m.nome), T.of_q_ft(`${m.nome} ${m.uf}`)) : oferecer(T.of_rel(m.nome), `${T.rl_word} ${m.nome} ${m.uf}`);
     h += botoes([ir(`#/uf/${m.uf}/${m.cod}`, "pin", T.open_mun), ir(`#/lista?uf=${m.uf}&mun=${m.cod}`, "list", T.open_list), ir(`#/variacao/${m.uf}/${m.cod}`, "swap", T.open_var),
       S.con.tse ? tseBtn({ tipo: "mun", uf: m.uf, cod: m.cod, nome: m.nome }) : "", opts.querIbge && !ib && m.uf !== "ZZ" ? btnCon() : ""]);
     h += fonte(T.src_site + (ib && !ib.erro && !ib.semMatch ? " · IBGE" : ""));
@@ -457,8 +1150,9 @@
 
   async function estado(uf, opts) {
     const T = X(), L = t();
-    const trab = Promise.all([ext().dado(`site/data/ufs/${uf}.json`), sinais((o) => o[0] === uf), blocoMapa(uf, 2, null).catch(() => "")]);
-    const [U, s, mapa] = await pensar(T.think.uf, trab);
+    const trab = Promise.all([ext().dado(`site/data/ufs/${uf}.json`), sinais((o) => o[0] === uf), blocoMapa(uf, 2, null).catch(() => ""),
+      uf === "ZZ" ? null : Q().ranking({ unidade: "mun", uf, metrica: "sinal", turno: 2, ordem: "desc", n: 3 }).catch(() => null)]);
+    const [U, s, mapa, rk] = await pensar(T.think.uf, trab);
     const ms = Object.values(U.m);
     const tot = { 1: null, 2: null };
     ms.forEach((m) => [1, 2].forEach((n) => {
@@ -472,6 +1166,10 @@
     [2, 1].forEach((n) => { if (tot[n]) h += blocoTurno(n, tot[n][0], tot[n][1], tot[n][2]); });
     h += blocoSinais(s, T.sg_note_uf);
     if (mapa) h += mapa;
+    // destaque: os municípios com mais seções com anomalia; sugestão: o ranking completo
+    const top = rk ? rk.top.filter((x) => x.v > 0) : [];
+    if (top.length) { h += obsHtml([T.ob_uf_top(top.map((x) => `${x.r.nome} (${nf(x.v)})`).join(", "))]); listar(top.map((x) => x.r)); }
+    if (rk) h += oferecer(T.of_uf_rank(uf), T.of_q_rank(uf));
     h += botoes([ir(`#/uf/${uf}`, "pin", T.open_uf), ir(`#/lista?uf=${uf}`, "list", T.open_list), ir(`#/variacao/${uf}`, "swap", T.open_var), ir("#/mapa", "map", t().nav.map),
       S.con.tse ? tseBtn({ tipo: "uf", uf, nome: A.ufNome(uf) }) : ""]);
     if (opts.homonimos && opts.homonimos.length) h += `<p class="msg-rel">${esc(T.uf_homonym)}</p>` + chipsQ(opts.homonimos.map((m) => perg(`${T.w_city} ${m.nome} ${m.uf}`, `${m.nome} (${m.uf})`)));
@@ -500,6 +1198,7 @@
     [2, 1].forEach((n) => { if (tot[n]) h += blocoTurno(n, tot[n][0], tot[n][1], tot[n][2]); });
     h += `<h4 class="at-t">${esc(T.sg_t)}</h4><ul class="at-sinais">${[2, 1].map((n) => `<li><b>${esc(L.round(n))}:</b> ${A.chip(an[n] ? "red" : "green", T.sg_a(nf(an[n])))} ${A.chip(inf[n] ? "amber" : "green", T.sg_i_only(nf(inf[n])))}</li>`).join("")}</ul>`;
     const ex = nums.map(Number).sort((a, b) => a - b).slice(0, 3);
+    if (an[2] + inf[2] > 0) h += oferecer(T.of_zona_ft, T.of_q_zona(p.uf, p.z));
     h += `<p class="msg-rel">${esc(T.zone_try)}</p>` + chipsQ(ex.map((s) => perg(`${p.uf} ${T.w_zone} ${p.z} ${T.w_section} ${s}`)));
     h += botoes([ir(`#/lista?uf=${p.uf}&z=${p.z}`, "list", T.open_list)]);
     h += fonte(T.src_site);
@@ -509,9 +1208,15 @@
   async function secao(p, q) {
     const L = t(), T = X();
     const d = await pensar(L.bot_think_sec, A.consultarSecao(p.uf, p.z, p.s));
-    return escrever(htmlSecao(d), { q });
+    let extra = "";
+    if (d.rec) {
+      const fl = d.rec[3] || {}, a = [2, 1].reduce((k, n) => k + ((fl[String(n)] && fl[String(n)].o.filter((o) => o[1] === "a").length) || 0), 0);
+      const algum = [2, 1].some((n) => fl[String(n)] && fl[String(n)].o.length);
+      extra = algum ? obsHtml([a ? T.ob_sec_a(a, nf(a)) : T.ob_sec_i]) + oferecer(T.of_pq, T.pq_q(d.uf, d.z, d.s)) : obsHtml([T.ob_sec_ok]) + oferecer(T.of_qr, null, "qr", true);
+    }
+    return escrever(htmlSecao(d, extra), { q });
   }
-  function htmlSecao(d) {
+  function htmlSecao(d, extra) {
     const L = t(), T = X();
     if (d.erro === "zona") return `<p>${esc(L.lk_nozone)}</p>`;
     if (d.erro === "secao") {
@@ -532,7 +1237,7 @@
       if (f && f.o.length) h += `<ul class="at-sinais">${f.o.map((o) => `<li>${A.chip(o[1] === "a" ? "red" : "amber", o[1] === "a" ? L.lv_a : L.lv_i)} ${A.numTeste(o[0])}. ${esc(A.nomeTeste(o[0]))} <span class="small muted">· ${esc((R().categorias[o[2]] || {})[A.state.lang] || o[2])}</span></li>`).join("")}</ul>`;
       else h += `<p>${A.chip("green", L.lk_noflags)}</p>`;
     });
-    h += `<p class="small muted">${esc(L.lk_open)}/${esc(L.lk_close)}: ${esc(L.lk_local)}.</p>`;
+    h += `<p class="small muted">${esc(L.lk_open)}/${esc(L.lk_close)}: ${esc(L.lk_local)}.</p>` + (extra || "");
     h += botoes([ir(`#/secao/${d.uf}/${d.z}/${d.s}`, "search", T.open_sec), `<button type="button" class="btn btn-sm" data-at-fn="qr">${icone("qr")} ${esc(T.fn.qr[0])}</button>`,
       S.con.tse ? `<button type="button" class="btn btn-sm" data-at-tsesec="${esc(JSON.stringify({ uf: d.uf, z: d.z, s: d.s }))}">${icone("shield")} ${esc(T.tse_files)}</button>` : ""]);
     h += fonte(L.bot_sec_src);
@@ -557,6 +1262,7 @@
         <span class="small">${esc(L.lk_urna(f.u, f.c, f.l))}</span><br>${f.o.map((o) => `${A.chip(o[1] === "a" ? "red" : "amber", `${A.numTeste(o[0])}. ${A.nomeTeste(o[0])}`)}`).join(" ")}</li>`;
     });
     h += `</ul><p class="small muted">${esc(T.urna_note)}</p>`;
+    listar(achou.filter((x) => x.d.rec).map(({ d }) => ({ tipo: "secao", uf: d.uf, z: d.z, s: d.s })));
     h += chipsQ(achou.filter((x) => x.d.rec).map(({ d }) => perg(`${d.uf} ${T.w_zone} ${d.z} ${T.w_section} ${d.s}`)));
     h += fonte(T.src_site);
     return escrever(h, { q });
@@ -593,6 +1299,7 @@
   const nomeTxt = (r) => (r.tipo === "uf" ? `${r.uf} – ${A.ufNome(r.uf)}` : r.tipo === "mun" ? `${r.nome} (${r.uf})` : r.nome || "");
   // Pergunta que falta um dado: oferece as opções prontas
   async function faltando(txt, qs, extra) {
+    S.parou = true;
     await pensar(X().think.guia);
     return escrever(`<p>${esc(txt)}</p>` + chipsQ(qs.map((x) => (Array.isArray(x) ? perg(x[0], x[1]) : perg(x)))) + (extra || ""));
   }
@@ -630,19 +1337,28 @@
     const res = await pensar(T.think.rank, Q().ranking(opts));
     lembrar(ctxDe(E, { intencao: "ranking", unidade: un, turno: E.turno, lugar: cod ? { tipo: "mun", uf, cod, nome: nomeMun_ } : uf ? { tipo: "uf", uf, nome: A.ufNome(uf) } : E.br ? { tipo: "br" } : null }));
     if (!res.top.length) return escrever(`<p>${esc(T.rk_none)}</p>`, { q });
+    // "mostra mais 10": continua de onde a lista parou
+    const off = E.off || 0, fatia = res.todas.slice(off, off + Math.min(E.n || 10, 50));
+    if (!fatia.length) { await pensarRapido(T.think.cv); return escrever(`<p>${esc(T.cv_rank_fim(nf(res.total)))}</p>`, { q, cmd: true }); }
+    listar(res.todas.slice(0, off + fatia.length).map((x) => x.r));
     const M = res.M;
     let h = cab(esc(`${T.rk_unid[un]} · ${escopoTxt(uf, cod, nomeMun_)}`), esc(`${T.rk_ord(M.nome, opts.ordem)} · ${L.round(n)}`));
-    h += `<p>${esc(T.rk_lead(nf(res.top.length), nf(res.total), T.rk_unid[un].toLowerCase()))}</p>`;
+    h += `<p>${esc(off ? T.rk_lead_off(nf(off + 1), nf(off + fatia.length), nf(res.total), T.rk_unid[un].toLowerCase()) : T.rk_lead(nf(fatia.length), nf(res.total), T.rk_unid[un].toLowerCase()))}</p>`;
     if (opts.testes.length) h += `<p class="small">${esc(T.rk_tests(opts.testes.map((x) => `${A.numTeste(x)}. ${A.nomeTeste(x)}`).join(opts.op === "ou" ? " | " : " + ")))}</p>`;
-    const barra = res.top.slice(0, 15);
+    const barra = fatia.slice(0, 15);
     const max = Math.max(...barra.map((x) => Math.abs(x.v)), 1e-9);
     h += A.barras(barra.map((x) => ({ rotulo: nomeTxt(x.r), valor: Math.abs(x.v) / max, texto: M.txt(x.r, n), dica: `${nomeTxt(x.r)}\n${M.nome}: ${M.txt(x.r, n)}` })));
     const comSinal = M.k === "sinal";
     h += tabela(["#", T.rk_th_nome, M.nome, L.st_secoes].concat(comSinal ? [] : [T.rk_th_flag]),
-      res.top.map((x, i) => [String(i + 1), nomeLinha(x.r), esc(M.txt(x.r, n)), x.r.sec == null ? "—" : nf(x.r.sec)].concat(comSinal ? [] : [nf(x.r.sn[n].a)])), "num-cols at-rank");
+      fatia.map((x, i) => [String(off + i + 1), nomeLinha(x.r), esc(M.txt(x.r, n)), x.r.sec == null ? "—" : nf(x.r.sec)].concat(comSinal ? [] : [nf(x.r.sn[n].a)])), "num-cols at-rank");
     if (res.soSinal) h += `<p class="small muted">${esc(T.rk_only_flags)}</p>`;
     if (M.pct && un !== "uf") h += `<p class="small muted">${esc(T.rk_note_pct)}</p>`;
     h += `<p class="small muted">${esc(comSinal ? T.sg_note : T.rk_note)}</p>`;
+    // destaque: quem lidera e a mediana; sugestão: comparar os dois primeiros ou ver por que a 1ª seção foi sinalizada
+    const meio = res.todas[Math.floor((res.todas.length - 1) / 2)], t0 = res.todas[0], t1 = res.todas[1];
+    if (!off && res.total >= 3) h += obsHtml([T.ob_rk(nomeTxt(t0.r) || t0.r.nome, M.txt(t0.r, n), M.txt(meio.r, n), nf(res.total))]);
+    if (t1 && (t0.r.tipo === "mun" || t0.r.tipo === "uf")) h += oferecer(T.of_rk_cmp(nomeTxt(t0.r), nomeTxt(t1.r)), `${rotRef(t0.r)} x ${rotRef(t1.r)}`);
+    else if (t0.r.tipo === "secao" && t0.r.sn[n].a + t0.r.sn[n].i > 0) h += oferecer(T.of_pq_1, T.pq_q(t0.r.uf, t0.r.z, t0.r.s, n));
     h += botoes([comSinal ? ir(`#/lista?t=${n}${uf ? "&uf=" + uf : ""}${cod ? "&mun=" + cod : ""}${E.nivel ? "&nivel=" + E.nivel : ""}`, "list", T.open_list) : "", ir(uf ? `#/uf/${uf}` : "#/mapa", "map", uf ? T.open_uf : L.nav.map)]);
     h += fonte(T.src_site);
     return escrever(h, { q });
@@ -703,6 +1419,11 @@
     });
     h += `<h4 class="at-t">${esc(L.lk_comp)}</h4>` + A.barras(rs.map((r) => { const v = r.t[2].comp / (r.t[2].aptos || 1); return { rotulo: nome(r), valor: v, texto: pct(v), dica: `${nome(r)}\n${L.lk_comp}: ${pct(v)} (${L.round(2)})` }; }));
     h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    listar(alvos);
+    const cs = rs.filter((r) => r.t[2] && r.t[2].aptos).map((r) => ({ r, v: r.t[2].comp / r.t[2].aptos })).sort((a, b) => b.v - a.v);
+    if (cs.length >= 2) h += obsHtml([T.ob_cp(nome(cs[0].r), pct(cs[0].v, 1), nome(cs[cs.length - 1].r), pct(cs[cs.length - 1].v, 1), A.nf(Math.round((cs[0].v - cs[cs.length - 1].v) * 1000) / 10))]);
+    const rel = alvos.find((x) => x.tipo === "mun" || x.tipo === "uf");
+    if (rel) h += oferecer(T.of_rel(nomeRef(rel)), `${T.rl_word} ${rotRef(rel)}`);
     h += botoes(rs.filter((r) => r.tipo !== "br").map((r) => ir(r.tipo === "uf" ? `#/uf/${r.uf}` : r.tipo === "mun" ? `#/uf/${r.uf}/${r.cod}` : `#/secao/${r.uf}/${r.z}/${r.s}`, "arrow", nome(r))));
     h += fonte(T.src_site);
     return escrever(h, { q });
@@ -745,6 +1466,13 @@
       x.testes.map((id) => A.chip(x.a ? "red" : "amber", String(A.numTeste(id)))).join(" "), lk(T.pq_q(x.uf, x.z, x.s, x.n), T.ft_why)]), "num-cols at-filtro");
     if (l.length > MAX_FILTRO) h += `<p class="small muted">${esc(T.ft_more(nf(MAX_FILTRO), nf(l.length)))}</p>`;
     h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    listar(mostra.map((x) => ({ tipo: "secao", uf: x.uf, z: x.z, s: x.s })));
+    if (l.length >= 3 && !f.z) {
+      const pz = {}; l.forEach((x) => { const k = x.uf + " " + x.z; pz[k] = (pz[k] || 0) + 1; });
+      const [zk, zn] = Object.entries(pz).sort((a, b) => b[1] - a[1])[0];
+      if (zn >= 2) h += obsHtml([T.ob_ft_zona(zk.split(" ")[1], nf(zn), nf(l.length))]);
+    }
+    h += oferecer(T.of_pq_1, T.pq_q(l[0].uf, l[0].z, l[0].s, l[0].n));
     h += botoes([`<button type="button" class="btn btn-sm" data-at-filtro="${esc(JSON.stringify(f))}">${icone("download")} ${esc(T.ft_csv(nf(l.length)))}</button>`,
       ir(`#/lista?${[f.turno ? "t=" + f.turno : "", f.uf ? "uf=" + f.uf : "", f.cod ? "mun=" + f.cod : "", f.z ? "z=" + f.z : "", testes.length === 1 ? "teste=" + testes[0] : "", E.nivel ? "nivel=" + E.nivel : ""].filter(Boolean).join("&")}`, "list", T.open_list)]);
     h += fonte(T.src_site);
@@ -883,6 +1611,8 @@
     } else h += `<p>${A.chip("green", T.rl_nosecs)}</p>`;
     if (r.ib) h += blocoIbge(r.ib, m);
     h += `<p class="small muted">${esc(T.sg_note)}</p>`;
+    if (r.secs.length) listar(r.secs.slice(0, 40).map((x) => ({ tipo: "secao", uf: x.uf, z: x.z, s: x.s })));
+    h += oferecer(T.of_rl_pdf, T.of_q_pdf);
     h += botoes([`<button type="button" class="btn btn-sm btn-primary" data-at-exp>${icone("download")} ${esc(T.rl_export)}</button>`, ir(`#/uf/${m.uf}/${m.cod}`, "pin", T.open_mun),
       ir(`#/lista?uf=${m.uf}&mun=${m.cod}`, "list", T.open_list), ir(`#/variacao/${m.uf}/${m.cod}`, "swap", T.open_var)]);
     h += fonte(T.src_site + (r.ib && !r.ib.erro && !r.ib.semMatch ? " · IBGE" : ""));
@@ -907,6 +1637,8 @@
       h += tabela(["#", T.rk_th_nome, rk.M.nome, L.st_secoes], top.map((x, i) => [String(i + 1), nomeLinha(x.r), esc(rk.M.txt(x.r, 2)), nf(x.r.sec)]), "num-cols");
     }
     h += `<p class="small muted">${esc(T.sg_note_uf)}</p>`;
+    if (top.length) listar(top.map((x) => x.r));
+    h += oferecer(T.of_rl_pdf, T.of_q_pdf);
     h += botoes([`<button type="button" class="btn btn-sm btn-primary" data-at-exp>${icone("download")} ${esc(T.rl_export)}</button>`, ir(`#/uf/${uf}`, "pin", T.open_uf), ir(`#/lista?uf=${uf}`, "list", T.open_list), ir(`#/variacao/${uf}`, "swap", T.open_var)]);
     h += fonte(T.src_site);
     return escrever(h, { q });
@@ -1685,12 +2417,7 @@
     const T = X(), L = t();
     const link = linkResposta(m), txt = paraTexto(m.h), titulo = `Atlas · ${m.q || T.title}`;
     const curto = (n) => (txt.length > n ? txt.slice(0, n - 1).trimEnd() + "…" : txt);
-    const itens = [
-      { href: `https://wa.me/?text=${enc(`*${titulo}*\n\n${curto(900)}\n\n${link}\n${L.badge}`)}`, ic: rede("whatsapp"), txt: "WhatsApp" },
-      { href: `https://t.me/share/url?url=${enc(link)}&text=${enc(`${titulo}\n\n${curto(900)}\n${L.badge}`)}`, ic: rede("telegram"), txt: "Telegram" },
-      { href: `https://twitter.com/intent/tweet?text=${enc(`${titulo}: ${curto(160)}`)}&url=${enc(link)}`, ic: rede("x"), txt: "X (Twitter)" },
-      { href: `mailto:?subject=${enc(titulo)}&body=${enc(`${curto(1800)}\n\n${link}\n\n${L.badge}`)}`, ic: rede("email"), txt: L.sh_email },
-    ];
+    const itens = itensCompartilhar(m);
     if (navigator.share) itens.push({ k: "sistema", ic: rede("mais"), txt: T.sh_more });
     itens.push({ k: "link", ic: icone("link"), txt: L.sh_copy });
     const p = popover(btn, itens);
@@ -1916,7 +2643,7 @@
       const id = el.closest("[data-at-id]");
       if (id) {
         const en = motor().entrada(id.dataset.atId); if (!en || S.ocupado) return;
-        ocupar(async () => { usuario(motor().rotulo(en)); await pensar(t().bot_think_qa); await escrever(htmlEntrada(en), { q: motor().rotulo(en) }); });
+        ocupar(async () => { usuario(motor().rotulo(en)); await pensar(t().bot_think_qa); await escrever(htmlEntrada(en), { q: motor().rotulo(en), kb: en.i }); });
         return;
       }
       const go = el.closest("[data-go]"); if (go) { location.hash = go.dataset.go; return; }
@@ -1960,6 +2687,7 @@
         return;
       }
       if (k === "mic") { microfone(at); return; }
+      if (k === "exportar-ult" || k === "reportar-ult") { const d = ultimaResposta(); if (d) { if (k === "reportar-ult") reportar(d._m); else exportarMenu(at, d, d._m); } return; }
       if (k === "conexoes") { painelConexoes(); return; }
       if (k === "limpar") {
         if (!window.confirm(T.hist_clear_q)) return;

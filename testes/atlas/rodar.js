@@ -2,7 +2,8 @@
 /* Bateria de testes do motor do Atlas (site/js/motor.js), sem navegador:
      1) base de perguntas e respostas (PT, EN, ES): cada pergunta da base, com erro de digitação, plural trocado
         e frase de "enchimento", tem de achar a sua resposta (acerto mínimo por idioma);
-     2) perguntas escritas à mão (perguntas.json): intenção, lugar, zona, seção, turno, testes, medida e conversa.
+     2) perguntas escritas à mão (perguntas.json): intenção, lugar, zona, seção, turno, testes, medida e conversa;
+     3) pedidos de conversa (conversa.json): comandos sobre a resposta, várias tarefas, ações, contas e referências.
    Uso: node testes/atlas/rodar.js   (sai com código 1 se algo ficar abaixo do esperado) */
 "use strict";
 const fs = require("fs"), vm = require("vm"), path = require("path");
@@ -77,5 +78,22 @@ P.forEach((c) => {
 });
 total += P.length;
 console.log(`${okP === P.length ? "ok  " : "FALHA"} perguntas escritas à mão: ${okP}/${P.length}`);
+
+// --- 3) conversa ---------------------------------------------------------------------------------------------------------
+const C = JSON.parse(ler("testes/atlas/conversa.json")).casos;
+let okC = 0;
+C.forEach((c) => {
+  configurar(c.lang);
+  const r = M[c.fn](c.q);
+  let obtido = r;
+  if (c.fn === "etapas") obtido = { n: r.length };
+  else if (c.fn === "acoes") obtido = r.lista.length ? Object.assign({ resto: r.resto }, r.lista[0]) : null;
+  else if (c.fn === "conta" && r) obtido = Object.assign({}, r, r.grupo || {}, { conds: (r.conds || []).length });
+  const erros = c.espera.nulo ? (obtido ? [`esperado nada, veio ${JSON.stringify(obtido)}`] : [])
+    : !obtido ? ["não entendeu"] : Object.entries(c.espera).filter(([k, v]) => JSON.stringify(obtido[k]) !== JSON.stringify(v)).map(([k, v]) => `${k}: esperado ${JSON.stringify(v)}, veio ${JSON.stringify(obtido[k])}`);
+  if (erros.length) { falhou = true; console.log(`FALHA [${c.lang}] ${c.fn}: ${c.q}\n      ${erros.join("\n      ")}`); } else okC++;
+});
+total += C.length;
+console.log(`${okC === C.length ? "ok  " : "FALHA"} pedidos de conversa: ${okC}/${C.length}`);
 console.log(`${total} casos no total.`);
 process.exit(falhou ? 1 : 0);

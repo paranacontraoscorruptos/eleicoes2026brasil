@@ -495,6 +495,327 @@
     return resto ? { tipos: [...tipos], so: false, resto } : { tipos: [...tipos], so: true };
   }
 
+  // --- conversa: comandos sobre a última resposta ----------------------------------------------------------------------
+  // "Atlas, por favor, resume isso agora" → "resume isso": tira o que é só educação ou enchimento nas pontas
+  function enxuto(n) {
+    let x = String(n).trim(), antes;
+    do {
+      antes = x;
+      x = x.replace(/^(?:atlas|por favor|please|pls|pf|porfa|agora|now|ahora|entao|ok|okay|certo|bem|well|bueno|hey|ei|oi|e ai|e|and|y|tambem|also)\s+/, "")
+        .replace(/\s+(?:por favor|please|pls|pf|porfa|agora|now|ahora|ai|ae|aqui|pra mim|para mim|for me|para mi|rapidinho|de novo|again|otra vez)$/, "");
+    } while (x !== antes);
+    return x;
+  }
+  const IDIOMAS = [["EN", /^(?:ingles|english|ingl)$/], ["ES", /^(?:espanhol|spanish|espanol|castelhano|castellano)$/], ["PT", /^(?:portugues|portuguese|portugu)$/]];
+  const CMD = [
+    ["conversa", /^(?:(?:faz|faca|me da|me de|da|de)\s+)?(?:um\s+)?(?:resumo|resume|resuma|resumir)\s+(?:d[aeo]\s+|a\s+|toda\s+(?:a\s+)?)?(?:nossa\s+|esta\s+|essa\s+)?conversa$|^(?:do |sobre o )?que (?:a gente |nos )?(?:ja )?(?:falamos|conversamos|vimos|consultamos)(?: ate agora)?$|^(?:summarize|summarise|recap)\s+(?:the|our|this)\s+(?:conversation|chat)$|^what (?:did|have) we (?:talk(?:ed)? about|discuss(?:ed)?|covered?|seen)(?: so far)?$|^(?:resume|resumen de|haz un resumen de)\s+(?:la|nuestra|esta)\s+conversacion$|^de que (?:hemos )?(?:hablado|hablamos)(?: hasta ahora)?$/],
+    ["resumo", /^(?:(?:faz|faca|me da|me de|da|de|quero|gera|gere|cria|crie)\s+)?(?:um\s+|o\s+)?(?:resumo|resume|resuma|resumir|resumindo|em resumo|resumidamente|tl ?dr)(?:\s+(?:isso|isto|disso|disto|a resposta|essa resposta|esta resposta|da resposta|dessa resposta))?$|^(?:summarize|summarise|sum up|sum it up|recap|summary|give me a summary|tl ?dr)(?:\s+(?:it|this|that|the answer))?$|^(?:resumelo|resumen|hazme un resumen|un resumen|resumir|resume)(?:\s+(?:eso|esto|la respuesta))?$/],
+    ["simples", /^(?:(?:me\s+)?(?:explica|explique|explicar|fala|fale|diz|diga|escreve|escreva|repete|repita)\s+)?(?:isso\s+|isto\s+)?(?:(?:de\s+(?:um\s+)?(?:jeito|forma|modo|maneira)|em\s+(?:palavras|linguagem|termos)|com\s+palavras)\s+)?(?:mais\s+)?(?:simples|facil|faceis|simplificad[oa]|clar[oa])$|^(?:simplifica|simplifique|simplificar)(?:\s+(?:isso|isto|a resposta))?$|^(?:nao|n)\s+(?:entendi|entendo|compreendi|ficou claro|to entendendo|estou entendendo)(?:\s+(?:nada|direito|bem|isso|a resposta))?$|^como assim$|^(?:explica|explique|explain|explicame)(?:\s+(?:melhor|isso|isto|better|it|that|mejor))?$|^(?:para|pra)\s+leigos?$|^(?:explica|explique)\s+(?:como|pra|para)\s+(?:se eu fosse|uma?)\s.*$|^(?:explain|say|put)\s+(?:it\s+|that\s+|this\s+)?(?:in\s+(?:simple|plain|simpler)\s+(?:terms|words|english|language)|(?:more\s+)?simply|simpler|like i m \d+)$|^(?:i\s+)?(?:don t|do not|didn t|did not|dont|didnt)\s+(?:understand|get it|get that)(?:\s+(?:it|that|this|anything))?$|^what do you mean$|^(?:simpler|simplify|simplify it|in plain english|eli5)$|^(?:explica|explicame|explicalo|dimelo|dime)\s+(?:mas\s+)?(?:simple|facil|sencillo|mejor|claro)$|^(?:en\s+(?:palabras|terminos)\s+(?:simples|sencillas|sencillos)|mas\s+(?:simple|sencillo|facil))$|^no\s+(?:entendi|entiendo|comprendo)(?:\s+(?:nada|bien|eso))?$|^como asi$|^simplificalo$/],
+    ["detalhes", /^(?:me\s+)?(?:(?:da|de|mostra|mostre|quero|traz|traga|ver)\s+)?(?:mais\s+detalhes|mais\s+informac\w*|mais\s+info|detalhes|os detalhes)(?:\s+(?:sobre isso|disso))?$|^(?:detalha|detalhe|detalhar|aprofunda|aprofunde|aprofundar|expande|expanda|expandir)(?:\s+(?:isso|mais|a resposta))?$|^(?:me\s+)?(?:fala|fale|conta|conte|diz|diga)\s+mais(?:\s+(?:sobre isso|disso))?$|^(?:more\s+(?:details|detail|info|information)|(?:give me|show me)\s+more\s+(?:details|info)|tell me more|go deeper|in detail|details|elaborate|expand(?: on (?:it|that))?)$|^(?:mas\s+(?:detalles|informacion|info)|dame mas detalles|detalles|cuentame mas|dime mas|profundiza|amplia|en detalle)$/],
+    ["numeros", /^(?:(?:mostra|mostre|quero|me da|me de|deixa)\s+)?(?:so|somente|apenas)\s+(?:os\s+)?(?:numeros|dados|valores)$|^sem texto$|^(?:(?:show me|give me)\s+)?(?:just|only)\s+(?:the\s+)?(?:numbers|data|figures)$|^(?:numbers|figures)\s+only$|^(?:solo|solamente)\s+(?:los\s+)?(?:numeros|datos|valores)$|^sin texto$/],
+    ["mais", /^(?:(?:mostra|mostre|me mostra|ver|veja|quero ver|traz|traga|lista|liste|show|show me|see|give me|muestra|muestrame|dame)\s+)?(?:(?:os|as|the|los|las)\s+)?(?:mais|outros|outras|os proximos|as proximas|proximos|proximas|o resto|os demais|as demais|the next|next|more|the rest|the others|others|otros|otras|los siguientes|las siguientes|siguientes|el resto|mas)(?:\s+(\d{1,3}))?(?:\s+(?:itens|linhas|lugares|resultados|municipios|cidades|estados|zonas|secoes|items|rows|results|places|cities|states|zones|sections|ciudades|secciones))?$|^(?:(?:mostra|mostre|me mostra|ver|show|show me|see|give me|muestra|muestrame|dame)\s+)?(?:mais\s+|more\s+|mas\s+)?(\d{1,3})\s+(?:a mais|mais|more|mas|outros|outras|others|otros|otras)(?:\s+(?:itens|linhas|lugares|resultados|items|rows|results|places|resultados))?$|^(?:ver|see|load|carregar|cargar)\s+mais$|^(?:continua|continue|continuar|sigue|segue)$/],
+    ["inverter", /^(?:(?:mostra|mostre|coloca|coloque|poe|ponha|ordena|ordene|show|sort|put|muestra|ordena)\s+)?(?:(?:em|na|in|en)\s+)?(?:ordem\s+)?(?:inversa|invertida|contraria|reverse(?:d)?(?:\s+order)?|orden\s+inverso|al reves|ao contrario|do contrario)$|^(?:inverte|inverta|inverter|invert|reverse|flip|invierte|invertir)(?:\s+(?:a ordem|a lista|o ranking|isso|it|the order|the list|el orden|la lista))?$/],
+    ["asc", /^(?:(?:mostra|mostre|agora|show|now|muestra|ahora|ver)\s+)?(?:(?:os|as|the|los|las)\s+)?(?:menores|de baixo|ultimos|ultimas|lowest|bottom|smallest|last ones|bottom ones)$|^(?:do|de)\s+menor\s+(?:para|pro|ao|a)\s+(?:o\s+)?mayor$|^do menor (?:para|pro|ao) (?:o )?maior$|^(?:from\s+)?(?:lowest|smallest) to (?:highest|largest)$/],
+    ["desc", /^(?:(?:mostra|mostre|agora|show|now|muestra|ahora|ver)\s+)?(?:(?:os|as|the|los|las)\s+)?(?:maiores|de cima|highest|top ones|largest|mayores)$|^do maior (?:para|pro|ao) (?:o )?menor$|^(?:from\s+)?(?:highest|largest) to (?:lowest|smallest)$|^de mayor a menor$/],
+    ["errado", /^(?:nao|n)\s+(?:foi|e|era)\s+(?:isso|isto|bem isso|o que eu (?:perguntei|pedi|queria))(?:\s+que eu (?:perguntei|pedi|queria))?$|^(?:ta|esta|isso esta|isso ta|voce)\s+(?:errad[oa]|enganad[oa])$|^(?:errado|errada|resposta errada|entendeu errado|voce entendeu errado|nao entendeu|voce nao entendeu|nada a ver|nao tem nada a ver)$|^(?:that s|this is|that is|it s|thats|its)\s+(?:wrong|not (?:it|right|what i (?:asked|meant|wanted)))$|^(?:wrong|wrong answer|not what i (?:asked|meant|wanted)|you misunderstood|you got it wrong|no that s not it)$|^(?:no\s+)?(?:es|era)\s+eso$|^(?:eso no es|no es eso|no era eso|esta mal|incorrecto|respuesta incorrecta|no entendiste|entendiste mal|nada que ver)$/],
+    ["sim", /^(?:sim|s|ss|quero|quero sim|claro|claro que sim|pode|pode ser|pode sim|bora|vamos|manda|manda ver|ok|okay|ok pode|beleza|blz|isso|isso mesmo|com certeza|yes|yeah|yep|yup|sure|of course|go ahead|do it|ok sure|si|dale|vale|claro que si|por supuesto|venga|adelante)$/],
+    ["nao", /^(?:nao|n|nao quero|nao obrigad[oa]|agora nao|deixa|deixa pra la|deixa para la|no|nope|no thanks|not now|no gracias|ahora no|mejor no|dejalo)$/],
+  ];
+  // Pedido sobre a resposta anterior ("resume", "mais 10", "agora em inglês"…): { k, n, lang }
+  function comando(texto) {
+    const raw = String(texto || "");
+    let n = enxuto(numerar(norm(raw), B.lang));
+    if (!n) return null;
+    if (/^(?:(?:agora|now|ahora)\s+)?(?:(?:responde|responda|fala|fale|escreve|escreva|mostra|mostre|muda|mude|troca|troque|traduz|traduza|passa|passe|answer|reply|speak|write|switch|change|translate|show|habla|escribe|cambia|traduce|muestra)\s+)?(?:(?:tudo|it|this|isso|everything|todo|the answer|a resposta|la respuesta)\s+)?(?:(?:em|para|pro|pra|in|to|into|en|al|a)\s+)?(?:o\s+|el\s+)?[a-z]+$/.test(n)) {
+      const ult = n.split(" ").pop(), l = IDIOMAS.find(([, re]) => re.test(ult));
+      if (l && (n === ult || n.split(" ").length >= 2)) return { k: "idioma", lang: l[0] };
+    }
+    for (const [k, re] of CMD) {
+      const m = n.match(re);
+      if (m) { const d = m.slice(1).find((x) => x); return { k, n: d ? +d : null }; }
+    }
+    return null;
+  }
+
+  // --- referências: "o segundo da lista", "a anterior", "aquela seção" ---------------------------------------------------
+  const ORD = { primeiro: 1, primeira: 1, segundo: 2, segunda: 2, terceiro: 3, terceira: 3, quarto: 4, quarta: 4, quinto: 5, quinta: 5, sexto: 6, sexta: 6, setimo: 7, setima: 7,
+    oitavo: 8, oitava: 8, nono: 9, nona: 9, decimo: 10, decima: 10, ultimo: -1, ultima: -1, penultimo: -2, penultima: -2,
+    first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10, last: -1,
+    primer: 1, primero: 1, tercer: 3, tercero: 3, tercera: 3, cuarto: 4, cuarta: 4, septimo: 7, septima: 7, octavo: 8, octava: 8, noveno: 9, novena: 9 };
+  const sem = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const NAO_LISTA = "(?!\\s*(?:º|ª|°|o\\b|a\\b)?\\s*(?:turno|round|vuelta|teste|test|prueba|zona|zone|se[cç][aã]o|section|secci[oó]n|candidat\\w*|d[ií]gito|digit|vez|time)\\b)";
+  const RE_ORD = [
+    new RegExp(`(?<![\\p{L}\\p{N}])(?:(?:com|pelo|pela|para|pra|pro|sobre)\\s+)?(?:o|a|do|da|no|na|ao|à)\\s+(primeir[oa]|segund[oa]|terceir[oa]|quart[oa]|quint[oa]|sext[oa]|s[eé]tim[oa]|oitav[oa]|non[oa]|d[eé]cim[oa]|[uú]ltim[oa]|pen[uú]ltim[oa]|(\\d{1,2})\\s*[ºª°o]?)${NAO_LISTA}(?:\\s+(?:lugar|colocad[oa]|item|linha|op[cç][aã]o|resultado|da lista|do ranking|da tabela))*`, "iu"),
+    new RegExp(`(?<![\\p{L}\\p{N}])the\\s+(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|last|(\\d{1,2})(?:st|nd|rd|th)?)${NAO_LISTA}(?:\\s+(?:one|item|place|row|result|option|on the list|in the list|of the list))*`, "iu"),
+    new RegExp(`(?<![\\p{L}\\p{N}])(?:(?:con|sobre|para)\\s+)?(?:el|la|del|de la|al|en el|en la)\\s+(primer[oa]?|segund[oa]|tercer[oa]?|cuart[oa]|quint[oa]|sext[oa]|s[eé]ptim[oa]|octav[oa]|noven[oa]|d[eé]cim[oa]|[uú]ltim[oa]|pen[uú]ltim[oa]|(\\d{1,2})\\s*[ºª.]?)${NAO_LISTA}(?:\\s+(?:lugar|puesto|elemento|fila|resultado|de la lista|del ranking))*`, "iu"),
+    /(?:#|\bitem\s+)(\d{1,2})\b()/iu,
+  ];
+  // Item de uma lista citado pela posição: { i (1, 2… ou -1 último), ini, fim } no texto original
+  function ordinal(texto) {
+    const t = String(texto || "");
+    for (const re of RE_ORD) {
+      const m = t.match(re);
+      if (!m) continue;
+      const w = sem(m[1]), i = m[2] ? +m[2] : /^\d+/.test(w) ? parseInt(w, 10) : ORD[w];
+      if (i) return { i, ini: m.index, fim: m.index + m[0].length };
+    }
+    return null;
+  }
+  const ALVO = [["secao", /^(?:se[cç][aã]o|section|secci[oó]n)$/iu], ["zona", /^(?:zona|zone)$/iu], ["mun", /^(?:cidade|munic[ií]pio|city|municipality|town|ciudad|municipio)$/iu], ["uf", /^(?:estado|state)$/iu]];
+  const alvoDe = (w) => { const a = ALVO.find(([, re]) => re.test(w || "")); return a ? a[0] : null; };
+  // "a anterior", "o lugar anterior", "the previous one", "la anterior"
+  function anterior(texto) {
+    const t = String(texto || "");
+    const m = t.match(/(?<![\p{L}\p{N}])(?:(?:com|para|pra|pro|volta(?:r)?\s+(?:para|pra|a|ao))\s+)?(?:o|a|do|da|no|na|ao|à)\s+(?:(lugar|cidade|munic[ií]pio|estado|se[cç][aã]o|zona)\s+)?(?:anterior|de antes)\b/iu)
+      || t.match(/(?<![\p{L}\p{N}])(?:(?:with|to|back to)\s+)?the\s+(?:(place|city|municipality|state|section|zone)\s+)?(?:previous|prior|one before)(?:\s+(?:one|place|city|state|section|zone))?\b/iu)
+      || t.match(/(?<![\p{L}\p{N}])(?:(?:con|a|volver a|vuelve a)\s+)?(?:el|la|del|de la|al|en el|en la)\s+(?:(lugar|ciudad|municipio|estado|secci[oó]n|zona)\s+)?anterior\b/iu);
+    if (!m) return null;
+    const alvo = alvoDe(m[1]) || (/\b(?:place|city|municipality|state|section|zone)\b/i.test(m[0]) ? alvoDe((m[0].match(/\b(place|city|municipality|state|section|zone)\b/i) || [])[1]) : null);
+    return { ini: m.index, fim: m.index + m[0].length, alvo };
+  }
+  // "aquela seção", "dessa cidade", "nesse estado", "that section", "esa ciudad"
+  function demonstrativo(texto) {
+    const t = String(texto || "");
+    const m = t.match(/(?<![\p{L}\p{N}])(aquel[ae]|ess[ae]|est[ae]|dess[ae]|dest[ae]|daquel[ae]|ness[ae]|nest[ae]|naquel[ae])\s+(se[cç][aã]o|cidade|munic[ií]pio|estado|zona)\b/iu)
+      || t.match(/(?<![\p{L}\p{N}])(that|this)\s+(section|city|municipality|town|state|zone)\b/iu)
+      || t.match(/(?<![\p{L}\p{N}])(aquel(?:la)?|es[ae]|est[ae]|de es[ae]|de est[ae]|en es[ae]|en est[ae])\s+(secci[oó]n|ciudad|municipio|estado|zona)\b/iu);
+    if (!m) return null;
+    const p = sem(m[1]);
+    return { ini: m.index, fim: m.index + m[0].length, alvo: alvoDe(m[2]), longe: /^(?:aquel|daquel|naquel)/.test(p), prep: /^d/.test(p) ? "de" : /^(?:n|en )/.test(p) ? "em" : "" };
+  }
+
+  // --- várias tarefas numa mensagem: "relatório de Curitiba, compara com Londrina e gera as imagens" ---------------------
+  const VERBOS = ("gera gere gerar cria crie criar faz faca fazer monta monte exporta exporte exportar salva salve salvar compara compare comparar mostra mostre mostrar me mostra abre abra abrir "
+    + "baixa baixe baixar le leia ler compartilha compartilhe compartilhar manda mande envia envie explica explique resume resuma lista liste calcula calcule imprime imprima traduz traduza "
+    + "quero transforma transforme coloca coloque depois "
+    + "generate make create export save compare show open download read share send explain summarize list calculate print translate put "
+    + "genera crea haz exporta guarda muestra muestrame abre descarga lee comparte envia resume calcula imprime traduce dame").split(" ");
+  const RE_VERBO = new RegExp(`^(?:${VERBOS.join("|")})\\b`);
+  const RE_OBJETO = /^(?:o|a|os|as|um|uma|the|an?|el|la|los|las|un|una)\s+(?:relatorio|report|informe|mapa|map|ranking|imagem|imagens|image|images|imagen|video|videos|carrossel|carousel|carrusel|pdf|resumo|summary|resumen|grafico|chart|comparacao|comparison|comparacion)\b/;
+  const RE_FORTE = /\s*;\s*|\s*,?\s+(?:e\s+)?(?:depois(?:\s+disso)?|em\s+seguida|ent[aã]o|and\s+then|then|after\s+that|afterwards|y\s+luego|luego|y\s+despu[eé]s|despu[eé]s|a\s+continuaci[oó]n)\s+/iu;
+  function etapas(texto) {
+    const out = [];
+    String(texto || "").split(RE_FORTE).forEach((parte) => {
+      if (!parte || !parte.trim()) return;
+      const re = /,\s*|\s+(?:e|and|y)\s+/g;
+      let ini = 0, m;
+      while ((m = re.exec(parte))) {
+        const depois = norm(parte.slice(m.index + m[0].length));
+        if (RE_VERBO.test(depois) || (m[0].trim() !== "," && RE_OBJETO.test(depois))) { out.push(parte.slice(ini, m.index)); ini = m.index + m[0].length; }
+      }
+      out.push(parte.slice(ini));
+    });
+    return out.map((x) => x.trim().replace(/^(?:(?:e|and|y)\s+)?(?:(?:depois|ent[aã]o|then|luego|despu[eé]s|em seguida)\s+)?/iu, "").replace(/[,;.]+$/, "").trim()).filter((x) => norm(x)).slice(0, 5);
+  }
+
+  // --- ações sobre a resposta: imagem, vídeo, carrossel, exportar, ouvir, compartilhar, copiar, abrir uma página ----------
+  const FMT_EXP = [["slides", /\b(?:apresentacao animada|slides?|slideshow|animated presentation|presentacion animada)\b/], ["pptx", /\b(?:pptx|ppt|powerpoint|power point|apresentacao|apresentacoes|presentation|presentacion)\b/],
+    ["docx", /\b(?:docx|word|documento word)\b/], ["xlsx", /\b(?:xlsx|xls|excel|planilha|planilhas|spreadsheet|hoja de calculo)\b/], ["csv", /\bcsv\b/], ["png", /\b(?:png|imagem longa|imagem vertical|long image|imagen larga)\b/],
+    ["txt", /\b(?:txt|texto puro|texto simples|plain text|texto plano|bloco de notas)\b/], ["md", /\b(?:markdown|md)\b/], ["json", /\bjson\b/], ["html", /\b(?:html|pagina interativa|pagina web|interactive page|web page|pagina interactiva)\b/],
+    ["pdf", /\bpdf\b/]];
+  const RE_V_EXP = /\b(?:exporta|exporte|exportar|export|salva|salve|salvar|save|guarda|guardar|baixa|baixe|baixar|download|descarga|descargar|gera|gere|gerar|cria|crie|criar|transforma|transforme|converte|converta|manda|mande|quero|generate|create|convert|turn|genera|crea|convierte|dame|me da|faz|faca|make|haz)\b/;
+  const RE_V_MIDIA = /\b(?:gera|gere|gerar|cria|crie|criar|faz|faca|fazer|monta|monte|montar|produz|produza|transforma|transforme|converte|quero|queria|preciso|manda|mande|make|create|generate|build|produce|turn|convert|want|need|genera|generar|crea|crear|haz|hacer|arma|convierte|quiero|necesito|dame|me da|me de|tira|tire)\b/;
+  const RE_DL_COISA = /\b(?:motor|codigo|code|script|log|logs|manifesto|manifest|sinalizadas|flagged|senaladas|nucleo|core|busca urnas|pacote|package|zip|tudo|everything|todo|tecnico|technical|1o turno|2o turno|turno|round|vuelta|auditoria|audit)\b/;
+  const RE_PERGUNTA_COMO = /^(?:como|how|what|o que|que|qual|quais|cual|cuales|onde|where|donde|da para|tem como|can i|can you|could you|posso|pode|e possivel|is it possible|se puede|puedo|puedes|why|por que|porque)\b/;
+  const REDES = [["whatsapp", /\b(?:whatsapp|whats|zap|zapzap|wpp|wa)\b/], ["telegram", /\btelegram\b/], ["x", /\b(?:twitter|x)\b/], ["email", /\b(?:email|e mail|correo|gmail|mail)\b/],
+    ["instagram", /\b(?:instagram|insta|ig|reels?)\b/], ["tiktok", /\btik ?tok\b/], ["kwai", /\bkwai\b/], ["youtube", /\b(?:youtube|yt|shorts)\b/], ["facebook", /\b(?:facebook|face|fb)\b/]];
+  const PAGINAS = [["#/turno/1", /\b(?:1o? turno|primeiro turno|first round|round 1|1st round|primera vuelta|1a vuelta)\b/], ["#/turno/2", /\b(?:2o? turno|segundo turno|second round|round 2|2nd round|segunda vuelta|2a vuelta)\b/],
+    ["#/downloads", /\b(?:downloads?|descargas)\b/], ["#/testes", /\b(?:testes|tests|pruebas)\b/], ["#/graficos", /\b(?:graficos|charts|graficas)\b/], ["#/glossario", /\b(?:glossario|glossary|glosario)\b/],
+    ["#/limitacoes", /\b(?:limitacoes|limitations|limitaciones)\b/], ["#/replicar", /\b(?:replicar|replicate|replication|replicacion)\b/], ["#/atualizacoes", /\b(?:atualizacoes|updates|actualizaciones|novidades|news)\b/],
+    ["#/lista", /\b(?:lista de secoes|secoes sinalizadas|secoes marcadas|flagged sections|secciones senaladas|lista)\b/], ["#/variacao", /\b(?:variacao|variation|variacion)\b/], ["#/mapa", /\b(?:mapa|map)\b/],
+    ["#/", /\b(?:inicio|home|pagina inicial|homepage|pagina principal|inicial)\b/], ["lugar", /\b(?:pagina|page)\b/]];
+  const RE_ABRIR = /\b(?:abre|abra|abrir|vai para|va para|vai pra|va pra|ir para|ir pra|me leva|leva para|leva pra|open|go to|take me to|navigate to|ir a|ve a|llevame a|llevame)\b/;
+  const RESTO_FORA = new Set(("de do da dos das of the a o as os um uma uns umas an el la los las un una em no na in en com with con e and y pra para pro to for por me mim isso isto it this that eso esto essa esse esta este "
+    + "dessa desse desta deste resposta answer respuesta conversa conversation conversacion tambem also tambien agora now ahora tudo all todo formato format arquivo file archivo como as also la lo le "
+    + "pf favor please porfa uma vez de novo nele nela ela ele it them eles elas ai ae aqui ali").split(" "));
+  // { lista: [{ k, … }], resto, todas } · resto: o pedido sem as palavras da ação ("gera a imagem do relatório de Curitiba" → "relatório de Curitiba")
+  function acoes(texto) {
+    const raw = String(texto || "").trim();
+    const pal = raw.split(/\s+/), nw = pal.map((w) => norm(w));
+    let s = "", pos = [];
+    nw.forEach((w, i) => { if (!w) return; if (s) s += " "; pos.push([s.length, s.length + w.length, i]); s += w; });
+    const n = " " + s + " ";
+    const lista = [], tira = new Set();
+    const marcar = (re) => { const g = new RegExp(re.source, "g"); let m; while ((m = g.exec(s))) { const a = m.index, b = a + m[0].length; pos.forEach(([x, y, i]) => { if (x < b && y > a) tira.add(i); }); if (!m[0].length) g.lastIndex++; } };
+    if (RE_PERGUNTA_COMO.test(s)) return { lista, resto: raw, todas: false };
+    const todas = /\b(?:conversa|conversation|conversacion|tudo que falamos|toda a conversa|whole chat|chat inteiro)\b/.test(n);
+    // imagem, story, vídeo, carrossel
+    const carr = /\b(?:carrossel|carrosseis|carrosel|carousel|carousels|carrusel|carruseles)\b/.test(n);
+    const video = /\b(?:videos?)\b/.test(n), story = /\b(?:story|stories|storie)\b/.test(n);
+    const imagem = /\b(?:imagem|imagens|image|images|imagen|imagenes|card|cartao|post|figura|arte)\b/.test(n) || (B.lang !== "EN" && /\bprint\b/.test(n));
+    const qr = /\b(?:qr|boletim|cedula|ballot|boletin|camera|foto do)\b/.test(n);
+    if (carr) {
+      const tam = /\b(?:9 ?16|9x16|vertical|stories?|reels?|tiktok)\b/.test(n) ? "916" : /\b(?:1 ?1|1x1|quadrad\w*|square|cuadrad\w*)\b/.test(n) ? "11" : /\bpdf\b/.test(n) && !video ? "pdf" : /\b(?:4 ?5|4x5|feed)\b/.test(n) ? "45" : null;
+      lista.push({ k: "midia", fmt: "carrossel", tipo: video ? "vid" : "img", tam });
+      marcar(/\b(?:carrossel|carrosseis|carrosel|carousel|carousels|carrusel|carruseles|videos?|de|em|in|en|of|com|with|con|imagens|images|imagenes|9 ?16|9x16|1 ?1|1x1|4 ?5|4x5|vertical|quadrad\w*|square|cuadrad\w*|feed|stories?|reels?|tiktok|pdf)\b/);
+    } else if ((video || story || imagem) && !qr && (RE_V_MIDIA.test(n) || /\b(?:em|como|in|as|en|uma?|o|a|the|an?|el|la|un)\s+(?:videos?|imagem|image|imagen|story|card|post)\b/.test(n))) {
+      lista.push({ k: "midia", fmt: video ? "video" : story ? "story" : "post" });
+      marcar(/\b(?:videos?|story|stories|storie|imagem|imagens|image|images|imagen|imagenes|card|cartao|post|figura|arte|print)\b/);
+    }
+    // exportar em um formato
+    if (!lista.length || !/\bpdf\b/.test(n) || lista[0].fmt !== "carrossel") {
+      const fx = FMT_EXP.find(([, re]) => re.test(n));
+      if (fx && !RE_DL_COISA.test(n) && (RE_V_EXP.test(n) || new RegExp(`\\b(?:em|no|na|in|en|como|as|para|to|into|formato|format)\\s+(?:um\\s+|uma\\s+|an?\\s+|el\\s+|la\\s+)?(?:${fx[1].source.replace(/\\b/g, "")})`).test(n))) {
+        lista.push({ k: "exportar", fmt: fx[0], todas });
+        marcar(fx[1]); marcar(/\b(?:exporta|exporte|exportar|export|salva|salve|salvar|save|guarda|guardar|baixa|baixe|baixar|download|descarga|descargar|transforma|transforme|converte|converta|convert|convierte|formato|format|arquivo|file|archivo|documento)\b/);
+      }
+    }
+    if (/\b(?:imprime|imprima|imprimir|imprimelo)\b/.test(n) || (B.lang === "EN" && /^print\b/.test(s))) { lista.push({ k: "exportar", fmt: "pdf", todas }); marcar(/\b(?:imprime|imprima|imprimir|imprimelo|print)\b/); }
+    // ouvir
+    if (/\b(?:le|leia|ler|read|lee|leer|leelo|narra|narre|narrar|fala|fale|falar|diz|diga|say|speak|habla)\b.*\b(?:voz alta|em voz|out loud|aloud|en voz alta|em audio|in audio)\b|\b(?:ouvir|escutar|listen|escuchar|ouca|oir)\b|^(?:le|leia|read|lee|leelo|narra|narre)(?:\s+(?:isso|isto|it|this|a resposta|the answer|eso|esto|la respuesta|pra mim|para mim|for me|para mi))?$/.test(s)) {
+      lista.push({ k: "ouvir" });
+      marcar(/\b(?:em voz alta|en voz alta|voz alta|em voz|le|leia|ler|read|lee|leer|leelo|narra|narre|narrar|fala|fale|falar|diz|diga|say|speak|habla|alta|alto|out loud|aloud|en voz alta|em audio|in audio|ouvir|escutar|listen|escuchar|ouca|oir|quero|want|quiero)\b/);
+    }
+    // compartilhar e copiar
+    const rede = REDES.find(([, re]) => re.test(n));
+    if (/\b(?:compartilha|compartilhe|compartilhar|comparte|compartir|compartelo)\b/.test(n) || /^share\b|\bshare (?:it|this|that|the answer|the chat|on|via|to|with)\b/.test(s) || (rede && /\b(?:manda|mande|mandar|envia|envie|enviar|send|envialo|posta|poste|postar|post)\b/.test(n))) {
+      lista.push({ k: "compartilhar", rede: rede ? rede[0] : null, todas });
+      marcar(/\b(?:compartilha|compartilhe|compartilhar|share|comparte|compartir|compartelo|manda|mande|mandar|envia|envie|enviar|send|envialo|posta|poste|postar|whatsapp|whats|zap|zapzap|wpp|telegram|twitter|email|e mail|correo|gmail|mail|instagram|insta|reels?|tik ?tok|kwai|youtube|shorts|facebook|fb|pelo|pela|por|via|no|na|on|in|en|pro|pra|para|to)\b/);
+    }
+    if (/\b(?:copia|copie|copiar|copy|copialo)\b/.test(n)) { lista.push({ k: "copiar", link: /\b(?:link|endereco|url|enlace)\b/.test(n) }); marcar(/\b(?:copia|copie|copiar|copy|copialo|link|endereco|url|enlace)\b/); }
+    // abrir uma página do site
+    if (RE_ABRIR.test(n)) {
+      const pg = PAGINAS.find(([, re]) => re.test(n));
+      if (pg) {
+        const temLugar = pg[0] === "#/mapa" && (() => { const lg = lugar(raw); return !!(lg.uf || lg.muns.length); })();
+        // "a página do município" (ou do estado, da seção): de que tipo é o lugar
+        const alvo = pg[0] !== "lugar" ? null : /\b(?:municipio|cidade|city|municipality|town|ciudad)\b/.test(n) ? "mun" : /\b(?:estado|state)\b/.test(n) ? "uf" : /\b(?:secao|section|seccion)\b/.test(n) ? "secao" : null;
+        if (!temLugar) { lista.push({ k: "abrir", destino: pg[0], alvo }); marcar(RE_ABRIR); marcar(pg[1]); marcar(/\b(?:pagina|page|a|o|the|la|el|do|da|de|of|del|municipio|cidade|city|municipality|town|ciudad|estado|state|secao|section|seccion)\b/); }
+      }
+    }
+    if (!lista.length) return { lista, resto: raw, todas };
+    marcar(RE_V_MIDIA); marcar(RE_V_EXP);
+    const ficam = pal.filter((w, i) => !tira.has(i) && nw[i]);
+    while (ficam.length && RESTO_FORA.has(norm(ficam[0]))) ficam.shift();
+    while (ficam.length && RESTO_FORA.has(norm(ficam[ficam.length - 1]))) ficam.pop();
+    const resto = ficam.join(" ").replace(/[,;:.!?]+$/, "").trim();
+    return { lista, resto: tokens(resto).length ? resto : "", todas };
+  }
+
+  // --- contas: média, soma, mediana, maior, menor, quantos; limiares; diferença entre dois lugares; conta simples ---------
+  const MAG = { mil: 1e3, thousand: 1e3, k: 1e3, milhao: 1e6, milhoes: 1e6, million: 1e6, millions: 1e6, millon: 1e6, millones: 1e6, mi: 1e6, bilhao: 1e9, bilhoes: 1e9, billion: 1e9 };
+  // Números do texto: "100.000", "25,5", "1.2" viram um token só ("100000", "25d5", "1d2"); "%" vira " pct "
+  function prepNumeros(texto) {
+    let t = String(texto || "");
+    if (B.lang === "EN") t = t.replace(/(\d{1,3}(?:,\d{3})+)(?!\d)/g, (m) => m.replace(/,/g, "")).replace(/(\d)\.(\d)/g, "$1d$2");
+    else t = t.replace(/(\d{1,3}(?:\.\d{3})+)(?!\d)/g, (m) => m.replace(/\./g, "")).replace(/(\d),(\d)/g, "$1d$2").replace(/(\d)\.(\d)/g, "$1d$2");
+    t = t.replace(/(\d+(?:d\d+)?)\s*(k|mil|milh[õo]es|milh[ãa]o|millions?|mill[oó]n|millones|bilh[õo]es|bilh[ãa]o|billions?|thousand|mi)(?![\p{L}\d])/giu, (m, a, b) => {
+      const k = norm(b), f = k === "k" || k === "mil" || k === "thousand" ? 1e3 : /^bil/.test(k) ? 1e9 : 1e6;
+      return String(Math.round(valorNum(a) * f * 1000) / 1000).replace(".", "d");
+    });
+    return t.replace(/%/g, " pct ");
+  }
+  const valorNum = (tk) => parseFloat(String(tk).replace("d", "."));
+  const REGIOES = { norte: ["AC", "AM", "AP", "PA", "RO", "RR", "TO"], nordeste: ["AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE"], centro: ["DF", "GO", "MT", "MS"], sudeste: ["ES", "MG", "RJ", "SP"], sul: ["PR", "RS", "SC"] };
+  const RE_REG = [["nordeste", /\b(?:nordeste|northeast|north east|noreste)\b/], ["centro", /\b(?:centro oeste|centro-oeste|center west|central west|midwest|centro oeste)\b/], ["sudeste", /\b(?:sudeste|southeast|south east|sureste)\b/],
+    ["norte", /\b(?:regiao norte|region norte|north region|norte|north)\b/], ["sul", /\b(?:regiao sul|region sur|south region|sul|south|sur)\b/]];
+  const RE_CAPITAIS = /\b(?:capitais|capital|capitals|capitales)\b/;
+  const OPS = [["mediana", /\b(?:mediana|median)\b/], ["media", /\b(?:media|medias|mean|average|avg|promedio)\b/], ["soma", /\b(?:soma|somatorio|somando|sum|suma|total de|totais de)\b/],
+    ["max", /\b(?:maximo|maxima|maximum|maior valor|highest value|valor maximo|max)\b/], ["min", /\b(?:minimo|minima|minimum|menor valor|lowest value|valor minimo|min)\b/],
+    ["conta", /\b(?:quantos|quantas|how many|cuantos|cuantas|numero de|number of|cantidad de)\b/]];
+  const RE_GT = "(?:acima de|mais de|maior que|maior do que|superior a|mais que|pelo menos|no minimo|above|over|more than|greater than|at least|higher than|mas de|mayor que|por encima de|al menos|gt)";
+  const RE_LT = "(?:abaixo de|menos de|menor que|menor do que|inferior a|no maximo|below|under|less than|fewer than|at most|lower than|por debajo de|como maximo|lt)";
+  const NUMX = "(\\d+(?:d\\d+)?)\\s*(mil|milhao|milhoes|million|millions|millon|millones|mi|bilhao|bilhoes|billion|thousand)?\\s*(pct|por cento|porcento|percent|por ciento)?";
+  const RE_DIF = /\b(?:diferenca|diferencas|difference|diferencia|quanto a mais|quantos a mais|quanto a menos|quantos a menos|how many more|how much more|how many fewer|cuanto mas|cuantos mas|a mais que|a mais do que|tem mais|teve mais|tiene mas|has more|had more)\b/;
+  function medidaDe(trecho, cand) {
+    const t = " " + trecho + " ";
+    if (cand) return RE_CAND_PCT.test(t) || /\bpct\b/.test(t) ? "cand_pct" : "cand";
+    for (const [k, rx] of MEDIDAS) if (rx.test(t)) return k === "secoes" ? null : k;
+    if (/\b(?:secoes|sections|secciones)\b/.test(t) && !/\b(?:anomal|sinaliz|flag)/.test(t)) return "secoes";
+    if (/\b(?:votos?|votes?|votantes)\b/.test(t)) return "comp";
+    return null;
+  }
+  function grupoDe(n, lg) {
+    const semUf = Object.values(B.ufNomes).reduce((s, v) => (typeof v === "string" ? [v] : Object.values(v)).reduce((x, nm) => x.split(" " + norm(nm) + " ").join(" "), s), n);
+    const reg = (RE_REG.find(([, re]) => re.test(semUf)) || [])[0] || null;
+    const capitais = RE_CAPITAIS.test(n), br = /\b(?:brasil|brazil|nacional|national|pais|country|todo o pais)\b/.test(n);
+    let unidade = null;
+    for (const [k, rx] of UNIDADES) if (rx.test(n)) { unidade = k; break; }
+    if (capitais) unidade = "mun";
+    if (!unidade) unidade = reg || br ? "uf" : lg.uf || lg.muns.length ? "mun" : null;
+    if (unidade === "uf" && /\b(?:estado de|estado do|estado da|state of)\b/.test(n) && lg.uf && !reg) unidade = "mun";
+    return { unidade, uf: lg.muns.length ? lg.muns[0].uf : lg.uf, regiao: reg, capitais, br: br && !lg.uf && !reg };
+  }
+  function conta(texto) {
+    const raw = prepNumeros(texto);
+    const n = " " + numerar(norm(raw), B.lang).replace(/\b(\d+) (\d{3})\b/g, "$1$2") + " ";
+    const cand = candidatoDe(n);
+    const turno = turnoDe(n);
+    // limiares: "abstenção acima de 25%", "mais de 100 mil eleitores", "entre 70% e 80%"
+    const conds = [];
+    const reC = new RegExp(`\\b(?:(entre|between)\\s+${NUMX}\\s+(?:e|and|y|a)\\s+${NUMX}|(${RE_GT}|${RE_LT})\\s+(?:de\\s+|a\\s+|que\\s+)?${NUMX})`, "g");
+    let m;
+    while ((m = reC.exec(n))) {
+      const ini = Math.max(n.lastIndexOf(" e ", m.index), n.lastIndexOf(" and ", m.index), n.lastIndexOf(" y ", m.index), n.lastIndexOf(" com ", m.index), n.lastIndexOf(" with ", m.index), n.lastIndexOf(" con ", m.index), n.lastIndexOf(",", m.index), 0);
+      const resto = n.slice(m.index + m[0].length);
+      const fimR = resto.search(/\s(?:e|and|y|com|with|con|no|na|em|in|en|do|da|de|of|del)\s/);
+      const trecho = n.slice(ini, m.index) + " " + m[0] + " " + (fimR >= 0 ? resto.slice(0, fimR) : resto);
+      const metrica = medidaDe(trecho.replace(/\b(?:mais|menos|maior|menor|more|less|mas)\b/g, " "), cand && new RegExp(`\\b(?:${norm(cand.nome).split(" ").filter((p) => p.length >= 4).join("|") || "x^"})\\b|\\b${cand.nr}\\b`).test(trecho) ? cand : null);
+      if (!metrica) continue;
+      if (m[1]) {
+        const a = valorNum(m[2]) * (MAG[m[3]] || 1), b = valorNum(m[5]) * (MAG[m[6]] || 1), pct = !!(m[4] || m[7]) || /\bpct\b/.test(trecho);
+        conds.push({ metrica, op: "bt", v: Math.min(a, b), v2: Math.max(a, b), pct });
+      } else {
+        const op = new RegExp(`^${RE_GT}$`).test(m[8]) ? "gt" : "lt", v = valorNum(m[9]) * (MAG[m[10]] || 1), pct = !!m[11] || /\bpct\b/.test(trecho);
+        conds.push({ metrica, op, v, pct });
+      }
+    }
+    const lg = lugar(texto);
+    const g = grupoDe(n, lg);
+    if (conds.length) {
+      if (!g.unidade) g.unidade = "mun";
+      return { tipo: "limiar", conds, grupo: g, turno, cand: cand ? { nr: cand.nr, nome: cand.nome } : null, conta: OPS[5][1].test(n) };
+    }
+    // diferença entre dois lugares numa medida
+    const met = medidaDe(n.replace(/\b(?:mais|menos|maior|menor|more|less|mas|fewer)\b/g, " "), cand);
+    if (RE_DIF.test(n) && met) {
+      const ls = lugares(String(texto).replace(/\s(?:do que|que|than|than in)\s/gi, " x ")).filter((x) => !x.alternativas);
+      if (ls.length >= 2) return { tipo: "dif", metrica: met, lugares: ls.slice(0, 2), turno, cand: cand ? { nr: cand.nr, nome: cand.nome } : null };
+    }
+    // média, soma, mediana, maior, menor e "quantos" num grupo de lugares
+    const op = (OPS.find(([, re]) => re.test(n)) || [])[0];
+    const temGrupo = g.capitais || g.regiao || /\b(?:municipios|cidades|estados|ufs|municipalities|cities|states|ciudades|capitais|capitals|capitales)\b/.test(n);
+    if (!op || !(temGrupo || (op !== "conta" && (lg.uf || g.br) && !lg.muns.length))) return null;
+    if (op === "conta") return { tipo: "limiar", conds: [], grupo: Object.assign(g, { unidade: g.unidade || "mun" }), turno, cand: null, conta: true, metrica: met };
+    if (!met) return null;
+    return { tipo: "agg", op, metrica: met, grupo: Object.assign(g, { unidade: g.unidade || "mun" }), turno, cand: cand ? { nr: cand.nr, nome: cand.nome } : null };
+  }
+  // Conta só com números: "quanto é 15% de 2 milhões", "1234 + 567", "(10 - 4) x 3"
+  function calculo(texto) {
+    let n = numerar(norm(prepNumeros(texto).replace(/[+]/g, " mais ").replace(/[*×]/g, " vezes ").replace(/[÷/]/g, " dividido ").replace(/(\d)\s*-\s*(\d)/g, "$1 menos $2")
+      .replace(/\(/g, " abre ").replace(/\)/g, " fecha ").replace(/\^/g, " elevado ")), B.lang);
+    n = enxuto(n).replace(/^(?:quanto e|quanto da|quanto que e|calcula|calcule|calcular|faz a conta|faca a conta|conta|how much is|what is|what s|whats|calculate|compute|cuanto es|cuanto da|calcula|haz la cuenta)\s+/, "");
+    const tks = n.replace(/\b(\d+(?:d\d+)?) (mil|milhao|milhoes|million|millions|millon|millones|bilhao|bilhoes|billion|thousand)\b/g, (m, a, b) => String(valorNum(a) * MAG[b]).replace(".", "d")).split(" ").filter(Boolean);
+    const OP = { mais: "+", plus: "+", menos: "-", minus: "-", vezes: "*", x: "*", times: "*", multiplicado: "*", por: "*", dividido: "/", divided: "/", elevado: "^", abre: "(", fecha: ")", pct: "%" };
+    const SKIP = new Set(["por", "by", "a", "entre", "ao", "al", "to", "the", "of"]);
+    const seq = [];
+    for (let i = 0; i < tks.length; i++) {
+      const w = tks[i];
+      if (/^\d+(?:d\d+)?$/.test(w)) { seq.push(valorNum(w)); continue; }
+      if (w === "por" && (tks[i - 1] === "dividido" || tks[i + 1] === "cento" || tks[i + 1] === "ciento")) { if (tks[i + 1] === "cento" || tks[i + 1] === "ciento") { seq.push("%"); i++; } continue; }
+      if ((w === "de" || w === "of" || w === "del") && seq[seq.length - 1] === "%") { seq.push("de"); continue; }
+      if (w === "percent" || w === "porcento") { seq.push("%"); continue; }
+      if (OP[w]) { seq.push(OP[w]); continue; }
+      if (SKIP.has(w) && seq.length) continue;
+      return null;
+    }
+    if (seq.filter((x) => typeof x === "number").length < 2 && !(seq.includes("%") && seq.includes("de"))) return null;
+    if (!seq.some((x) => typeof x === "string" && x !== "(" && x !== ")")) return null;
+    // análise recursiva: soma > produto > potência > número, "%" e "% de"
+    let i = 0;
+    const ver = () => seq[i];
+    function fator() {
+      let x = ver();
+      if (x === "(") { i++; const v = soma(); if (ver() === ")") i++; x = v; } else if (x === "-") { i++; x = -fator(); return x; } else if (typeof x === "number") i++; else throw new Error("conta");
+      if (ver() === "%") { i++; x /= 100; if (ver() === "de") { i++; return x * fator(); } }
+      if (ver() === "^") { i++; return Math.pow(x, fator()); }
+      return x;
+    }
+    function produto() { let x = fator(); while (ver() === "*" || ver() === "/") { const o = seq[i++], y = fator(); x = o === "*" ? x * y : x / y; } return x; }
+    function soma() { let x = produto(); while (ver() === "+" || ver() === "-") { const o = seq[i++], y = produto(); x = o === "+" ? x + y : x - y; } return x; }
+    try { const v = soma(); if (i !== seq.length || !Number.isFinite(v)) return null; return { valor: v, seq }; } catch (e) { return null; }
+  }
+
   // --- configuração e análise completa -------------------------------------------------------------------------------
   function configurar(o) {
     if (o.lang && o.lang !== B.lang) { B.lang = o.lang; B.stop = new Set(STOP[o.lang].split(" ")); B.kb = null; B.idx = null; }
@@ -506,10 +827,13 @@
   // Tudo de uma vez: intenção, lugares e as respostas mais próximas da base
   function analisar(texto, ctx) {
     const E = continuar(entender(texto, ctx), ctx);
+    E.conta = conta(texto);
+    E.acoes = acoes(texto);
     const kb = buscar(texto);
     return { E, kb, forte: forte(kb) };
   }
 
   G.MOTOR = { configurar, analisar, entender, continuar, buscar, forte, tokens, norm, numerar, raiz, lev, similaridade, detectarSecao, secoes, turnoDe, lugar, lugares, cortesia,
+    comando, ordinal, anterior, demonstrativo, etapas, acoes, conta, calculo, REGIOES,
     estado: () => ({ lang: B.lang, kb: !!B.kb, muns: !!B.muns }) };
 })(typeof self !== "undefined" ? self : this);

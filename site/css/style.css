@@ -1211,6 +1211,13 @@ body.atlas-on main { flex: 1 1 auto; min-height: 0; width: 100%; max-width: none
 .at-lk { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .at-lk:hover { color: var(--accent-hover); }
 .at-log .msg-src { margin-top: 12px !important; }
+/* conversa: o que o Atlas entendeu, destaque, próximo passo sugerido e plano de várias tarefas */
+.at-entendi { font-size: .8rem; color: var(--muted); border-left: 2px solid var(--accent); padding: 1px 0 1px 8px; margin: 0 0 8px !important; }
+.at-obs { font-size: .88rem; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; margin: 10px 0 6px !important; }
+.at-oferta { font-weight: 600; }
+.at-plano { margin: 4px 0 6px; padding-left: 1.3em; }
+.at-plano li { margin: 2px 0; }
+.at-lista.small { font-size: .82rem; color: var(--ink-2); }
 /* ações de cada resposta */
 .at-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin-top: 8px; position: relative; }
 .at-ac { border: 0; background: transparent; color: var(--muted); width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; cursor: pointer; transition: background .15s, color .15s; }

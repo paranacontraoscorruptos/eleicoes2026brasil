@@ -126,10 +126,11 @@
     return x;
   }
 
-  async function pensando(etapas, trabalho, log) {
-    const ms = 5000 + Math.random() * 1000;
+  // curto: pedidos sobre a resposta anterior e ações (resumir, exportar, abrir) pensam menos
+  async function pensando(etapas, trabalho, log, curto) {
+    const ms = curto ? 1400 + Math.random() * 700 : 5000 + Math.random() * 1000;
     const seq = etapas.map(sortear);
-    if (Math.random() < 0.5) seq.splice(-1, 0, sortear(L().bot_think_wait));
+    if (!curto && Math.random() < 0.5) seq.splice(-1, 0, sortear(L().bot_think_wait));
     const pesos = seq.map(() => 0.75 + Math.random() * 0.6), soma = pesos.reduce((a, b) => a + b);
     const d = document.createElement("div");
     d.className = "msg msg-bot msg-typing";
