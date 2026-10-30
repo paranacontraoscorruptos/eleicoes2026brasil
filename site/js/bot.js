@@ -233,7 +233,7 @@
       const i = e.target.closest("[data-id]");
       if (i) {
         const en = B.byId[i.dataset.id];
-        ocupar(async () => { msg(window.APP.esc(rotulo(en)), "user"); await pensando(L().bot_think_qa, tempo(en.a)); mostrarEntrada(en); });
+        ocupar(async () => { msg(window.APP.esc(rotulo(en)), "user"); await pensando(L().bot_think_qa); mostrarEntrada(en); });
         return;
       }
       const g = e.target.closest("[data-go]"); if (g) { location.hash = g.dataset.go; if (window.matchMedia("(max-width: 640px)").matches) fechar(); }
@@ -292,21 +292,33 @@
   const rotulo = (e) => { const q = e.q[0]; return q.charAt(0).toUpperCase() + q.slice(1) + (/[?]$/.test(q) ? "" : "?"); };
 
   // Antes de responder: três pontinhos e as etapas da busca, trocando uma a uma.
-  // Fica na tela pelo menos "ms" e até o "trabalho" (se houver) terminar.
+  // Cada etapa sorteia uma frase do seu grupo (nunca a mesma da vez anterior),
+  // às vezes entra um "Só um momento…" e cada frase fica um tempo diferente.
+  // Dura de 5 a 6 s, ou até o "trabalho" (se houver) terminar.
   const aguardar = (ms) => new Promise((r) => setTimeout(r, ms));
-  const tempo = (resp) => 1600 + Math.min(String(resp || "").length * 1.5, 1200) + Math.random() * 400;
+  const ultima = new Map();
+  function sortear(grupo) {
+    const op = grupo.length > 1 ? grupo.filter((x) => x !== ultima.get(grupo)) : grupo;
+    const x = op[Math.floor(Math.random() * op.length)];
+    ultima.set(grupo, x);
+    return x;
+  }
 
-  async function pensando(etapas, ms, trabalho) {
+  async function pensando(etapas, trabalho) {
+    const ms = 5000 + Math.random() * 1000;
+    const seq = etapas.map(sortear);
+    if (Math.random() < 0.5) seq.splice(-1, 0, sortear(L().bot_think_wait));
+    const pesos = seq.map(() => 0.75 + Math.random() * 0.6), soma = pesos.reduce((a, b) => a + b);
     const d = document.createElement("div");
     d.className = "msg msg-bot msg-typing";
     d.innerHTML = `<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>`;
     el.log.appendChild(d);
     el.log.scrollTop = el.log.scrollHeight;
     const etapa = (txt) => { d.querySelector(".typing-txt")?.remove(); d.insertAdjacentHTML("beforeend", `<span class="typing-txt">${window.APP.esc(txt)}</span>`); };
-    let i = 0;
-    etapa(etapas[0]);
-    const tm = setInterval(() => { if (i < etapas.length - 1) etapa(etapas[++i]); }, ms / etapas.length);
-    try { return (await Promise.all([trabalho, aguardar(ms)]))[0]; } finally { clearInterval(tm); d.remove(); }
+    etapa(seq[0]);
+    let t = 0;
+    const tms = seq.slice(1).map((txt, i) => setTimeout(() => etapa(txt), (t += (ms * pesos[i]) / soma)));
+    try { return (await Promise.all([trabalho, aguardar(ms)]))[0]; } finally { tms.forEach(clearTimeout); d.remove(); }
   }
 
   // Uma resposta por vez: enquanto o bot "escreve", o envio fica bloqueado
@@ -350,8 +362,8 @@
 
   async function responderSecao(p) {
     const T = L(), A = window.APP, esc = A.esc;
-    if (!p.z || !p.s || !p.uf) { await pensando(T.bot_think_qa.slice(0, 1), 1100); msg(!p.z || !p.s ? T.bot_need_zs : T.bot_need_uf, "bot"); return; }
-    const d = await pensando(T.bot_think_sec, 2200 + Math.random() * 600, A.consultarSecao(p.uf, p.z, p.s));
+    if (!p.z || !p.s || !p.uf) { await pensando([T.bot_think_qa[0], T.bot_think_sec[0]]); msg(!p.z || !p.s ? T.bot_need_zs : T.bot_need_uf, "bot"); return; }
+    const d = await pensando(T.bot_think_sec, A.consultarSecao(p.uf, p.z, p.s));
     const I = window.I18N[B.lang];
     if (d.erro === "zona") { msg(esc(I.lk_nozone), "bot"); return; }
     if (d.erro === "secao") {
@@ -399,12 +411,12 @@
     if (!r.length || r[0].sc < 4 || r[0].f < 0.34) {
       const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3).map((x) => ({ id: x.e.i, txt: rotulo(x.e) }));
       const top = sug.length ? sug : T.bot_fallback_topics.map((x) => ({ txt: x }));
-      await pensando(T.bot_think_none, tempo());
+      await pensando([T.bot_think_qa[0], T.bot_think_qa[1], ...T.bot_think_none]);
       msg(`<p>${esc(sug.length ? T.bot_maybe : T.bot_fallback)}</p>` + chips(top), "bot");
       return;
     }
     const outros = r.slice(1, 3).filter((x) => x.sc >= r[0].sc * 0.75).map((x) => x.e);
-    await pensando(T.bot_think_qa, tempo(r[0].e.a));
+    await pensando(T.bot_think_qa);
     mostrarEntrada(r[0].e, outros);
   }
 
