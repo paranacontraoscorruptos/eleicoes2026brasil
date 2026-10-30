@@ -1192,7 +1192,7 @@ Object.assign(window.I18N.PT, {
   md_nosound: "Este navegador não gravou o som; o vídeo saiu sem áudio.",
   md_step1: "1. Escolha o formato e baixe o arquivo", md_step2: "2. Copie o texto com o link", md_step3: "3. Abra a rede e poste",
   md_copy_text: "Copiar texto com o link", md_text_title: "Texto para a legenda", md_more_nets: "Mais redes",
-  md_fmt_carrossel: "Carrossel (várias imagens)", cr_size: "Tamanho do carrossel",
+  md_fmt_carrossel: "Carrossel (imagens ou vídeos)", cr_size: "Tamanho do carrossel",
   cr_tam: { "45": "Feed 4:5", "11": "Quadrado 1:1", "916": "Stories 9:16", pdf: "PDF (LinkedIn)" },
   cr_note: {
     "45": "Imagens de 1080 × 1350 para carrossel do Instagram e do Facebook. No app, toque em + e selecione as imagens na ordem dos números.",
@@ -1203,7 +1203,13 @@ Object.assign(window.I18N.PT, {
   cr_making: (k, n) => `Criando a imagem ${k} de ${n}…`, cr_img: (k, n) => `Imagem ${k} de ${n} do carrossel`,
   cr_prev: "Imagem anterior", cr_next: "Próxima imagem", cr_send: (n) => `Enviar as ${n} imagens para um app`,
   cr_dl_zip: (n) => `Baixar as ${n} imagens (.zip)`, cr_dl_each: "Baixar uma por uma", cr_dl_pdf: "Baixar PDF",
-  cr_swipe: "Arraste", cr_swipe_cover: (n) => `Arraste para o lado · ${n} imagens  →`,
+  cr_swipe: "Arraste", cr_swipe_cover: (n, vid) => `Arraste para o lado · ${n} ${vid ? "vídeos" : "imagens"}  →`,
+  cr_kind: "Tipo de carrossel", cr_tipos: { img: "Imagens", vid: "Vídeos" },
+  crv_note: "Cada imagem vira um vídeo curto, com os números contando e as barras crescendo. Até 10 vídeos. Serve para carrossel do Instagram e do Facebook e, no tamanho 9:16, para Stories e Status (um vídeo depois do outro).",
+  crv_time: (n, s) => `${n} vídeos, cerca de ${s} segundos para gravar. O navegador grava em tempo real: deixe esta tela aberta.`,
+  crv_make: (n) => `Criar os ${n} vídeos`, crv_rec: (k, n) => `Gravando o vídeo ${k} de ${n}…`, crv_keep: "Deixe esta tela aberta até terminar.",
+  crv_vid: (k, n) => `Vídeo ${k} de ${n} do carrossel`, crv_send: (n) => `Enviar os ${n} vídeos para um app`,
+  crv_dl_zip: (n) => `Baixar os ${n} vídeos (.zip)`, crv_dl_each: "Baixar um por um", crv_redo: "Gravar de novo",
   cr_more: "Este carrossel mostra só o começo. O conteúdo completo está no site.",
 });
 Object.assign(window.I18N.EN, {
@@ -1239,7 +1245,7 @@ Object.assign(window.I18N.EN, {
   md_nosound: "This browser did not record the sound; the video has no audio.",
   md_step1: "1. Choose the format and download the file", md_step2: "2. Copy the text with the link", md_step3: "3. Open the network and post",
   md_copy_text: "Copy text with the link", md_text_title: "Caption text", md_more_nets: "More networks",
-  md_fmt_carrossel: "Carousel (several images)", cr_size: "Carousel size",
+  md_fmt_carrossel: "Carousel (images or videos)", cr_size: "Carousel size",
   cr_tam: { "45": "Feed 4:5", "11": "Square 1:1", "916": "Stories 9:16", pdf: "PDF (LinkedIn)" },
   cr_note: {
     "45": "1080 × 1350 images for an Instagram or Facebook carousel. In the app, tap + and select the images in numbered order.",
@@ -1250,7 +1256,13 @@ Object.assign(window.I18N.EN, {
   cr_making: (k, n) => `Creating image ${k} of ${n}…`, cr_img: (k, n) => `Carousel image ${k} of ${n}`,
   cr_prev: "Previous image", cr_next: "Next image", cr_send: (n) => `Send the ${n} images to an app`,
   cr_dl_zip: (n) => `Download the ${n} images (.zip)`, cr_dl_each: "Download one by one", cr_dl_pdf: "Download PDF",
-  cr_swipe: "Swipe", cr_swipe_cover: (n) => `Swipe sideways · ${n} images  →`,
+  cr_swipe: "Swipe", cr_swipe_cover: (n, vid) => `Swipe sideways · ${n} ${vid ? "videos" : "images"}  →`,
+  cr_kind: "Carousel type", cr_tipos: { img: "Images", vid: "Videos" },
+  crv_note: "Each image becomes a short video, with the numbers counting up and the bars growing. Up to 10 videos. Works for Instagram and Facebook carousels and, in 9:16, for Stories and Status (one video after another).",
+  crv_time: (n, s) => `${n} videos, about ${s} seconds to record. The browser records in real time: keep this screen open.`,
+  crv_make: (n) => `Create the ${n} videos`, crv_rec: (k, n) => `Recording video ${k} of ${n}…`, crv_keep: "Keep this screen open until it finishes.",
+  crv_vid: (k, n) => `Carousel video ${k} of ${n}`, crv_send: (n) => `Send the ${n} videos to an app`,
+  crv_dl_zip: (n) => `Download the ${n} videos (.zip)`, crv_dl_each: "Download one by one", crv_redo: "Record again",
   cr_more: "This carousel shows only the beginning. The full content is on the website.",
 });
 Object.assign(window.I18N.ES, {
@@ -1286,7 +1298,7 @@ Object.assign(window.I18N.ES, {
   md_nosound: "Este navegador no grabó el sonido; el video salió sin audio.",
   md_step1: "1. Elija el formato y descargue el archivo", md_step2: "2. Copie el texto con el enlace", md_step3: "3. Abra la red y publique",
   md_copy_text: "Copiar texto con el enlace", md_text_title: "Texto para la descripción", md_more_nets: "Más redes",
-  md_fmt_carrossel: "Carrusel (varias imágenes)", cr_size: "Tamaño del carrusel",
+  md_fmt_carrossel: "Carrusel (imágenes o videos)", cr_size: "Tamaño del carrusel",
   cr_tam: { "45": "Feed 4:5", "11": "Cuadrado 1:1", "916": "Historias 9:16", pdf: "PDF (LinkedIn)" },
   cr_note: {
     "45": "Imágenes de 1080 × 1350 para carrusel de Instagram y Facebook. En la app, toque + y seleccione las imágenes en el orden de los números.",
@@ -1297,7 +1309,13 @@ Object.assign(window.I18N.ES, {
   cr_making: (k, n) => `Creando la imagen ${k} de ${n}…`, cr_img: (k, n) => `Imagen ${k} de ${n} del carrusel`,
   cr_prev: "Imagen anterior", cr_next: "Imagen siguiente", cr_send: (n) => `Enviar las ${n} imágenes a una app`,
   cr_dl_zip: (n) => `Descargar las ${n} imágenes (.zip)`, cr_dl_each: "Descargar una por una", cr_dl_pdf: "Descargar PDF",
-  cr_swipe: "Deslice", cr_swipe_cover: (n) => `Deslice hacia el lado · ${n} imágenes  →`,
+  cr_swipe: "Deslice", cr_swipe_cover: (n, vid) => `Deslice hacia el lado · ${n} ${vid ? "videos" : "imágenes"}  →`,
+  cr_kind: "Tipo de carrusel", cr_tipos: { img: "Imágenes", vid: "Videos" },
+  crv_note: "Cada imagen se convierte en un video corto, con los números contando y las barras creciendo. Hasta 10 videos. Sirve para carrusel de Instagram y Facebook y, en 9:16, para Historias y Estado (un video tras otro).",
+  crv_time: (n, s) => `${n} videos, unos ${s} segundos para grabar. El navegador graba en tiempo real: mantenga esta pantalla abierta.`,
+  crv_make: (n) => `Crear los ${n} videos`, crv_rec: (k, n) => `Grabando el video ${k} de ${n}…`, crv_keep: "Mantenga esta pantalla abierta hasta que termine.",
+  crv_vid: (k, n) => `Video ${k} de ${n} del carrusel`, crv_send: (n) => `Enviar los ${n} videos a una app`,
+  crv_dl_zip: (n) => `Descargar los ${n} videos (.zip)`, crv_dl_each: "Descargar uno por uno", crv_redo: "Grabar de nuevo",
   cr_more: "Este carrusel muestra solo el comienzo. El contenido completo está en el sitio.",
 });
 

@@ -393,14 +393,19 @@
   // Cada vídeo sorteia tom, escala, timbre, fundo, batida e tique, então dois vídeos dificilmente soam iguais.
   const ESCALAS = [[0, 2, 4, 7, 9], [0, 3, 5, 7, 10], [0, 2, 4, 6, 7, 9, 11], [0, 2, 3, 5, 7, 9, 10], [0, 2, 4, 5, 7, 9, 11]];
   const sortear = (l) => l[Math.floor(Math.random() * l.length)];
-  function trilha(ac, saida, itens, t0) {
+  function sortearTrilha() {
     const k = { raiz: sortear([196, 207.65, 220, 233.08, 246.94, 261.63, 277.18, 293.66]), escala: sortear(ESCALAS), timbre: sortear(["marimba", "sino", "corda", "vidro", "suave"]),
       fundo: sortear(["quente", "ar", "quente", "ar", "nenhum"]), batida: sortear(["nenhuma", "leve", "pulso"]), tique: sortear(["clique", "madeira", "agudo"]), bpm: sortear([96, 104, 112, 120]) };
     if (k.fundo === "nenhum" && k.batida === "nenhuma") k.fundo = "ar"; // sem fundo e sem batida o meio do vídeo ficaria mudo
+    return k;
+  }
+  // eventos: [{ ini (s), tipo: "t" título | "l" linha | "b" barra | "c" selos, n (selos), f (fração da barra), num (tem número que conta), cd (duração da contagem) }]
+  // dur: duração do vídeo; acorde: instante do acorde final (null: sem acorde). k: o mesmo sorteio em todos os vídeos de um carrossel
+  function trilha(ac, saida, eventos, t0, k = sortearTrilha(), dur = DUR_VIDEO, acorde = 4.6) {
     const e = k.escala, nota = (g) => k.raiz * Math.pow(2, (e[((g % e.length) + e.length) % e.length] + 12 * Math.floor(g / e.length)) / 12);
     const mestre = ac.createGain(), comp = ac.createDynamicsCompressor(), vol = ac.createGain();
     mestre.connect(comp); comp.connect(vol); vol.connect(saida); vol.gain.value = 1.6;
-    mestre.gain.setValueAtTime(.9, t0); mestre.gain.setValueAtTime(.9, t0 + DUR_VIDEO - .6); mestre.gain.linearRampToValueAtTime(.0001, t0 + DUR_VIDEO - .05);
+    mestre.gain.setValueAtTime(.9, t0); mestre.gain.setValueAtTime(.9, t0 + dur - .6); mestre.gain.linearRampToValueAtTime(.0001, t0 + dur - .05);
     const ruido = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), rd = ruido.getChannelData(0);
     for (let i = 0; i < rd.length; i++) rd[i] = Math.random() * 2 - 1;
     // envelope: sobe em a segundos até v e cai em r segundos
@@ -434,40 +439,40 @@
     // fundo
     if (k.fundo !== "nenhum") {
       const g = ac.createGain(); g.connect(mestre);
-      g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(k.fundo === "quente" ? .05 : .035, t0 + 1.6); g.gain.setValueAtTime(k.fundo === "quente" ? .05 : .035, t0 + DUR_VIDEO - 1.2); g.gain.exponentialRampToValueAtTime(.0001, t0 + DUR_VIDEO);
+      g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(k.fundo === "quente" ? .05 : .035, t0 + 1.6); g.gain.setValueAtTime(k.fundo === "quente" ? .05 : .035, t0 + dur - 1.2); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
       const lp = filtro("lowpass", k.fundo === "quente" ? 700 : 2400, g);
       [0, 2, 4].forEach((d) => {
         const f = nota(d) / (k.fundo === "quente" ? 2 : 1);
-        if (k.fundo === "quente") [-6, 6].forEach((ct) => { osc("sawtooth", f, t0, t0 + DUR_VIDEO, lp).detune.value = ct; });
-        else { osc("sine", f * 2, t0, t0 + DUR_VIDEO, lp); osc("triangle", f, t0, t0 + DUR_VIDEO, lp); }
+        if (k.fundo === "quente") [-6, 6].forEach((ct) => { osc("sawtooth", f, t0, t0 + dur, lp).detune.value = ct; });
+        else { osc("sine", f * 2, t0, t0 + dur, lp); osc("triangle", f, t0, t0 + dur, lp); }
       });
     }
     // batida: leve (só chimbal) ou pulso (bumbo e chimbal), do 1º item até o fim
     if (k.batida !== "nenhuma") {
       const p = 60 / k.bpm;
-      for (let x = 1; x < DUR_VIDEO - .7; x += p) {
+      for (let x = 1; x < dur - .7; x += p) {
         if (k.batida === "pulso") bumbo(t0 + x, .16);
         chiado(t0 + x + p / 2, .04, filtro("highpass", 7000, env(.035, t0 + x + p / 2, .002, .04)));
       }
     }
     // itens: uma nota que sobe a cada item, barras com um som que sobe junto e tiques enquanto os números contam
     const tiques = [];
-    itens.forEach((it, i) => {
-      const ini = 1 + i * .22, t = t0 + ini;
-      if (it[0] === "t") { tocar(nota(i) / 2, t, .1); return; }
-      if (it[0] === "c") it[2].forEach((x, j) => tocar(nota(i + j + 2), t + j * .09, .08));
+    eventos.forEach((ev, i) => {
+      const ini = ev.ini, t = t0 + ini;
+      if (ev.tipo === "t") { tocar(nota(i) / 2, t, .1); return; }
+      if (ev.tipo === "c") for (let j = 0; j < ev.n; j++) tocar(nota(i + j + 2), t + j * .09, .08);
       else tocar(nota(i + 2), t, .1);
-      if (it[0] === "b") {
-        const dur = 1.2, f = nota(i), g = ac.createGain(), lp = filtro("lowpass", 1800, g);
-        g.connect(mestre); g.gain.setValueAtTime(.0001, t + .15); g.gain.exponentialRampToValueAtTime(.035, t + .3); g.gain.exponentialRampToValueAtTime(.0001, t + .15 + dur);
-        const o = osc("triangle", f, t + .15, t + .2 + dur, lp); o.frequency.exponentialRampToValueAtTime(f * (1.5 + Math.max(0, Math.min(1, +it[3] || 0))), t + .15 + dur * .7);
+      if (ev.tipo === "b") {
+        const db = 1.2, f = nota(i), g = ac.createGain(), lp = filtro("lowpass", 1800, g);
+        g.connect(mestre); g.gain.setValueAtTime(.0001, t + .15); g.gain.exponentialRampToValueAtTime(.035, t + .3); g.gain.exponentialRampToValueAtTime(.0001, t + .15 + db);
+        const o = osc("triangle", f, t + .15, t + .2 + db, lp); o.frequency.exponentialRampToValueAtTime(f * (1.5 + Math.max(0, Math.min(1, +ev.f || 0))), t + .15 + db * .7);
       }
-      if (/\d/.test(it[0] === "c" ? it[2].map((x) => x[1]).join("") : it[2])) for (let s = 1; s <= 10; s++) tiques.push(ini + 1.3 * (1 - Math.cbrt(1 - s / 10)));
+      if (ev.num) for (let s = 1; s <= 10; s++) tiques.push(ini + (ev.cd || 1.3) * (1 - Math.cbrt(1 - s / 10)));
     });
     let ult = -1;
     tiques.sort((a, b) => a - b).forEach((x) => { if (x - ult >= .045) { tique(t0 + x); ult = x; } });
     // fim: acorde quando o endereço do site ganha destaque
-    [0, 2, 4, 7].forEach((d, j) => tocar(nota(e.length + d), t0 + 4.6 + j * .1, .11, 2.5));
+    if (acorde !== null) [0, 2, 4, 7].forEach((d, j) => tocar(nota(e.length + d), t0 + acorde + j * .1, .11, 2.5));
     return k;
   }
 
@@ -478,21 +483,24 @@
       : ["video/mp4;codecs=avc1.42E01F", "video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
     return l.find((x) => MediaRecorder.isTypeSupported(x)) || null;
   }
-  async function videoCartao(c, cv, aoAvancar, som) {
-    // o som começa antes de qualquer espera, ainda dentro do clique (o navegador só libera áudio depois de um toque)
-    let ac = null;
-    if (som && tipoVideo(true)) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) { ac = null; } }
-    const [W, H] = FORMATOS.video;
-    await fontes();
-    cv.width = W; cv.height = H;
-    const ctx = cv.getContext("2d"), fundo = fundoCartao(W, H);
-    const itens = quadroCartao(ctx, c, W, H, fundo, 0);
+  // O som começa antes de qualquer espera, ainda dentro do clique (o navegador só libera áudio depois de um toque)
+  function criarAudio(som) {
+    if (!som || !tipoVideo(true)) return null;
+    try { const ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); return ac; } catch (e) { return null; }
+  }
+  async function audioPronto(ac) {
+    if (!ac) return null;
+    try { await ac.resume(); if (ac.state === "running") return ac; } catch (e) { /* sem som */ }
+    ac.close().catch(() => {});
+    return null;
+  }
+  // Grava dur segundos do canvas: pintar(tm) desenha o quadro no instante tm; com ac, a trilha (som) toca junto.
+  // vivo(): falso quando a janela fecha; a gravação para e devolve null
+  async function gravarCanvas(cv, dur, pintar, aoAvancar, ac, som, vivo) {
+    pintar(0);
     const fluxo = cv.captureStream(30);
     let saida = null;
-    if (ac) {
-      try { await ac.resume(); if (ac.state === "running") { saida = ac.createMediaStreamDestination(); saida.stream.getAudioTracks().forEach((x) => fluxo.addTrack(x)); } } catch (e) { saida = null; }
-      if (!saida) { ac.close().catch(() => {}); ac = null; }
-    }
+    if (ac) { try { saida = ac.createMediaStreamDestination(); saida.stream.getAudioTracks().forEach((x) => fluxo.addTrack(x)); } catch (e) { saida = null; } }
     const tipo = tipoVideo(!!saida);
     const rec = new MediaRecorder(fluxo, { mimeType: tipo, videoBitsPerSecond: 8000000, audioBitsPerSecond: 160000 });
     const partes = [];
@@ -500,21 +508,51 @@
     const parou = new Promise((ok) => { rec.onstop = ok; });
     rec.start(250);
     const t0 = performance.now();
-    if (saida) trilha(ac, saida, itens, ac.currentTime);
-    await new Promise((ok) => {
+    if (saida) trilha(ac, saida, som.eventos, ac.currentTime, som.k, dur, som.acorde);
+    const inteiro = await new Promise((ok) => {
       const passo = () => {
+        if (vivo && !vivo()) { ok(false); return; }
         const tm = (performance.now() - t0) / 1000;
-        quadroCartao(ctx, c, W, H, fundo, tm);
-        aoAvancar(Math.min(1, tm / DUR_VIDEO));
-        if (tm < DUR_VIDEO) requestAnimationFrame(passo); else ok();
+        pintar(tm);
+        aoAvancar(Math.min(1, tm / dur));
+        if (tm < dur) requestAnimationFrame(passo); else ok(true);
       };
       requestAnimationFrame(passo);
     });
     rec.stop(); fluxo.getTracks().forEach((x) => x.stop());
     await parou;
-    if (ac) ac.close().catch(() => {});
+    if (!inteiro) return null;
     const mime = tipo.split(";")[0];
     return { blob: new Blob(partes, { type: mime }), ext: mime === "video/mp4" ? "mp4" : "webm", som: !!saida };
+  }
+  async function videoCartao(c, cv, aoAvancar, som) {
+    const ac = criarAudio(som);
+    const [W, H] = FORMATOS.video;
+    await fontes();
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d"), fundo = fundoCartao(W, H);
+    const itens = quadroCartao(ctx, c, W, H, fundo, 0);
+    const pronto = await audioPronto(ac);
+    const eventos = itens.map((it, i) => ({ ini: 1 + i * .22, tipo: it[0], n: it[0] === "c" ? it[2].length : 0, f: it[3],
+      num: it[0] !== "t" && /\d/.test(it[0] === "c" ? it[2].map((x) => x[1]).join("") : it[2]) }));
+    const v = await gravarCanvas(cv, DUR_VIDEO, (tm) => quadroCartao(ctx, c, W, H, fundo, tm), aoAvancar, pronto, { eventos, k: sortearTrilha(), acorde: 4.6 });
+    if (pronto) pronto.close().catch(() => {});
+    return v;
+  }
+  // Carrossel em vídeo: cada imagem vira um vídeo curto, gravado um depois do outro no mesmo canvas (r.cv).
+  // Todos usam o mesmo sorteio de som; aoAvancar(i, fração do total). Devolve null se a janela fechar no meio
+  async function videosCarrossel(r, aoAvancar, ac, vivo) {
+    const k = sortearTrilha(), total = r.slides.reduce((a, x) => a + x.dur, 0), vids = [], posters = [];
+    let feito = 0;
+    for (let i = 0; i < r.slides.length; i++) {
+      const sl = r.slides[i];
+      const v = await gravarCanvas(r.cv, sl.dur, sl.pintar, (x) => aoAvancar(i, (feito + x * sl.dur) / total), ac, { eventos: sl.sons, k, acorde: sl.acorde }, vivo);
+      if (!v) return null;
+      sl.pintar(Infinity);
+      posters.push(await new Promise((ok) => r.cv.toBlob(ok, "image/jpeg", .85)));
+      vids.push(v); feito += sl.dur;
+    }
+    return { vids, posters, W: r.W, H: r.H, nome: r.nome, som: vids.every((v) => v.som), ext: vids[0].ext, cortado: r.cortado };
   }
 
   // Painel de mídia: formato (post, story ou vídeo), prévia, baixar e enviar para um app
@@ -529,7 +567,7 @@
     box.innerHTML = `<div class="md-fmt" role="group" aria-label="${esc(L.md_fmt)}">${["post", "story", "video"].concat(fonte ? ["carrossel"] : []).map((f) => `<button type="button" class="chipq" data-fmt="${f}" aria-pressed="false">${esc(L["md_fmt_" + f])}</button>`).join("")}</div>
       <div class="md-prev"></div><p class="small muted md-nota"></p><div class="btn-row md-acoes"></div>`;
     const prev = box.querySelector(".md-prev"), nota = box.querySelector(".md-nota"), acoes = box.querySelector(".md-acoes");
-    let atual = null, tamCr = "45", som = A.ler("bu-som") !== "0";
+    let atual = null, tamCr = "45", tipoCr = "img", som = A.ler("bu-som") !== "0";
     const botoes = (blob, nome, tipo, rotDl) => {
       const u = URL.createObjectURL(blob); raiz._urls.push(u);
       const arq = new File([blob], nome, { type: tipo });
@@ -587,15 +625,46 @@
       prev.querySelector("[data-som]").addEventListener("change", (e) => { som = e.target.checked; A.guardar("bu-som", som ? "1" : "0"); });
       prev.querySelector("[data-gravar]").addEventListener("click", gravar);
     };
-    // Carrossel: várias imagens (ou um PDF) com a página ou a resposta inteira, divididas em capa, conteúdo e fim
-    const mostrarCarrossel = async (tam) => {
-      tamCr = tam;
-      const ainda = () => atual === "carrossel" && tamCr === tam, chave = "cr" + tam;
-      nota.textContent = L.cr_note[tam];
+    // Carrossel: várias imagens (ou um PDF), ou vários vídeos curtos, com a página ou a resposta inteira, divididas em capa, conteúdo e fim
+    const travar = (sim) => box.querySelectorAll("[data-fmt], [data-cr], [data-crt]").forEach((b) => { b.disabled = sim; });
+    // tira de prévia (imagens ou vídeos), com setas e contador
+    const montarTira = (corpo, itens, n) => {
+      corpo.innerHTML = `<div class="cr-tira" tabindex="0" role="region" aria-label="${esc(L.md_fmt_carrossel)}">${itens.join("")}</div>
+        <div class="cr-nav"><button type="button" class="btn btn-sm btn-ghost" data-crv="-1" aria-label="${esc(L.cr_prev)}">‹</button><span class="cr-n">1 / ${n}</span><button type="button" class="btn btn-sm btn-ghost" data-crv="1" aria-label="${esc(L.cr_next)}">›</button></div>`;
+      const tira = corpo.querySelector(".cr-tira"), cont = corpo.querySelector(".cr-n");
+      const idx = () => { const c = tira.scrollLeft + tira.clientWidth / 2; let k = 0; Array.from(tira.children).forEach((it, i) => { if (it.offsetLeft <= c) k = i; }); return k; };
+      tira.addEventListener("scroll", () => { cont.textContent = `${idx() + 1} / ${n}`; }, { passive: true });
+      corpo.querySelectorAll("[data-crv]").forEach((b) => b.addEventListener("click", () => {
+        const it = tira.children[Math.max(0, Math.min(n - 1, idx() + +b.dataset.crv))];
+        tira.scrollTo({ left: it.offsetLeft - (tira.clientWidth - it.clientWidth) / 2, behavior: "smooth" });
+      }));
+    };
+    // no celular vão todos juntos para o app; no computador, um .zip (ou um por um)
+    const entregar = async (r, arqs, urls, nomeZip, rot, ainda) => {
+      if (!r.zip) r.zip = A.exportar.zip(await Promise.all(arqs.map(async (f) => ({ nome: f.name, dados: new Uint8Array(await f.arrayBuffer()) }))));
+      if (!ainda()) return;
+      const uz = r.uz || (r.uz = URL.createObjectURL(r.zip)); if (!raiz._urls.includes(uz)) raiz._urls.push(uz);
+      const pode = navigator.canShare && navigator.canShare({ files: arqs });
+      acoes.innerHTML = `${pode ? `<button class="btn btn-primary" type="button" data-env>${icone("share")} ${esc(rot.send)}</button>` : ""}
+        <a class="btn${pode ? "" : " btn-primary"}" href="${uz}" download="${esc(nomeZip)}">${icone("download")} ${esc(rot.zip)}</a>
+        <button class="btn btn-ghost" type="button" data-cada>${icone(rot.icone)} ${esc(rot.cada)}</button>`;
+      const env = acoes.querySelector("[data-env]");
+      if (env) env.addEventListener("click", async () => { try { await navigator.share({ files: arqs, title: c.titulo, text: textoPost(url || urlPagina()) }); } catch (e) { /* cancelado */ } });
+      acoes.querySelector("[data-cada]").addEventListener("click", () => {
+        urls.forEach((u, i) => setTimeout(() => { const a = document.createElement("a"); a.href = u; a.download = arqs[i].name; document.body.appendChild(a); a.click(); a.remove(); }, i * 350));
+      });
+    };
+    const mostrarCarrossel = async (tam, tipo = tipoCr) => {
+      if (tipo === "vid" && tam === "pdf") tam = "45"; // o PDF não leva vídeo
+      tamCr = tam; tipoCr = tipo;
+      const ainda = () => atual === "carrossel" && tamCr === tam && tipoCr === tipo, chave = "cr" + tam;
+      nota.textContent = tipo === "vid" ? L.crv_note : L.cr_note[tam];
       acoes.innerHTML = "";
-      prev.innerHTML = `<div class="cr-tam" role="group" aria-label="${esc(L.cr_size)}">${Object.keys(L.cr_tam).map((k) => `<button type="button" class="chipq" data-cr="${k}" aria-pressed="${k === tam}">${esc(L.cr_tam[k])}</button>`).join("")}</div>
+      prev.innerHTML = `<div class="cr-tam" role="group" aria-label="${esc(L.cr_kind)}">${["img", "vid"].map((k) => `<button type="button" class="chipq" data-crt="${k}" aria-pressed="${k === tipo}">${icone(k === "img" ? "image" : "play")} ${esc(L.cr_tipos[k])}</button>`).join("")}</div>
+        <div class="cr-tam" role="group" aria-label="${esc(L.cr_size)}">${["45", "11", "916", "pdf"].filter((k) => tipo === "img" || k !== "pdf").map((k) => `<button type="button" class="chipq" data-cr="${k}" aria-pressed="${k === tam}">${esc(L.cr_tam[k])}</button>`).join("")}</div>
         <div class="cr-corpo"><p class="muted cr-load" aria-live="polite">${esc(L.lk_loading)}</p></div>`;
       const corpo = prev.querySelector(".cr-corpo"), st = corpo.querySelector(".cr-load");
+      if (tipo === "vid") { videosCr(tam, corpo, ainda); return; }
       st.textContent = L.cr_making(1, "…");
       if (!feitos[chave]) {
         feitos[chave] = A.exportar.carrossel(fonte(), tam, (k, n) => { if (ainda() && k < n) st.textContent = L.cr_making(k + 1, n); })
@@ -606,32 +675,73 @@
       if (!r) { delete feitos[chave]; corpo.innerHTML = `<p class="muted">${esc(L.xp.err)}</p>`; return; }
       const n = r.imgs.length;
       r.urls = r.urls || r.imgs.map((b) => { const u = URL.createObjectURL(b); raiz._urls.push(u); return u; });
-      corpo.innerHTML = `<div class="cr-tira" tabindex="0" role="region" aria-label="${esc(L.md_fmt_carrossel)}">${r.urls.map((u, i) => `<figure class="cr-it${r.H > 1500 ? " alto" : ""}"><img src="${u}" alt="${esc(L.cr_img(i + 1, n))}" width="${r.W / 4}" height="${r.H / 4}"><figcaption>${i + 1} / ${n}</figcaption></figure>`).join("")}</div>
-        <div class="cr-nav"><button type="button" class="btn btn-sm btn-ghost" data-crv="-1" aria-label="${esc(L.cr_prev)}">‹</button><span class="cr-n">1 / ${n}</span><button type="button" class="btn btn-sm btn-ghost" data-crv="1" aria-label="${esc(L.cr_next)}">›</button></div>`;
-      const tira = corpo.querySelector(".cr-tira"), cont = corpo.querySelector(".cr-n");
-      const idx = () => { const c = tira.scrollLeft + tira.clientWidth / 2; let k = 0; Array.from(tira.children).forEach((it, i) => { if (it.offsetLeft <= c) k = i; }); return k; };
-      tira.addEventListener("scroll", () => { cont.textContent = `${idx() + 1} / ${n}`; }, { passive: true });
-      corpo.querySelectorAll("[data-crv]").forEach((b) => b.addEventListener("click", () => {
-        const it = tira.children[Math.max(0, Math.min(n - 1, idx() + +b.dataset.crv))];
-        tira.scrollTo({ left: it.offsetLeft - (tira.clientWidth - it.clientWidth) / 2, behavior: "smooth" });
-      }));
+      montarTira(corpo, r.urls.map((u, i) => `<figure class="cr-it${r.H > 1500 ? " alto" : ""}"><img src="${u}" alt="${esc(L.cr_img(i + 1, n))}" width="${r.W / 4}" height="${r.H / 4}"><figcaption>${i + 1} / ${n}</figcaption></figure>`), n);
       if (tam === "pdf") { botoes(r.pdf, `${r.nome}-carrossel.pdf`, "application/pdf", L.cr_dl_pdf); return; }
-      // imagens: no celular vão todas juntas para o app; no computador, um .zip (ou uma por uma)
       const arqs = r.imgs.map((b, i) => new File([b], `${r.nome}-${String(i + 1).padStart(2, "0")}.png`, { type: "image/png" }));
-      if (!r.zip) r.zip = A.exportar.zip(await Promise.all(arqs.map(async (f) => ({ nome: f.name, dados: new Uint8Array(await f.arrayBuffer()) }))));
+      entregar(r, arqs, r.urls, `${r.nome}-carrossel-${TAM_ARQ[tam]}.zip`, { send: L.cr_send(n), zip: L.cr_dl_zip(n), cada: L.cr_dl_each, icone: "image" }, ainda);
+    };
+    // Carrossel em vídeo: monta as telas (rápido), mostra quantos vídeos e quanto tempo; grava só depois do clique
+    const videosCr = async (tam, corpo, ainda) => {
+      const chave = "crv" + tam;
+      if (feitos[chave]) { mostrarVideos(feitos[chave], tam, corpo, ainda); return; }
+      if (!tipoVideo()) { corpo.innerHTML = `<p class="muted">${esc(L.md_novideo)}</p>`; return; }
+      if (!feitos["crl" + tam]) feitos["crl" + tam] = A.exportar.carrossel(fonte(), tam, null, true).catch((e) => { console.error(e); return null; });
+      const r = await feitos["crl" + tam];
       if (!ainda()) return;
-      const uz = r.uz || (r.uz = URL.createObjectURL(r.zip)); if (!raiz._urls.includes(uz)) raiz._urls.push(uz);
-      const pode = navigator.canShare && navigator.canShare({ files: arqs });
-      acoes.innerHTML = `${pode ? `<button class="btn btn-primary" type="button" data-env>${icone("share")} ${esc(L.cr_send(n))}</button>` : ""}
-        <a class="btn${pode ? "" : " btn-primary"}" href="${uz}" download="${esc(`${r.nome}-carrossel-${TAM_ARQ[tam]}.zip`)}">${icone("download")} ${esc(L.cr_dl_zip(n))}</a>
-        <button class="btn btn-ghost" type="button" data-cada>${icone("image")} ${esc(L.cr_dl_each)}</button>`;
-      const env = acoes.querySelector("[data-env]");
-      if (env) env.addEventListener("click", async () => { try { await navigator.share({ files: arqs, title: c.titulo, text: textoPost(url || urlPagina()) }); } catch (e) { /* cancelado */ } });
-      acoes.querySelector("[data-cada]").addEventListener("click", () => {
-        r.urls.forEach((u, i) => setTimeout(() => { const a = document.createElement("a"); a.href = u; a.download = arqs[i].name; document.body.appendChild(a); a.click(); a.remove(); }, i * 350));
+      if (!r) { delete feitos["crl" + tam]; corpo.innerHTML = `<p class="muted">${esc(L.xp.err)}</p>`; return; }
+      const n = r.slides.length, segs = Math.ceil(r.slides.reduce((a, x) => a + x.dur, 0));
+      corpo.innerHTML = `<div class="md-vid-ini"><label class="md-som"><input type="checkbox" data-som${som ? " checked" : ""}> ${icone("speaker")} <span>${esc(L.md_sound)}</span></label>
+        <p class="small muted">${esc(L.md_sound_note)}</p><p class="small muted">${esc(L.crv_time(n, segs))}</p>
+        <button class="btn btn-primary" type="button" data-gravar>${icone("play")} ${esc(L.crv_make(n))}</button></div>`;
+      corpo.querySelector("[data-som]").addEventListener("change", (e) => { som = e.target.checked; A.guardar("bu-som", som ? "1" : "0"); });
+      corpo.querySelector("[data-gravar]").addEventListener("click", () => gravarCr(r, tam, corpo, ainda));
+    };
+    const gravarCr = async (r, tam, corpo, ainda) => {
+      const ac = criarAudio(som), n = r.slides.length, dl = box.closest("dialog");
+      corpo.innerHTML = `<div class="md-gravando cr-grav${r.H > 1500 ? " alto" : ""}"></div><div class="md-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(L.crv_rec(1, n))}"><span></span></div>
+        <p class="small cr-st" aria-live="polite">${esc(L.crv_rec(1, n))}</p><p class="small muted">${esc(L.crv_keep)}</p>`;
+      corpo.querySelector(".md-gravando").appendChild(r.cv);
+      acoes.innerHTML = "";
+      travar(true);
+      const barra = corpo.querySelector(".md-prog span"), pb = corpo.querySelector(".md-prog"), st = corpo.querySelector(".cr-st");
+      let ult = -1, vs = null;
+      const pronto = await audioPronto(ac);
+      try {
+        vs = await videosCarrossel(r, (i, x) => {
+          barra.style.width = (x * 100).toFixed(1) + "%"; pb.setAttribute("aria-valuenow", Math.round(x * 100));
+          if (i !== ult) { ult = i; st.textContent = L.crv_rec(i + 1, n); }
+        }, pronto, () => box.isConnected && (!dl || dl.open));
+      } catch (e) { console.error(e); vs = null; }
+      if (pronto) pronto.close().catch(() => {});
+      travar(false);
+      if (!box.isConnected) return;
+      if (!vs) { corpo.innerHTML = `<p class="muted">${esc(L.md_novideo)}</p>`; return; }
+      feitos["crv" + tam] = vs;
+      if (ainda()) mostrarVideos(vs, tam, corpo, ainda);
+    };
+    const mostrarVideos = (vs, tam, corpo, ainda) => {
+      const n = vs.vids.length;
+      vs.urls = vs.urls || vs.vids.map((v) => { const u = URL.createObjectURL(v.blob); raiz._urls.push(u); return u; });
+      vs.purls = vs.purls || vs.posters.map((b) => { const u = URL.createObjectURL(b); raiz._urls.push(u); return u; });
+      montarTira(corpo, vs.urls.map((u, i) => `<figure class="cr-it${vs.H > 1500 ? " alto" : ""}"><video src="${u}" poster="${vs.purls[i]}" controls loop playsinline preload="none" width="${vs.W / 4}" height="${vs.H / 4}" aria-label="${esc(L.crv_vid(i + 1, n))}"></video><figcaption>${i + 1} / ${n}</figcaption></figure>`), n);
+      // um vídeo de cada vez: o que começa a tocar para os outros
+      const vids = Array.from(corpo.querySelectorAll("video"));
+      vids.forEach((v) => v.addEventListener("play", () => vids.forEach((o) => { if (o !== v) o.pause(); })));
+      nota.textContent = L.crv_note + (vs.ext === "webm" ? " " + L.md_webm : "") + (som && !vs.som ? " " + L.md_nosound : "");
+      const arqs = vs.vids.map((v, i) => new File([v.blob], `${vs.nome}-${String(i + 1).padStart(2, "0")}.${v.ext}`, { type: v.blob.type }));
+      entregar(vs, arqs, vs.urls, `${vs.nome}-carrossel-video-${TAM_ARQ[tam]}.zip`, { send: L.crv_send(n), zip: L.crv_dl_zip(n), cada: L.crv_dl_each, icone: "download" }, ainda).then(() => {
+        if (!ainda()) return;
+        // gravar de novo: outro som (ou depois de mudar a opção de som)
+        acoes.insertAdjacentHTML("beforeend", `<button class="btn btn-ghost" type="button" data-refazer>${icone("swap")} ${esc(L.crv_redo)}</button>`);
+        acoes.querySelector("[data-refazer]").addEventListener("click", () => { delete feitos["crv" + tam]; videosCr(tam, corpo, ainda); });
       });
     };
-    prev.addEventListener("click", (e) => { const b = e.target.closest("[data-cr]"); if (b && atual === "carrossel" && b.dataset.cr !== tamCr) mostrarCarrossel(b.dataset.cr); });
+    prev.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-cr], [data-crt]");
+      if (!b || b.disabled || atual !== "carrossel") return;
+      if (b.dataset.cr && b.dataset.cr !== tamCr) mostrarCarrossel(b.dataset.cr);
+      if (b.dataset.crt && b.dataset.crt !== tipoCr) mostrarCarrossel(tamCr, b.dataset.crt);
+    });
     box.querySelector(".md-fmt").addEventListener("click", (e) => { const b = e.target.closest("[data-fmt]"); if (b && !b.disabled) mostrar(b.dataset.fmt); });
     mostrar(fmtIni || "post");
   }
@@ -958,5 +1068,5 @@
     contar();
   });
 
-  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca, imprimirPagina };
+  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca, imprimirPagina, contarTexto };
 })();

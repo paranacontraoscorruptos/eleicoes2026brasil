@@ -770,8 +770,26 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
     for (let y = 0; y < h; y += 48) { ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(w, y + 0.5); ctx.stroke(); }
     const fx = ctx.createLinearGradient(0, 0, w, 0); fx.addColorStop(0, "#009c3b"); fx.addColorStop(0.5, "#ffdf00"); fx.addColorStop(1, "#002776"); ctx.fillStyle = fx; ctx.fillRect(0, 0, w, 14); ctx.fillRect(0, h - 14, w, 14);
   }
-  // Desenha um bloco a partir de y (ou só mede, com medir) e devolve onde o próximo começa
-  function pintarBloco(ctx, b, y, medir, PAD, LW) {
+  // Números contando de 0 até o valor (e de 0 a 1), no vídeo do carrossel
+  const contar = (s, e) => (e >= 1 || !contavel(String(s)) || !A.ferramentas ? String(s) : A.ferramentas.contarTexto(s, e));
+  // Desenha um bloco a partir de y (ou só mede, com medir) e devolve onde o próximo começa.
+  // ani (vídeo do carrossel): ani(j) → [aparece, cresce], de 0 a 1, para a parte j do bloco (item, linha, barra)
+  function pintarBloco(ctx, b, y, medir, PAD, LW, ani) {
+    if (ani && !medir && !/^(kv|bars|tab|lista|chips)$/.test(b.t)) {
+      // bloco inteiro: aparece subindo
+      const [a] = ani(0);
+      ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 26);
+      const fim = pintarBloco(ctx, b, y, a <= 0, PAD, LW);
+      ctx.restore();
+      return fim;
+    }
+    // parte j: aparece deslizando; f(e) desenha com e (0 a 1) para os números contarem e as barras crescerem
+    const parte = (j, f) => {
+      if (!ani) { f(1); return; }
+      const [a, e] = ani(j);
+      if (a <= 0) return;
+      ctx.save(); ctx.globalAlpha *= a; ctx.translate((1 - a) * 30, 0); f(e); ctx.restore();
+    };
     const X = E();
     const T_ = (s, font, cor, x, yy) => { if (medir) return; ctx.font = font; ctx.fillStyle = cor; ctx.fillText(s, x, yy); };
     const linhas = (s, font, cor, lh, x, w) => { ctx.font = font; const ls = quebrar(ctx, s, w || LW); ls.forEach((l) => { y += lh; T_(l, font, cor, x || PAD, y); }); };
@@ -789,38 +807,39 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
         const hh = 112;
         b.itens.forEach(([k, v], j) => {
           const x = PAD + (j % cols) * (gw + 20), yy = y + Math.floor(j / cols) * (hh + 16);
-          if (!medir) {
+          if (!medir) parte(j, (e) => {
             ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.beginPath(); ctx.roundRect(x, yy, gw, hh, 18); ctx.fill();
             ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#a8bfb0"; ctx.fillText(cortar(ctx, k, gw - 36), x + 18, yy + 38);
-            ctx.font = `700 36px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ctx.fillText(cortar(ctx, v, gw - 36), x + 18, yy + 86);
-          }
+            ctx.font = `700 36px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ctx.fillText(cortar(ctx, contar(v, e), gw - 36), x + 18, yy + 86);
+          });
         });
         y += Math.ceil(b.itens.length / cols) * (hh + 16) + 8;
       } else {
-        b.itens.forEach(([k, v]) => {
+        b.itens.forEach(([k, v], j) => {
           ctx.font = `700 30px ${F_DISP}`;
-          const ls = quebrar(ctx, v, gw - 36), hh = 60 + ls.length * 38;
-          if (!medir) {
-            ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.beginPath(); ctx.roundRect(PAD, y, gw, hh, 18); ctx.fill();
-            ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#a8bfb0"; ctx.fillText(cortar(ctx, k, gw - 36), PAD + 18, y + 36);
-            ctx.font = `700 30px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ls.forEach((l, i) => ctx.fillText(l, PAD + 18, y + 76 + i * 38));
-          }
+          const ls = quebrar(ctx, v, gw - 36), hh = 60 + ls.length * 38, yy = y;
+          if (!medir) parte(j, () => {
+            ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.beginPath(); ctx.roundRect(PAD, yy, gw, hh, 18); ctx.fill();
+            ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#a8bfb0"; ctx.fillText(cortar(ctx, k, gw - 36), PAD + 18, yy + 36);
+            ctx.font = `700 30px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ls.forEach((l, i) => ctx.fillText(l, PAD + 18, yy + 76 + i * 38));
+          });
           y += hh + 14;
         });
         y += 8;
       }
     } else if (b.t === "bars") {
-      b.itens.forEach((x) => {
+      b.itens.forEach((x, j) => {
         y += 34;
-        if (!medir) { ctx.font = `500 24px ${F_SANS}`; ctx.fillStyle = "#dfeee5"; ctx.fillText(cortar(ctx, x.rot, LW), PAD, y); }
-        y += 12;
-        if (!medir) {
-          ctx.font = `700 22px ${F_SANS}`; const vw = ctx.measureText(x.txt).width + 20, tw = LW - vw, bw = Math.max(6, tw * Math.max(0, Math.min(1, x.f)));
-          ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.beginPath(); ctx.roundRect(PAD, y, tw, 30, 8); ctx.fill();
-          const g = ctx.createLinearGradient(PAD, 0, PAD + bw, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#7ee2a6"); ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(PAD, y, bw, 30, 8); ctx.fill();
-          ctx.fillStyle = "#ffffff"; ctx.fillText(x.txt, PAD + bw + 12, y + 23);
-        }
-        y += 38;
+        const yr = y, yb = y + 12;
+        // a barra cresce e o valor vai junto, contando
+        if (!medir) parte(j, (e) => {
+          ctx.font = `500 24px ${F_SANS}`; ctx.fillStyle = "#dfeee5"; ctx.fillText(cortar(ctx, x.rot, LW), PAD, yr);
+          ctx.font = `700 22px ${F_SANS}`; const vw = ctx.measureText(x.txt).width + 20, tw = LW - vw, bw = Math.max(6, tw * Math.max(0, Math.min(1, x.f)) * e);
+          ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.beginPath(); ctx.roundRect(PAD, yb, tw, 30, 8); ctx.fill();
+          const g = ctx.createLinearGradient(PAD, 0, PAD + bw, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#7ee2a6"); ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(PAD, yb, bw, 30, 8); ctx.fill();
+          ctx.fillStyle = "#ffffff"; ctx.fillText(contar(x.txt, e), PAD + bw + 12, yb + 23);
+        });
+        y += 50;
       });
       y += 10;
     } else if (b.t === "tab") {
@@ -831,20 +850,37 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       const cw = pesos.map((p_) => (LW * p_) / soma);
       ls.forEach((l, i) => {
         y += 40;
-        if (!medir) {
+        const yy = y;
+        if (!medir) parte(i, () => {
           const cab_ = i === 0 && b.cab.length;
-          if (cab_) { ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(PAD, y - 30, LW, 40); }
+          if (cab_) { ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(PAD, yy - 30, LW, 40); }
           let x = PAD;
-          l.forEach((c, j) => { ctx.font = `${cab_ ? 600 : 400} 21px ${F_SANS}`; ctx.fillStyle = cab_ ? "#a8bfb0" : "#e6f2ea"; const s = cortar(ctx, c, cw[j] - 14); ctx.textAlign = j ? "right" : "left"; ctx.fillText(s, j ? x + cw[j] - 6 : x + 6, y); ctx.textAlign = "left"; x += cw[j]; });
-          ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.fillRect(PAD, y + 10, LW, 1);
-        }
+          l.forEach((c, j) => { ctx.font = `${cab_ ? 600 : 400} 21px ${F_SANS}`; ctx.fillStyle = cab_ ? "#a8bfb0" : "#e6f2ea"; const s = cortar(ctx, c, cw[j] - 14); ctx.textAlign = j ? "right" : "left"; ctx.fillText(s, j ? x + cw[j] - 6 : x + 6, yy); ctx.textAlign = "left"; x += cw[j]; });
+          ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.fillRect(PAD, yy + 10, LW, 1);
+        });
       });
       if (b.linhas.length > 40) { y += 34; T_(`… +${A.nf(b.linhas.length - 40)}`, `400 22px ${F_SANS}`, "#8fa79a", PAD, y); }
       y += 22;
-    } else if (b.t === "lista") { b.itens.forEach((rs, j) => { const pre = b.ord ? `${(b.ini || 0) + j + 1}.` : "•"; const sw = rs[0] && rs[0].cor && SEQ[rs[0].cor]; ctx.font = `400 26px ${F_SANS}`; const ls = quebrar(ctx, textoTrechos(rs), LW - 44); ls.forEach((l, k) => { y += 36; if (!medir) { if (!k) { ctx.fillStyle = sw || "#3ddc84"; ctx.fillText(sw ? "■" : pre, PAD, y); } ctx.fillStyle = "#dfeee5"; ctx.fillText(l, PAD + 40, y); } }); }); y += 14; }
+    } else if (b.t === "lista") {
+      b.itens.forEach((rs, j) => {
+        const pre = b.ord ? `${(b.ini || 0) + j + 1}.` : "•", sw = rs[0] && rs[0].cor && SEQ[rs[0].cor];
+        ctx.font = `400 26px ${F_SANS}`;
+        const ls = quebrar(ctx, textoTrechos(rs), LW - 44), yi = y;
+        y += ls.length * 36;
+        if (!medir) parte(j, () => { ctx.font = `400 26px ${F_SANS}`; ls.forEach((l, k) => { const yy = yi + (k + 1) * 36; if (!k) { ctx.fillStyle = sw || "#3ddc84"; ctx.fillText(sw ? "■" : pre, PAD, yy); } ctx.fillStyle = "#dfeee5"; ctx.fillText(l, PAD + 40, yy); }); });
+      });
+      y += 14;
+    }
     else if (b.t === "chips") {
       let x = PAD; y += 10; ctx.font = `600 22px ${F_SANS}`;
-      b.itens.forEach((c) => { const w = ctx.measureText(c.txt).width + 56; if (x + w > PAD + LW) { x = PAD; y += 54; } if (!medir) { const [bg, fg] = CHIP[c.cor] || CHIP.green; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x, y, w, 44, 22); ctx.fill(); ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(x + 22, y + 22, 6, 0, 7); ctx.fill(); ctx.fillText(c.txt, x + 36, y + 30); } x += w + 12; });
+      b.itens.forEach((c, j) => {
+        ctx.font = `600 22px ${F_SANS}`;
+        const w = ctx.measureText(c.txt).width + 56;
+        if (x + w > PAD + LW) { x = PAD; y += 54; }
+        const xx = x, yy = y;
+        if (!medir) parte(j, (e) => { ctx.font = `600 22px ${F_SANS}`; const [bg, fg] = CHIP[c.cor] || CHIP.green; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(xx, yy, w, 44, 22); ctx.fill(); ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(xx + 22, yy + 22, 6, 0, 7); ctx.fill(); ctx.fillText(contar(c.txt, e), xx + 36, yy + 30); });
+        x += w + 12;
+      });
       y += 62;
     } else if (b.t === "img") {
       // b.maxH (carrossel): a imagem diminui e fica centrada para caber na altura
@@ -905,6 +941,7 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
   // --- 6b) carrossel: várias imagens do mesmo tamanho (capa, conteúdo e fim), ou um PDF com uma página por imagem ----------
   const CARROSSEL = { "45": [1080, 1350], "11": [1080, 1080], "916": [1080, 1920], pdf: [1080, 1350] };
   const MAX_IMGS = { "45": 20, "11": 20, "916": 20, pdf: 40 }; // o Instagram aceita até 20 imagens num carrossel
+  const MAX_VIDS = 10; // cada vídeo é gravado em tempo real: 10 vídeos levam perto de 1 minuto
   // Partes de um bloco que podem ir para imagens diferentes: linhas de tabela e de barras, itens de lista e números, frases
   function pedacos(M, med, LW) {
     const X = E(), out = [];
@@ -955,7 +992,8 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
     });
     return out;
   }
-  async function carrossel(fonte, fmt, aoAvancar) {
+  // video: em vez das imagens, devolve as telas (slides) para gravar: cada uma com duração, sons e pintar(tm) no canvas r.cv
+  async function carrossel(fonte, fmt, aoAvancar, video) {
     const quando = new Intl.DateTimeFormat(t().locale, { dateStyle: "long", timeStyle: "short" }).format(new Date());
     const M = { meta: Object.assign({ quando }, fonte.meta), blocos: modelo(fonte.elementos) };
     await prepararImagens(M);
@@ -987,7 +1025,7 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       at.push(p);
     });
     if (at.length) telas.push(at);
-    const cabe = MAX_IMGS[fmt] - 2, cortado = telas.length > cabe;
+    const cabe = (video ? MAX_VIDS : MAX_IMGS[fmt]) - 2, cortado = telas.length > cabe;
     if (cortado) telas.length = cabe;
     const total = telas.length + 2, fontes = [...new Set(M.blocos.filter((b) => b.t === "fonte").map((b) => b.txt))];
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
@@ -1022,9 +1060,10 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       ctx.font = `500 21px ${F_MONO}`; ctx.fillStyle = "#b8ccbf"; ctx.fillText(cortar(ctx, dominio, LW - (k < total ? 230 : 0)), PAD, yr + 74);
       if (k < total) { ctx.font = `700 24px ${F_SANS}`; const w = ctx.measureText(L.cr_swipe + "  →").width + 44; pilula(L.cr_swipe + "  →", W - PAD - w, yr + 22, "#07130c", "#3ddc84", `700 24px ${F_SANS}`); }
     }
-    function capa() {
-      moldura(1, "");
-      ctx.fillStyle = "#ffd84d"; ctx.font = `600 22px ${F_SANS}`; ctx.fillText(L.brand_sub.toUpperCase(), PAD + 62, topo + 70);
+    // fase: 0 antes de ini, sobe até 1 em dur segundos (tm = Infinity: tudo pronto, como na imagem)
+    const fase = (tm, ini, dur) => { const x = Math.max(0, Math.min(1, (tm - ini) / dur)); return 1 - Math.pow(1 - x, 3); };
+    const surge = (tm, ini, f) => { const a = fase(tm, ini, .5); if (a <= 0) return; ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 24); f(a); ctx.restore(); };
+    function capa(tm) {
       // título: a letra diminui até caber em 6 linhas
       const quadrado = H <= W;
       let tt = alto ? 84 : 76, tl;
@@ -1038,66 +1077,129 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       const cap = M.capa || [], hCap = cap.length ? Math.ceil(cap.length / 2) * 120 + 24 : 0;
       const hBloco = kick.length * 34 + 24 + tl.length * (tt + 8) + 40 + sub.length * 40 + 30 + 34 + hCap;
       let y = y0 + Math.max(0, (livre - hBloco - 150) / 2);
-      ctx.fillStyle = "#3ddc84"; kick.forEach((l) => { y += 34; ctx.fillText(l, PAD, y); });
+      kick.forEach((l) => { y += 34; const yy = y; surge(tm, .2, () => { ctx.font = `600 24px ${F_MONO}`; ctx.fillStyle = "#3ddc84"; ctx.fillText(l, PAD, yy); }); });
       y += 24;
-      ctx.fillStyle = "#ffffff"; ctx.font = `700 ${tt}px ${F_DISP}`; tl.forEach((l) => { y += tt + 8; ctx.fillText(l, PAD, y); });
+      tl.forEach((l, i) => { y += tt + 8; const yy = y; surge(tm, .45 + i * .12, () => { ctx.font = `700 ${tt}px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ctx.fillText(l, PAD, yy); }); });
       y += 28;
-      const g = ctx.createLinearGradient(PAD, 0, PAD + 200, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#ffd400"); ctx.fillStyle = g; ctx.fillRect(PAD, y, 200, 7);
+      const g = ctx.createLinearGradient(PAD, 0, PAD + 200, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#ffd400"); ctx.fillStyle = g; ctx.fillRect(PAD, y, 200 * fase(tm, .9, .6), 7);
       y += 12;
-      ctx.font = `400 30px ${F_SANS}`; ctx.fillStyle = "#cfe0d5"; sub.forEach((l) => { y += 40; ctx.fillText(l, PAD, y); });
-      if (cap.length) { y += 24; y = pintarBloco(ctx, { t: "kv", itens: cap }, y, false, PAD, LW) - 8; }
-      y += 30; ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#8fa79a"; ctx.fillText(X.made(M.meta.quando), PAD, y + 4);
+      sub.forEach((l) => { y += 40; const yy = y; surge(tm, 1.1, () => { ctx.font = `400 30px ${F_SANS}`; ctx.fillStyle = "#cfe0d5"; ctx.fillText(l, PAD, yy); }); });
+      if (cap.length) { y += 24; y = pintarBloco(ctx, { t: "kv", itens: cap }, y, false, PAD, LW, tm === Infinity ? null : (j) => [fase(tm, 1.5 + j * .15, .45), fase(tm, 1.6 + j * .15, 1.2)]) - 8; }
+      y += 30;
+      const yd = y;
+      surge(tm, 2.3, () => { ctx.font = `400 22px ${F_SANS}`; ctx.fillStyle = "#8fa79a"; ctx.fillText(X.made(M.meta.quando), PAD, yd + 4); });
       y += 44;
-      ctx.strokeStyle = "rgba(255,212,0,.6)"; ctx.lineWidth = 2; ctx.font = `600 22px ${F_SANS}`;
-      const bw = Math.min(LW, ctx.measureText(L.badge).width + 40); ctx.beginPath(); ctx.roundRect(PAD, y, bw, 48, 24); ctx.stroke();
-      ctx.fillStyle = "#ffd400"; ctx.fillText(cortar(ctx, L.badge, LW - 40), PAD + 20, y + 32);
-      pilula(L.cr_swipe_cover(total), W / 2, y1 - 70, "#eef6f0", "rgba(31,195,95,.22)", `600 26px ${F_SANS}`, true);
+      const yb = y;
+      surge(tm, 2.5, () => {
+        ctx.strokeStyle = "rgba(255,212,0,.6)"; ctx.lineWidth = 2; ctx.font = `600 22px ${F_SANS}`;
+        const bw = Math.min(LW, ctx.measureText(L.badge).width + 40); ctx.beginPath(); ctx.roundRect(PAD, yb, bw, 48, 24); ctx.stroke();
+        ctx.fillStyle = "#ffd400"; ctx.fillText(cortar(ctx, L.badge, LW - 40), PAD + 20, yb + 32);
+      });
+      surge(tm, 2.8, () => pilula(L.cr_swipe_cover(total, video), W / 2, y1 - 70, "#eef6f0", "rgba(31,195,95,.22)", `600 26px ${F_SANS}`, true));
     }
-    function conteudo(k, tela) {
-      const ini = tela[0], contexto = titulo(ini) ? "" : ini.sec || M.meta.titulo;
-      moldura(k, contexto);
+    // Conteúdo de uma imagem: blocos, onde começam e, no vídeo, quando cada parte entra (e o som de cada uma)
+    function plano(tela) {
       const bl = juntar(tela), h = bl.reduce((y, b) => pintarBloco(med, b, y, true, PAD, LW), 0);
       // pouco conteúdo: fica um pouco acima do meio
-      let y = y0 - 10 + (titulo(ini) && h < livre * 0.7 ? (livre - h) * 0.35 : 0);
+      const yIni = y0 - 10 + (titulo(tela[0]) && h < livre * 0.7 ? (livre - h) * 0.35 : 0);
+      let s = .35;
+      const tl = bl.map((b) => {
+        const n = b.t === "tab" ? b.linhas.length + (b.cab.length ? 1 : 0) : /^(kv|bars|lista|chips)$/.test(b.t) ? b.itens.length : 1;
+        const passo = n > 1 ? Math.min(.18, 1.5 / n) : 0, r = { ini: s, passo, n };
+        s += (n - 1) * passo + (n > 1 ? .35 : .3);
+        return r;
+      });
+      // muito conteúdo: tudo entra mais depressa, para sobrar tempo de leitura
+      const k = Math.min(1, 3.4 / s);
+      tl.forEach((r) => { r.ini *= k; r.passo *= k; });
+      const sons = [];
+      bl.forEach((b, i) => {
+        const r = tl[i];
+        if (b.t === "h" || b.t === "quem" || b.t === "kicker") sons.push({ ini: r.ini, tipo: "t" });
+        else if ((b.t === "bars" || b.t === "kv") && r.n <= 6) b.itens.forEach((x, j) => sons.push({ ini: r.ini + j * r.passo, tipo: b.t === "bars" ? "b" : "l", f: x.f, num: contavel(String(b.t === "bars" ? x.txt : x[1])), cd: 1.2 }));
+        else if (r.n > 1) sons.push({ ini: r.ini, tipo: "c", n: Math.min(4, r.n), num: b.t === "bars" || b.t === "kv" });
+        else sons.push({ ini: r.ini, tipo: "l" });
+      });
+      return { bl, yIni, tl, sons: sons.slice(0, 16), dur: Math.max(4.5, Math.min(7, s * k + 3.5)) };
+    }
+    function conteudo(pl, tm) {
+      let y = pl.yIni;
       ctx.save(); ctx.beginPath(); ctx.rect(0, y0 - 20, W, livre + 30); ctx.clip();
-      bl.forEach((b) => { y = pintarBloco(ctx, b, y, false, PAD, LW); });
+      pl.bl.forEach((b, i) => {
+        const r = pl.tl[i];
+        y = pintarBloco(ctx, b, y, false, PAD, LW, tm === Infinity ? null : (j) => { const t0 = r.ini + j * r.passo; return [fase(tm, t0, .45), fase(tm, t0 + .1, 1.2)]; });
+      });
       ctx.restore();
     }
     // fim: fonte, aviso e QR Code (no PDF o QR e o endereço viram link)
-    function fim() {
-      moldura(total, "");
+    function fim(tm) {
       let y = y0;
-      ctx.fillStyle = "#1fc35f"; ctx.fillRect(PAD, y + 4, 8, 44);
-      ctx.fillStyle = "#ffffff"; ctx.font = `700 44px ${F_DISP}`; ctx.fillText(X.slide_end, PAD + 26, y + 42);
+      surge(tm, .2, () => {
+        ctx.fillStyle = "#1fc35f"; ctx.fillRect(PAD, y0 + 4, 8, 44);
+        ctx.fillStyle = "#ffffff"; ctx.font = `700 44px ${F_DISP}`; ctx.fillText(X.slide_end, PAD + 26, y0 + 42);
+      });
       y += 70;
-      const linhas = (s, font, cor, lh) => { ctx.font = font; ctx.fillStyle = cor; quebrar(ctx, s, LW).forEach((l) => { y += lh; ctx.fillText(l, PAD, y); }); };
-      (fontes.length ? fontes : [L.cd_src]).slice(0, 3).forEach((f) => linhas(`${X.src}: ${f}`, `400 24px ${F_SANS}`, "#b8ccbf", 34));
+      const linhas = (s, font, cor, lh, ini) => { ctx.font = font; quebrar(ctx, s, LW).forEach((l) => { y += lh; const yy = y; surge(tm, ini, () => { ctx.font = font; ctx.fillStyle = cor; ctx.fillText(l, PAD, yy); }); }); };
+      (fontes.length ? fontes : [L.cd_src]).slice(0, 3).forEach((f, i) => linhas(`${X.src}: ${f}`, `400 24px ${F_SANS}`, "#b8ccbf", 34, .5 + i * .12));
       y += 14;
-      linhas(L.at.sg_note, `400 26px ${F_SANS}`, "#dfeee5", 38);
-      if (cortado) { y += 10; linhas(L.cr_more, `600 24px ${F_SANS}`, "#ffd84d", 34); }
+      linhas(L.at.sg_note, `400 26px ${F_SANS}`, "#dfeee5", 38, .95);
+      if (cortado) { y += 10; linhas(L.cr_more, `600 24px ${F_SANS}`, "#ffd84d", 34, 1.25); }
       y += 30;
       const q = Math.max(150, Math.min(alto ? 360 : 300, y1 - y - 90));
-      const qx = (W - q) / 2;
-      if (M._qrIm) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(qx, y, q, q, 18); ctx.fill(); ctx.imageSmoothingEnabled = false; ctx.drawImage(M._qrIm, qx + 14, y + 14, q - 28, q - 28); ctx.imageSmoothingEnabled = true; }
+      const qx = (W - q) / 2, qy = y;
+      // o QR Code entra crescendo
+      const aq = fase(tm, 1.5, .7);
+      if (M._qrIm && aq > 0) {
+        ctx.save(); ctx.globalAlpha *= aq; ctx.translate(W / 2, qy + q / 2); ctx.scale(.85 + .15 * aq, .85 + .15 * aq); ctx.translate(-W / 2, -(qy + q / 2));
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(qx, qy, q, q, 18); ctx.fill(); ctx.imageSmoothingEnabled = false; ctx.drawImage(M._qrIm, qx + 14, qy + 14, q - 28, q - 28); ctx.imageSmoothingEnabled = true;
+        ctx.restore();
+      }
       const link = { x: qx, y, w: q, h: q + 80 };
       y += (M._qrIm ? q : 0) + 46;
-      ctx.textAlign = "center"; ctx.font = `700 26px ${F_SANS}`; ctx.fillStyle = "#3ddc84"; ctx.fillText(X.open, W / 2, y);
-      ctx.font = `500 24px ${F_MONO}`; ctx.fillStyle = "#eef6f0"; ctx.fillText(cortar(ctx, dominio, LW), W / 2, y + 36); ctx.textAlign = "left";
+      const ya = y;
+      // no vídeo, o endereço do site ganha destaque no fim
+      const dest = tm === Infinity ? 0 : fase(tm, 2.6, .8);
+      if (dest > 0) { ctx.font = `500 24px ${F_MONO}`; const w = Math.min(LW, ctx.measureText(dominio).width + 60); ctx.fillStyle = `rgba(31,195,95,${.18 * dest})`; ctx.beginPath(); ctx.roundRect((W - w) / 2, ya + 6, w, 46, 23); ctx.fill(); }
+      surge(tm, 2.1, () => { ctx.textAlign = "center"; ctx.font = `700 26px ${F_SANS}`; ctx.fillStyle = "#3ddc84"; ctx.fillText(X.open, W / 2, ya); ctx.textAlign = "left"; });
+      surge(tm, 2.3, () => { ctx.textAlign = "center"; ctx.font = `500 24px ${F_MONO}`; ctx.fillStyle = "#eef6f0"; ctx.fillText(cortar(ctx, dominio, LW), W / 2, ya + 36); ctx.textAlign = "left"; });
       if (!M._qrIm) { link.y = y - 34; link.h = 80; }
       link.x = Math.min(link.x, PAD); link.w = Math.max(link.w, LW);
       return link;
     }
+    // Telas: a moldura (fundo, marca, número, rodapé) é desenhada uma vez e guardada; cada quadro do vídeo só refaz o conteúdo
+    const guardada = document.createElement("canvas");
+    let naGuardada = 0;
+    const slides = [{ k: 1, contexto: "", dur: 5, desenhar: capa, acorde: null,
+      sons: [{ ini: .45, tipo: "t" }].concat((M.capa || []).map(([, v], j) => ({ ini: 1.5 + j * .15, tipo: "l", num: contavel(String(v)), cd: 1.2 }))) }]
+      .concat(telas.map((tela, i) => {
+        const pl = plano(tela);
+        return { k: i + 2, contexto: titulo(tela[0]) ? "" : tela[0].sec || M.meta.titulo, dur: pl.dur, sons: pl.sons, acorde: null, desenhar: (tm) => conteudo(pl, tm) };
+      }))
+      .concat([{ k: total, contexto: "", dur: 5.5, desenhar: fim, acorde: 2.6, sons: [{ ini: .2, tipo: "t" }, { ini: .5, tipo: "l" }, { ini: 1.5, tipo: "c", n: 3 }] }]);
+    slides.forEach((sl) => {
+      sl.pintar = (tm) => {
+        if (video && naGuardada === sl.k) ctx.drawImage(guardada, 0, 0);
+        else {
+          moldura(sl.k, sl.contexto);
+          if (sl.k === 1) { ctx.fillStyle = "#ffd84d"; ctx.font = `600 22px ${F_SANS}`; ctx.fillText(L.brand_sub.toUpperCase(), PAD + 62, topo + 70); }
+          if (video) { guardada.width = W; guardada.height = H; guardada.getContext("2d").drawImage(cv, 0, 0); naGuardada = sl.k; }
+        }
+        ctx.globalAlpha = 1; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+        return sl.desenhar(tm);
+      };
+    });
+    const nome = nz(M.meta.arquivo || M.meta.titulo).slice(0, 50) || "auditoria-bu-2026";
+    if (video) return { slides, cv, W, H, total, cortado, nome };
     const pdf = fmt === "pdf", out = [];
     let link = null;
-    const salvar = async () => {
+    for (const sl of slides) {
+      const l = sl.pintar(Infinity);
+      if (sl.k === total) link = l;
       const b = await new Promise((ok) => cv.toBlob(ok, pdf ? "image/jpeg" : "image/png", 0.9));
       out.push(b);
       if (aoAvancar) aoAvancar(out.length, total);
-    };
-    capa(); await salvar();
-    for (let i = 0; i < telas.length; i++) { conteudo(i + 2, telas[i]); await salvar(); }
-    link = fim(); await salvar();
-    const r = { imgs: out, W, H, total, cortado, nome: nz(M.meta.arquivo || M.meta.titulo).slice(0, 50) || "auditoria-bu-2026" };
+    }
+    const r = { imgs: out, W, H, total, cortado, nome };
     if (pdf) r.pdf = await pdfImagens(out, W, H, M.meta, Object.assign(link, { url: M.meta.url || URL_SITE }));
     return r;
   }

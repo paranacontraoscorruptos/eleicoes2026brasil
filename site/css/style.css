@@ -973,6 +973,12 @@ a.tag:hover { border-color: var(--accent); }
 .md-prev.md-cr { display: block; min-height: 0; }
 .cr-tam { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 12px; }
 .cr-tam .chipq[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.cr-tam .chipq { display: inline-flex; align-items: center; gap: 6px; }
+.cr-tam .chipq svg { width: 15px; height: 15px; }
+.cr-tam .chipq:disabled { opacity: .5; cursor: default; transform: none; }
+.md-cr .md-gravando, .md-cr .md-prog { margin-left: auto; margin-right: auto; }
+.md-cr .cr-grav.alto { width: 190px; }
+.md-cr .md-vid-ini, .md-cr .cr-st, .md-cr .cr-st + .small { text-align: center; }
 .cr-load { text-align: center; padding: 36px 0; margin: 0; }
 .cr-tira { position: relative; display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 2px 2px 10px; scrollbar-width: thin; }
 .cr-tira:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 12px; }
@@ -980,7 +986,7 @@ a.tag:hover { border-color: var(--accent); }
 .cr-it:hover { transform: none; box-shadow: none; }
 .cr-it:hover img { transform: none; }
 .cr-it.alto { width: min(210px, 58%); }
-.md-prev .cr-it img { max-width: none; width: 100%; border-radius: 10px; }
+.md-prev .cr-it img, .md-prev .cr-it video { max-width: none; width: 100%; border-radius: 10px; }
 .cr-it figcaption { margin-top: 4px; text-align: center; font-size: .78rem; color: var(--ink-2); }
 .cr-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 4px; }
 .cr-nav .btn { min-width: 44px; font-size: 1.2rem; line-height: 1; }
