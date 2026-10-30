@@ -1,4 +1,4 @@
-/* Bot da auditoria: busca aproximada numa base de perguntas e respostas, no navegador.
+/* Motor de respostas do Atlas: busca aproximada numa base de perguntas e respostas, no navegador.
    Entradas com "ns" só respondem quando perguntadas e nunca viram sugestão. */
 (function () {
   "use strict";
@@ -32,7 +32,7 @@
   const norm = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[ºª°]/g, " ").replace(/[^a-z0-9]+/g, " ")
     .replace(/\bsha (\d{3})\b/g, "sha$1").trim();
 
-  const B = { lang: "PT", kb: null, idx: null, byId: {}, carregando: null, aberto: false, iniciado: false };
+  const B = { lang: "PT", kb: null, idx: null, byId: {}, carregando: null, iniciado: false };
   let stopSet = new Set(STOP.PT);
 
   function tokens(s) {
@@ -153,114 +153,7 @@
     return out.join("");
   }
 
-  // --- interface ------------------------------------------------------------------
   const L = () => window.I18N[B.lang];
-  let el = {};
-  // Voz: ouvir as respostas (síntese do navegador) e perguntar falando (reconhecimento de voz, quando existe)
-  const VOZ = { PT: "pt-BR", EN: "en-US", ES: "es-ES" };
-  const Reconhecer = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const podeFalar = "speechSynthesis" in window && typeof window.SpeechSynthesisUtterance === "function";
-  let ouvindo = null, falando = null;
-
-  function pararFala() {
-    if (podeFalar) window.speechSynthesis.cancel();
-    if (falando) { falando.classList.remove("on"); falando.innerHTML = window.APP.icone("speaker"); falando.setAttribute("aria-label", L().bot_listen); falando = null; }
-  }
-  function falar(b) {
-    if (falando === b) { pararFala(); return; }
-    pararFala();
-    const m = b.closest(".msg").cloneNode(true);
-    m.querySelectorAll("button, .msg-src, .msg-rel, .chips, .code").forEach((x) => x.remove());
-    const txt = m.textContent.replace(/\s+/g, " ").trim();
-    if (!txt) return;
-    const u = new SpeechSynthesisUtterance(txt);
-    u.lang = VOZ[B.lang];
-    const v = window.speechSynthesis.getVoices().find((x) => x.lang && x.lang.replace("_", "-").toLowerCase().startsWith(VOZ[B.lang].slice(0, 2).toLowerCase()));
-    if (v) u.voice = v;
-    u.onend = u.onerror = () => { if (falando === b) pararFala(); };
-    falando = b; b.classList.add("on"); b.innerHTML = window.APP.icone("stop"); b.setAttribute("aria-label", L().bot_stop);
-    window.speechSynthesis.speak(u);
-  }
-  function microfone() {
-    const T = L();
-    if (ouvindo) { ouvindo.stop(); return; }
-    const r = new Reconhecer();
-    r.lang = VOZ[B.lang]; r.interimResults = true; r.maxAlternatives = 1;
-    const mic = el.mic, antes = el.inp.placeholder;
-    let final = "";
-    r.onresult = (e) => {
-      let txt = "";
-      for (let i = 0; i < e.results.length; i++) { txt += e.results[i][0].transcript; if (e.results[i].isFinal) final = txt; }
-      el.inp.value = txt;
-    };
-    r.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") msg(`<p>${window.APP.esc(T.bot_mic_denied)}</p>`, "bot"); };
-    r.onend = () => {
-      ouvindo = null; mic.classList.remove("on"); mic.setAttribute("aria-pressed", "false"); el.inp.placeholder = antes;
-      const v = (final || el.inp.value).trim();
-      if (v) { el.inp.value = ""; perguntar(v); }
-    };
-    ouvindo = r; mic.classList.add("on"); mic.setAttribute("aria-pressed", "true"); el.inp.placeholder = T.bot_mic_on;
-    try { r.start(); } catch (e) { ouvindo = null; mic.classList.remove("on"); }
-  }
-
-  function criar() {
-    const ic = window.APP.icone;
-    const lan = document.createElement("button");
-    lan.id = "bot-launcher"; lan.type = "button"; lan.className = "bot-launcher";
-    lan.innerHTML = `${ic("chat")}<span class="bot-launcher-txt"></span>`;
-    const bub = document.createElement("div");
-    bub.id = "bot-bubble"; bub.className = "bot-bubble"; bub.hidden = true; bub.setAttribute("role", "status");
-    const pan = document.createElement("div");
-    pan.id = "bot"; pan.className = "bot"; pan.hidden = true; pan.setAttribute("role", "dialog"); pan.setAttribute("aria-labelledby", "bot-title");
-    pan.innerHTML = `<header class="bot-head"><span class="bot-avatar" aria-hidden="true">${ic("chat")}</span>
-        <div class="bot-head-txt"><h2 id="bot-title"></h2><p class="bot-sub"></p></div>
-        <button type="button" class="bot-icon-btn bot-x">${ic("close")}</button></header>
-      <div class="bot-log" role="log" aria-live="polite"></div>
-      <form class="bot-form" autocomplete="off"><label class="sr-only" for="bot-in"></label>
-        <input id="bot-in" type="text" maxlength="300" enterkeyhint="send">
-        ${Reconhecer ? `<button type="button" class="bot-mic" aria-pressed="false">${ic("mic")}</button>` : ""}
-        <button type="submit" class="bot-send">${ic("send")}</button></form>`;
-    document.body.append(bub, lan, pan);
-    el = { lan, bub, pan, log: pan.querySelector(".bot-log"), form: pan.querySelector(".bot-form"), inp: pan.querySelector("#bot-in"), x: pan.querySelector(".bot-x"), mic: pan.querySelector(".bot-mic") };
-    if (el.mic) el.mic.addEventListener("click", microfone);
-    lan.addEventListener("click", () => (B.aberto ? fechar() : abrir()));
-    el.x.addEventListener("click", fechar);
-    el.form.addEventListener("submit", (e) => { e.preventDefault(); const v = el.inp.value.trim(); if (v) { el.inp.value = ""; perguntar(v); } });
-    pan.addEventListener("keydown", (e) => { if (e.key === "Escape") fechar(); });
-    el.log.addEventListener("click", (e) => {
-      const fa = e.target.closest(".msg-speak"); if (fa) { falar(fa); return; }
-      const c = e.target.closest("[data-q]"); if (c) { perguntar(c.dataset.q); return; }
-      const i = e.target.closest("[data-id]");
-      if (i) {
-        const en = B.byId[i.dataset.id];
-        ocupar(async () => { msg(window.APP.esc(rotulo(en)), "user"); await pensando(L().bot_think_qa); await mostrarEntrada(en); });
-        return;
-      }
-      const g = e.target.closest("[data-go]"); if (g) { location.hash = g.dataset.go; if (window.matchMedia("(max-width: 640px)").matches) fechar(); }
-    });
-    bub.addEventListener("click", (e) => {
-      if (e.target.closest(".bubble-x")) { fecharBalao(true); return; }
-      if (e.target.closest(".bubble-go")) abrir();
-    });
-    textos();
-  }
-
-  function textos() {
-    const T = L();
-    el.lan.querySelector(".bot-launcher-txt").textContent = T.launcher;
-    el.lan.setAttribute("aria-label", T.launcher_aria);
-    el.lan.setAttribute("aria-expanded", String(B.aberto));
-    el.lan.setAttribute("aria-controls", "bot");
-    el.pan.querySelector("#bot-title").textContent = T.bot_title;
-    el.pan.querySelector(".bot-sub").textContent = T.bot_sub;
-    el.x.setAttribute("aria-label", T.bot_close);
-    el.pan.querySelector("label[for=bot-in]").textContent = T.bot_ph;
-    el.inp.placeholder = T.bot_ph;
-    el.pan.querySelector(".bot-send").setAttribute("aria-label", T.bot_send);
-    if (el.mic) { el.mic.setAttribute("aria-label", T.bot_mic); el.mic.title = T.bot_mic; }
-    el.bub.innerHTML = `<p>${T.bubble}</p><div class="bubble-actions"><button type="button" class="btn btn-bot btn-sm bubble-go">${window.APP.esc(T.bubble_btn)}</button></div>
-      <button type="button" class="bubble-x" aria-label="${window.APP.esc(T.bubble_close)}">${window.APP.icone("close")}</button>`;
-  }
 
   function carregar() {
     if (B.kb) return Promise.resolve();
@@ -270,23 +163,6 @@
       }).finally(() => { B.carregando = null; });
     }
     return B.carregando;
-  }
-
-  function msg(html, quem) {
-    const d = document.createElement("div");
-    d.className = "msg msg-" + quem;
-    d.innerHTML = html;
-    if (quem === "bot" && podeFalar) d.insertAdjacentHTML("beforeend", `<button type="button" class="msg-speak" aria-label="${window.APP.esc(L().bot_listen)}" title="${window.APP.esc(L().bot_listen)}">${window.APP.icone("speaker")}</button>`);
-    el.log.appendChild(d);
-    // Resposta longa: mostra o começo dela; pergunta: rola até o fim
-    el.log.scrollTop = quem === "bot" ? Math.max(0, d.offsetTop - el.log.offsetTop - 12) : el.log.scrollHeight;
-    return d;
-  }
-
-  function chips(itens) {
-    if (!itens.length) return "";
-    return `<div class="chips">${itens.map((c) => c.id ? `<button type="button" class="chipq" data-id="${c.id}">${window.APP.esc(c.txt)}</button>`
-      : `<button type="button" class="chipq" data-q="${window.APP.esc(c.txt)}">${window.APP.esc(c.txt)}</button>`).join("")}</div>`;
   }
 
   const rotulo = (e) => { const q = e.q[0]; return q.charAt(0).toUpperCase() + q.slice(1) + (/[?]$/.test(q) ? "" : "?"); };
@@ -304,7 +180,7 @@
     return x;
   }
 
-  async function pensando(etapas, trabalho, log = el.log) {
+  async function pensando(etapas, trabalho, log) {
     const ms = 5000 + Math.random() * 1000;
     const seq = etapas.map(sortear);
     if (Math.random() < 0.5) seq.splice(-1, 0, sortear(L().bot_think_wait));
@@ -323,7 +199,7 @@
 
   // Resposta "digitada": o texto aparece aos poucos, com cursor piscando, e os
   // botões surgem na ordem em que estão. Tocar na resposta mostra tudo de uma vez.
-  async function digitar(d, log = el.log, atomos = "button, svg, img, .chips") {
+  async function digitar(d, log, atomos = "button, svg, img, .chips") {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const passos = [];
     const andar = (n) => {
@@ -379,27 +255,6 @@
       log.removeAttribute("aria-busy");
       if (seguir) log.scrollTop = topo;
     }
-  }
-  const escrever = (html) => { if (B.pre) { html = B.pre + html; B.pre = ""; } return digitar(msg(html, "bot")); };
-
-  // Uma resposta por vez: enquanto o bot "escreve", o envio fica bloqueado
-  async function ocupar(fn) {
-    if (B.ocupado) return;
-    const env = el.form.querySelector(".bot-send");
-    B.ocupado = true; env.disabled = true; B.pre = "";
-    try { await fn(); } finally { B.ocupado = false; env.disabled = false; B.pre = ""; }
-  }
-
-  function mostrarEntrada(e, extras) {
-    const T = L(), esc = window.APP.esc;
-    let h = md(e.a);
-    if (e.act && e.act.go) h += `<p><button type="button" class="btn btn-sm" data-go="${esc(e.act.go)}">${esc(T.bot_open)}</button></p>`;
-    h += `<p class="msg-src">${esc(T.bot_source)}: ${esc(e.s)}</p>`;
-    const rel = [];
-    (e.r || []).forEach((id) => { if (B.byId[id] && !B.byId[id].ns && rel.length < 4) rel.push({ id, txt: rotulo(B.byId[id]) }); });
-    (extras || []).forEach((x) => { if (x.i !== e.i && !x.ns && !rel.some((r) => r.id === x.i) && rel.length < 5) rel.push({ id: x.i, txt: rotulo(x) }); });
-    if (rel.length) h += `<p class="msg-rel">${esc(T.bot_related)}:</p>` + chips(rel);
-    return escrever(h);
   }
 
   function detectarSecao(texto) {
@@ -471,127 +326,16 @@
     return p.join(" ");
   }
 
-  async function responderSecao(p) {
-    const T = L(), A = window.APP, esc = A.esc;
-    if (!p.z || !p.s || !p.uf) { await pensando([T.bot_think_qa[0], T.bot_think_sec[0]]); await escrever(!p.z || !p.s ? T.bot_need_zs : T.bot_need_uf); return; }
-    const d = await pensando(T.bot_think_sec, A.consultarSecao(p.uf, p.z, p.s));
-    const I = window.I18N[B.lang];
-    if (d.erro === "zona") { await escrever(esc(I.lk_nozone)); return; }
-    if (d.erro === "secao") {
-      let h = `<p>${esc(I.lk_nosec)}</p>`;
-      if (d.agregadaEm.length) h += `<p>${esc(I.lk_agg_hint(d.s))} ${d.agregadaEm.map((x) => `<button type="button" class="chipq" data-q="${esc(`${d.uf} zona ${d.z} secao ${x}`)}">${esc(x)}</button>`).join(" ")}</p>`;
-      await escrever(h); return;
-    }
-    const rec = d.rec, flags = rec[3] || {};
-    let h = `<p><b>${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(I.th_zone)} ${d.z} · ${esc(I.th_section)} ${d.s}</b></p>`;
-    [2, 1].forEach((n) => {
-      const tv = rec[n];
-      h += `<p><b>${esc(I.round(n))}</b><br>`;
-      if (!tv) h += esc(I.lk_nodata);
-      else {
-        const { v, nomes } = A.votosTurno(n, tv);
-        const cands = Object.keys(v).filter((nr) => nr !== "95" && nr !== "96" && v[nr] > 0).sort((a, b) => v[b] - v[a]);
-        const val = cands.reduce((a, nr) => a + v[nr], 0) || 1;
-        h += `${esc(I.lk_aptos)}: ${A.nf(tv[0])} · ${esc(I.lk_comp)}: ${A.nf(tv[1])} (${A.pct(tv[1] / tv[0], 1)})<br>`;
-        h += cands.slice(0, n === 1 ? 4 : 2).map((nr) => `${esc(A.titulo(nomes[nr]))}: ${A.nf(v[nr])} (${A.pct(v[nr] / val, 1)})`).join(" · ");
-        h += `<br>${esc(I.blank)}: ${A.nf(v["95"] || 0)} · ${esc(I.null_)}: ${A.nf(v["96"] || 0)}<br>`;
-        h += `${esc(I.lk_open)} ${A.hora(tv[2])} · ${esc(I.lk_close)} ${A.hora(tv[3])} (${esc(I.lk_local)})`;
-      }
-      const f = flags[String(n)];
-      if (f && f.o.length) h += `<br>${esc(I.lk_flags)}: ` + f.o.map((o) => `${o[1] === "a" ? "🔴" : "🟡"} ${A.numTeste(o[0])}. ${esc(A.nomeTeste(o[0]))}`).join("; ");
-      else h += `<br>${esc(I.lk_flags)}: 🟢 ${esc(I.lk_noflags)}`;
-      h += "</p>";
-    });
-    h += `<p><button type="button" class="btn btn-sm" data-go="#/secao/${d.uf}/${d.z}/${d.s}">${esc(I.bot_sec_details)}</button></p>`;
-    h += `<p class="msg-src">${esc(I.bot_source)}: ${esc(I.bot_sec_src)}</p>`;
-    await escrever(h);
-  }
-
-  function perguntar(texto) {
-    if (B.ocupado) { el.inp.value = texto; return; }
-    ocupar(() => responder(texto));
-  }
-
-  async function responder(texto) {
-    const T = L(), esc = window.APP.esc;
-    msg(esc(texto), "user");
-    const c = cortesia(texto);
-    if (c && c.so) {
-      await pensando(T.cort.think);
-      await escrever(`<p>${esc(cortesiaTexto(c, true))}</p>` + (c.tipos.has("tchau") ? "" : chips(T.bot_starters.map((x) => ({ txt: x })))));
-      return;
-    }
-    // "Oi, tudo bem? Resultado de Curitiba": a resposta começa devolvendo a saudação
-    if (c) { B.pre = `<p>${esc(cortesiaTexto(c, false))}</p>`; texto = c.resto; }
-    const sec = detectarSecao(texto);
-    if (sec && (sec.z || (sec.s && sec.uf)) && !/\b(relatorio|report|informe)\b/.test(norm(texto))) { await responderSecao(sec); return; }
-    try { await carregar(); } catch (e) { msg(`<p class="alert">Erro: ${esc(e.message)}</p>`, "bot"); return; }
-    const r = buscar(texto);
-    if (!r.length || r[0].sc < 4 || r[0].f < 0.34) {
-      const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3).map((x) => ({ id: x.e.i, txt: rotulo(x.e) }));
-      const top = sug.length ? sug : T.bot_fallback_topics.map((x) => ({ txt: x }));
-      await pensando([T.bot_think_qa[0], T.bot_think_qa[1], ...T.bot_think_none]);
-      await escrever(`<p>${esc(sug.length ? T.bot_maybe : T.bot_fallback)}</p>` + chips(top));
-      return;
-    }
-    const outros = r.slice(1, 3).filter((x) => x.sc >= r[0].sc * 0.75).map((x) => x.e);
-    await pensando(T.bot_think_qa);
-    await mostrarEntrada(r[0].e, outros);
-  }
-
-  function saudacao() {
-    const T = L();
-    el.log.innerHTML = "";
-    msg(`<p>${T.bot_hello}</p>` + chips(T.bot_starters.map((x) => ({ txt: x })))
-      + `<p class="msg-rel">${window.APP.esc(T.bot_atlas)}</p><p><button type="button" class="btn btn-sm" data-go="#/atlas">${window.APP.icone("star")} ${window.APP.esc(T.bot_atlas_btn)}</button></p>`, "bot");
-  }
-
-  function abrir(pergunta) {
-    fecharBalao(false);
-    if (!B.aberto) {
-      B.aberto = true; el.pan.hidden = false; document.body.classList.add("bot-open");
-      el.lan.setAttribute("aria-expanded", "true");
-      if (!el.log.childElementCount) saudacao();
-      carregar().catch(() => {});
-    }
-    if (pergunta) perguntar(pergunta);
-    setTimeout(() => el.inp.focus(), 30);
-  }
-
-  function fechar() {
-    pararFala(); if (ouvindo) ouvindo.abort();
-    B.aberto = false; el.pan.hidden = true; document.body.classList.remove("bot-open");
-    el.lan.setAttribute("aria-expanded", "false"); el.lan.focus();
-  }
-
-  function fecharBalao(lembrar) {
-    el.bub.hidden = true;
-    if (lembrar) { try { sessionStorage.setItem("bot-bubble", "1"); } catch (e) { /* sem armazenamento */ } }
-  }
-
-  function balao() {
-    let visto = false;
-    try { visto = sessionStorage.getItem("bot-bubble") === "1"; } catch (e) { /* sem armazenamento */ }
-    if (visto) return;
-    setTimeout(() => { if (!B.aberto) el.bub.hidden = false; }, 1500);
-  }
-
   window.BOT = {
     iniciar(lang) {
       if (B.iniciado) return;
       B.iniciado = true; B.lang = lang; stopSet = new Set(STOP[lang]);
-      criar(); balao();
     },
     idioma(lang) {
       if (!B.iniciado || lang === B.lang) return;
-      pararFala();
       B.lang = lang; stopSet = new Set(STOP[lang]); B.kb = null; B.idx = null;
-      textos(); saudacao();
-      if (B.aberto) carregar().catch(() => {});
     },
-    abrir: (q) => { if (B.iniciado) abrir(q); },
-    fechar: () => { if (B.iniciado && B.aberto) fechar(); },
-    // usado pelo Atlas: a mesma base, a mesma busca e o mesmo jeito de pensar e escrever
+    // a base, a busca e o jeito de pensar e escrever das respostas do Atlas
     motor: { carregar, buscar, md, rotulo, detectarSecao, cortesia, cortesiaTexto, norm, entrada: (id) => B.byId[id] },
     pensando, digitar,
     _buscar: async (q) => { await carregar(); return buscar(q).map((x) => [x.e.i, +x.sc.toFixed(2), +x.f.toFixed(2)]); },

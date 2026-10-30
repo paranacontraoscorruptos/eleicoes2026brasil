@@ -58,17 +58,19 @@
   function tipoTeste(tid) { return ["T01", "T02", "T11", "T12"].includes(tid) ? t().det : ["T13", "T14", "T15"].includes(tid) ? t().agg : t().stat; }
 
   // --- blocos reutilizáveis ------------------------------------------------------
+  // Link para o Atlas; com pergunta, ela já chega feita
+  const linkAtlas = (q) => "#/atlas" + (q ? "?q=" + encodeURIComponent(q) : "");
   function botCta(compacto) {
     const L = t();
     if (compacto) {
-      return `<aside class="bot-band"><span class="bot-band-ico" aria-hidden="true">${icone("chat")}</span><p><b>${esc(L.bot_cta_title)}</b></p><button class="btn btn-bot" type="button" data-open-bot>${esc(L.bot_cta_btn)}</button></aside>`;
+      return `<aside class="bot-band"><span class="bot-band-ico" aria-hidden="true">${icone("globe")}</span><p><b>${esc(L.bot_cta_title)}</b></p><a class="btn btn-bot" href="#/atlas">${esc(L.bot_cta_btn)}</a></aside>`;
     }
     return `<section class="bot-cta" aria-labelledby="bot-cta-h">
-      <div class="bot-cta-ico" aria-hidden="true">${icone("chat")}</div>
+      <div class="bot-cta-ico" aria-hidden="true">${icone("globe")}</div>
       <div class="bot-cta-body">
         <h2 id="bot-cta-h">${esc(L.bot_cta_title)}</h2>
         <p>${esc(L.bot_cta_text)}</p>
-        <div class="bot-cta-actions"><button class="btn btn-bot btn-lg" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button></div>
+        <div class="bot-cta-actions"><a class="btn btn-bot btn-lg" href="#/atlas">${icone("globe")} ${esc(L.bot_cta_btn)}</a></div>
         <p class="small muted">${esc(L.bot_cta_small)}</p>
       </div></section>`;
   }
@@ -233,7 +235,7 @@
       { k: "replicate", href: "#/replicar", ic: "terminal", m: L.m_replicate, tip: L.tip_replicate(T2.cab.nucleo_sha256.slice(0, 16)) },
       { k: "downloads", href: "#/downloads", ic: "download", m: L.m_downloads(nf(R.downloads.length), tamanho(totDl)), tip: L.tip_downloads(nf(R.downloads.length), tamanho(totDl)) },
       { k: "limits", href: "#/limitacoes", ic: "shield", m: L.m_limits, tip: L.tip_limits },
-      { k: "bot", ic: "chat", m: L.m_bot, tip: L.tip_bot, y: true, bot: true },
+      { k: "bot", href: "#/atlas", ic: "globe", m: L.m_bot, tip: L.tip_bot, y: true, bot: true },
     ];
     const cards = pag.map((c, i) => {
       const [tit, desc] = L.pg[c.k];
@@ -241,8 +243,7 @@
         <span class="pc-title">${esc(tit)}</span><span class="pc-desc">${esc(desc)}</span>${c.x || ""}<span class="pc-metric">${esc(c.m)}</span>
         <span class="pc-go">${esc(c.bot ? L.pg_ask : L.pg_open)} ${icone("arrow")}</span>`;
       const cls = `page-card spot tilt${c.y ? " y" : ""}`;
-      return c.bot ? `<button class="${cls}" type="button" data-open-bot data-tip="${esc(c.tip)}">${dentro}</button>`
-        : `<a class="${cls}" href="${c.href}" data-tip="${esc(c.tip)}">${dentro}</a>`;
+      return `<a class="${cls}" href="${c.href}" data-tip="${esc(c.tip)}">${dentro}</a>`;
     }).join("");
     const cands = P2.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96");
     const val = cands.reduce((a, c) => a + c.votos, 0);
@@ -265,7 +266,7 @@
         <h1 data-type>${esc(L.hero_title)}</h1>
         <p class="lead">${esc(L.hero_sub)}</p>
         <div class="hero-actions">
-          <button class="btn btn-bot btn-lg" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button>
+          <a class="btn btn-bot btn-lg" href="#/atlas">${icone("globe")} ${esc(L.bot_cta_btn)}</a>
           <a class="btn btn-primary btn-lg" href="#/secao">${icone("search")} ${esc(L.cta_lookup)}</a>
           <a class="btn btn-ghost btn-lg" href="#/downloads">${icone("download")} ${esc(L.cta_downloads)}</a>
         </div>
@@ -452,7 +453,7 @@
             <h3>${esc(L.f_met)}</h3><p>${esc(tx.metodo)}</p>
             <h3>${esc(L.f_crit)}</h3><p>${esc(tx.criterio)}</p>
             <h3>${esc(L.f_lim)}</h3><p>${esc(tx.limites)}</p>
-            <p class="btn-row"><button class="btn btn-bot btn-sm" type="button" data-ask="${esc(L.ask_test(numTeste(tid)))}">${icone("chat")} ${esc(L.f_ask)}</button>
+            <p class="btn-row"><a class="btn btn-bot btn-sm" href="${esc(linkAtlas(L.ask_test(numTeste(tid))))}">${icone("globe")} ${esc(L.f_ask)}</a>
             <a class="btn btn-sm" href="#/graficos/${tid}">${icone("chart")} ${esc(L.f_chart)}</a> <a class="btn btn-sm btn-ghost" href="#/lista?teste=${tid}">${icone("list")} ${esc(L.f_list)}</a>
             <span class="small">${icone("code")} ${esc(L.f_code)}: ${codigo}</span></p>
           </div></details></article>`;
@@ -726,7 +727,21 @@
     $("#a11y-btn").innerHTML = icone("a11y"); $("#a11y-btn").setAttribute("aria-label", L.ax_open); $("#a11y-btn").title = L.ax_open;
     iconeTema();
     montarRodape();
+    lancadorAtlas();
     document.documentElement.lang = { PT: "pt-BR", EN: "en", ES: "es" }[state.lang];
+  }
+
+  // Botão flutuante em todas as páginas: leva à página do Atlas (some na própria página do Atlas)
+  function lancadorAtlas() {
+    const L = t();
+    let a = $("#atlas-launcher");
+    if (!a) {
+      a = document.createElement("a");
+      a.id = "atlas-launcher"; a.className = "atlas-launcher"; a.href = "#/atlas";
+      document.body.append(a);
+    }
+    a.innerHTML = `${icone("globe")}<span class="atlas-launcher-txt">${esc(L.launcher)}</span>`;
+    a.setAttribute("aria-label", L.launcher_aria);
   }
 
   function montarRodape() {
@@ -747,7 +762,7 @@
           <li><a href="feed.xml" data-feed>${esc(L.ft_feed)}</a></li></ul></div>
         <div class="foot-col"><h3>${esc(L.ft_author)}</h3><ul>
           ${A ? `<li><b>${esc(A.nome)}</b></li><li>${ext(`https://www.instagram.com/${A.instagram.replace("@", "")}/`, "Instagram " + A.instagram)}</li>` : ""}
-          <li><button class="btn btn-bot btn-sm" type="button" data-open-bot>${icone("chat")} ${esc(L.bot_cta_btn)}</button></li></ul></div>
+          <li><a class="btn btn-bot btn-sm" href="#/atlas">${icone("globe")} ${esc(L.bot_cta_btn)}</a></li></ul></div>
       </div>
       <div class="foot-tools">
         <button class="btn btn-sm btn-ghost" type="button" data-install>${icone("phone")} ${esc(L.app_install)}</button>
@@ -1061,8 +1076,6 @@
       if (e.target.closest("#theme-btn")) { tema(true); return; }
       if (e.target.closest("#menu-btn")) { const o = document.body.classList.toggle("menu-open"); $("#menu-btn").setAttribute("aria-expanded", String(o)); $("#menu-btn").innerHTML = icone(o ? "close" : "menu"); return; }
       if (e.target.closest("[data-top]")) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
-      const ob = e.target.closest("[data-open-bot]"); if (ob && window.BOT) { window.BOT.abrir(); return; }
-      const ask = e.target.closest("[data-ask]"); if (ask && window.BOT) { window.BOT.abrir(ask.dataset.ask); return; }
       const cp = e.target.closest("[data-copy]");
       if (cp) {
         try { await navigator.clipboard.writeText(cp.dataset.copy); const s = cp.querySelector("span"); const o = s.textContent; s.textContent = t().copied; setTimeout(() => { s.textContent = o; }, 1500); } catch (err) { /* sem área de transferência */ }
@@ -1116,6 +1129,6 @@
 
   const paginas = {};
   window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, consultarSecao, votosTurno, icone, json, tabela, tile, barras, barrasCartao, barrasTurno, chip, chipStatus,
-    status, botCta, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
+    status, botCta, linkAtlas, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
   document.addEventListener("DOMContentLoaded", iniciar);
 })();

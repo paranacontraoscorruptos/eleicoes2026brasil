@@ -736,7 +736,7 @@
         const letras = [...new Set(ls.map(letra))];
         $("#gl-letters").innerHTML = letras.map((l) => `<a href="#gl-${l}" data-letra="${l}">${l}</a>`).join("");
         $("#gl-list").innerHTML = ls.length ? letras.map((l) => `<section class="gl-sec" id="gl-${l}"><h2>${l}</h2><dl class="gl">${ls.filter((x) => letra(x) === l).map((x) =>
-          `<div class="gl-item" id="${esc(x.id)}"><dt>${esc(x.termo)}</dt><dd>${md(x.def)}<button class="btn btn-sm btn-ghost" type="button" data-ask="${esc(x.q)}">${icone("chat")} ${esc(L.gl_ask)}</button></dd></div>`).join("")}</dl></section>`).join("")
+          `<div class="gl-item" id="${esc(x.id)}"><dt>${esc(x.termo)}</dt><dd>${md(x.def)}<a class="btn btn-sm btn-ghost" href="${esc(A.linkAtlas(x.q))}">${icone("globe")} ${esc(L.gl_ask)}</a></dd></div>`).join("")}</dl></section>`).join("")
           : `<p class="alert">${esc(L.gl_none)}</p>`;
       };
       desenhar("");

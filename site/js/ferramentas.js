@@ -776,7 +776,7 @@
     }).filter(([sc]) => sc > 0).sort((a, b) => b[0] - a[0]).forEach(([, x]) => { cont[x.g] = (cont[x.g] || 0) + 1; if (cont[x.g] <= lim[x.g]) out.push(x); });
     const ordem = ["s", "p", "t", "u", "m", "g"];
     out.sort((a, b) => ordem.indexOf(a.g) - ordem.indexOf(b.g));
-    out.push({ g: "b", tit: L.sr_ask(q), sub: L.bot_title, ask: q, ic: "chat" });
+    out.push({ g: "b", tit: L.sr_ask(q), h: A.linkAtlas(q), ic: "globe" });
     return out;
   }
 
@@ -799,7 +799,6 @@
     };
     const ir = (x) => {
       d.close();
-      if (x.ask) { if (window.BOT) window.BOT.abrir(x.ask); return; }
       location.hash = x.h;
     };
     const atual = () => { res = indice ? buscarNoIndice(indice, inp.value) : []; sel = 0; desenhar(); };
@@ -829,7 +828,7 @@
       <div class="ax-row"><span>${esc(L.ax_contrast)}</span><button type="button" class="sw-btn" data-ct aria-pressed="${alto}"><span></span>${esc(alto ? L.ax_on : L.ax_off)}</button></div>
       <div class="ax-row"><span>${esc(L.ax_theme)}</span><div class="seg" role="group" aria-label="${esc(L.ax_theme)}"><button type="button" data-th="dark" aria-pressed="${!claro}">${icone("moon")} ${esc(L.ax_dark)}</button><button type="button" data-th="light" aria-pressed="${claro}">${icone("sun")} ${esc(L.ax_light)}</button></div></div>
       <div class="ax-row"><span>${esc(L.ax_libras)}<small>${esc(L.ax_libras_note)}</small></span><button type="button" class="sw-btn" data-vl aria-pressed="${vl}"><span></span>${esc(vl ? L.ax_on : L.ax_off)}</button></div>
-      <div class="ax-row"><span>${esc(L.ax_voice)}<small>${esc(L.ax_voice_note)}</small></span><button type="button" class="btn btn-sm btn-bot" data-open-bot>${icone("mic")} ${esc(L.bot_cta_btn)}</button></div>
+      <div class="ax-row"><span>${esc(L.ax_voice)}<small>${esc(L.ax_voice_note)}</small></span><a class="btn btn-sm btn-bot" href="#/atlas">${icone("mic")} ${esc(L.bot_cta_btn)}</a></div>
       <div class="ax-row"><span>${esc(L.app_install)}<small>${esc(L.app_note)}</small></span><button type="button" class="btn btn-sm" data-install>${icone("phone")} ${esc(L.app_btn)}</button></div>`, "dlg-a11y");
     d.addEventListener("click", (e) => {
       const f = e.target.closest("[data-fs]");
@@ -840,7 +839,7 @@
       if (th) { if ((raiz.getAttribute("data-theme") === "light") !== (th.dataset.th === "light")) $("#theme-btn").click(); $$("[data-th]", d).forEach((b) => b.setAttribute("aria-pressed", String(b === th))); return; }
       const v = e.target.closest("[data-vl]");
       if (v) { const on = v.getAttribute("aria-pressed") !== "true"; A.guardar("libras", on ? "1" : "0"); v.setAttribute("aria-pressed", String(on)); v.lastChild.textContent = on ? L.ax_on : L.ax_off; libras(); return; }
-      if (e.target.closest("[data-open-bot], [data-install]")) d.close();
+      if (e.target.closest('a[href^="#/atlas"], [data-install]')) d.close();
     });
   }
 

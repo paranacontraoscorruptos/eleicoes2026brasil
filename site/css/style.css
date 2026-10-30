@@ -561,36 +561,17 @@ figcaption { color: #48473f; font-size: .85rem; margin-top: 6px; }
 @keyframes pisca { 50% { opacity: 0; } }
 @keyframes some { to { opacity: 0; width: 0; margin: 0; } }
 
-/* --- assistente ------------------------------------------------------------- */
-.bot-launcher { position: fixed; right: 20px; bottom: 20px; z-index: 50; display: inline-flex; align-items: center; gap: 10px; border: 0; cursor: pointer; background: linear-gradient(135deg, #ffe14d, #ffd400 50%, #f0b800); color: var(--yellow-ink); font: 700 1rem var(--font); padding: 14px 22px 14px 16px; border-radius: 999px; box-shadow: 0 10px 30px -6px rgba(255, 212, 0, .55), 0 0 0 1px rgba(0, 0, 0, .1); transition: transform .25s, box-shadow .25s; }
-.bot-launcher svg { width: 26px; height: 26px; }
-.bot-launcher:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 16px 40px -8px rgba(255, 212, 0, .7), 0 0 0 1px rgba(0, 0, 0, .1); }
-.bot-launcher::after { content: ""; position: absolute; inset: -4px; border-radius: inherit; border: 2px solid var(--yellow); opacity: 0; animation: pulso 2.4s ease-out 1s infinite; pointer-events: none; }
-.bot-launcher::before { content: ""; position: absolute; top: 4px; right: 6px; width: 11px; height: 11px; border-radius: 50%; background: #009c3b; box-shadow: 0 0 0 2px #ffe14d; }
+/* --- botão flutuante do Atlas ------------------------------------------------------------- */
+.atlas-launcher { position: fixed; right: 20px; bottom: 20px; z-index: 50; display: inline-flex; align-items: center; gap: 10px; border: 0; cursor: pointer; background: linear-gradient(135deg, #ffe14d, #ffd400 50%, #f0b800); color: var(--yellow-ink); font: 700 1rem var(--font); padding: 14px 22px 14px 16px; border-radius: 999px; box-shadow: 0 10px 30px -6px rgba(255, 212, 0, .55), 0 0 0 1px rgba(0, 0, 0, .1); transition: transform .25s, box-shadow .25s; }
+.atlas-launcher svg { width: 26px; height: 26px; }
+.atlas-launcher, .atlas-launcher:hover { color: var(--yellow-ink); text-decoration: none; }
+.atlas-launcher:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 16px 40px -8px rgba(255, 212, 0, .7), 0 0 0 1px rgba(0, 0, 0, .1); }
+.atlas-launcher::after { content: ""; position: absolute; inset: -4px; border-radius: inherit; border: 2px solid var(--yellow); opacity: 0; animation: pulso 2.4s ease-out 1s infinite; pointer-events: none; }
+.atlas-launcher::before { content: ""; position: absolute; top: 4px; right: 6px; width: 11px; height: 11px; border-radius: 50%; background: #009c3b; box-shadow: 0 0 0 2px #ffe14d; }
 @keyframes pulso { 0% { opacity: .75; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.3); } }
-@media (max-width: 480px) { .bot-launcher { padding: 14px; } .bot-launcher-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); } }
-.bot-bubble { position: fixed; right: 20px; bottom: 90px; z-index: 51; width: min(310px, calc(100vw - 40px)); background: var(--glass); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--ink); border: 1px solid var(--line-2); border-radius: 16px; padding: 16px 42px 14px 16px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, .6); animation: entra .45s cubic-bezier(.2, .8, .2, 1); }
-.bot-bubble::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 3px; border-radius: 3px; background: var(--brasil); }
-.bot-bubble::after { content: ""; position: absolute; right: 34px; bottom: -8px; width: 14px; height: 14px; background: var(--surface); border-right: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); transform: rotate(45deg); }
-.bot-bubble p { margin: 0 0 10px; }
-.bubble-x { position: absolute; top: 6px; right: 6px; border: 0; background: transparent; color: var(--muted); cursor: pointer; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; }
-.bubble-x:hover { background: var(--surface-2); color: var(--ink); }
-@keyframes entra { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
-.bot { position: fixed; right: 20px; bottom: 20px; z-index: 55; width: min(420px, calc(100vw - 40px)); height: min(680px, calc(100vh - 40px)); background: var(--surface); border: 1px solid var(--line-2); border-radius: 20px; box-shadow: 0 30px 80px -10px rgba(0, 0, 0, .65), 0 0 0 1px rgba(255, 212, 0, .06); display: flex; flex-direction: column; overflow: hidden; animation: abrebot .35s cubic-bezier(.2, .8, .2, 1); transform-origin: bottom right; }
+@media (max-width: 480px) { .atlas-launcher { padding: 14px; } .atlas-launcher-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); } }
 @keyframes abrebot { from { opacity: 0; transform: translateY(16px) scale(.95); } to { opacity: 1; transform: none; } }
-.bot[hidden] { display: none; }
-.bot-open .bot-launcher, .bot-open .bot-bubble, .menu-open .bot-launcher, .menu-open .bot-bubble { display: none; }
-.bot-head { position: relative; display: flex; align-items: center; gap: 12px; padding: 16px 14px 13px 16px; background: linear-gradient(135deg, #007a2f, #009c3b 55%, #2a8f2a); color: #fff; }
-.bot-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, #ffdf00, #002776); }
-.bot-avatar { width: 40px; height: 40px; border-radius: 13px; background: #ffdf00; color: #0b3d1c; display: grid; place-items: center; flex: none; box-shadow: 0 4px 12px rgba(0, 0, 0, .25); }
-.bot-head-txt { min-width: 0; flex: 1; }
-.bot-head h2 { font-size: 1.08rem; margin: 0; color: #fff; padding-left: 0; }
-.bot-head h2::before { display: none; }
-.bot-sub { margin: 0; font-size: .8rem; opacity: .92; display: flex; align-items: center; gap: 6px; }
-.bot-sub::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #ffdf00; box-shadow: 0 0 6px #ffdf00; }
-.bot-icon-btn { border: 0; background: transparent; color: inherit; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; transition: background .2s; }
-.bot-icon-btn:hover { background: rgba(255, 255, 255, .16); }
-.bot-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); overscroll-behavior: contain; }
+.menu-open .atlas-launcher { display: none; }
 .msg { max-width: 92%; padding: 10px 13px; border-radius: 15px; font-size: .93rem; line-height: 1.5; overflow-wrap: anywhere; animation: msgin .3s cubic-bezier(.2, .8, .2, 1); }
 @keyframes msgin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .msg p { margin: 0 0 .6em; } .msg p:last-child { margin-bottom: 0; }
@@ -604,14 +585,6 @@ figcaption { color: #48473f; font-size: .85rem; margin-top: 6px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .chipq { border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); background: var(--surface); color: var(--accent); border-radius: 999px; padding: 6px 11px; font: 600 .8rem var(--font); cursor: pointer; text-align: left; transition: background .2s, transform .2s, border-color .2s; }
 .chipq:hover { background: var(--accent-soft); border-color: var(--accent); transform: translateY(-2px); }
-.bot-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); background: var(--surface); }
-.bot-form input { flex: 1; min-width: 0; font: 1rem var(--font); padding: 11px 13px; border: 1px solid var(--line-2); border-radius: 13px; background: var(--bg); color: var(--ink); transition: border-color .2s, box-shadow .2s; }
-.bot-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-.bot-send { border: 0; background: linear-gradient(135deg, #ffe14d, #ffd400); color: var(--yellow-ink); width: 46px; border-radius: 13px; display: grid; place-items: center; cursor: pointer; transition: transform .2s; }
-.bot-send:hover { transform: scale(1.06); }
-@media (max-width: 640px) {
-  .bot { right: 0; bottom: 0; left: 0; top: 0; width: 100%; height: 100%; height: 100dvh; border-radius: 0; border: 0; }
-}
 
 /* --- movimento reduzido e impressão ------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
@@ -853,17 +826,10 @@ figcaption { color: #48473f; font-size: .85rem; margin-top: 6px; }
 .sw-btn span::after { content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; }
 .sw-btn[aria-pressed="true"] span { background: var(--accent); }
 .sw-btn[aria-pressed="true"] span::after { transform: translateX(16px); }
-.dlg-open .bot-launcher, .dlg-open .bot-bubble { display: none; }
+.dlg-open .atlas-launcher { display: none; }
 
-/* --- bot: voz ---------------------------------------------------------------------------------- */
+/* --- respostas: voz ---------------------------------------------------------------------------------- */
 .msg-bot { position: relative; padding-right: 40px; }
-.msg-speak { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
-.msg-speak svg { width: 18px; height: 18px; }
-.msg-speak:hover, .msg-speak.on { color: var(--accent); background: var(--accent-soft); }
-.bot-mic { border: 1px solid var(--line-2); background: var(--bg); color: var(--ink-2); width: 46px; border-radius: 13px; display: grid; place-items: center; cursor: pointer; flex: none; }
-.bot-mic:hover { color: var(--accent); border-color: var(--accent); }
-.bot-mic.on { background: var(--red); border-color: var(--red); color: #fff; animation: pulso-mic 1.2s ease-in-out infinite; }
-@keyframes pulso-mic { 50% { box-shadow: 0 0 0 6px rgba(229, 72, 77, .25); } }
 
 /* --- Libras ----------------------------------------------------------------------------------------- */
 .vl-off #vlibras-access-wrapper, .vl-off #vlibras-app-root { display: none !important; }
@@ -899,7 +865,7 @@ figcaption { color: #48473f; font-size: .85rem; margin-top: 6px; }
   :root, :root[data-theme], :root[data-contrast] { --bg: #fff; --surface: #fff; --surface-2: #f3f3f3; --surface-3: #e8e8e8; --ink: #000; --ink-2: #222; --muted: #444; --line: #bbb; --line-2: #999;
     --accent: #006b2e; --accent-ink: #fff; --accent-soft: #e6f3ea; --yellow-text: #6b5300; --series-1: #2e7d4a; --shadow: none; --glow: none; color-scheme: light; }
   body { background: #fff !important; font-size: 11pt; }
-  body::before, .site-head, .badge-bar, .site-foot, .bot, .bot-launcher, .bot-bubble, .bot-band, .bot-cta, .tg-cta, .hero-visual, .hero-canvas, .pg-acoes, .lk-more,
+  body::before, .site-head, .badge-bar, .site-foot, .atlas-launcher, .bot-band, .bot-cta, .tg-cta, .hero-visual, .hero-canvas, .pg-acoes, .lk-more,
   .card:has(> .lk-form), .card:has(> .bu-form), .card:has(> .drop), .filters, .btn:not(a), .btn-copy, .pager, .gr-idx, .mini-search, .gl-letters, .tabs, .drop, .lk-form, #lk-saved, .note, [data-toggle-view], #vlibras-access-wrapper, dialog { display: none !important; }
   main { max-width: none; padding: 0; }
   .anim .rv { opacity: 1 !important; transform: none !important; }
@@ -1110,7 +1076,6 @@ a.tag:hover { border-color: var(--accent); }
 .dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes dot { 0%, 60%, 100% { transform: translateY(0); opacity: .35; } 30% { transform: translateY(-4px); opacity: 1; } }
 .typing-txt { animation: msgin .3s ease-out; }
-.bot-send:disabled { opacity: .5; cursor: default; transform: none; }
 
 /* Cursor enquanto o bot "digita" a resposta */
 .caret { display: inline-block; width: .5em; height: 1em; margin-left: 2px; vertical-align: -.15em; border-radius: 2px; background: var(--accent); animation: piscar 1s steps(2, start) infinite; }
@@ -1120,7 +1085,7 @@ a.tag:hover { border-color: var(--accent); }
 /* cabeçalho e aviso do site em cima; a conversa ocupa o resto da tela */
 body.atlas-on { overflow: hidden; display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 body.atlas-on .site-head, body.atlas-on .badge-bar { flex: none; }
-body.atlas-on .site-foot, body.atlas-on .bot-launcher, body.atlas-on .bot-bubble, body.atlas-on .bot { display: none !important; }
+body.atlas-on .site-foot, body.atlas-on .atlas-launcher { display: none !important; }
 body.atlas-on main { flex: 1 1 auto; min-height: 0; width: 100%; max-width: none; margin: 0; padding: 0; }
 .atlas { --lado: 278px; position: relative; display: grid; grid-template-columns: var(--lado) minmax(0, 1fr); height: 100%; background: var(--bg); color: var(--ink); }
 .at-marca { width: 34px; height: 34px; border-radius: 11px; display: inline-grid; place-items: center; flex: none; color: #fff; background: conic-gradient(from 210deg, #009c3b, #1fc35f, #ffd400, #1f4bc4, #009c3b); box-shadow: 0 6px 18px -6px rgba(31, 195, 95, .6); }

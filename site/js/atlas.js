@@ -171,7 +171,7 @@
 
   function iniciar() {
     document.body.classList.add("atlas-on");
-    if (window.BOT) { window.BOT.iniciar(A.state.lang); window.BOT.fechar(); }
+    if (window.BOT) window.BOT.iniciar(A.state.lang);
     const root = $("#atlas");
     S.el = { root, log: $("#at-log"), inp: $("#at-in"), form: $("#at-comp"), arq: $("#at-arq"), mais: $("#at-menu-mais"), solte: $("#at-solte"), hist: $("#at-hist-l") };
     listaConversas();

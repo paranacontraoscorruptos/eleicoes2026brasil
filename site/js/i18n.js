@@ -34,7 +34,7 @@ window.I18N = {
       replicate: ["Como replicar", "Rode o mesmo código com os arquivos do TSE e confira se chega ao mesmo resultado."],
       downloads: ["Downloads", "Código, relatórios e dados dos dois turnos, cada arquivo com o seu SHA-512."],
       limits: ["Limitações", "O que a análise mostra, o que fica fora do escopo e as premissas dos testes."],
-      bot: ["Bot", "Pergunte ao bot sobre os testes, os dados e o código. Cada resposta mostra a fonte."],
+      bot: ["Atlas", "Pergunte ao Atlas sobre os testes, os dados, o código e qualquer estado, município ou seção. Cada resposta mostra a fonte."],
     },
     pg_open: "Abrir", pg_ask: "Perguntar",
     m_tests: "4 determinísticos · 8 estatísticos · 3 agregados",
@@ -53,10 +53,10 @@ window.I18N = {
     home_pres_title: "Presidente · 2º turno", home_pres_sub: "Soma dos boletins de urna. Porcentagens sobre os votos válidos.", home_pres_more: "Ver o 2º turno completo",
     tl_title: "Linha do tempo",
     tl: [["4 out 2026", "Eleição: 1º turno"], ["24 out 2026", "Relatório Técnico do 1º turno emitido"], ["25 out 2026", "Eleição: 2º turno"], ["28 out 2026", "Relatório Técnico do 2º turno emitido"]],
-    bot_cta_title: "Tem alguma dúvida? Pergunte ao nosso bot",
+    bot_cta_title: "Tem alguma dúvida? Pergunte ao Atlas",
     bot_cta_text: "Pergunte sobre os testes, os resultados, os dados, o código ou a sua seção. Cada resposta mostra de onde veio a informação.",
-    bot_cta_btn: "Perguntar ao bot",
-    bot_cta_small: "O bot responde com base nos relatórios, nos dados e no código.",
+    bot_cta_btn: "Perguntar ao Atlas",
+    bot_cta_small: "O Atlas responde com base nos relatórios, nos dados e no código.",
     // grupo do Telegram
     tg_title: "Participe do grupo no Telegram",
     tg_text: "Entre no grupo para receber as novidades da auditoria e conversar com outras pessoas que estão analisando os dados.",
@@ -106,7 +106,7 @@ window.I18N = {
     // testes
     tests_title: "Os 15 testes", tests_sub: "O que cada teste verifica, como é calculado e o que encontrou. Toque em um teste para ver os detalhes.",
     f_obj: "Objetivo", f_met: "Método", f_crit: "Critério de sinalização", f_lim: "Limitações e explicações alternativas",
-    f_code: "Ver o código", f_ask: "Perguntar ao bot sobre este teste",
+    f_code: "Ver o código", f_ask: "Perguntar ao Atlas sobre este teste",
     ask_test: (n) => `o que é o teste ${n}`,
     det: "Determinístico", stat: "Estatístico", agg: "Agregado (candidato × UF)",
     // seção
@@ -194,16 +194,9 @@ window.I18N = {
     ft_made: "Feito em Curitiba (PR), Brasil", ft_top: "Topo",
     ft_reports: (a, b) => `Relatórios: 1º turno ${a} · 2º turno ${b}`,
     brand_sub: "Eleições Brasil 2026",
-    // bot
-    launcher: "Dúvidas? Pergunte", launcher_aria: "Abrir o bot",
-    bubble: "Olá! 👋 Tem alguma dúvida sobre a auditoria? Pode me perguntar.", bubble_btn: "Perguntar", bubble_close: "Fechar aviso",
-    bot_title: "Bot da auditoria", bot_sub: "Respostas com fonte",
-    bot_ph: "Escreva sua pergunta…", bot_send: "Enviar", bot_close: "Fechar o bot", bot_clear: "Limpar conversa",
-    bot_hello: "Olá! Sou o bot da auditoria. Pergunte sobre os testes, os resultados, os dados, o código ou a sua seção (ex.: <b>PR zona 177 seção 45</b>).",
-    bot_starters: ["Consultar minha seção", "Quais são os testes?", "O que é o teste 3?", "Resultado do 2º turno", "Como baixar os dados?", "Como rodar o código?", "Grupo do Telegram"],
+    // botão flutuante do Atlas e textos usados nas respostas
+    launcher: "Pergunte ao Atlas", launcher_aria: "Abrir o Atlas",
     bot_source: "Fonte", bot_open: "Abrir página", bot_related: "Veja também",
-    bot_fallback: "Não encontrei uma resposta para isso na base. Tente com outras palavras ou escolha um tema:",
-    bot_fallback_topics: ["O que posso perguntar?", "Quais são os testes?", "Consultar minha seção"],
     bot_maybe: "Talvez você queira saber:",
     // resposta a saudação, "tudo bem?", obrigado e tchau (bot e Atlas)
     cort: {
@@ -214,8 +207,6 @@ window.I18N = {
       mais: "Precisa de mais alguma coisa? Escolha uma opção abaixo ou escreva sua pergunta.",
       think: [["Lendo sua mensagem…", "Lendo o que você escreveu…", "Lendo a mensagem…"], ["Separando as opções…", "Preparando as opções…", "Escolhendo os atalhos…"]],
     },
-    bot_need_uf: "Para consultar a seção, informe também a UF. Exemplo: <b>PR zona 177 seção 45</b>.",
-    bot_need_zs: "Para consultar a seção, informe a UF, a zona e a seção. Exemplo: <b>PR zona 177 seção 45</b>.",
     bot_think_qa: [
       ["Lendo sua pergunta…", "Entendendo o que você perguntou…", "Analisando sua pergunta…", "Separando as palavras-chave…", "Interpretando a pergunta…"],
       ["Procurando na base de dados…", "Pesquisando nas respostas do site…", "Buscando o tema nos relatórios…", "Comparando com perguntas parecidas…", "Varrendo a base de conhecimento…"],
@@ -271,7 +262,7 @@ window.I18N = {
       replicate: ["How to replicate", "Run the same code on the TSE files and check that you get the same result."],
       downloads: ["Downloads", "Code, reports and data for both rounds, each file with its SHA-512."],
       limits: ["Limitations", "What the analysis shows, what is out of scope and the tests' assumptions."],
-      bot: ["Bot", "Ask the bot about the tests, the data and the code. Every answer shows its source."],
+      bot: ["Atlas", "Ask Atlas about the tests, the data, the code and any state, municipality or section. Every answer shows its source."],
     },
     pg_open: "Open", pg_ask: "Ask",
     m_tests: "4 deterministic · 8 statistical · 3 aggregate",
@@ -290,10 +281,10 @@ window.I18N = {
     home_pres_title: "President · 2nd round", home_pres_sub: "Sum of the ballot box reports. Percentages of valid votes.", home_pres_more: "See the full 2nd round",
     tl_title: "Timeline",
     tl: [["Oct 4, 2026", "Election: 1st round"], ["Oct 24, 2026", "1st round Technical Report issued"], ["Oct 25, 2026", "Election: 2nd round"], ["Oct 28, 2026", "2nd round Technical Report issued"]],
-    bot_cta_title: "Have a question? Ask our bot",
+    bot_cta_title: "Have a question? Ask Atlas",
     bot_cta_text: "Ask about the tests, the results, the data, the code or your section. Every answer shows where the information came from.",
-    bot_cta_btn: "Ask the bot",
-    bot_cta_small: "The bot answers from the reports, the data and the code.",
+    bot_cta_btn: "Ask Atlas",
+    bot_cta_small: "Atlas answers from the reports, the data and the code.",
     // Telegram group
     tg_title: "Be part of our Telegram group",
     tg_text: "Join the group to get the audit's updates and talk with other people who are analyzing the data.",
@@ -341,7 +332,7 @@ window.I18N = {
     all_files: "All files and hashes",
     tests_title: "The 15 tests", tests_sub: "What each test checks, how it is calculated and what it found. Tap a test to see the details.",
     f_obj: "Objective", f_met: "Method", f_crit: "Flagging criterion", f_lim: "Limitations and alternative explanations",
-    f_code: "View the code", f_ask: "Ask the bot about this test",
+    f_code: "View the code", f_ask: "Ask Atlas about this test",
     ask_test: (n) => `what is test ${n}`,
     det: "Deterministic", stat: "Statistical", agg: "Aggregate (candidate × state)",
     lk_title: "Look up your section",
@@ -424,15 +415,8 @@ window.I18N = {
     ft_made: "Made in Curitiba (PR), Brazil", ft_top: "Top",
     ft_reports: (a, b) => `Reports: 1st round ${a} · 2nd round ${b}`,
     brand_sub: "Brazil Elections 2026",
-    launcher: "Questions? Ask", launcher_aria: "Open the bot",
-    bubble: "Hi! 👋 Any questions about the audit? Just ask me.", bubble_btn: "Ask", bubble_close: "Close notice",
-    bot_title: "Audit bot", bot_sub: "Answers with sources",
-    bot_ph: "Type your question…", bot_send: "Send", bot_close: "Close the bot", bot_clear: "Clear conversation",
-    bot_hello: "Hi! I am the audit bot. Ask about the tests, the results, the data, the code or your section (e.g. <b>PR zone 177 section 45</b>).",
-    bot_starters: ["Look up my section", "Which tests?", "What is test 3?", "2nd round result", "How to download the data?", "How to run the code?", "Telegram group"],
+    launcher: "Ask Atlas", launcher_aria: "Open Atlas",
     bot_source: "Source", bot_open: "Open page", bot_related: "See also",
-    bot_fallback: "I could not find an answer to that in the base. Try other words or pick a topic:",
-    bot_fallback_topics: ["What can I ask?", "Which tests are there?", "Look up my section"],
     bot_maybe: "Maybe you want to know:",
     cort: {
       oi: "Hi!", ola: "Hello!", dia: "Good morning!", tarde: "Good afternoon!", noite: "Good evening!",
@@ -442,8 +426,6 @@ window.I18N = {
       mais: "Anything else? Pick an option below or type your question.",
       think: [["Reading your message…", "Reading what you wrote…", "Reading the message…"], ["Gathering the options…", "Preparing the options…", "Picking the shortcuts…"]],
     },
-    bot_need_uf: "To look up the section, please also give the state. Example: <b>PR zone 177 section 45</b>.",
-    bot_need_zs: "To look up a section, give the state, zone and section. Example: <b>PR zone 177 section 45</b>.",
     bot_think_qa: [
       ["Reading your question…", "Understanding what you asked…", "Analyzing your question…", "Picking out the keywords…", "Interpreting the question…"],
       ["Searching the database…", "Searching the site's answers…", "Looking for the topic in the reports…", "Comparing with similar questions…", "Scanning the knowledge base…"],
@@ -499,7 +481,7 @@ window.I18N = {
       replicate: ["Cómo replicar", "Ejecute el mismo código con los archivos del TSE y verifique si llega al mismo resultado."],
       downloads: ["Descargas", "Código, informes y datos de las dos vueltas, cada archivo con su SHA-512."],
       limits: ["Limitaciones", "Lo que el análisis muestra, lo que queda fuera del alcance y las premisas de las pruebas."],
-      bot: ["Bot", "Pregunte al bot sobre las pruebas, los datos y el código. Cada respuesta muestra la fuente."],
+      bot: ["Atlas", "Pregunte a Atlas sobre las pruebas, los datos, el código y cualquier estado, municipio o sección. Cada respuesta muestra la fuente."],
     },
     pg_open: "Abrir", pg_ask: "Preguntar",
     m_tests: "4 determinísticas · 8 estadísticas · 3 agregadas",
@@ -518,10 +500,10 @@ window.I18N = {
     home_pres_title: "Presidente · 2.ª vuelta", home_pres_sub: "Suma de los boletines de urna. Porcentajes sobre los votos válidos.", home_pres_more: "Ver la 2.ª vuelta completa",
     tl_title: "Línea de tiempo",
     tl: [["4 oct 2026", "Elección: 1.ª vuelta"], ["24 oct 2026", "Informe Técnico de la 1.ª vuelta emitido"], ["25 oct 2026", "Elección: 2.ª vuelta"], ["28 oct 2026", "Informe Técnico de la 2.ª vuelta emitido"]],
-    bot_cta_title: "¿Tiene alguna duda? Pregunte a nuestro bot",
+    bot_cta_title: "¿Tiene alguna duda? Pregunte a Atlas",
     bot_cta_text: "Pregunte sobre las pruebas, los resultados, los datos, el código o su sección. Cada respuesta muestra de dónde salió la información.",
-    bot_cta_btn: "Preguntar al bot",
-    bot_cta_small: "El bot responde con base en los informes, los datos y el código.",
+    bot_cta_btn: "Preguntar a Atlas",
+    bot_cta_small: "Atlas responde con base en los informes, los datos y el código.",
     // grupo de Telegram
     tg_title: "Únase al grupo de Telegram",
     tg_text: "Entre al grupo para recibir las novedades de la auditoría y conversar con otras personas que están analizando los datos.",
@@ -569,7 +551,7 @@ window.I18N = {
     all_files: "Todos los archivos y hashes",
     tests_title: "Las 15 pruebas", tests_sub: "Qué verifica cada prueba, cómo se calcula y qué encontró. Toque una prueba para ver los detalles.",
     f_obj: "Objetivo", f_met: "Método", f_crit: "Criterio de señalización", f_lim: "Limitaciones y explicaciones alternativas",
-    f_code: "Ver el código", f_ask: "Preguntar al bot sobre esta prueba",
+    f_code: "Ver el código", f_ask: "Preguntar a Atlas sobre esta prueba",
     ask_test: (n) => `qué es la prueba ${n}`,
     det: "Determinística", stat: "Estadística", agg: "Agregada (candidato × UF)",
     lk_title: "Consulte su sección",
@@ -652,15 +634,8 @@ window.I18N = {
     ft_made: "Hecho en Curitiba (PR), Brasil", ft_top: "Arriba",
     ft_reports: (a, b) => `Informes: 1.ª vuelta ${a} · 2.ª vuelta ${b}`,
     brand_sub: "Elecciones Brasil 2026",
-    launcher: "¿Dudas? Pregunte", launcher_aria: "Abrir el bot",
-    bubble: "¡Hola! 👋 ¿Tiene alguna duda sobre la auditoría? Puede preguntarme.", bubble_btn: "Preguntar", bubble_close: "Cerrar aviso",
-    bot_title: "Bot de la auditoría", bot_sub: "Respuestas con fuente",
-    bot_ph: "Escriba su pregunta…", bot_send: "Enviar", bot_close: "Cerrar el bot", bot_clear: "Borrar conversación",
-    bot_hello: "¡Hola! Soy el bot de la auditoría. Pregunte sobre las pruebas, los resultados, los datos, el código o su sección (ej.: <b>PR zona 177 sección 45</b>).",
-    bot_starters: ["Consultar mi sección", "¿Cuáles son las pruebas?", "¿Qué es la prueba 3?", "Resultado de la 2.ª vuelta", "¿Cómo descargar los datos?", "¿Cómo ejecutar el código?", "Grupo de Telegram"],
+    launcher: "Pregunte a Atlas", launcher_aria: "Abrir Atlas",
     bot_source: "Fuente", bot_open: "Abrir página", bot_related: "Vea también",
-    bot_fallback: "No encontré una respuesta para eso en la base. Intente con otras palabras o elija un tema:",
-    bot_fallback_topics: ["¿Qué puedo preguntar?", "¿Cuáles son las pruebas?", "Consultar mi sección"],
     bot_maybe: "Quizás quiera saber:",
     cort: {
       oi: "¡Hola!", ola: "¡Hola!", dia: "¡Buenos días!", tarde: "¡Buenas tardes!", noite: "¡Buenas noches!",
@@ -670,8 +645,6 @@ window.I18N = {
       mais: "¿Algo más? Elija una opción abajo o escriba su pregunta.",
       think: [["Leyendo su mensaje…", "Leyendo lo que escribió…", "Leyendo el mensaje…"], ["Separando las opciones…", "Preparando las opciones…", "Eligiendo los atajos…"]],
     },
-    bot_need_uf: "Para consultar la sección, indique también la UF. Ejemplo: <b>PR zona 177 sección 45</b>.",
-    bot_need_zs: "Para consultar una sección, indique la UF, la zona y la sección. Ejemplo: <b>PR zona 177 sección 45</b>.",
     bot_think_qa: [
       ["Leyendo su pregunta…", "Entendiendo lo que preguntó…", "Analizando su pregunta…", "Separando las palabras clave…", "Interpretando la pregunta…"],
       ["Buscando en la base de datos…", "Buscando en las respuestas del sitio…", "Buscando el tema en los informes…", "Comparando con preguntas parecidas…", "Recorriendo la base de conocimiento…"],
@@ -785,7 +758,7 @@ Object.assign(window.I18N.PT, {
   gr_kl_obs: "Observadas", gr_kl_esp: "Esperadas", gr_kl_raz: "Razão", gr_kl_th_insp: "Inspeção",
   gr_src_sec: "Fonte: soma dos boletins de urna do TSE (Presidente).", gr_src_res: "Fonte: Relatório Técnico (tabelas do teste).", gr_th_range: "Faixa", gr_n_sec: (n) => `${n} seções`,
   // glossário
-  gl_title: "Glossário", gl_sub: "Os termos usados na auditoria, explicados em linguagem simples.", gl_ph: "Buscar termo", gl_letters: "Letras", gl_none: "Nenhum termo encontrado.", gl_ask: "Perguntar ao bot",
+  gl_title: "Glossário", gl_sub: "Os termos usados na auditoria, explicados em linguagem simples.", gl_ph: "Buscar termo", gl_letters: "Letras", gl_none: "Nenhum termo encontrado.", gl_ask: "Perguntar ao Atlas",
   // conferir arquivo
   vf_title: "Conferir arquivo (SHA-512)",
   vf_sub: "Veja se um arquivo que você baixou é idêntico ao publicado. O SHA-512 é a “impressão digital” do arquivo: se um único byte mudar, ela muda.",
@@ -824,12 +797,12 @@ Object.assign(window.I18N.PT, {
   sr_open: "Buscar no site", sr_title: "Buscar no site", sr_ph: "Página, teste, estado, município, termo ou seção",
   sr_hint: "Atalho: tecle / ou Ctrl+K. Use as setas para escolher e Enter para abrir.", sr_try: "Experimente:",
   sr_examples: ["Curitiba", "teste 11", "PR 177 45", "abstenção", "Klimek"],
-  sr_section: (uf, z, s) => `Consultar ${uf} · zona ${z} · seção ${s}`, sr_ask: (q) => `Perguntar ao bot: “${q}”`,
-  sr_g_s: "Seção", sr_g_p: "Páginas", sr_g_t: "Testes", sr_g_u: "Estados", sr_g_m: "Municípios", sr_g_g: "Glossário", sr_g_b: "Bot",
+  sr_section: (uf, z, s) => `Consultar ${uf} · zona ${z} · seção ${s}`, sr_ask: (q) => `Perguntar ao Atlas: “${q}”`,
+  sr_g_s: "Seção", sr_g_p: "Páginas", sr_g_t: "Testes", sr_g_u: "Estados", sr_g_m: "Municípios", sr_g_g: "Glossário", sr_g_b: "Atlas",
   // acessibilidade
   ax_open: "Acessibilidade", ax_title: "Acessibilidade", ax_size: "Tamanho do texto", ax_contrast: "Alto contraste", ax_theme: "Tema", ax_dark: "Escuro", ax_light: "Claro",
   ax_libras: "Libras (VLibras)", ax_libras_note: "Botão azul no lado direito da tela.", ax_voice: "Falar e ouvir",
-  ax_voice_note: "No bot: toque no microfone para perguntar falando e no alto-falante para ouvir a resposta.", ax_on: "Ligado", ax_off: "Desligado",
+  ax_voice_note: "No Atlas: toque no microfone para perguntar falando e no alto-falante para ouvir a resposta.", ax_on: "Ligado", ax_off: "Desligado",
   // app
   app_install: "Instalar app", app_btn: "Instalar", app_note: "Ícone na tela do celular e páginas já visitadas abrindo sem internet.", app_title: "Instalar o app",
   app_intro: "O site pode virar um app no seu celular ou computador: ganha um ícone e as páginas que você já abriu funcionam mesmo sem internet. Ocupa pouco espaço e não pede cadastro.",
@@ -837,9 +810,8 @@ Object.assign(window.I18N.PT, {
   app_ios: ["Abra o site no Safari.", "Toque no botão <b>Compartilhar</b> (quadrado com seta para cima).", "Toque em <b>Adicionar à Tela de Início</b>."],
   app_pc: "Computador", app_desktop: ["No Chrome ou no Edge, clique no ícone de instalar na barra de endereço.", "Ou abra o menu do navegador e escolha <b>Instalar Auditoria BU 2026</b>."],
   app_already: "O app já está instalado e aberto.",
-  // bot com voz
-  bot_mic: "Perguntar falando", bot_mic_on: "Pode falar…", bot_mic_denied: "Sem permissão para usar o microfone. Libere o microfone nas configurações do navegador.",
-  bot_listen: "Ouvir a resposta", bot_stop: "Parar",
+  // voz no Atlas
+  bot_mic_denied: "Sem permissão para usar o microfone. Libere o microfone nas configurações do navegador.",
 });
 
 Object.assign(window.I18N.EN.nav, { more: "More", more_title: "Tools and lookups", map: "Map", states: "States and municipalities", list: "Flagged sections", charts: "Charts",
@@ -915,7 +887,7 @@ Object.assign(window.I18N.EN, {
   gr_kl_tip: (r, o, e) => `ratio ${r} · ${o} sections in the corner · ${e} expected`, gr_kl_insp: "Flagged for visual inspection",
   gr_kl_obs: "Observed", gr_kl_esp: "Expected", gr_kl_raz: "Ratio", gr_kl_th_insp: "Inspection",
   gr_src_sec: "Source: sum of TSE tally sheets (President).", gr_src_res: "Source: Technical Report (test tables).", gr_th_range: "Band", gr_n_sec: (n) => `${n} sections`,
-  gl_title: "Glossary", gl_sub: "The terms used in the audit, explained in plain language.", gl_ph: "Search term", gl_letters: "Letters", gl_none: "No term found.", gl_ask: "Ask the bot",
+  gl_title: "Glossary", gl_sub: "The terms used in the audit, explained in plain language.", gl_ph: "Search term", gl_letters: "Letters", gl_none: "No term found.", gl_ask: "Ask Atlas",
   vf_title: "Check a file (SHA-512)",
   vf_sub: "See whether a file you downloaded is identical to the published one. The SHA-512 is the file's “fingerprint”: if a single byte changes, it changes.",
   vf_drop: "Drag files here or tap to choose", vf_drop2: "It can be the code, a report, a data file or a TSE file. If you have the official .sha512 file, add it too.",
@@ -950,19 +922,18 @@ Object.assign(window.I18N.EN, {
   sr_open: "Search the site", sr_title: "Search the site", sr_ph: "Page, test, state, municipality, term or section",
   sr_hint: "Shortcut: press / or Ctrl+K. Use the arrows to choose and Enter to open.", sr_try: "Try:",
   sr_examples: ["Curitiba", "test 11", "PR 177 45", "abstention", "Klimek"],
-  sr_section: (uf, z, s) => `Look up ${uf} · zone ${z} · section ${s}`, sr_ask: (q) => `Ask the bot: “${q}”`,
-  sr_g_s: "Section", sr_g_p: "Pages", sr_g_t: "Tests", sr_g_u: "States", sr_g_m: "Municipalities", sr_g_g: "Glossary", sr_g_b: "Bot",
+  sr_section: (uf, z, s) => `Look up ${uf} · zone ${z} · section ${s}`, sr_ask: (q) => `Ask Atlas: “${q}”`,
+  sr_g_s: "Section", sr_g_p: "Pages", sr_g_t: "Tests", sr_g_u: "States", sr_g_m: "Municipalities", sr_g_g: "Glossary", sr_g_b: "Atlas",
   ax_open: "Accessibility", ax_title: "Accessibility", ax_size: "Text size", ax_contrast: "High contrast", ax_theme: "Theme", ax_dark: "Dark", ax_light: "Light",
   ax_libras: "Libras (VLibras)", ax_libras_note: "Brazilian Sign Language; available only in Portuguese.", ax_voice: "Speak and listen",
-  ax_voice_note: "In the bot: tap the microphone to ask by voice and the speaker to hear the answer.", ax_on: "On", ax_off: "Off",
+  ax_voice_note: "In Atlas: tap the microphone to ask by voice and the speaker to hear the answer.", ax_on: "On", ax_off: "Off",
   app_install: "Install app", app_btn: "Install", app_note: "Icon on your phone's home screen and visited pages opening offline.", app_title: "Install the app",
   app_intro: "The site can become an app on your phone or computer: it gets an icon and the pages you have already opened work even without internet. It takes little space and needs no sign-up.",
   app_android: ["Open the site in Chrome.", "Tap the <b>⋮</b> menu (three dots, top corner).", "Tap <b>Install app</b> or <b>Add to Home screen</b>."],
   app_ios: ["Open the site in Safari.", "Tap the <b>Share</b> button (square with an up arrow).", "Tap <b>Add to Home Screen</b>."],
   app_pc: "Computer", app_desktop: ["In Chrome or Edge, click the install icon in the address bar.", "Or open the browser menu and choose <b>Install Auditoria BU 2026</b>."],
   app_already: "The app is already installed and open.",
-  bot_mic: "Ask by voice", bot_mic_on: "Go ahead and speak…", bot_mic_denied: "No permission to use the microphone. Allow the microphone in the browser settings.",
-  bot_listen: "Listen to the answer", bot_stop: "Stop",
+  bot_mic_denied: "No permission to use the microphone. Allow the microphone in the browser settings.",
 });
 
 Object.assign(window.I18N.ES.nav, { more: "Más", more_title: "Herramientas y consultas", map: "Mapa", states: "Estados y municipios", list: "Secciones marcadas", charts: "Gráficos",
@@ -1038,7 +1009,7 @@ Object.assign(window.I18N.ES, {
   gr_kl_tip: (r, o, e) => `razón ${r} · ${o} secciones en la esquina · ${e} esperadas`, gr_kl_insp: "Marcado para inspección visual",
   gr_kl_obs: "Observadas", gr_kl_esp: "Esperadas", gr_kl_raz: "Razón", gr_kl_th_insp: "Inspección",
   gr_src_sec: "Fuente: suma de los boletines de urna del TSE (Presidente).", gr_src_res: "Fuente: Informe Técnico (tablas de la prueba).", gr_th_range: "Franja", gr_n_sec: (n) => `${n} secciones`,
-  gl_title: "Glosario", gl_sub: "Los términos usados en la auditoría, explicados en lenguaje sencillo.", gl_ph: "Buscar término", gl_letters: "Letras", gl_none: "Ningún término encontrado.", gl_ask: "Preguntar al bot",
+  gl_title: "Glosario", gl_sub: "Los términos usados en la auditoría, explicados en lenguaje sencillo.", gl_ph: "Buscar término", gl_letters: "Letras", gl_none: "Ningún término encontrado.", gl_ask: "Preguntar a Atlas",
   vf_title: "Verificar archivo (SHA-512)",
   vf_sub: "Vea si un archivo que descargó es idéntico al publicado. El SHA-512 es la “huella digital” del archivo: si cambia un solo byte, cambia.",
   vf_drop: "Arrastre los archivos aquí o toque para elegir", vf_drop2: "Puede ser el código, un informe, un archivo de datos o un archivo del TSE. Si tiene el archivo .sha512 oficial, agréguelo también.",
@@ -1073,19 +1044,18 @@ Object.assign(window.I18N.ES, {
   sr_open: "Buscar en el sitio", sr_title: "Buscar en el sitio", sr_ph: "Página, prueba, estado, municipio, término o sección",
   sr_hint: "Atajo: pulse / o Ctrl+K. Use las flechas para elegir y Enter para abrir.", sr_try: "Pruebe:",
   sr_examples: ["Curitiba", "prueba 11", "PR 177 45", "abstención", "Klimek"],
-  sr_section: (uf, z, s) => `Consultar ${uf} · zona ${z} · sección ${s}`, sr_ask: (q) => `Preguntar al bot: “${q}”`,
-  sr_g_s: "Sección", sr_g_p: "Páginas", sr_g_t: "Pruebas", sr_g_u: "Estados", sr_g_m: "Municipios", sr_g_g: "Glosario", sr_g_b: "Bot",
+  sr_section: (uf, z, s) => `Consultar ${uf} · zona ${z} · sección ${s}`, sr_ask: (q) => `Preguntar a Atlas: “${q}”`,
+  sr_g_s: "Sección", sr_g_p: "Páginas", sr_g_t: "Pruebas", sr_g_u: "Estados", sr_g_m: "Municipios", sr_g_g: "Glosario", sr_g_b: "Atlas",
   ax_open: "Accesibilidad", ax_title: "Accesibilidad", ax_size: "Tamaño del texto", ax_contrast: "Alto contraste", ax_theme: "Tema", ax_dark: "Oscuro", ax_light: "Claro",
   ax_libras: "Libras (VLibras)", ax_libras_note: "Lengua de señas brasileña; solo en portugués.", ax_voice: "Hablar y escuchar",
-  ax_voice_note: "En el bot: toque el micrófono para preguntar hablando y el altavoz para escuchar la respuesta.", ax_on: "Activado", ax_off: "Desactivado",
+  ax_voice_note: "En Atlas: toque el micrófono para preguntar hablando y el altavoz para escuchar la respuesta.", ax_on: "Activado", ax_off: "Desactivado",
   app_install: "Instalar app", app_btn: "Instalar", app_note: "Ícono en la pantalla del celular y páginas visitadas que abren sin internet.", app_title: "Instalar la app",
   app_intro: "El sitio puede convertirse en una app en su celular o computadora: gana un ícono y las páginas que ya abrió funcionan incluso sin internet. Ocupa poco espacio y no pide registro.",
   app_android: ["Abra el sitio en Chrome.", "Toque el menú <b>⋮</b> (tres puntos, en la esquina de arriba).", "Toque <b>Instalar app</b> o <b>Agregar a la pantalla principal</b>."],
   app_ios: ["Abra el sitio en Safari.", "Toque el botón <b>Compartir</b> (cuadrado con flecha hacia arriba).", "Toque <b>Agregar a pantalla de inicio</b>."],
   app_pc: "Computadora", app_desktop: ["En Chrome o Edge, haga clic en el ícono de instalar en la barra de direcciones.", "O abra el menú del navegador y elija <b>Instalar Auditoria BU 2026</b>."],
   app_already: "La app ya está instalada y abierta.",
-  bot_mic: "Preguntar hablando", bot_mic_on: "Puede hablar…", bot_mic_denied: "Sin permiso para usar el micrófono. Habilite el micrófono en la configuración del navegador.",
-  bot_listen: "Escuchar la respuesta", bot_stop: "Detener",
+  bot_mic_denied: "Sin permiso para usar el micrófono. Habilite el micrófono en la configuración del navegador.",
 });
 
 // Testes 13, 14 e 15 (feitos por estado) nas páginas de consulta
@@ -1528,9 +1498,6 @@ Object.assign(window.I18N.ES.nav, { atlas: "Atlas" });
 window.I18N.PT.pg2.atlas = ["Atlas", "Consulte qualquer estado, município, zona, seção ou urna, confira o QR Code do boletim e arquivos, e baixe o que precisar, numa conversa."];
 window.I18N.EN.pg2.atlas = ["Atlas", "Look up any state, municipality, zone, section or voting machine, check the ballot box report QR code and files, and download what you need, in a chat."];
 window.I18N.ES.pg2.atlas = ["Atlas", "Consulte cualquier estado, municipio, zona, sección o urna, verifique el código QR del boletín y archivos, y descargue lo que necesite, en una conversación."];
-Object.assign(window.I18N.PT, { bot_atlas: "Para consultas completas, conferir arquivos e baixar dados, use o Atlas.", bot_atlas_btn: "Abrir o Atlas" });
-Object.assign(window.I18N.EN, { bot_atlas: "For full lookups, file checks and data downloads, use Atlas.", bot_atlas_btn: "Open Atlas" });
-Object.assign(window.I18N.ES, { bot_atlas: "Para consultas completas, verificar archivos y descargar datos, use Atlas.", bot_atlas_btn: "Abrir Atlas" });
 
 window.I18N.PT.at = {
   title: "Atlas", tse_nt: "nulo técnico no TSE (candidato com votos anulados)", side_aria: "Menu do Atlas", side_open: "Abrir funções e conversas", side_close: "Fechar menu", side_collapse: "Recolher menu", side_expand: "Expandir menu",
@@ -1559,7 +1526,7 @@ window.I18N.PT.at = {
     ibge: ["Dados do IBGE", "População e região do município."],
   },
   guia: {
-    ask: "Pergunte do seu jeito. Uso a mesma base do bot: testes, método, código, como rodar e como replicar.",
+    ask: "Pergunte do seu jeito. Respondo sobre os testes, o método, o código, como rodar e como replicar.",
     secao: "Diga o estado, a zona e a seção. Exemplo: PR zona 3 seção 50.",
     zona: "Diga o estado e a zona. Exemplo: PR zona 3.",
     municipio: "Diga o nome do município. Se houver mais de um com o mesmo nome, coloque a UF (ex.: Bonito MS).",
@@ -1718,7 +1685,7 @@ window.I18N.EN.at = {
     ibge: ["IBGE data", "Population and region of the municipality."],
   },
   guia: {
-    ask: "Ask in your own words. I use the same knowledge base as the bot: tests, method, code, how to run and how to replicate.",
+    ask: "Ask in your own words. I answer about the tests, the method, the code, how to run and how to replicate.",
     secao: "Give the state, the zone and the section. Example: PR zone 3 section 50.",
     zona: "Give the state and the zone. Example: PR zone 3.",
     municipio: "Give the municipality name. If several share the name, add the state (e.g. Bonito MS).",
@@ -1877,7 +1844,7 @@ window.I18N.ES.at = {
     ibge: ["Datos del IBGE", "Población y región del municipio."],
   },
   guia: {
-    ask: "Pregunte a su manera. Uso la misma base del bot: pruebas, método, código, cómo ejecutar y cómo replicar.",
+    ask: "Pregunte a su manera. Respondo sobre las pruebas, el método, el código, cómo ejecutar y cómo replicar.",
     secao: "Indique el estado, la zona y la sección. Ejemplo: PR zona 3 sección 50.",
     zona: "Indique el estado y la zona. Ejemplo: PR zona 3.",
     municipio: "Indique el nombre del municipio. Si hay más de uno con el mismo nombre, agregue la UF (ej.: Bonito MS).",
