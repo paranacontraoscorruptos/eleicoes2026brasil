@@ -1027,6 +1027,7 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
     if (at.length) telas.push(at);
     const cabe = (video ? MAX_VIDS : MAX_IMGS[fmt]) - 2, cortado = telas.length > cabe;
     if (cortado) telas.length = cabe;
+    // tot: quantas telas a numeração mostra (muda quando o usuário apaga telas do carrossel)
     const total = telas.length + 2, fontes = [...new Set(M.blocos.filter((b) => b.t === "fonte").map((b) => b.txt))];
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const ctx = cv.getContext("2d");
@@ -1046,19 +1047,20 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       ctx.fillStyle = cor; ctx.textBaseline = "middle"; ctx.fillText(txt, x0 + 22, y + 27); ctx.textBaseline = "alphabetic";
       return w;
     };
+    let tot = total;
     // cabeçalho (marca e número da imagem) e rodapé (aviso, endereço e "arraste")
     function moldura(k, contexto) {
       fundoSlide(ctx, W, H);
       ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
       marca(PAD, topo + 4, 46);
       ctx.fillStyle = "#eef6f0"; ctx.font = `700 28px ${F_DISP}`; ctx.fillText(L.brand, PAD + 62, topo + 38);
-      ctx.font = `600 24px ${F_MONO}`; ctx.fillStyle = "#ffd84d"; ctx.textAlign = "right"; ctx.fillText(`${k} / ${total}`, W - PAD, topo + 38); ctx.textAlign = "left";
+      ctx.font = `600 24px ${F_MONO}`; ctx.fillStyle = "#ffd84d"; ctx.textAlign = "right"; ctx.fillText(`${k} / ${tot}`, W - PAD, topo + 38); ctx.textAlign = "left";
       if (contexto) { ctx.font = `700 21px ${F_MONO}`; ctx.fillStyle = "#3ddc84"; ctx.fillText(cortar(ctx, contexto.toUpperCase(), LW), PAD, topo + 96); }
       const yr = H - base - ROD + 30;
       ctx.fillStyle = "rgba(255,255,255,.1)"; ctx.fillRect(PAD, yr, LW, 1);
-      ctx.font = `600 20px ${F_SANS}`; ctx.fillStyle = "#ffd84d"; ctx.fillText(cortar(ctx, L.badge, LW - (k < total ? 230 : 0)), PAD, yr + 40);
-      ctx.font = `500 21px ${F_MONO}`; ctx.fillStyle = "#b8ccbf"; ctx.fillText(cortar(ctx, dominio, LW - (k < total ? 230 : 0)), PAD, yr + 74);
-      if (k < total) { ctx.font = `700 24px ${F_SANS}`; const w = ctx.measureText(L.cr_swipe + "  →").width + 44; pilula(L.cr_swipe + "  →", W - PAD - w, yr + 22, "#07130c", "#3ddc84", `700 24px ${F_SANS}`); }
+      ctx.font = `600 20px ${F_SANS}`; ctx.fillStyle = "#ffd84d"; ctx.fillText(cortar(ctx, L.badge, LW - (k < tot ? 230 : 0)), PAD, yr + 40);
+      ctx.font = `500 21px ${F_MONO}`; ctx.fillStyle = "#b8ccbf"; ctx.fillText(cortar(ctx, dominio, LW - (k < tot ? 230 : 0)), PAD, yr + 74);
+      if (k < tot) { ctx.font = `700 24px ${F_SANS}`; const w = ctx.measureText(L.cr_swipe + "  →").width + 44; pilula(L.cr_swipe + "  →", W - PAD - w, yr + 22, "#07130c", "#3ddc84", `700 24px ${F_SANS}`); }
     }
     // fase: 0 antes de ini, sobe até 1 em dur segundos (tm = Infinity: tudo pronto, como na imagem)
     const fase = (tm, ini, dur) => { const x = Math.max(0, Math.min(1, (tm - ini) / dur)); return 1 - Math.pow(1 - x, 3); };
@@ -1095,7 +1097,7 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
         const bw = Math.min(LW, ctx.measureText(L.badge).width + 40); ctx.beginPath(); ctx.roundRect(PAD, yb, bw, 48, 24); ctx.stroke();
         ctx.fillStyle = "#ffd400"; ctx.fillText(cortar(ctx, L.badge, LW - 40), PAD + 20, yb + 32);
       });
-      surge(tm, 2.8, () => pilula(L.cr_swipe_cover(total, video), W / 2, y1 - 70, "#eef6f0", "rgba(31,195,95,.22)", `600 26px ${F_SANS}`, true));
+      surge(tm, 2.8, () => pilula(L.cr_swipe_cover(tot, video), W / 2, y1 - 70, "#eef6f0", "rgba(31,195,95,.22)", `600 26px ${F_SANS}`, true));
     }
     // Conteúdo de uma imagem: blocos, onde começam e, no vídeo, quando cada parte entra (e o som de cada uma)
     function plano(tela) {
@@ -1178,29 +1180,47 @@ var h=parseInt(location.hash.slice(1),10);i=0;S[0].classList.add("on");ir(h>0?h-
       .concat([{ k: total, contexto: "", dur: 5.5, desenhar: fim, acorde: 2.6, sons: [{ ini: .2, tipo: "t" }, { ini: .5, tipo: "l" }, { ini: 1.5, tipo: "c", n: 3 }] }]);
     slides.forEach((sl) => {
       sl.pintar = (tm) => {
-        if (video && naGuardada === sl.k) ctx.drawImage(guardada, 0, 0);
+        const qual = `${sl.k}:${sl.num || sl.k}/${tot}`;
+        if (video && naGuardada === qual) ctx.drawImage(guardada, 0, 0);
         else {
-          moldura(sl.k, sl.contexto);
+          moldura(sl.num || sl.k, sl.contexto);
           if (sl.k === 1) { ctx.fillStyle = "#ffd84d"; ctx.font = `600 22px ${F_SANS}`; ctx.fillText(L.brand_sub.toUpperCase(), PAD + 62, topo + 70); }
-          if (video) { guardada.width = W; guardada.height = H; guardada.getContext("2d").drawImage(cv, 0, 0); naGuardada = sl.k; }
+          if (video) { guardada.width = W; guardada.height = H; guardada.getContext("2d").drawImage(cv, 0, 0); naGuardada = qual; }
         }
         ctx.globalAlpha = 1; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
         return sl.desenhar(tm);
       };
     });
     const nome = nz(M.meta.arquivo || M.meta.titulo).slice(0, 50) || "auditoria-bu-2026";
-    if (video) return { slides, cv, W, H, total, cortado, nome };
-    const pdf = fmt === "pdf", out = [];
-    let link = null;
-    for (const sl of slides) {
-      const l = sl.pintar(Infinity);
-      if (sl.k === total) link = l;
-      const b = await new Promise((ok) => cv.toBlob(ok, pdf ? "image/jpeg" : "image/png", 0.9));
-      out.push(b);
-      if (aoAvancar) aoAvancar(out.length, total);
+    // Telas que ficam (índices, na ordem), numeradas de 1 até quantas ficaram
+    const numerar = (manter) => { const ls = manter ? manter.map((i) => slides[i]) : slides; tot = ls.length; ls.forEach((sl, i) => { sl.num = i + 1; }); return ls; };
+    // as telas usam o mesmo canvas: uma pintura de cada vez
+    let fila = Promise.resolve();
+    const emFila = (f) => (fila = fila.then(f, f));
+    const pdf = fmt === "pdf";
+    // imagens prontas das telas (tipo: PNG, ou JPEG para o PDF e para as telas paradas do vídeo)
+    async function pintarTelas(ls, tipo, aoAvancar) {
+      const out = [];
+      let link = null;
+      for (const sl of ls) {
+        const l = sl.pintar(Infinity);
+        if (sl.desenhar === fim) link = l;
+        out.push(await new Promise((ok) => cv.toBlob(ok, tipo, 0.9)));
+        if (aoAvancar) aoAvancar(out.length, ls.length);
+      }
+      return { imgs: out, link };
     }
-    const r = { imgs: out, W, H, total, cortado, nome };
-    if (pdf) r.pdf = await pdfImagens(out, W, H, M.meta, Object.assign(link, { url: M.meta.url || URL_SITE }));
+    async function imagens(manter, aoAvancar) {
+      const p = await pintarTelas(numerar(manter), pdf ? "image/jpeg" : "image/png", aoAvancar);
+      const r = { imgs: p.imgs };
+      if (pdf) r.pdf = await pdfImagens(p.imgs, W, H, M.meta, p.link && Object.assign(p.link, { url: M.meta.url || URL_SITE }));
+      return r;
+    }
+    // vídeo: numerar(manter) dá as telas para gravar; quadros(manter) dá as telas paradas (como ficam no fim de cada vídeo)
+    if (video) return { slides, cv, W, H, total, cortado, nome, numerar, quadros: (manter) => emFila(async () => (await pintarTelas(numerar(manter), "image/jpeg")).imgs) };
+    const r = Object.assign(await emFila(() => imagens(null, aoAvancar)), { W, H, total, cortado, nome });
+    // refazer(manter): só as telas que ficaram, com a numeração nova
+    r.refazer = (manter) => emFila(() => imagens(manter));
     return r;
   }
 

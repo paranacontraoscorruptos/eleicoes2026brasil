@@ -156,6 +156,8 @@
       plus: '<path d="M12 5v14M5 12h14"/>',
       plug: '<path d="M9 3v5m6-5v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21"/>',
       back: '<path d="M19 12H5m5-5-5 5 5 5"/>',
+      expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5m11-5v5h-5"/>',
+      grip: '<path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke-width="3.2"/>',
     }[n];
     return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
   }

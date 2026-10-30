@@ -289,6 +289,8 @@
 
   // --- entender a pergunta ------------------------------------------------------------------------------------
   const RE_DL = /\b(baixar|baixe|download|downloads|descargar|descargue|bajar)\b/;
+  // "ver em tela cheia antes de baixar", "baixar só algumas imagens do carrossel": é sobre a prévia, não sobre os arquivos do site
+  const RE_PREVIA = /\b(tela cheia|full screen|fullscreen|pantalla completa|carrossel|carousel|carrusel|previa|preview|vista previa)\b/;
   const RE_AJUDA = /^(?:ajuda|help|ayuda|menu|funcoes|functions|funciones|o que (?:voce|vc) (?:faz|sabe(?: fazer)?)|what can you do|que (?:puede|puedes) hacer|quem e voce|who are you|quien eres|o que e o atlas|what is atlas|que es atlas)$/;
   // --- memória da conversa: o assunto da última resposta, para "e no 1º turno?", "e em Londrina?", "e a seção 51?" -----
   const convAtual = () => S.convs.find((x) => x.id === S.atual) || null;
@@ -353,7 +355,7 @@
     if (E.continuou && E.seguimento === "conector" && ctx && ctx.intencao) { const p = mudou(E, ctx); if (p.length) entendi(T.en_cont(p.join(" · "))); }
     if (E.urna) { lembrar(ctxDe(E, { intencao: "urna" })); return urna(E.urna, texto); }
     if (E.intencao === "roteiro" && !(an.forte && !/\b(roteiro|checklist|guia)\b/.test(n) && !/\b(secao|urna|boletim|section|ballot|seccion|boletin)\b/.test(n))) return roteiro(texto);
-    if (RE_DL.test(n) && E.intencao !== "relatorio") return downloads(texto);
+    if (RE_DL.test(n) && E.intencao !== "relatorio" && !RE_PREVIA.test(n)) return downloads(texto);
     if (E.intencao === "porque") return porque(E, texto);
     if (E.intencao === "ranking") return rankingResp(E, texto);
     if (E.intencao === "comparar") return compararResp(E, texto);
@@ -2813,6 +2815,13 @@
   function exportarMenuTopo() { exportarMenu(null, null, null); }
 
   // Eventos de página (uma vez só)
+  // Celular: a conversa ocupa só a parte que aparece (sem as barras do navegador e do Android e sem o teclado),
+  // para o campo de digitar não ficar escondido embaixo. O zoom com dois dedos não muda a altura.
+  const vv = window.visualViewport;
+  const alturaTela = () => { const h = vv ? vv.height * vv.scale : window.innerHeight; if (h > 200) document.documentElement.style.setProperty("--alt", Math.round(h) + "px"); };
+  alturaTela();
+  (vv || window).addEventListener("resize", alturaTela);
+  window.addEventListener("orientationchange", () => setTimeout(alturaTela, 300));
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape" || !document.body.classList.contains("atlas-on")) return;
     if (S.cam) { pararCamera(); return; }
