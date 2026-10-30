@@ -294,6 +294,15 @@
     }));
     return tot;
   }
+  // Barras do cartão de imagem e vídeo: 2º turno e os três mais votados do 1º
+  function barrasLocal(tot) {
+    return [2, 1].filter((n) => tot[n]).map((n) => {
+      const nomes = {}, v = {};
+      R().turnos[n].presidente.candidatos.forEach((c) => { nomes[c.nr] = c.nome; });
+      R().ordem_votos[n].forEach((nr, i) => { v[nr] = tot[n][2][i] || 0; });
+      return A.barrasCartao(n, v, nomes, n === 1 ? 3 : 2);
+    });
+  }
   function blocoVotos(n, tv) {
     const L = t(), ordem = R().ordem_votos[n];
     if (!tv) return `<p class="muted">${esc(L.lk_nodata)}</p>`;
@@ -351,7 +360,7 @@
     const anom = (n, f) => new Set(ocUf.filter((r) => String(r[4]) === n && r[6] === "a" && (!f || f(r))).map((r) => r[2] + "/" + r[3])).size;
     const a1 = anom("1"), a2 = anom("2");
     A.state.cartao = { kicker: L.uf_kicker, titulo: `${A.ufNome(uf)} (${uf})`, linhas: [[L.st_secoes, nf(sec)], [L.uf_muns, nf(Object.keys(U.m).length)],
-      [`${L.r_flagged} · ${L.round(1)}`, nf(a1)], [`${L.r_flagged} · ${L.round(2)}`, nf(a2)]].concat(tot[2] ? [[L.st_aptos, nf(tot[2][0])], [L.st_comp, `${nf(tot[2][1])} (${pct(tot[2][1] / tot[2][0])})`]] : []) };
+      [`${L.r_flagged} · ${L.round(1)}`, nf(a1)], [`${L.r_flagged} · ${L.round(2)}`, nf(a2)]].concat(tot[2] ? [[L.st_aptos, nf(tot[2][0])], [L.st_comp, `${nf(tot[2][1])} (${pct(tot[2][1] / tot[2][0])})`]] : []), barras: barrasLocal(tot) };
     // municípios
     const linhasMun = Object.entries(U.m).map(([cod, m]) => {
       const o = ocUf.filter((r) => r[1] === cod);
@@ -413,7 +422,7 @@
     const k = (n) => new Set(ocM.filter((r) => r[4] === n && r[6] === "a").map((r) => r[2] + "/" + r[3])).size;
     const tot = somaVotos([m]);
     A.state.cartao = { kicker: `${A.ufNome(uf)} (${uf})`, titulo: nome, linhas: [[L.st_secoes, nf(m[0])], [L.mu_zones, m[1].join(", ")], [`${L.r_flagged} · ${L.round(1)}`, nf(k(1))], [`${L.r_flagged} · ${L.round(2)}`, nf(k(2))]]
-      .concat(tot[2] ? [[L.st_aptos, nf(tot[2][0])], [L.st_comp, `${nf(tot[2][1])} (${pct(tot[2][1] / tot[2][0])})`]] : []) };
+      .concat(tot[2] ? [[L.st_aptos, nf(tot[2][0])], [L.st_comp, `${nf(tot[2][1])} (${pct(tot[2][1] / tot[2][0])})`]] : []), barras: barrasLocal(tot) };
     const linhasOc = ocM.slice().sort((a, b) => a[4] - b[4] || a[2] - b[2] || a[3] - b[3]).map((r) => [A.t().round(r[4]), r[2], `<a href="#/secao/${uf}/${r[2]}/${r[3]}">${r[3]}</a>`,
       `<a href="#/testes/${r[5]}">${A.numTeste(r[5])}. ${esc(A.nomeTeste(r[5]))}</a>`, chip(r[6] === "a" ? "red" : "amber", r[6] === "a" ? L.lv_a : L.lv_i), esc(nomeCat(r[7]))]);
     $("#mun-body").innerHTML = `<header class="page-head"><p class="kicker"><a href="#/uf/${uf}">${esc(A.ufNome(uf))} (${uf})</a></p><h1>${esc(nome)}</h1>${A.acoes(true)}</header>

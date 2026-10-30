@@ -23,6 +23,13 @@
   const v12 = (a, b) => `<span class="vr-n">${nf(a)} → ${nf(b)}</span><span class="vr-d">${seta(b - a)} ${sn(b - a)}</span>`;
   const v12txt = (a, b) => `${nf(a)} → ${nf(b)} (${sn(b - a)})`;
 
+  // Barras do cartão de imagem e vídeo: votos de cada candidato no 1º e no 2º turno, na mesma escala
+  function barrasVar(T) {
+    const G = t(), top = Math.max(T.L1, T.L2, T.F1, T.F2, 1);
+    const g = (nome, nr, a, b) => ({ t: `${nome} (${nr})`, itens: [[G.round(1), nf(a), a / top], [G.round(2), `${nf(b)} (${sn(b - a)})`, b / top]] });
+    return [g(V().lula, "13", T.L1, T.L2), g(V().flavio, "22", T.F1, T.F2)];
+  }
+
   // Totais a partir do formato do site: [aptos, comp, votos na ordem do turno]
   function deTurnos(t1, t2) {
     const o = { L1: 0, F1: 0, O1: 0, B1: 0, N1: 0, C1: 0, A1: 0, L2: 0, F2: 0, B2: 0, N2: 0, C2: 0, A2: 0 };
@@ -202,8 +209,8 @@
     const BR = deCols(D.br);
     const ufs = Object.fromEntries(Object.entries(D.uf).map(([uf, a]) => [uf, Object.assign(deCols(a), { secoes: a[13], esp: a[14], dif: a[15], q: a[16], nivel: a[17] })]));
     const totA = TESTES.reduce((s, id) => s + D.testes[id].a, 0), totI = TESTES.reduce((s, id) => s + D.testes[id].i, 0);
-    A.state.cartao = { kicker: L.card_kicker, titulo: L.title, linhas: [[L.lula, `${v12txt(BR.L1, BR.L2)}`], [L.flavio, `${v12txt(BR.F1, BR.F2)}`],
-      [L.pool_items[3], nf(BR.pool)], [`${G.lv_a} / ${G.lv_i}`, `${nf(totA)} / ${nf(totI)}`]] };
+    A.state.cartao = { kicker: L.card_kicker, titulo: L.title, linhas: [[L.pool_items[3], nf(BR.pool)], [`${G.lv_a} / ${G.lv_i}`, `${nf(totA)} / ${nf(totI)}`]],
+      barras: barrasVar(BR) };
     const ufOpts = ufsLista().map((u) => `<option value="${u}">${u} – ${esc(A.ufNome(u))}</option>`).join("");
     $("#vr-body").innerHTML = `
       ${duelo(BR)}
@@ -291,8 +298,8 @@
     const a = D.uf[uf], T = Object.assign(deCols(a), { esp: a[14], dif: a[15], nivel: a[17] });
     const sUf = D.s.filter((s) => s[2] === uf);
     const cont = {}; TESTES.forEach((id) => { const x = sUf.filter((s) => s[0] === id); cont[id] = { a: x.filter((s) => s[1] === "a").length, i: x.filter((s) => s[1] === "i").length }; });
-    A.state.cartao = { kicker: L.card_kicker, titulo: `${A.ufNome(uf)} (${uf})`, linhas: [[L.lula, v12txt(T.L1, T.L2)], [L.flavio, v12txt(T.F1, T.F2)], [L.pool_items[3], nf(T.pool)],
-      [`${G.lv_a} / ${G.lv_i}`, `${nf(sUf.filter((s) => s[1] === "a").length)} / ${nf(sUf.filter((s) => s[1] === "i").length)}`]] };
+    A.state.cartao = { kicker: L.card_kicker, titulo: `${A.ufNome(uf)} (${uf})`, linhas: [[L.pool_items[3], nf(T.pool)],
+      [`${G.lv_a} / ${G.lv_i}`, `${nf(sUf.filter((s) => s[1] === "a").length)} / ${nf(sUf.filter((s) => s[1] === "i").length)}`]], barras: barrasVar(T) };
     $("#vr-body").innerHTML = `
       ${duelo(T)}
       <section class="card"><h2>${esc(L.local_t)}</h2><p>${chipTeste("V1", T.nivel ? T.nivel[0] : "")} ${esc(L.res_uf(pct(T.L2 / (T.L2 + T.F2)), pct(T.esp), pp(T.dif)))}</p>${cartoesTestes(cont, false)}</section>
@@ -354,8 +361,8 @@
     const sM = D.s.filter((s) => s[2] === uf && s[3] === cod);
     const porSec = {}; sM.filter((s) => s[4] != null).forEach((s) => { (porSec[`${s[4]}/${s[5]}`] = porSec[`${s[4]}/${s[5]}`] || []).push(s); });
     const cont = {}; TESTES.forEach((id) => { const x = sM.filter((s) => s[0] === id); cont[id] = { a: x.filter((s) => s[1] === "a").length, i: x.filter((s) => s[1] === "i").length }; });
-    A.state.cartao = { kicker: `${A.ufNome(uf)} (${uf}) · ${L.card_kicker}`, titulo: nome, linhas: [[L.lula, v12txt(T.L1, T.L2)], [L.flavio, v12txt(T.F1, T.F2)], [L.pool_items[3], nf(T.pool)],
-      [`${G.lv_a} / ${G.lv_i}`, `${nf(sM.filter((s) => s[1] === "a").length)} / ${nf(sM.filter((s) => s[1] === "i").length)}`]] };
+    A.state.cartao = { kicker: `${A.ufNome(uf)} (${uf}) · ${L.card_kicker}`, titulo: nome, linhas: [[L.pool_items[3], nf(T.pool)],
+      [`${G.lv_a} / ${G.lv_i}`, `${nf(sM.filter((s) => s[1] === "a").length)} / ${nf(sM.filter((s) => s[1] === "i").length)}`]], barras: barrasVar(T) };
     const res = r[3] === "-" || r[0] == null ? `<p class="small muted">${esc(L.res_na)}</p>` : `<p>${chipTeste("V2", r[3] ? r[3][0] : "")} ${esc(L.res_mun(pct(T.L2 / (T.L2 + T.F2)), pct(T.esp), pp(T.dif)))}</p>`;
     $("#vr-body").innerHTML = `${cabecalho(L.kicker, nome, "", [[L.voltar, "#/variacao"], [`${A.ufNome(uf)} (${uf})`, `#/variacao/${uf}`]])}
       ${duelo(T)}

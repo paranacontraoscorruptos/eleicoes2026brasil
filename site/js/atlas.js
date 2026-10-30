@@ -1303,7 +1303,7 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
     d._m = m;
     const old = d.querySelector(".at-acts"); if (old) old.remove();
     const b = (k, ic, txt, pop) => `<button type="button" class="at-ac" data-at-ac="${k}" aria-label="${esc(txt)}" title="${esc(txt)}"${pop ? ' aria-haspopup="menu" aria-expanded="false"' : ""}>${icone(ic)}</button>`;
-    d.insertAdjacentHTML("beforeend", `<div class="at-acts">${b("copiar", "copy", T.ac_copy)}${podeFalar ? b("ouvir", "speaker", T.ac_listen) : ""}${C.share ? b("compartilhar", "share", T.ac_share, true) : ""}${C.export ? b("exportar", "download", T.ac_export, true) : ""}${C.hook && urlValida(S.hook.url) ? b("automacao", "plug", T.ac_hook) : ""}${C.github ? b("reportar", "alert", T.ac_report) : ""}<span class="at-status" aria-live="polite"></span></div>`);
+    d.insertAdjacentHTML("beforeend", `<div class="at-acts">${b("copiar", "copy", T.ac_copy)}${podeFalar ? b("ouvir", "speaker", T.ac_listen) : ""}${C.share ? b("compartilhar", "share", T.ac_share, true) : ""}${d.querySelector(".kv, .bars, .at-sinais") ? b("imagem", "image", t().im_btn) : ""}${C.export ? b("exportar", "download", T.ac_export, true) : ""}${C.hook && urlValida(S.hook.url) ? b("automacao", "plug", T.ac_hook) : ""}${C.github ? b("reportar", "alert", T.ac_report) : ""}<span class="at-status" aria-live="polite"></span></div>`);
   }
   function status(d, txt) {
     const s = d.querySelector(".at-status"); if (!s) return;
@@ -1346,6 +1346,27 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
       if (b.dataset.pop === "sistema") { try { await navigator.share({ title: titulo, text: curto(900), url: link }); } catch (err) { /* cancelado */ } }
       if (b.dataset.pop === "link") { const ok = await A.ferramentas.copiarTexto(link); status(d, ok ? L.copied : ""); }
     });
+  }
+  // Cartão de imagem e vídeo da resposta: título, blocos de números, barras e selos dos testes (ver itensCartao em ferramentas.js)
+  function cartaoResposta(d, m) {
+    const c = d.cloneNode(true), txt = (e) => (e ? e.textContent.replace(/\s+/g, " ").trim() : "");
+    c.querySelectorAll(".at-acts, .caret").forEach((e) => e.remove());
+    c.querySelectorAll("[data-count]").forEach((e) => { e.textContent = nf(+e.dataset.count); });
+    const h = c.querySelector(".at-h"), sub = h && h.querySelector(".muted");
+    const itens = [];
+    c.querySelectorAll("h4.at-t, .kv > div, .bar-row, .at-sinais > li").forEach((e) => {
+      if (e.matches("h4")) {
+        const s = e.querySelector(".muted"), x = s ? s.textContent : "";
+        itens.push(["t", [txt(e).replace(x.trim(), "").trim(), x.trim()].filter(Boolean).join(" · ")]);
+      } else if (e.matches(".bar-row")) {
+        const f = parseFloat((e.querySelector(".bar").getAttribute("style") || "").replace(/.*--f:\s*/, ""));
+        itens.push(["b", txt(e.querySelector(".bar-label")), txt(e.querySelector(".bar-value")), f || 0]);
+      } else if (e.matches("li")) {
+        const ch = $$(".chip", e).map((x) => [(x.className.match(/chip-(red|amber|green)/) || [, "green"])[1], txt(x)]);
+        itens.push(ch.length ? ["c", txt(e.querySelector("b")).replace(/:$/, ""), ch] : ["l", txt(e), ""]);
+      } else itens.push(["l", txt(e.querySelector("dt")), txt(e.querySelector("dd"))]);
+    });
+    return { kicker: ["Atlas", txt(sub)].filter(Boolean).join(" · "), titulo: h ? txt(h.querySelector("b")) : m.q || "Atlas", itens, slug: "atlas-" + slug(m.q || (h ? txt(h.querySelector("b")) : "")) };
   }
   function exportarMenu(btn, d, m) {
     const T = X();
@@ -1503,6 +1524,7 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
         if (k === "copiar") { A.ferramentas.copiarTexto(paraTexto(m.h) + "\n\n" + linkResposta(m)).then((ok) => status(d, ok ? t().copied : "")); return; }
         if (k === "ouvir") { ouvir(ac, m); return; }
         if (k === "compartilhar") { compartilharResposta(ac, d, m); return; }
+        if (k === "imagem") { A.ferramentas.gerarImagem({ cartao: cartaoResposta(d, m), url: linkResposta(m), titulo: `Atlas · ${m.q || X().title}` }); return; }
         if (k === "exportar") { exportarMenu(ac, d, m); return; }
         if (k === "automacao") { enviarAutomacao(m, d); return; }
         if (k === "reportar") { reportar(m); return; }

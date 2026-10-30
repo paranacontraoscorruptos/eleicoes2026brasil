@@ -170,6 +170,19 @@
       </div>`).join("") + `</div>` + (opts && opts.nota ? `<p class="small muted">${opts.nota}</p>` : "");
   }
 
+  // Barras do cartão de imagem e vídeo: candidatos mais votados (v = {nr: votos}, nomes = {nr: nome})
+  function barrasCartao(n, v, nomes, max) {
+    const L = t(), cs = Object.keys(v).filter((nr) => nr !== "95" && nr !== "96" && v[nr] > 0).sort((a, b) => v[b] - v[a]);
+    const val = cs.reduce((a, nr) => a + v[nr], 0) || 1, top = v[cs[0]] || 1;
+    return { t: `${L.round(n)} · ${L.cd_pres}`, itens: cs.slice(0, max).map((nr) => [`${titulo(nomes[nr] || nr)} (${nr})`, `${nf(v[nr])} · ${pct(v[nr] / val)}`, v[nr] / top]) };
+  }
+  // O mesmo, com o resultado nacional de um turno
+  function barrasTurno(n, max) {
+    const v = {}, nomes = {};
+    state.R.turnos[n].presidente.candidatos.forEach((c) => { v[c.nr] = c.votos; nomes[c.nr] = c.nome; });
+    return barrasCartao(n, v, nomes, max);
+  }
+
   function tabela(cab, linhas, cls) {
     return `<div class="table-wrap"><table class="${cls || ""}"><thead><tr>${cab.map((c) => `<th scope="col">${c}</th>`).join("")}</tr></thead><tbody>${linhas.map((l) => `<tr>${l.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   }
@@ -236,7 +249,7 @@
     const br = P2.candidatos.find((c) => c.nr === "95"), nu = P2.candidatos.find((c) => c.nr === "96");
     state.cartao = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: L.hero_title,
       linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
-        [L.st_aptos, nf(P2.aptos)], [L.st_comp, `${nf(P2.comparecimento)} (${pct(P2.comparecimento / P2.aptos)})`]] };
+        [L.st_aptos, nf(P2.aptos)], [L.st_comp, `${nf(P2.comparecimento)} (${pct(P2.comparecimento / P2.aptos)})`]], barras: [barrasTurno(2, 2)] };
     const ferr = MAIS.filter(([k]) => k !== "saved").map(([k, h], i) => {
       const [tit, desc] = L.pg2[k];
       return `<a class="page-card spot tilt${i % 3 === 1 ? " y" : ""}" href="${h}"><span class="pc-ico">${icone(ICO_MAIS[k])}</span>
@@ -398,8 +411,9 @@
       emissao: esc(T.cab.emissao), versao: esc(R.motor.versao), dur: esc(T.cab.duracao) });
     const rel = ["PT", "EN", "ES"].map((lg) => { const p = `${PASTA}/resultados-${n}turno/Relatorio_Tecnico_Auditoria_Eleicoes_2026_${lg}.md`;
       return `<a class="btn" href="${p}" download>${icone("download")} ${esc(L.report_lang[lg])}</a>`; }).join("");
-    state.cartao = { kicker: L.roundDate[n], titulo: `${L.round(n)} · ${L.cd_pres}`, linhas: cands.slice(0, 4).map((c) => [`${titulo(c.nome)} (${c.nr})`, `${nf(c.votos)} (${pct(c.votos / val)})`])
-      .concat([[L.blank, nf(br.votos)], [L.null_, nf(nu.votos)], [L.r_flagged, `${nf(T.secoes_sinalizadas)} (${pct(T.secoes_sinalizadas / T.entrada.secoes)})`]]) };
+    state.cartao = { kicker: L.roundDate[n], titulo: `${L.round(n)} · ${L.cd_pres}`, itens: barrasTurno(n, +n === 1 ? 6 : 2).itens.map((x) => ["b"].concat(x))
+      .concat([[L.st_comp, `${nf(P.comparecimento)} (${pct(P.comparecimento / P.aptos)})`], [L.blank, nf(br.votos)], [L.null_, nf(nu.votos)],
+        [L.r_flagged, `${nf(T.secoes_sinalizadas)} (${pct(T.secoes_sinalizadas / T.entrada.secoes)})`]].map((x) => ["l"].concat(x))) };
     return `
     <header class="page-head"><p class="kicker">${esc(L.roundDate[n])}</p><h1>${esc(L.round(n))}</h1>
       <p class="muted">${esc(L.r_processed(nf(T.entrada.linhas), nf(T.entrada.secoes), nf(T.entrada.boletins)))}</p>${acoes(true)}</header>
@@ -550,14 +564,13 @@
     [2, 1].forEach((n) => {
       const tv = rec[n]; if (!tv) return;
       const { v, nomes } = votosTurno(n, tv);
-      const cs = Object.keys(v).filter((nr) => nr !== "95" && nr !== "96" && v[nr] > 0).sort((a, b) => v[b] - v[a]).slice(0, n === 1 ? 3 : 2);
       const f = flags[String(n)];
-      cart.push([L.round(n), `${L.lk_comp} ${nf(tv[1])} / ${nf(tv[0])}`]);
-      cs.forEach((nr) => cart.push([`  ${titulo(nomes[nr])} (${nr})`, nf(v[nr])]));
+      cart.push(["t", L.round(n)], ["l", L.lk_comp, `${nf(tv[1])} / ${nf(tv[0])}`]);
+      barrasCartao(n, v, nomes, n === 1 ? 3 : 2).itens.forEach((x) => cart.push(["b"].concat(x)));
       const ts = f && f.o.length ? [...new Set(f.o.map((o) => numTeste(o[0])))] : [];
-      cart.push([`  ${L.lk_flags}`, ts.length ? L.cd_tests(ts.join(", "), ts.length) : L.cd_none]);
+      cart.push(["l", L.lk_flags, ts.length ? L.cd_tests(ts.join(", "), ts.length) : L.cd_none]);
     });
-    state.cartao = { kicker: `${d.uf} · ${nomeMun}`, titulo: `${L.th_zone} ${d.z} · ${L.th_section} ${d.s}`, linhas: cart };
+    state.cartao = { kicker: `${d.uf} · ${nomeMun}`, titulo: `${L.th_zone} ${d.z} · ${L.th_section} ${d.s}`, itens: cart };
     const extra = `<button class="btn btn-sm" type="button" data-save="${esc(JSON.stringify({ uf: d.uf, z: d.z, s: d.s, m: nomeMun }))}">${icone("star")} <span>${esc(L.sv_save)}</span></button>`;
     return `<h2 class="lk-head">${esc(d.uf)} · <a href="#/uf/${d.uf}/${esc(d.mun[0])}">${esc(nomeMun)}</a> · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}</h2>
       ${acoes(true, extra)}${turnos}
@@ -1102,7 +1115,7 @@
   }
 
   const paginas = {};
-  window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, consultarSecao, votosTurno, icone, json, tabela, tile, barras, chip, chipStatus,
+  window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, consultarSecao, votosTurno, icone, json, tabela, tile, barras, barrasCartao, barrasTurno, chip, chipStatus,
     status, botCta, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
   document.addEventListener("DOMContentLoaded", iniciar);
 })();

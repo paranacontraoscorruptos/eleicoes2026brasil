@@ -68,10 +68,11 @@
 
   function textoPost(url) { const L = t(); return `${L.sh_text} ${url}\n\n${L.sh_tags}`; }
 
-  async function compartilhar(site) {
+  // o: endereço, título e cartão próprios (respostas do Atlas); sem o, a página atual ou o site
+  async function compartilhar(site, o = {}) {
     const L = t();
-    const url = site ? URL_SITE : urlPagina();
-    const titulo = site ? L.hero_title : document.title;
+    const url = o.url || (site ? URL_SITE : urlPagina());
+    const titulo = o.titulo || (site ? L.hero_title : document.title);
     const texto = L.sh_text;
     // celular: a lista de apps do próprio aparelho já traz todas as redes instaladas
     if (navigator.share && toque()) {
@@ -115,14 +116,14 @@
     });
     d.addEventListener("click", (e) => {
       const b = e.target.closest("[data-post]");
-      if (b) { principal.hidden = true; post.hidden = false; painelPost(post, b.dataset.post, url, site); post.scrollIntoView({ block: "start" }); return; }
+      if (b) { principal.hidden = true; post.hidden = false; painelPost(post, b.dataset.post, url, o.cartao || cartaoAtual(site)); post.scrollIntoView({ block: "start" }); return; }
       if (e.target.closest("[data-voltar]")) { limparMidia(post); post.hidden = true; post.innerHTML = ""; principal.hidden = false; }
     });
     d.addEventListener("close", () => limparMidia(post));
   }
 
   // Passo a passo para postar numa rede que não recebe link: formato, arquivo, texto e abrir a rede
-  function painelPost(box, k, url, site) {
+  function painelPost(box, k, url, c) {
     const L = t(), ap = L.sh_apps[k], [urlApp, fmt] = APPS_POST[k];
     box.innerHTML = `<button class="btn btn-sm btn-ghost sh-voltar" type="button" data-voltar>‹ ${esc(L.sh_back)}</button>
       <h3 class="sh-post-t">${icoRede(k)}<span>${esc(ap.titulo)}</span></h3>
@@ -134,7 +135,7 @@
       <h4 class="sh-passo">${esc(L.md_step3)}</h4>
       <div class="btn-row"><a class="btn btn-primary" href="${urlApp}" target="_blank" rel="noopener">${icoRede(k)} ${esc(ap.abrir)}</a></div>
       ${toque() ? "" : `<div class="sh-qrcel"></div>`}`;
-    painelMidia(box.querySelector(".md"), cartaoAtual(site), fmt, url);
+    painelMidia(box.querySelector(".md"), c, fmt, url);
     box.querySelector("[data-cptx]").addEventListener("click", async (e) => {
       const bt = e.currentTarget;
       const ok = await copiarTexto(textoPost(url));
@@ -194,6 +195,7 @@
       const T2 = R.turnos["2"], P2 = T2.presidente;
       c.linhas = [[L.st_secoes, A.nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${A.nf(T2.secoes_sinalizadas)} (${A.pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
         [L.st_aptos, A.nf(P2.aptos)], [L.st_comp, `${A.nf(P2.comparecimento)} (${A.pct(P2.comparecimento / P2.aptos)})`]];
+      c.barras = [A.barrasTurno(2, 2)];
     }
     return c;
   }
@@ -218,7 +220,7 @@
 
   // Números de um texto contando de 0 até o valor (e = 0 a 1), no formato do idioma
   function contarTexto(s, e) {
-    if (e >= 1) return String(s);
+    if (e >= 1 || /\d:\d\d/.test(s)) return String(s); // horários não contam
     const L = t(), en = A.state.lang === "EN", dsep = en ? "." : ",", gsep = en ? "," : ".";
     const re = en ? /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g : /\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/g;
     return String(s).replace(re, (tok) => {
@@ -226,6 +228,51 @@
       const v = parseFloat(int.split(gsep).join("") + (d ? "." + frac : ""));
       return new Intl.NumberFormat(L.locale, { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: tok.includes(gsep) }).format(v * e);
     });
+  }
+
+  // Itens do cartão: ["t", título] · ["l", rótulo, valor] (rótulo com dois espaços na frente = sub-linha)
+  // · ["b", rótulo, valor, fração de 0 a 1] · ["c", rótulo, [[cor, texto], …]] (selos coloridos).
+  // c.itens vem pronto (Atlas); nas páginas, c.linhas e depois c.barras: [{ t, itens: [[rótulo, valor, fração]] }]
+  function itensCartao(c) {
+    if (c.itens) return c.itens;
+    const l = (c.linhas || []).map(([r, v]) => ["l", r, v]);
+    (c.barras || []).forEach((g) => { if (g.t) l.push(["t", g.t]); g.itens.forEach(([r, v, f]) => l.push(["b", r, v, f])); });
+    return l;
+  }
+  const COR_CHIP = { red: ["rgba(239,68,68,.22)", "#ff6b6b"], amber: ["rgba(245,180,0,.2)", "#ffc83d"], green: ["rgba(31,195,95,.2)", "#3ddc84"] };
+  const U_MIN = 42;
+  const pesoTotal = (l) => l.reduce((a, x) => a + x.peso, 0);
+  // Altura de cada item, em linhas: título 0,9; barra 1,4; selos que não cabem ao lado do rótulo vão para baixo (1,8)
+  function pesar(ctx, it, larg, fr) {
+    if (it[0] === "t") return .9;
+    if (it[0] === "b") return 1.4;
+    if (it[0] !== "c") return 1;
+    ctx.font = `600 ${Math.round(31 * fr)}px ${F_SANS}`;
+    const lr = ctx.measureText(it[1]).width;
+    ctx.font = `600 ${Math.round(22 * fr)}px ${F_SANS}`;
+    return lr + 24 + it[2].reduce((a, [, tx]) => a + 50 * fr + ctx.measureText(tx).width + 12, 0) <= larg ? 1 : 1.8;
+  }
+  // Entra o que cabe: seções inteiras (um título abre uma seção); a primeira entra mesmo cortada
+  function encaixar(ctx, itens, larg, disp, alto) {
+    const secs = [];
+    itens.forEach((it) => {
+      const x = Object.assign(it.slice(), { peso: pesar(ctx, it, larg, alto ? 1.18 : 1) });
+      if (x[0] === "t" || !secs.length) secs.push([]);
+      secs[secs.length - 1].push(x);
+    });
+    let out = [];
+    secs.forEach((s) => {
+      if ((pesoTotal(out) + pesoTotal(s)) * U_MIN <= disp) out = out.concat(s);
+      else if (!out.length) for (const x of s) { if ((pesoTotal(out) + x.peso) * U_MIN > disp) break; out.push(x); }
+    });
+    while (out.length && out[out.length - 1][0] === "t") out.pop();
+    return out;
+  }
+  function cortar(ctx, txt, larg) {
+    let r = String(txt);
+    if (ctx.measureText(r).width <= larg) return r;
+    while (r.length > 4 && ctx.measureText(r + "…").width > larg) r = r.slice(0, -1);
+    return r.trim() + "…";
   }
 
   // Desenha o cartão no instante tm (segundos) da animação do vídeo; tm = Infinity desenha a imagem final
@@ -260,29 +307,62 @@
     const bar = ctx.createLinearGradient(P, 0, P + 180, 0); bar.addColorStop(0, "#1fc35f"); bar.addColorStop(1, "#ffd400");
     ctx.fillStyle = bar; ctx.fillRect(P, y - 22, 180 * fase(.7, .6), 6);
     y += alto ? 70 : 40;
-    // linhas: entram uma a uma e os números contam
-    const linhas = (c.linhas || []).slice(0, 14);
-    const fim = H - base - 230, alt = Math.min(alto ? 120 : 64, Math.max(44, (fim - y) / Math.max(1, linhas.length)));
-    const fr = alto && alt >= 90 ? 1.18 : 1; // no formato alto, com espaço sobrando, letras maiores
-    linhas.forEach(([rot, val], i) => {
+    // itens: entram um a um; os números contam e as barras crescem
+    const itens = encaixar(ctx, itensCartao(c), W - 2 * P, H - base - 230 - y, alto);
+    const u = Math.min(alto ? 110 : 64, (H - base - 230 - y) / Math.max(1, pesoTotal(itens)));
+    const fr = alto && u >= 90 ? 1.18 : 1; // no formato alto, com espaço sobrando, letras maiores
+    itens.forEach((it, i) => {
       const ini = 1 + i * .22, ap = fase(ini, .45), conta = fase(ini, 1.3);
-      const sub = /^\s\s/.test(rot), r = String(rot).trim(), vv = String(val);
-      ctx.globalAlpha = ap;
       const dx = (1 - ap) * 30;
+      ctx.globalAlpha = ap;
+      if (it[0] === "t") {
+        ctx.fillStyle = "#ffd84d"; ctx.font = `700 ${Math.round(23 * fr)}px ${F_MONO}`;
+        ctx.fillText(cortar(ctx, String(it[1]).toUpperCase(), W - 2 * P), P + dx, y + u * .15);
+        y += u * it.peso;
+        return;
+      }
+      if (it[0] === "c") {
+        ctx.font = `600 ${Math.round(31 * fr)}px ${F_SANS}`; ctx.fillStyle = "#e3efe6";
+        ctx.fillText(cortar(ctx, it[1], W - 2 * P), P + dx, y);
+        ctx.font = `600 ${Math.round(22 * fr)}px ${F_SANS}`;
+        const ws = it[2].map(([, tx]) => 34 * fr + ctx.measureText(contarTexto(tx, 1)).width + 16 * fr), gap = 12;
+        const doisAndares = it.peso > 1;
+        let x = doisAndares ? P + 28 : W - P - ws.reduce((a, w) => a + w + gap, -gap);
+        const cy = doisAndares ? y + u * .8 - 10 * fr : y - 10 * fr, ph = 22 * fr + 16;
+        it[2].forEach(([cor, tx], j) => {
+          const [fundo, ponto] = COR_CHIP[cor] || COR_CHIP.green;
+          ctx.fillStyle = fundo; ctx.beginPath(); ctx.roundRect(x + dx, cy - ph / 2, ws[j], ph, ph / 2); ctx.fill();
+          ctx.fillStyle = ponto; ctx.beginPath(); ctx.arc(x + dx + 17 * fr, cy, 6 * fr, 0, 7); ctx.fill();
+          ctx.fillStyle = "#eef6f0"; ctx.textBaseline = "middle"; ctx.fillText(contarTexto(tx, conta), x + dx + 30 * fr, cy + 1); ctx.textBaseline = "alphabetic";
+          x += ws[j] + gap;
+        });
+        y += u * it.peso;
+        return;
+      }
+      const barra = it[0] === "b", sub = /^\s\s/.test(it[1]), r = String(it[1]).trim(), vv = String(it[2]);
       // o valor nunca é cortado: a letra diminui até caber; o rótulo usa o espaço que sobra
-      let fv = Math.round((sub ? 30 : 34) * fr);
+      let fv = Math.round((sub || barra ? 30 : 34) * fr);
       ctx.font = `700 ${fv}px ${F_DISP}`;
       while (ctx.measureText(vv).width > W - 2 * P - 300 && fv > 22) { fv -= 2; ctx.font = `700 ${fv}px ${F_DISP}`; }
       const lv = ctx.measureText(vv).width;
-      ctx.font = `${sub ? 400 : 600} ${Math.round((sub ? 28 : 31) * fr)}px ${F_SANS}`; ctx.fillStyle = sub ? "#b8ccbf" : "#e3efe6";
-      const xr = (sub ? P + 28 : P) + dx, maxr = W - 2 * P - lv - 40 - (sub ? 28 : 0);
-      let rr = r; while (ctx.measureText(rr).width > maxr && rr.length > 4) rr = rr.slice(0, -2);
-      if (rr !== r) rr = rr.trim() + "…";
-      ctx.fillText(rr, xr, y);
+      ctx.font = `${sub ? 400 : 600} ${Math.round((sub || barra ? 28 : 31) * fr)}px ${F_SANS}`; ctx.fillStyle = sub ? "#b8ccbf" : "#e3efe6";
+      const xr = (sub ? P + 28 : P) + dx;
+      ctx.fillText(cortar(ctx, r, W - 2 * P - lv - 40 - (sub ? 28 : 0)), xr, y);
       ctx.font = `700 ${fv}px ${F_DISP}`; ctx.fillStyle = "#ffffff"; ctx.textAlign = "right";
       ctx.fillText(contarTexto(vv, conta), W - P, y); ctx.textAlign = "left";
-      ctx.strokeStyle = "rgba(255,255,255,.09)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P, y + alt * 0.42); ctx.lineTo(P + (W - 2 * P) * ap, y + alt * 0.42); ctx.stroke();
-      y += alt;
+      if (barra) {
+        // trilho e barra (cresce no vídeo), com o fim arredondado
+        const ty = y + Math.max(12, u * .2), th = Math.max(10, Math.round(u * .2)), tw = W - 2 * P;
+        ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.beginPath(); ctx.roundRect(P, ty, tw, th, th / 2); ctx.fill();
+        const bw = tw * Math.max(0, Math.min(1, Number(it[3]) || 0)) * fase(ini + .15, 1.2);
+        if (bw > 1) {
+          const g = ctx.createLinearGradient(P, 0, P + tw, 0); g.addColorStop(0, "#1fc35f"); g.addColorStop(1, "#ffd400");
+          ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(P, ty, Math.max(bw, th), th, th / 2); ctx.fill();
+        }
+      } else {
+        ctx.strokeStyle = "rgba(255,255,255,.09)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P, y + u * 0.42); ctx.lineTo(P + (W - 2 * P) * ap, y + u * 0.42); ctx.stroke();
+      }
+      y += u * it.peso;
     });
     // rodapé
     a = fase(.6, .6);
@@ -345,7 +425,7 @@
   function limparMidia(box) { (box._urls || []).forEach((u) => URL.revokeObjectURL(u)); box._urls = []; }
   function painelMidia(box, c, fmtIni, url) {
     const L = t(), feitos = {};
-    const slug = location.hash.replace(/^#\/?/, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "inicio";
+    const slug = c.slug || location.hash.replace(/^#\/?/, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "inicio";
     const raiz = box.closest(".sh-post") || box.closest(".dlg-body") || box;
     raiz._urls = raiz._urls || [];
     box.innerHTML = `<div class="md-fmt" role="group" aria-label="${esc(L.md_fmt)}">${["post", "story", "video"].map((f) => `<button type="button" class="chipq" data-fmt="${f}" aria-pressed="false">${esc(L["md_fmt_" + f])}</button>`).join("")}</div>
@@ -401,20 +481,21 @@
     mostrar(fmtIni || "post");
   }
 
-  async function gerarImagem() {
-    const L = t(), c = cartaoAtual(false);
+  // o (respostas do Atlas): cartão, endereço e título próprios; sem o, a página atual
+  async function gerarImagem(o = {}) {
+    const L = t(), c = o.cartao || cartaoAtual(false), url = o.url || urlPagina();
     const d = janela(L.im_title, `<div class="md"></div>
       <h4 class="sh-passo">${esc(L.md_text_title)}</h4>
-      <textarea class="sh-texto" rows="3" readonly aria-label="${esc(L.md_copy_text)}">${esc(textoPost(urlPagina()))}</textarea>
-      <div class="btn-row"><button class="btn" type="button" data-cptx>${icone("copy")} ${esc(L.md_copy_text)}</button><button class="btn btn-ghost" type="button" data-share>${icone("share")} ${esc(L.md_more_nets)}</button></div>`, "dlg-img");
+      <textarea class="sh-texto" rows="3" readonly aria-label="${esc(L.md_copy_text)}">${esc(textoPost(url))}</textarea>
+      <div class="btn-row"><button class="btn" type="button" data-cptx>${icone("copy")} ${esc(L.md_copy_text)}</button><button class="btn btn-ghost" type="button" ${o.url ? "data-mais" : "data-share"}>${icone("share")} ${esc(L.md_more_nets)}</button></div>`, "dlg-img");
     const corpo = d.querySelector(".dlg-body");
-    painelMidia(d.querySelector(".md"), c, "post", urlPagina());
+    painelMidia(d.querySelector(".md"), c, "post", url);
     d.querySelector("[data-cptx]").addEventListener("click", async (e) => {
       const bt = e.currentTarget;
-      const ok = await copiarTexto(textoPost(urlPagina()));
+      const ok = await copiarTexto(textoPost(url));
       bt.lastChild.textContent = " " + (ok ? L.copied : L.md_copy_text);
     });
-    d.querySelector("[data-share]").addEventListener("click", () => d.close());
+    d.querySelector("[data-share], [data-mais]").addEventListener("click", () => { d.close(); if (o.url) compartilhar(false, Object.assign({ cartao: c }, o)); });
     d.addEventListener("close", () => setTimeout(() => limparMidia(corpo), 1000));
   }
 
