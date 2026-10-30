@@ -71,7 +71,7 @@
 
   // --- pequenos blocos de HTML ---------------------------------------------------------------------------
   const marca = () => `<span class="at-marca" aria-hidden="true">${icone("globe")}</span>`;
-  const cab = (txt, sub) => `<p class="at-h"><b>${txt}</b>${sub ? ` <span class="muted">${sub}</span>` : ""}</p>`;
+  const cab = (txt, sub, href) => `<p class="at-h"><b${href ? ` data-href="${esc(href)}"` : ""}>${txt}</b>${sub ? ` <span class="muted">${sub}</span>` : ""}</p>`;
   const fonte = (txt) => `<p class="msg-src">${esc(t().bot_source)}: ${esc(txt)}</p>`;
   const botoes = (bs) => { const l = bs.filter(Boolean); return l.length ? `<div class="at-btns">${l.join("")}</div>` : ""; };
   const ir = (h, ic, txt) => `<button type="button" class="btn btn-sm" data-go="${esc(h)}">${icone(ic)} ${esc(txt)}</button>`;
@@ -204,6 +204,31 @@
   }
   // Barras já desenhadas (sem a animação de entrada da página)
   function preparar(d) { d.querySelectorAll(".bars").forEach((b) => b.classList.add("in")); }
+  // Resposta nova: como nas páginas, os números dos blocos contam e as barras crescem quando aparecem na conversa
+  const RE_NUM = /^(\d{1,3}(?:[.,\u00a0\u202f]\d{3})+|\d+)(?=$|\s|\()/;
+  function animar(d) {
+    if (!document.documentElement.classList.contains("anim")) { preparar(d); return; }
+    d.querySelectorAll(".kv dd").forEach((dd) => {
+      const tn = dd.firstChild, m = tn && tn.nodeType === 3 && tn.nodeValue.match(RE_NUM);
+      const n = m ? +m[1].replace(/\D/g, "") : 0;
+      if (n < 10 || /^(19|20)\d\d$/.test(m[1])) return;
+      const sp = document.createElement("span");
+      sp.dataset.count = n; sp.textContent = nf(0);
+      tn.nodeValue = tn.nodeValue.slice(m[1].length);
+      dd.insertBefore(sp, tn);
+    });
+    const io = new IntersectionObserver((es) => es.forEach((en) => {
+      if (!en.isIntersecting) return;
+      io.unobserve(en.target);
+      if (en.target.classList.contains("bars")) en.target.classList.add("in"); else contarNum(en.target);
+    }), { root: S.el.log, rootMargin: "0px 0px -4% 0px" });
+    d.querySelectorAll(".bars, [data-count]").forEach((el) => io.observe(el));
+  }
+  function contarNum(el) {
+    const alvo = +el.dataset.count, t0 = performance.now();
+    const passo = (agora) => { const k = Math.min(1, (agora - t0) / 1500), e = 1 - Math.pow(1 - k, 3); el.textContent = nf(Math.round(alvo * e)); if (k < 1) requestAnimationFrame(passo); };
+    requestAnimationFrame(passo);
+  }
 
   function mostrarConversa(c) {
     const log = S.el.log; log.innerHTML = "";
@@ -220,7 +245,7 @@
   async function escrever(h, meta) {
     if (S.pre) { h = S.pre + h; S.pre = ""; }
     const d = bolha("a", h);
-    preparar(d);
+    animar(d);
     await window.BOT.digitar(d, S.el.log, ATOMOS);
     const m = Object.assign({ r: "a", h }, meta || {});
     registrar(m);
@@ -420,7 +445,7 @@
     await pensar(T.think.guia);
     const h = `<p>${esc(T.help_lead)}</p><ul class="at-lista">${FUNCS.map(([k, ic]) => `<li><b>${esc(T.fn[k][0])}</b> — ${esc(T.fn[k][1])}</li>`).join("")}</ul>
       <p>${esc(T.help_files)}</p>${funcChips(["secao", "municipio", "qr", "downloads"])}${botoes([btnCon()])}`;
-    return escrever(h, { q: T.fn.ask[0] });
+    return escrever(h, { q: T.fn.ask[0], fn: "ask" });
   }
 
   // Funções da barra lateral e dos atalhos: a pessoa toca, o Atlas explica como usar
@@ -439,7 +464,7 @@
       if (k === "apuracao") h += kv([[T.fmt, `<code>uf;zona;secao;turno;aptos;votaram;13;22;brancos;nulos</code>`]]) + botoes([btnArq("apuracao", T.pick), `<button type="button" class="btn btn-sm" data-at="modelo-apuracao">${icone("download")} ${esc(T.template)}</button>`]);
       if (ARQ_PRIV.includes(k)) h += `<p class="small muted">${esc(T.privacy)}</p>`;
       if ((k === "tse" && !S.con.tse) || (k === "ibge" && !S.con.ibge)) h += `<p class="note small">${esc(T.con_off[k])}</p>` + botoes([btnCon()]);
-      await escrever(h, { q: T.fn[k][0] });
+      await escrever(h, { q: T.fn[k][0], fn: k });
     });
   }
   const ARQ_PRIV = ["qr", "hash", "lista", "apuracao"];
@@ -461,7 +486,7 @@
     })();
     const { x, s, ib } = await pensar(etapas, trab);
     if (!x) return escrever(`<p>${esc(L.mu_none)}</p>`, { q: opts.q });
-    let h = cab(`${esc(m.nome)} (${esc(m.uf)})`, esc(A.ufNome(m.uf)));
+    let h = cab(`${esc(m.nome)} (${esc(m.uf)})`, esc(A.ufNome(m.uf)), `#/uf/${m.uf}/${m.cod}`);
     h += `<p>${esc(T.mun_lead(nf(x[0]), x[1].length, x[1].join(", ")))}</p>`;
     [2, 1].forEach((n) => { const tv = x[n + 1]; if (tv) h += blocoTurno(n, tv[0], tv[1], tv[2]); });
     h += blocoSinais(s);
@@ -485,7 +510,7 @@
       tot[n][0] += x[0]; tot[n][1] += x[1]; x[2].forEach((v, i) => { tot[n][2][i] += v; });
     }));
     const sec = ms.reduce((a, m) => a + m[0], 0);
-    let h = cab(`${esc(A.ufNome(uf))} (${esc(uf)})`, esc(L.uf_kicker));
+    let h = cab(`${esc(A.ufNome(uf))} (${esc(uf)})`, esc(L.uf_kicker), `#/uf/${uf}`);
     h += `<p>${esc(T.uf_lead(nf(sec), nf(ms.length)))}</p>`;
     [2, 1].forEach((n) => { if (tot[n]) h += blocoTurno(n, tot[n][0], tot[n][1], tot[n][2]); });
     h += blocoSinais(s, T.sg_note_uf);
@@ -512,7 +537,7 @@
         if (f && f.o.some((o) => o[1] === "a")) an[n]++; else if (f && f.o.length) inf[n]++;
       });
     });
-    let h = cab(`${esc(p.uf)} · ${esc(L.th_zone)} ${p.z}`, esc(A.ufNome(p.uf)));
+    let h = cab(`${esc(p.uf)} · ${esc(L.th_zone)} ${p.z}`, esc(A.ufNome(p.uf)), `#/lista?uf=${p.uf}&z=${p.z}`);
     h += `<p>${esc(T.zone_lead(nf(nums.length), Z.mun.map((m) => A.titulo(m[1])).join(", ")))}</p>`;
     [2, 1].forEach((n) => { if (tot[n]) h += blocoTurno(n, tot[n][0], tot[n][1], tot[n][2]); });
     h += `<h4 class="at-t">${esc(T.sg_t)}</h4><ul class="at-sinais">${[2, 1].map((n) => `<li><b>${esc(L.round(n))}:</b> ${A.chip(an[n] ? "red" : "green", T.sg_a(nf(an[n])))} ${A.chip(inf[n] ? "amber" : "green", T.sg_i_only(nf(inf[n])))}</li>`).join("")}</ul>`;
@@ -538,7 +563,7 @@
     }
     if (d.erro) return `<p>${esc(T.need_uf_sec)}</p>`;
     const rec = d.rec, flags = rec[3] || {}, nomeM = A.titulo(d.mun[1]);
-    let h = cab(`${esc(d.uf)} · ${esc(nomeM)} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}`);
+    let h = cab(`${esc(d.uf)} · ${esc(nomeM)} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}`, "", `#/secao/${d.uf}/${d.z}/${d.s}`);
     [2, 1].forEach((n) => {
       const tv = rec[n], f = flags[String(n)];
       if (!tv) { h += `<h4 class="at-t">${esc(L.round(n))}</h4><p class="muted">${esc(L.lk_nodata)}</p>`; return; }
@@ -570,7 +595,7 @@
     achou.forEach(({ n, d }) => {
       if (!d.rec) return;
       const f = (d.rec[3] || {})[String(n)] || { o: [] };
-      h += `<li><b>${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}</b> · ${esc(L.round(n))}<br>
+      h += `<li><b data-href="#/secao/${d.uf}/${d.z}/${d.s}">${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}</b> · ${esc(L.round(n))}<br>
         <span class="small">${esc(L.lk_urna(f.u, f.c, f.l))}</span><br>${f.o.map((o) => `${A.chip(o[1] === "a" ? "red" : "amber", `${A.numTeste(o[0])}. ${A.nomeTeste(o[0])}`)}`).join(" ")}</li>`;
     });
     h += `</ul><p class="small muted">${esc(T.urna_note)}</p>`;
@@ -719,7 +744,7 @@
     })();
     const { d, turnos } = await pensar(T.think.tsesec, trab);
     if (!d.rec) return escrever(htmlSecao(d), { q });
-    let h = cab(`${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}`, esc(T.tse_files));
+    let h = cab(`${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s}`, esc(T.tse_files), `#/secao/${d.uf}/${d.z}/${d.s}`);
     turnos.forEach((x) => {
       h += `<h4 class="at-t">${esc(L.round(x.n))}</h4>`;
       if (x.erro) { h += `<p class="alert">${esc(T.tse_err(x.erro))}</p>`; return; }
@@ -872,7 +897,7 @@
       return [esc(rot), a == null || Number.isNaN(a) ? "—" : nf(a), b == null ? "—" : nf(b), st];
     });
     const res = difs ? A.chip("red", L.bu_res_diff(difs)) : iguais ? A.chip("green", L.bu_res_ok(iguais)) : A.chip("amber", L.bu_res_none);
-    return cab(`${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s} · ${esc(L.round(n))}`)
+    return cab(`${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(L.th_zone)} ${d.z} · ${esc(L.th_section)} ${d.s} · ${esc(L.round(n))}`, "", `#/secao/${d.uf}/${d.z}/${d.s}`)
       + `<p>${res} <span class="small muted">${esc(origem)}</span></p>` + tabela([L.bu_th_field, L.bu_th_paper, L.bu_th_file, ""], corpo, "num-cols")
       + `<p class="small muted">${esc(L.bu_res_note)}</p><p class="small muted">${esc(L.bu_note)}</p>`
       + botoes([ir(`#/secao/${d.uf}/${d.z}/${d.s}`, "search", T.open_sec)]) + fonte(L.bot_sec_src);
@@ -1169,17 +1194,107 @@
     linhas.push([], [t().badge, URL_SITE + "#/atlas"]);
     baixar(`atlas-conversa-${hoje()}.csv`, csv(linhas), "text/csv;charset=utf-8");
   }
-  function imprimir(d) {
-    document.body.classList.add("at-imprimindo");
-    if (d) {
-      document.body.classList.add("at-so-um");
-      d.classList.add("at-alvo");
-      let p = d.previousElementSibling; while (p && !p.classList.contains("msg-user")) p = p.previousElementSibling;
-      if (p) p.classList.add("at-alvo");
-    }
-    const fim = () => { document.body.classList.remove("at-imprimindo", "at-so-um"); $$(".at-alvo").forEach((x) => x.classList.remove("at-alvo")); window.removeEventListener("afterprint", fim); };
-    window.addEventListener("afterprint", fim);
+  // --- documento: PDF com links e página interativa -----------------------------------------------------------
+  // Pergunta que reabre a resposta no Atlas (não vale para guias de função nem para respostas a arquivos)
+  function perguntaViva(d) {
+    const m = d._m;
+    if (!m || !m.q || m.fn) return "";
+    let p = d.previousElementSibling; while (p && !p.classList.contains("msg-user")) p = p.previousElementSibling;
+    return p && p.querySelector(".at-anexo") ? "" : m.q;
+  }
+  const linkVivo = (d, base) => { if (!d) return base + "#/atlas"; const q = perguntaViva(d); return q ? base + "#/atlas?q=" + enc(q) : ""; };
+  // Cópia da resposta (com a pergunta) ou da conversa inteira; botões viram links para o site
+  function montarDoc(d, o) {
+    const T = X(), L = t();
+    let msgs = $$(".msg", S.el.log).filter((x) => !x.classList.contains("msg-typing"));
+    if (d) { let p = d.previousElementSibling; while (p && !p.classList.contains("msg-user")) p = p.previousElementSibling; msgs = p ? [p, d] : [d]; }
+    const vivo = linkVivo(d, o.base), quando = new Intl.DateTimeFormat(L.locale, { dateStyle: "long", timeStyle: "short" }).format(new Date());
+    const doc = document.createElement("article");
+    doc.className = "at-doc";
+    doc.innerHTML = `<header class="doc-cab"><div class="doc-tit">${marca()}<div><b>Atlas</b><span>${esc(L.brand)} · ${esc(L.brand_sub)}</span></div></div>
+      <p class="doc-meta">${esc(d ? T.doc_one : T.doc_all)} · ${esc(quando)}</p><p class="doc-selo">${esc(L.badge)}</p>
+      ${vivo ? `<div class="doc-vivo">${o.qr || ""}<div><b>${esc(d ? T.doc_live_one : T.doc_live_all)}</b><p>${esc(o.html ? T.doc_live_note_html : T.doc_live_note)}</p><a href="${esc(vivo)}">${esc(vivo.replace(/^https:\/\//, ""))}</a></div></div>` : ""}</header>`;
+    msgs.forEach((x) => {
+      const u = x.classList.contains("msg-user"), c = x.cloneNode(true);
+      c.querySelectorAll(".at-acts, .caret").forEach((e) => e.remove());
+      c.querySelectorAll("[style*='display: none']").forEach((e) => { e.style.display = ""; });
+      // número que ainda contava, ou barra que ainda não cresceu: fica o valor final
+      c.querySelectorAll("[data-count]").forEach((e) => { e.textContent = nf(+e.dataset.count); });
+      c.querySelectorAll(".bars").forEach((b) => b.classList.add("in"));
+      const sec = document.createElement("section");
+      sec.className = "doc-msg " + (u ? "doc-u" : "doc-a");
+      sec.innerHTML = `<p class="doc-quem">${esc(u ? T.who_you : "Atlas")}</p><div class="doc-corpo"></div>`;
+      sec.lastChild.append(...c.childNodes);
+      const qv = !u && !d ? perguntaViva(x) : "";
+      if (qv) sec.insertAdjacentHTML("beforeend", `<p class="doc-ir"><a href="${esc(o.base + "#/atlas?q=" + enc(qv))}">${icone("arrow")} ${esc(T.doc_live_this)}</a></p>`);
+      doc.append(sec);
+    });
+    doc.insertAdjacentHTML("beforeend", `<footer class="doc-rod"><a href="${esc(o.base + "#/")}">${esc(URL_SITE.replace(/^https:\/\/|\/$/g, ""))}</a> · ${esc(L.badge)}</footer>`);
+    return A.ferramentas.linkarDoc(doc, o.base, o.html);
+  }
+  function limparDoc() { $$(".at-doc-imp").forEach((x) => x.remove()); document.body.classList.remove("at-imprimindo"); }
+  function colocarDoc(d, qr) {
+    limparDoc();
+    const doc = montarDoc(d, { base: A.ferramentas.URL_DOC, qr });
+    doc.classList.add("at-doc-imp");
+    document.body.append(doc); document.body.classList.add("at-imprimindo");
+  }
+  // PDF: o navegador salva a cópia; com o QR Code que reabre a resposta no site
+  async function imprimir(d) {
+    if (!d && !S.el.log.querySelector(".msg")) return;
+    const vivo = linkVivo(d, A.ferramentas.URL_DOC);
+    const qr = vivo ? await A.ferramentas.svgQr(vivo).catch(() => "") : "";
+    colocarDoc(d, qr);
+    window.addEventListener("afterprint", limparDoc, { once: true });
     window.print();
+  }
+  // Ctrl+P na página do Atlas também sai como documento (sem o QR Code, que leva um instante para ser gerado)
+  window.addEventListener("beforeprint", () => {
+    if (!document.body.classList.contains("atlas-on") || document.body.classList.contains("at-imprimindo") || !S.el.log || !S.el.log.querySelector(".msg")) return;
+    colocarDoc(null, "");
+    window.addEventListener("afterprint", limparDoc, { once: true });
+  });
+
+  // Página interativa: um arquivo .html com o visual do site, dicas nos gráficos e números e barras animados
+  const SCRIPT_DOC = `(function(){var h=document.documentElement,reduz=matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduz)h.classList.remove("anim");
+var tip=document.createElement("div");tip.className="tip";tip.hidden=true;document.body.appendChild(tip);var at=null;
+function encher(el){if(at===el)return;at=el;tip.textContent="";var l=el.getAttribute("data-tip").split("\\n"),s=document.createElement("strong");s.textContent=l[0];tip.appendChild(s);for(var i=1;i<l.length;i++){var d=document.createElement("div");d.textContent=l[i];tip.appendChild(d);}tip.hidden=false;}
+function pos(x,y){var r=tip.getBoundingClientRect(),a=x+14,b=y-r.height-12;if(a+r.width>innerWidth-8)a=Math.max(8,x-r.width-14);if(b<8)b=y+18;tip.style.left=a+"px";tip.style.top=b+"px";}
+function sai(){tip.hidden=true;at=null;}
+document.addEventListener("mousemove",function(e){var el=e.target.closest("[data-tip]");if(el){encher(el);pos(e.clientX,e.clientY);}else if(at)sai();});
+document.addEventListener("click",function(e){var el=e.target.closest("[data-tip]");if(el){encher(el);var r=el.getBoundingClientRect();pos(r.left+Math.min(r.width/2,120),r.top);}else sai();});
+document.addEventListener("focusin",function(e){var el=e.target.closest("[data-tip]");if(el){encher(el);var r=el.getBoundingClientRect();pos(r.left+Math.min(r.width/2,120),r.top);}});
+addEventListener("scroll",sai,{passive:true});
+var fmt=new Intl.NumberFormat(h.getAttribute("data-locale")||"pt-BR");
+function conta(el){var alvo=+el.getAttribute("data-count"),t0=performance.now();function p(t){var k=Math.min(1,(t-t0)/1500),e=1-Math.pow(1-k,3);el.textContent=fmt.format(Math.round(alvo*e));if(k<1)requestAnimationFrame(p);}requestAnimationFrame(p);}
+if(reduz||!("IntersectionObserver" in window))return;
+var io=new IntersectionObserver(function(es){es.forEach(function(en){if(!en.isIntersecting)return;io.unobserve(en.target);if(en.target.classList.contains("bars"))en.target.classList.add("in");else conta(en.target);});},{rootMargin:"0px 0px -6% 0px"});
+document.querySelectorAll(".bars").forEach(function(el){el.classList.remove("in");io.observe(el);});
+document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fmt.format(0);io.observe(el);});})();`;
+  async function paginaInterativa(d, aviso) {
+    const T = X(), L = t();
+    if (!d && !S.el.log.querySelector(".msg")) return;
+    if (aviso) status(aviso, T.ex_wait);
+    const vivo = linkVivo(d, URL_SITE);
+    const [css, qr] = await Promise.all([fetch("site/css/style.css").then((r) => r.text()).catch(() => ""), vivo ? A.ferramentas.svgQr(vivo).catch(() => "") : ""]);
+    const doc = montarDoc(d, { base: URL_SITE, qr, html: true });
+    // números dos blocos: o script da página faz a contagem ao aparecer
+    doc.querySelectorAll(".kv dd").forEach((dd) => {
+      const tn = dd.firstChild, m = tn && tn.nodeType === 3 && tn.nodeValue.match(RE_NUM);
+      const n = m ? +m[1].replace(/\D/g, "") : 0;
+      if (n < 10 || /^(19|20)\d\d$/.test(m[1])) return;
+      const sp = document.createElement("span"); sp.dataset.count = n; sp.textContent = m[1];
+      tn.nodeValue = tn.nodeValue.slice(m[1].length); dd.insertBefore(sp, tn);
+    });
+    const tema = document.documentElement.getAttribute("data-theme"), q = d ? (d._m && d._m.q) || T.doc_one : T.doc_all;
+    const pagina = `<!doctype html>
+<html lang="${{ PT: "pt-BR", EN: "en", ES: "es" }[A.state.lang]}" class="anim"${tema ? ` data-theme="${esc(tema)}"` : ""} data-locale="${esc(L.locale)}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark light">
+<title>Atlas · ${esc(q)}</title><link rel="icon" href="${URL_SITE}site/img/favicon.svg">
+<style>${css.replace(/url\("\.\.\//g, `url("${URL_SITE}site/`)}</style></head>
+<body class="doc-pagina">${doc.outerHTML}<script>${SCRIPT_DOC}<\/script></body></html>`;
+    baixar(`atlas-${slug(d ? q : T.doc_all)}-${hoje()}.html`, pagina, "text/html;charset=utf-8");
+    if (aviso) status(aviso, "");
   }
 
   // --- ações em cada resposta: copiar, ouvir, compartilhar, exportar, automação, reportar ------------------
@@ -1235,13 +1350,14 @@
   function exportarMenu(btn, d, m) {
     const T = X();
     const itens = [];
-    if (m) itens.push({ k: "pdf1", ic: icone("print"), txt: T.ex_pdf_one }, { k: "csv1", ic: icone("list"), txt: T.ex_csv_one });
-    itens.push({ k: "pdf", ic: icone("print"), txt: T.ex_pdf_all }, { k: "csv", ic: icone("list"), txt: T.ex_csv_all });
+    A.ferramentas.svgQr("").catch(() => {});
+    if (m) itens.push({ k: "pdf1", ic: icone("print"), txt: T.ex_pdf_one }, { k: "html1", ic: icone("globe"), txt: T.ex_html_one }, { k: "csv1", ic: icone("list"), txt: T.ex_csv_one });
+    itens.push({ k: "pdf", ic: icone("print"), txt: T.ex_pdf_all }, { k: "html", ic: icone("globe"), txt: T.ex_html_all }, { k: "csv", ic: icone("list"), txt: T.ex_csv_all });
     const p = popover(btn, itens);
     p.addEventListener("click", (e) => {
       const b = e.target.closest("[data-pop]"); if (!b) return;
       fecharMenus();
-      ({ pdf1: () => imprimir(d), csv1: () => csvResposta(m), pdf: () => imprimir(null), csv: csvConversa })[b.dataset.pop]();
+      ({ pdf1: () => imprimir(d), html1: () => paginaInterativa(d, d), csv1: () => csvResposta(m), pdf: () => imprimir(null), html: () => paginaInterativa(null, d), csv: csvConversa })[b.dataset.pop]();
     });
   }
   let falando = null;
@@ -1472,10 +1588,11 @@
     fecharMenus();
     const p = document.createElement("div");
     p.className = "at-pop at-pop-topo"; p.setAttribute("role", "menu");
-    p.innerHTML = `<button type="button" role="menuitem" data-pop="pdf">${icone("print")}<span>${esc(T.ex_pdf_all)}</span></button><button type="button" role="menuitem" data-pop="csv">${icone("list")}<span>${esc(T.ex_csv_all)}</span></button>`;
+    A.ferramentas.svgQr("").catch(() => {});
+    p.innerHTML = [["pdf", "print", T.ex_pdf_all], ["html", "globe", T.ex_html_all], ["csv", "list", T.ex_csv_all]].map(([k, ic, txt]) => `<button type="button" role="menuitem" data-pop="${k}">${icone(ic)}<span>${esc(txt)}</span></button>`).join("");
     btn.parentElement.appendChild(p); p._btn = btn; btn.setAttribute("aria-expanded", "true");
     p.querySelector("button").focus({ preventScroll: true });
-    p.addEventListener("click", (e) => { const b = e.target.closest("[data-pop]"); if (!b) return; fecharMenus(); if (b.dataset.pop === "pdf") imprimir(null); else csvConversa(); });
+    p.addEventListener("click", (e) => { const b = e.target.closest("[data-pop]"); if (!b) return; fecharMenus(); ({ pdf: () => imprimir(null), html: () => paginaInterativa(null), csv: csvConversa })[b.dataset.pop](); });
   }
 
   // Eventos de página (uma vez só)

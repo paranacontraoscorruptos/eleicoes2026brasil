@@ -434,21 +434,59 @@
     });
   }
 
+  // --- documentos (PDF e página interativa): botões e links levam ao site -----------------------------------------------
+  // No PDF o Chrome descarta links para o mesmo endereço com outro "#"; o "?de=pdf" deixa o endereço diferente
+  const URL_DOC = URL_SITE + "?de=pdf";
+  function urlAbs(href, base = URL_DOC) {
+    if (!href || /^(https?:|mailto:|tel:|data:|blob:)/i.test(href)) return href || "";
+    if (href.startsWith("#")) return base + href;
+    try { return new URL(href, URL_SITE).href; } catch (e) { return href; }
+  }
+  // Numa cópia do conteúdo: botões de navegação viram links, perguntas sugeridas abrem no Atlas, o resto dos botões sai
+  function linkarDoc(raiz, base = URL_DOC, novaAba = false) {
+    const atlas = (q) => base + "#/atlas?q=" + encodeURIComponent(q.trim());
+    const trocar = (el, href, cls) => { const a = document.createElement("a"); a.href = href; a.className = cls; a.innerHTML = el.innerHTML; el.replaceWith(a); };
+    $$("[data-href]", raiz).forEach((el) => { const a = document.createElement("a"); a.href = el.dataset.href; a.className = "doc-lk"; a.append(...el.childNodes); el.append(a); el.removeAttribute("data-href"); });
+    $$("button[data-go]", raiz).forEach((b) => trocar(b, b.dataset.go, "doc-btn"));
+    $$("button[data-q]", raiz).forEach((b) => trocar(b, atlas(b.dataset.q), "doc-chip"));
+    $$("button[data-at-id]", raiz).forEach((b) => trocar(b, atlas(b.textContent), "doc-chip"));
+    $$("button, input, textarea, select, .btn-copy", raiz).forEach((x) => x.remove());
+    $$(".chips, .at-btns", raiz).forEach((x) => { if (!x.querySelector("a")) { const r = x.previousElementSibling; if (r && r.matches(".msg-rel")) r.remove(); x.remove(); } });
+    $$("a[href]", raiz).forEach((a) => {
+      a.setAttribute("href", urlAbs(a.getAttribute("href"), base));
+      if (a.classList.contains("btn")) a.className = "doc-btn";
+      a.removeAttribute("download");
+      if (novaAba) { a.target = "_blank"; a.rel = "noopener"; }
+    });
+    return raiz;
+  }
+
   // --- imprimir / PDF -------------------------------------------------------------------------------------------------
-  let fechados = [];
+  // Na impressão das páginas os links levam ao site; o cabeçalho traz o endereço da página e, pelo botão, um QR Code
+  let fechados = [], qrImp = "";
   window.addEventListener("beforeprint", () => {
     const L = t();
     fechados = $$("main details:not([open])");
     fechados.forEach((d) => { d.open = true; });
+    const url = URL_DOC + (location.hash || "#/");
+    $$(".print-head").forEach((x) => x.remove());
     const ph = document.createElement("div");
     ph.className = "print-head";
-    ph.innerHTML = `<b>${esc(L.brand)} · ${esc(document.title)}</b><span>${esc(urlPagina())}</span><span>${esc(L.pr_date(new Intl.DateTimeFormat(L.locale, { dateStyle: "long", timeStyle: "short" }).format(new Date())))} · ${esc(L.badge)}</span>`;
+    ph.innerHTML = `<b>${document.title.includes(L.brand) ? "" : esc(L.brand) + " · "}${esc(document.title)}</b><span><a href="${esc(url)}">${esc(urlPagina())}</a></span><span>${esc(L.pr_date(new Intl.DateTimeFormat(L.locale, { dateStyle: "long", timeStyle: "short" }).format(new Date())))} · ${esc(L.badge)}</span>`
+      + (qrImp ? `<div class="print-qr">${qrImp}<span>${esc(L.pr_qr)}</span></div>` : "");
     $("#main").prepend(ph);
+    if (document.body.classList.contains("atlas-on")) return;
+    $$("main a[href]:not([data-href-orig])").forEach((a) => { a.dataset.hrefOrig = a.getAttribute("href"); a.setAttribute("href", urlAbs(a.dataset.hrefOrig)); });
   });
   window.addEventListener("afterprint", () => {
     fechados.forEach((d) => { d.open = false; }); fechados = [];
+    $$("[data-href-orig]").forEach((a) => { a.setAttribute("href", a.dataset.hrefOrig); delete a.dataset.hrefOrig; }); qrImp = "";
     const ph = $(".print-head"); if (ph) ph.remove();
   });
+  async function imprimirPagina() {
+    qrImp = await svgQr(URL_DOC + (location.hash || "#/")).catch(() => "");
+    window.print();
+  }
 
   // --- avisar erro ---------------------------------------------------------------------------------------------------
   function avisarErro(contexto) {
@@ -666,7 +704,7 @@
     const sh = e.target.closest("[data-share]"); if (sh) { compartilhar(sh.closest(".foot-tools") != null); return; }
     if (e.target.closest("[data-img]")) { gerarImagem(); return; }
     if (e.target.closest("[data-feed]")) { e.preventDefault(); assinarFeed(); return; }
-    if (e.target.closest("[data-print]")) { window.print(); return; }
+    if (e.target.closest("[data-print]")) { imprimirPagina(); return; }
     const rp = e.target.closest("[data-report]"); if (rp) { avisarErro(rp.dataset.report || ""); return; }
     const sv = e.target.closest("[data-save]");
     if (sv) { FERR.alternar(JSON.parse(sv.dataset.save)); botaoSalvar(sv); atalhosSecoes(); return; }
@@ -685,5 +723,5 @@
     contar();
   });
 
-  A.ferramentas = { janela, copiarTexto, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca };
+  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca };
 })();
