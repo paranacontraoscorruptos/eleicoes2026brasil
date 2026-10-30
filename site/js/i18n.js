@@ -1218,6 +1218,8 @@ Object.assign(window.I18N.PT, {
   md_dl_img: "Baixar imagem", md_dl_video: "Baixar vídeo", md_send: "Enviar para um app",
   md_webm: "Este navegador grava em WebM, aceito pelo YouTube e pelo TikTok. Para o Instagram (MP4), crie o vídeo no Chrome, Edge ou Safari atualizados.",
   md_novideo: "Este navegador não consegue criar vídeo. Use a imagem de Story ou abra o site no Chrome.",
+  md_sound: "Com efeitos sonoros", md_sound_note: "O som acompanha os movimentos e muda a cada vídeo.", md_redo: "Criar com outro som",
+  md_nosound: "Este navegador não gravou o som; o vídeo saiu sem áudio.",
   md_step1: "1. Escolha o formato e baixe o arquivo", md_step2: "2. Copie o texto com o link", md_step3: "3. Abra a rede e poste",
   md_copy_text: "Copiar texto com o link", md_text_title: "Texto para a legenda", md_more_nets: "Mais redes",
 });
@@ -1250,6 +1252,8 @@ Object.assign(window.I18N.EN, {
   md_dl_img: "Download image", md_dl_video: "Download video", md_send: "Send to an app",
   md_webm: "This browser records WebM, accepted by YouTube and TikTok. For Instagram (MP4), create the video in an up-to-date Chrome, Edge or Safari.",
   md_novideo: "This browser cannot create video. Use the Story image or open the site in Chrome.",
+  md_sound: "With sound effects", md_sound_note: "The sound follows the motion and changes with every video.", md_redo: "Make it with another sound",
+  md_nosound: "This browser did not record the sound; the video has no audio.",
   md_step1: "1. Choose the format and download the file", md_step2: "2. Copy the text with the link", md_step3: "3. Open the network and post",
   md_copy_text: "Copy text with the link", md_text_title: "Caption text", md_more_nets: "More networks",
 });
@@ -1282,6 +1286,8 @@ Object.assign(window.I18N.ES, {
   md_dl_img: "Descargar imagen", md_dl_video: "Descargar video", md_send: "Enviar a una app",
   md_webm: "Este navegador graba en WebM, aceptado por YouTube y TikTok. Para Instagram (MP4), cree el video en Chrome, Edge o Safari actualizados.",
   md_novideo: "Este navegador no puede crear video. Use la imagen de Historia o abra el sitio en Chrome.",
+  md_sound: "Con efectos de sonido", md_sound_note: "El sonido acompaña los movimientos y cambia en cada video.", md_redo: "Crear con otro sonido",
+  md_nosound: "Este navegador no grabó el sonido; el video salió sin audio.",
   md_step1: "1. Elija el formato y descargue el archivo", md_step2: "2. Copie el texto con el enlace", md_step3: "3. Abra la red y publique",
   md_copy_text: "Copiar texto con el enlace", md_text_title: "Texto para la descripción", md_more_nets: "Más redes",
 });

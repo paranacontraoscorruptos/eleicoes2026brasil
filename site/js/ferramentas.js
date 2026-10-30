@@ -378,6 +378,7 @@
     ctx.fillStyle = "#eef6f0"; ctx.font = `600 25px ${F_MONO}`;
     ctx.fillText(URL_SITE.replace(/^https:\/\/|\/$/g, ""), W / 2, yb - 64);
     ctx.textAlign = "left"; ctx.globalAlpha = 1;
+    return itens;
   }
 
   async function imagemCartao(c, fmt) {
@@ -388,24 +389,118 @@
     return new Promise((ok) => cv.toBlob(ok, "image/png"));
   }
 
-  // Vídeo vertical de 8 s gravado do próprio canvas (MP4 quando o navegador grava; senão WebM)
-  function tipoVideo() {
-    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return null;
-    return ["video/mp4;codecs=avc1.42E01F", "video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"].find((x) => MediaRecorder.isTypeSupported(x)) || null;
+  // --- som do vídeo: efeitos criados no próprio navegador (sem arquivos de áudio), no tempo da animação.
+  // Cada vídeo sorteia tom, escala, timbre, fundo, batida e tique, então dois vídeos dificilmente soam iguais.
+  const ESCALAS = [[0, 2, 4, 7, 9], [0, 3, 5, 7, 10], [0, 2, 4, 6, 7, 9, 11], [0, 2, 3, 5, 7, 9, 10], [0, 2, 4, 5, 7, 9, 11]];
+  const sortear = (l) => l[Math.floor(Math.random() * l.length)];
+  function trilha(ac, saida, itens, t0) {
+    const k = { raiz: sortear([196, 207.65, 220, 233.08, 246.94, 261.63, 277.18, 293.66]), escala: sortear(ESCALAS), timbre: sortear(["marimba", "sino", "corda", "vidro", "suave"]),
+      fundo: sortear(["quente", "ar", "quente", "ar", "nenhum"]), batida: sortear(["nenhuma", "leve", "pulso"]), tique: sortear(["clique", "madeira", "agudo"]), bpm: sortear([96, 104, 112, 120]) };
+    if (k.fundo === "nenhum" && k.batida === "nenhuma") k.fundo = "ar"; // sem fundo e sem batida o meio do vídeo ficaria mudo
+    const e = k.escala, nota = (g) => k.raiz * Math.pow(2, (e[((g % e.length) + e.length) % e.length] + 12 * Math.floor(g / e.length)) / 12);
+    const mestre = ac.createGain(), comp = ac.createDynamicsCompressor(), vol = ac.createGain();
+    mestre.connect(comp); comp.connect(vol); vol.connect(saida); vol.gain.value = 1.6;
+    mestre.gain.setValueAtTime(.9, t0); mestre.gain.setValueAtTime(.9, t0 + DUR_VIDEO - .6); mestre.gain.linearRampToValueAtTime(.0001, t0 + DUR_VIDEO - .05);
+    const ruido = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), rd = ruido.getChannelData(0);
+    for (let i = 0; i < rd.length; i++) rd[i] = Math.random() * 2 - 1;
+    // envelope: sobe em a segundos até v e cai em r segundos
+    const env = (v, t, a, r) => { const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + r); g.connect(mestre); return g; };
+    const osc = (tipo, f, t, fim, para) => { const o = ac.createOscillator(); o.type = tipo; o.frequency.setValueAtTime(f, t); o.connect(para); o.start(t); o.stop(fim); return o; };
+    const filtro = (tipo, f, para, q) => { const b = ac.createBiquadFilter(); b.type = tipo; b.frequency.value = f; if (q) b.Q.value = q; b.connect(para); return b; };
+    const chiado = (t, dur, para) => { const s = ac.createBufferSource(); s.buffer = ruido; s.connect(para); s.start(t, Math.random() * .5, dur); };
+    // uma nota no timbre sorteado; longo > 1 deixa a nota soar mais
+    function tocar(f, t, v, longo = 1) {
+      if (k.timbre === "marimba") { const g = env(v, t, .005, .35 * longo); osc("sine", f, t, t + .5 * longo, g); const g2 = env(v * .25, t, .003, .08); osc("sine", f * 4, t, t + .15, g2); }
+      else if (k.timbre === "sino") {
+        const g = env(v * .8, t, .004, 1.1 * longo), o = osc("sine", f, t, t + 1.3 * longo, g), m = ac.createGain();
+        m.gain.setValueAtTime(f * 2, t); m.gain.exponentialRampToValueAtTime(1, t + .6); osc("sine", f * 3.5, t, t + 1.3 * longo, m); m.connect(o.frequency);
+      } else if (k.timbre === "corda") { const g = env(v * .7, t, .004, .4 * longo), lp = filtro("lowpass", 600, g); lp.frequency.setValueAtTime(4000, t); lp.frequency.exponentialRampToValueAtTime(500, t + .3); osc("sawtooth", f, t, t + .5 * longo, lp); }
+      else if (k.timbre === "vidro") { const g = env(v * .6, t, .006, .6 * longo); osc("sine", f * 2, t, t + .7 * longo, g); osc("triangle", f * 3, t, t + .7 * longo, env(v * .15, t, .006, .3)); }
+      else { const g = env(v, t, .02, .5 * longo); osc("triangle", f, t, t + .6 * longo, g); }
+    }
+    function sopro(t, dur, v, de, ate) {
+      const g = env(v, t, dur * .6, dur * .4), bp = filtro("bandpass", de, g, 1.2);
+      bp.frequency.setValueAtTime(de, t); bp.frequency.exponentialRampToValueAtTime(ate, t + dur); chiado(t, dur + .05, bp);
+    }
+    function tique(t) {
+      if (k.tique === "clique") chiado(t, .012, filtro("highpass", 3500, env(.05, t, .001, .01)));
+      else osc("sine", k.tique === "madeira" ? 1500 : 3200, t, t + .04, env(k.tique === "madeira" ? .05 : .025, t, .001, .025));
+    }
+    function bumbo(t, v) { const g = env(v, t, .004, .25), o = osc("sine", 120, t, t + .3, g); o.frequency.exponentialRampToValueAtTime(45, t + .25); }
+    // abertura: sopro, a marca entra, o título e o traço amarelo
+    sopro(t0, .7, .16, 400, 2600);
+    bumbo(t0 + .3, .22); tocar(nota(0), t0 + .3, .12, 1.5);
+    sopro(t0 + .7, .3, .06, 3000, 7000);
+    // fundo
+    if (k.fundo !== "nenhum") {
+      const g = ac.createGain(); g.connect(mestre);
+      g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(k.fundo === "quente" ? .05 : .035, t0 + 1.6); g.gain.setValueAtTime(k.fundo === "quente" ? .05 : .035, t0 + DUR_VIDEO - 1.2); g.gain.exponentialRampToValueAtTime(.0001, t0 + DUR_VIDEO);
+      const lp = filtro("lowpass", k.fundo === "quente" ? 700 : 2400, g);
+      [0, 2, 4].forEach((d) => {
+        const f = nota(d) / (k.fundo === "quente" ? 2 : 1);
+        if (k.fundo === "quente") [-6, 6].forEach((ct) => { osc("sawtooth", f, t0, t0 + DUR_VIDEO, lp).detune.value = ct; });
+        else { osc("sine", f * 2, t0, t0 + DUR_VIDEO, lp); osc("triangle", f, t0, t0 + DUR_VIDEO, lp); }
+      });
+    }
+    // batida: leve (só chimbal) ou pulso (bumbo e chimbal), do 1º item até o fim
+    if (k.batida !== "nenhuma") {
+      const p = 60 / k.bpm;
+      for (let x = 1; x < DUR_VIDEO - .7; x += p) {
+        if (k.batida === "pulso") bumbo(t0 + x, .16);
+        chiado(t0 + x + p / 2, .04, filtro("highpass", 7000, env(.035, t0 + x + p / 2, .002, .04)));
+      }
+    }
+    // itens: uma nota que sobe a cada item, barras com um som que sobe junto e tiques enquanto os números contam
+    const tiques = [];
+    itens.forEach((it, i) => {
+      const ini = 1 + i * .22, t = t0 + ini;
+      if (it[0] === "t") { tocar(nota(i) / 2, t, .1); return; }
+      if (it[0] === "c") it[2].forEach((x, j) => tocar(nota(i + j + 2), t + j * .09, .08));
+      else tocar(nota(i + 2), t, .1);
+      if (it[0] === "b") {
+        const dur = 1.2, f = nota(i), g = ac.createGain(), lp = filtro("lowpass", 1800, g);
+        g.connect(mestre); g.gain.setValueAtTime(.0001, t + .15); g.gain.exponentialRampToValueAtTime(.035, t + .3); g.gain.exponentialRampToValueAtTime(.0001, t + .15 + dur);
+        const o = osc("triangle", f, t + .15, t + .2 + dur, lp); o.frequency.exponentialRampToValueAtTime(f * (1.5 + Math.max(0, Math.min(1, +it[3] || 0))), t + .15 + dur * .7);
+      }
+      if (/\d/.test(it[0] === "c" ? it[2].map((x) => x[1]).join("") : it[2])) for (let s = 1; s <= 10; s++) tiques.push(ini + 1.3 * (1 - Math.cbrt(1 - s / 10)));
+    });
+    let ult = -1;
+    tiques.sort((a, b) => a - b).forEach((x) => { if (x - ult >= .045) { tique(t0 + x); ult = x; } });
+    // fim: acorde quando o endereço do site ganha destaque
+    [0, 2, 4, 7].forEach((d, j) => tocar(nota(e.length + d), t0 + 4.6 + j * .1, .11, 2.5));
+    return k;
   }
-  async function videoCartao(c, cv, aoAvancar) {
-    const [W, H] = FORMATOS.video, tipo = tipoVideo();
+
+  // Vídeo vertical de 8 s gravado do próprio canvas (MP4 quando o navegador grava; senão WebM), com som se pedido
+  function tipoVideo(som) {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return null;
+    const l = som ? ["video/mp4;codecs=avc1.42E01F,mp4a.40.2", "video/mp4;codecs=avc1,mp4a.40.2", "video/mp4;codecs=avc1.42E01F,opus", "video/mp4;codecs=avc1,opus", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]
+      : ["video/mp4;codecs=avc1.42E01F", "video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+    return l.find((x) => MediaRecorder.isTypeSupported(x)) || null;
+  }
+  async function videoCartao(c, cv, aoAvancar, som) {
+    // o som começa antes de qualquer espera, ainda dentro do clique (o navegador só libera áudio depois de um toque)
+    let ac = null;
+    if (som && tipoVideo(true)) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) { ac = null; } }
+    const [W, H] = FORMATOS.video;
     await fontes();
     cv.width = W; cv.height = H;
     const ctx = cv.getContext("2d"), fundo = fundoCartao(W, H);
-    quadroCartao(ctx, c, W, H, fundo, 0);
+    const itens = quadroCartao(ctx, c, W, H, fundo, 0);
     const fluxo = cv.captureStream(30);
-    const rec = new MediaRecorder(fluxo, { mimeType: tipo, videoBitsPerSecond: 8000000 });
+    let saida = null;
+    if (ac) {
+      try { await ac.resume(); if (ac.state === "running") { saida = ac.createMediaStreamDestination(); saida.stream.getAudioTracks().forEach((x) => fluxo.addTrack(x)); } } catch (e) { saida = null; }
+      if (!saida) { ac.close().catch(() => {}); ac = null; }
+    }
+    const tipo = tipoVideo(!!saida);
+    const rec = new MediaRecorder(fluxo, { mimeType: tipo, videoBitsPerSecond: 8000000, audioBitsPerSecond: 160000 });
     const partes = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) partes.push(e.data); };
     const parou = new Promise((ok) => { rec.onstop = ok; });
     rec.start(250);
     const t0 = performance.now();
+    if (saida) trilha(ac, saida, itens, ac.currentTime);
     await new Promise((ok) => {
       const passo = () => {
         const tm = (performance.now() - t0) / 1000;
@@ -417,8 +512,9 @@
     });
     rec.stop(); fluxo.getTracks().forEach((x) => x.stop());
     await parou;
+    if (ac) ac.close().catch(() => {});
     const mime = tipo.split(";")[0];
-    return { blob: new Blob(partes, { type: mime }), ext: mime === "video/mp4" ? "mp4" : "webm" };
+    return { blob: new Blob(partes, { type: mime }), ext: mime === "video/mp4" ? "mp4" : "webm", som: !!saida };
   }
 
   // Painel de mídia: formato (post, story ou vídeo), prévia, baixar e enviar para um app
@@ -431,7 +527,7 @@
     box.innerHTML = `<div class="md-fmt" role="group" aria-label="${esc(L.md_fmt)}">${["post", "story", "video"].map((f) => `<button type="button" class="chipq" data-fmt="${f}" aria-pressed="false">${esc(L["md_fmt_" + f])}</button>`).join("")}</div>
       <div class="md-prev"></div><p class="small muted md-nota"></p><div class="btn-row md-acoes"></div>`;
     const prev = box.querySelector(".md-prev"), nota = box.querySelector(".md-nota"), acoes = box.querySelector(".md-acoes");
-    let atual = null;
+    let atual = null, som = A.ler("bu-som") !== "0";
     const botoes = (blob, nome, tipo, rotDl) => {
       const u = URL.createObjectURL(blob); raiz._urls.push(u);
       const arq = new File([blob], nome, { type: tipo });
@@ -459,23 +555,34 @@
       if (!tipo) { prev.innerHTML = ""; nota.textContent = L.md_novideo; return; }
       const fimVideo = (v) => {
         const u = botoes(v.blob, `auditoria-bu-2026-${slug}.${v.ext}`, v.blob.type, L.md_dl_video);
-        prev.innerHTML = `<video src="${u}" controls autoplay muted loop playsinline></video>`;
-        nota.textContent = L.md_note_video + (v.ext === "webm" ? " " + L.md_webm : "");
+        prev.innerHTML = `<video src="${u}" controls loop playsinline></video>`;
+        // com som, a prévia já toca com áudio; se o navegador bloquear, toca sem som (o botão do vídeo liga)
+        const vid = prev.querySelector("video");
+        vid.muted = !v.som; vid.play().catch(() => { vid.muted = true; vid.play().catch(() => {}); });
+        nota.textContent = L.md_note_video + (v.ext === "webm" ? " " + L.md_webm : "") + (som && !v.som ? " " + L.md_nosound : "");
+        if (!v.som) return;
+        acoes.insertAdjacentHTML("beforeend", `<button class="btn" type="button" data-refazer>${icone("swap")} ${esc(L.md_redo)}</button>`);
+        acoes.querySelector("[data-refazer]").addEventListener("click", gravar);
       };
-      if (feitos.video) { fimVideo(feitos.video); return; }
-      prev.innerHTML = `<div class="md-vid-ini"><button class="btn btn-primary" type="button" data-gravar>${icone("play")} ${esc(L.md_make_video)}</button></div>`;
-      prev.querySelector("[data-gravar]").addEventListener("click", async () => {
+      const gravar = async () => {
         const cv = document.createElement("canvas");
         prev.innerHTML = `<div class="md-gravando"></div><div class="md-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(L.md_making)}"><span></span></div><p class="small">${esc(L.md_making)}</p>`;
+        acoes.innerHTML = "";
         prev.querySelector(".md-gravando").appendChild(cv);
         box.querySelectorAll("[data-fmt]").forEach((b) => { b.disabled = true; });
         const barra = prev.querySelector(".md-prog span"), pb = prev.querySelector(".md-prog");
         try {
-          feitos.video = await videoCartao(c, cv, (k) => { barra.style.width = (k * 100).toFixed(1) + "%"; pb.setAttribute("aria-valuenow", Math.round(k * 100)); });
+          feitos.video = await videoCartao(c, cv, (k) => { barra.style.width = (k * 100).toFixed(1) + "%"; pb.setAttribute("aria-valuenow", Math.round(k * 100)); }, som);
         } catch (e) { prev.innerHTML = ""; nota.textContent = L.md_novideo; feitos.video = null; }
         box.querySelectorAll("[data-fmt]").forEach((b) => { b.disabled = false; });
         if (feitos.video && atual === "video") fimVideo(feitos.video);
-      });
+      };
+      if (feitos.video) { fimVideo(feitos.video); return; }
+      prev.innerHTML = `<div class="md-vid-ini"><label class="md-som"><input type="checkbox" data-som${som ? " checked" : ""}> ${icone("speaker")} <span>${esc(L.md_sound)}</span></label>
+        <p class="small muted">${esc(L.md_sound_note)}</p>
+        <button class="btn btn-primary" type="button" data-gravar>${icone("play")} ${esc(L.md_make_video)}</button></div>`;
+      prev.querySelector("[data-som]").addEventListener("change", (e) => { som = e.target.checked; A.guardar("bu-som", som ? "1" : "0"); });
+      prev.querySelector("[data-gravar]").addEventListener("click", gravar);
     };
     box.querySelector(".md-fmt").addEventListener("click", (e) => { const b = e.target.closest("[data-fmt]"); if (b && !b.disabled) mostrar(b.dataset.fmt); });
     mostrar(fmtIni || "post");
