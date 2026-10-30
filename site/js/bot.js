@@ -233,7 +233,7 @@
       const i = e.target.closest("[data-id]");
       if (i) {
         const en = B.byId[i.dataset.id];
-        ocupar(async () => { msg(window.APP.esc(rotulo(en)), "user"); await pensando(L().bot_think_qa); mostrarEntrada(en); });
+        ocupar(async () => { msg(window.APP.esc(rotulo(en)), "user"); await pensando(L().bot_think_qa); await mostrarEntrada(en); });
         return;
       }
       const g = e.target.closest("[data-go]"); if (g) { location.hash = g.dataset.go; if (window.matchMedia("(max-width: 640px)").matches) fechar(); }
@@ -321,6 +321,67 @@
     try { return (await Promise.all([trabalho, aguardar(ms)]))[0]; } finally { tms.forEach(clearTimeout); d.remove(); }
   }
 
+  // Resposta "digitada": o texto aparece aos poucos, com cursor piscando, e os
+  // botões surgem na ordem em que estão. Tocar na resposta mostra tudo de uma vez.
+  async function digitar(d) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const passos = [];
+    const andar = (n) => {
+      for (const c of [...n.childNodes]) {
+        if (c.nodeType === 3 && c.nodeValue.trim()) { passos.push({ t: c, txt: c.nodeValue }); c.nodeValue = ""; }
+        else if (c.nodeType === 1) {
+          const bloco = c.matches("button, svg, img, .chips");
+          passos.push({ el: c, disp: c.style.display, bloco });
+          c.style.display = "none";
+          if (!bloco) andar(c);
+        }
+      }
+    };
+    andar(d);
+    const N = passos.reduce((a, x) => a + (x.txt ? x.txt.length : 0), 0) || 1;
+    const vel = N / Math.min(7000, Math.max(900, N * 12));
+    const cursor = document.createElement("span");
+    cursor.className = "caret"; cursor.setAttribute("aria-hidden", "true");
+    const topo = Math.max(0, d.offsetTop - el.log.offsetTop - 12);
+    let pular = false, seguir = true;
+    const pare = () => { pular = true; }, solto = () => { seguir = false; };
+    d.addEventListener("click", pare);
+    el.log.addEventListener("wheel", solto, { passive: true });
+    el.log.addEventListener("touchmove", solto, { passive: true });
+    el.log.setAttribute("aria-busy", "true");
+    try {
+      // a cada "tique" escreve algumas letras, passando de um trecho para o próximo
+      let k = 0, i = 0;
+      while (k < passos.length && !pular) {
+        const tick = 28 + Math.random() * 24;
+        let resto = Math.max(1, Math.round(vel * tick)), pausa = 0;
+        while (resto > 0 && k < passos.length && !pausa) {
+          const x = passos[k];
+          if (x.el) { x.el.style.display = x.disp; if (x.bloco) x.el.animate([{ opacity: 0 }, { opacity: 1 }], 250); k++; continue; }
+          let j = Math.min(x.txt.length, i + resto);
+          // pausa curta no fim de cada frase
+          const fim = x.txt.slice(i, j + 1).search(/[.!?]\s/);
+          if (fim >= 0) { j = i + fim + 1; pausa = (120 + Math.random() * 160) * Math.min(1, 400 / N); }
+          x.t.nodeValue = x.txt.slice(0, j);
+          x.t.after(cursor);
+          resto -= j - i; i = j;
+          if (i >= x.txt.length) { k++; i = 0; }
+        }
+        if (seguir) el.log.scrollTop = topo;
+        await aguardar(tick + pausa);
+      }
+    } finally {
+      passos.forEach((x) => { if (x.el) x.el.style.display = x.disp; else x.t.nodeValue = x.txt; });
+      cursor.remove();
+      d.removeEventListener("click", pare);
+      el.log.removeEventListener("wheel", solto);
+      el.log.removeEventListener("touchmove", solto);
+      el.log.removeAttribute("aria-busy");
+      if (seguir) el.log.scrollTop = topo;
+    }
+  }
+  const escrever = (html) => digitar(msg(html, "bot"));
+
   // Uma resposta por vez: enquanto o bot "escreve", o envio fica bloqueado
   async function ocupar(fn) {
     if (B.ocupado) return;
@@ -338,7 +399,7 @@
     (e.r || []).forEach((id) => { if (B.byId[id] && !B.byId[id].ns && rel.length < 4) rel.push({ id, txt: rotulo(B.byId[id]) }); });
     (extras || []).forEach((x) => { if (x.i !== e.i && !x.ns && !rel.some((r) => r.id === x.i) && rel.length < 5) rel.push({ id: x.i, txt: rotulo(x) }); });
     if (rel.length) h += `<p class="msg-rel">${esc(T.bot_related)}:</p>` + chips(rel);
-    msg(h, "bot");
+    return escrever(h);
   }
 
   function detectarSecao(texto) {
@@ -362,14 +423,14 @@
 
   async function responderSecao(p) {
     const T = L(), A = window.APP, esc = A.esc;
-    if (!p.z || !p.s || !p.uf) { await pensando([T.bot_think_qa[0], T.bot_think_sec[0]]); msg(!p.z || !p.s ? T.bot_need_zs : T.bot_need_uf, "bot"); return; }
+    if (!p.z || !p.s || !p.uf) { await pensando([T.bot_think_qa[0], T.bot_think_sec[0]]); await escrever(!p.z || !p.s ? T.bot_need_zs : T.bot_need_uf); return; }
     const d = await pensando(T.bot_think_sec, A.consultarSecao(p.uf, p.z, p.s));
     const I = window.I18N[B.lang];
-    if (d.erro === "zona") { msg(esc(I.lk_nozone), "bot"); return; }
+    if (d.erro === "zona") { await escrever(esc(I.lk_nozone)); return; }
     if (d.erro === "secao") {
       let h = `<p>${esc(I.lk_nosec)}</p>`;
       if (d.agregadaEm.length) h += `<p>${esc(I.lk_agg_hint(d.s))} ${d.agregadaEm.map((x) => `<button type="button" class="chipq" data-q="${esc(`${d.uf} zona ${d.z} secao ${x}`)}">${esc(x)}</button>`).join(" ")}</p>`;
-      msg(h, "bot"); return;
+      await escrever(h); return;
     }
     const rec = d.rec, flags = rec[3] || {};
     let h = `<p><b>${esc(d.uf)} · ${esc(A.titulo(d.mun[1]))} · ${esc(I.th_zone)} ${d.z} · ${esc(I.th_section)} ${d.s}</b></p>`;
@@ -393,7 +454,7 @@
     });
     h += `<p><button type="button" class="btn btn-sm" data-go="#/secao/${d.uf}/${d.z}/${d.s}">${esc(I.bot_sec_details)}</button></p>`;
     h += `<p class="msg-src">${esc(I.bot_source)}: ${esc(I.bot_sec_src)}</p>`;
-    msg(h, "bot");
+    await escrever(h);
   }
 
   function perguntar(texto) {
@@ -412,12 +473,12 @@
       const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3).map((x) => ({ id: x.e.i, txt: rotulo(x.e) }));
       const top = sug.length ? sug : T.bot_fallback_topics.map((x) => ({ txt: x }));
       await pensando([T.bot_think_qa[0], T.bot_think_qa[1], ...T.bot_think_none]);
-      msg(`<p>${esc(sug.length ? T.bot_maybe : T.bot_fallback)}</p>` + chips(top), "bot");
+      await escrever(`<p>${esc(sug.length ? T.bot_maybe : T.bot_fallback)}</p>` + chips(top));
       return;
     }
     const outros = r.slice(1, 3).filter((x) => x.sc >= r[0].sc * 0.75).map((x) => x.e);
     await pensando(T.bot_think_qa);
-    mostrarEntrada(r[0].e, outros);
+    await mostrarEntrada(r[0].e, outros);
   }
 
   function saudacao() {

@@ -1100,3 +1100,7 @@ a.tag:hover { border-color: var(--accent); }
 @keyframes dot { 0%, 60%, 100% { transform: translateY(0); opacity: .35; } 30% { transform: translateY(-4px); opacity: 1; } }
 .typing-txt { animation: msgin .3s ease-out; }
 .bot-send:disabled { opacity: .5; cursor: default; transform: none; }
+
+/* Cursor enquanto o bot "digita" a resposta */
+.caret { display: inline-block; width: .5em; height: 1em; margin-left: 2px; vertical-align: -.15em; border-radius: 2px; background: var(--accent); animation: piscar 1s steps(2, start) infinite; }
+@keyframes piscar { to { visibility: hidden; } }
