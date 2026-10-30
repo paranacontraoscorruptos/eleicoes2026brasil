@@ -1249,7 +1249,6 @@ body.atlas-on main { max-width: none; padding: 0; }
 .at-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-2); font: 500 .86rem var(--font); padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: border-color .2s, color .2s, transform .2s; }
 .at-chip svg { width: 17px; height: 17px; color: var(--accent); }
 .at-chip:hover { border-color: var(--accent); color: var(--ink); transform: translateY(-1px); }
-.at-nota { text-align: center; font-size: .73rem; color: var(--muted); margin: 8px 0 0; }
 .at-menu-mais { position: absolute; left: 4px; bottom: calc(100% + 8px); z-index: 9; width: min(350px, calc(100vw - 28px)); background: var(--surface); border: 1px solid var(--line-2); border-radius: 16px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, .55); padding: 6px; animation: msgin .18s ease-out; }
 .at-menu-mais[hidden] { display: none; }
 .at-menu-mais button { display: flex; align-items: flex-start; gap: 12px; width: 100%; border: 0; background: transparent; color: var(--ink); padding: 9px 10px; border-radius: 11px; cursor: pointer; text-align: left; font: inherit; }

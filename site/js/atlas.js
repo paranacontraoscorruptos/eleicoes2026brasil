@@ -27,8 +27,9 @@
   // Funções da barra lateral: [chave, ícone]
   const FUNCS = [["ask", "chat"], ["secao", "search"], ["zona", "grid"], ["municipio", "pin"], ["estado", "map"], ["brasil", "flag"], ["urna", "vote"],
     ["qr", "qr"], ["hash", "hash"], ["lista", "list"], ["apuracao", "chart"], ["downloads", "download"], ["tse", "shield"], ["ibge", "users"]];
-  // Itens do botão "+": [chave, ícone]
-  const MAIS = [["foto", "image"], ["camera", "camera"], ["hash", "hash"], ["lista", "list"], ["apuracao", "chart"]];
+  // Ícones dos tipos de arquivo; o botão "+" mostra só o que não está na barra lateral
+  const ICO_ARQ = { foto: "image", camera: "camera", arquivo: "upload", hash: "hash", lista: "list", apuracao: "chart" };
+  const MAIS = ["foto", "camera", "arquivo"];
 
   // --- guardado neste navegador ------------------------------------------------------------------------
   const CH = { conv: "atlas_conversas", lado: "atlas_lateral", con: "atlas_conexoes", hook: "atlas_automacao", salvar: "atlas_salvar" };
@@ -76,7 +77,7 @@
   const ir = (h, ic, txt) => `<button type="button" class="btn btn-sm" data-go="${esc(h)}">${icone(ic)} ${esc(txt)}</button>`;
   const perg = (q, txt) => `<button type="button" class="chipq" data-q="${esc(q)}">${esc(txt || q)}</button>`;
   const chipsQ = (l) => (l.length ? `<div class="chips">${l.join("")}</div>` : "");
-  const btnArq = (k, rot) => `<button type="button" class="btn btn-sm" data-at-arq="${k}">${icone(MAIS.find((x) => x[0] === k)[1])} ${esc(rot || X().up[k][0])}</button>`;
+  const btnArq = (k, rot) => `<button type="button" class="btn btn-sm" data-at-arq="${k}">${icone(ICO_ARQ[k])} ${esc(rot || X().up[k][0])}</button>`;
   const btnCon = () => `<button type="button" class="btn btn-sm" data-at="conexoes">${icone("plug")} ${esc(X().conn_open)}</button>`;
   const kv = (l) => `<dl class="kv">${l.map(([k, x]) => `<div><dt>${esc(k)}</dt><dd>${x}</dd></div>`).join("")}</dl>`;
   const tabela = (cab_, linhas, cls) => A.tabela(cab_.map(esc), linhas, cls);
@@ -116,7 +117,7 @@
   const escuro = () => document.documentElement.getAttribute("data-theme") !== "light";
   function menuMais() {
     const T = X();
-    return MAIS.filter(([k]) => k !== "camera" || podeCamera).map(([k, ic]) => `<button type="button" role="menuitem" data-at-arq="${k}">${icone(ic)}<span><b>${esc(T.up[k][0])}</b><small>${esc(T.up[k][1])}</small></span></button>`).join("")
+    return MAIS.filter((k) => k !== "camera" || podeCamera).map((k) => `<button type="button" role="menuitem" data-at-arq="${k}">${icone(ICO_ARQ[k])}<span><b>${esc(T.up[k][0])}</b><small>${esc(T.up[k][1])}</small></span></button>`).join("")
       + `<p class="at-menu-nota">${icone("shield")}<span>${esc(T.privacy)}</span></p>`;
   }
 
@@ -166,7 +167,6 @@
             <div class="at-menu-mais" id="at-menu-mais" role="menu" aria-label="${esc(T.plus)}" hidden>${menuMais()}</div>
           </div>
           <div class="at-chips" id="at-chips">${["secao", "municipio", "estado", "qr", "downloads", "ask"].map((k) => `<button type="button" class="at-chip" data-at-fn="${k}">${icone(FUNCS.find((x) => x[0] === k)[1])}<span>${esc(T.fn[k][0])}</span></button>`).join("")}</div>
-          <p class="at-nota">${esc(T.note)}</p>
         </form>
         <div class="at-solte" id="at-solte" hidden><div>${icone("upload")}<b>${esc(T.drop)}</b><span>${esc(T.drop_sub)}</span></div></div>
       </section>
@@ -774,8 +774,9 @@
     if (k === "camera") { abrirCamera(); return; }
     const inp = S.el.arq;
     inp.accept = { foto: "image/*", lista: ".csv,.txt,.tsv,text/csv,text/plain", apuracao: ".csv,.txt,.tsv,text/csv,text/plain" }[k] || "";
-    inp.multiple = k === "foto" || k === "hash";
-    inp.dataset.tipo = k;
+    inp.multiple = k === "foto" || k === "hash" || k === "arquivo";
+    // "arquivo": o tipo é identificado pelo conteúdo, como ao arrastar
+    inp.dataset.tipo = k === "arquivo" ? "" : k;
     inp.value = "";
     inp.click();
   }

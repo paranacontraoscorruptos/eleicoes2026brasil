@@ -1507,7 +1507,6 @@ window.I18N.PT.at = {
   hello: "Olá! Eu sou o Atlas.", hello_sub: "Pergunte sobre a auditoria ou consulte qualquer estado, município, zona, seção ou urna. Também confiro o QR Code do boletim e arquivos.",
   log_aria: "Conversa com o Atlas", ph: "Pergunte ao Atlas…", send: "Enviar", mic: "Falar a pergunta", mic_on: "Ouvindo… fale agora", plus: "Enviar arquivo",
   drop: "Solte o arquivo aqui", drop_sub: "Lido só neste aparelho", privacy: "Arquivos são lidos só neste aparelho. Nada é enviado.",
-  note: "O Atlas não é IA: responde com a base da auditoria e os dados publicados. Não tira conclusões. Confira sempre na fonte.",
   exp_conv: "Exportar conversa", exp_empty: "A conversa ainda está vazia.", err: "Algo deu errado. Tente de novo.",
   fn: {
     ask: ["Perguntar sobre a auditoria", "Testes, método, código, como rodar e replicar."],
@@ -1556,6 +1555,7 @@ window.I18N.PT.at = {
   up: {
     foto: ["Foto do QR Code do boletim", "Compara o boletim impresso com o arquivo do TSE."],
     camera: ["Câmera (ler QR Code)", "Aponte para o QR Code do boletim."],
+    arquivo: ["Enviar arquivo", "Imagem, planilha ou arquivo baixado. O Atlas identifica o tipo."],
     hash: ["Conferir arquivo (hash)", "Qualquer arquivo baixado do site ou do TSE."],
     lista: ["Lista de seções (CSV)", "Colunas uf, zona, secao."],
     apuracao: ["Minha apuração (CSV)", "Seus números, comparados com o TSE."],
@@ -1662,7 +1662,6 @@ window.I18N.EN.at = {
   hello: "Hi! I am Atlas.", hello_sub: "Ask about the audit or look up any state, municipality, zone, section or voting machine. I also check the ballot box report QR code and files.",
   log_aria: "Chat with Atlas", ph: "Ask Atlas…", send: "Send", mic: "Speak your question", mic_on: "Listening… speak now", plus: "Send a file",
   drop: "Drop the file here", drop_sub: "Read on this device only", privacy: "Files are read on this device only. Nothing is sent.",
-  note: "Atlas is not AI: it answers from the audit knowledge base and the published data. It draws no conclusions. Always check the source.",
   exp_conv: "Export chat", exp_empty: "The chat is still empty.", err: "Something went wrong. Try again.",
   fn: {
     ask: ["Ask about the audit", "Tests, method, code, how to run and replicate."],
@@ -1711,6 +1710,7 @@ window.I18N.EN.at = {
   up: {
     foto: ["Photo of the report QR code", "Compares the printed report with the TSE file."],
     camera: ["Camera (read QR code)", "Point at the report QR code."],
+    arquivo: ["Upload a file", "Image, spreadsheet or downloaded file. Atlas detects the type."],
     hash: ["Check a file (hash)", "Any file downloaded from the site or the TSE."],
     lista: ["Section list (CSV)", "Columns uf, zona, secao."],
     apuracao: ["My own count (CSV)", "Your numbers, compared with the TSE."],
@@ -1817,7 +1817,6 @@ window.I18N.ES.at = {
   hello: "¡Hola! Soy Atlas.", hello_sub: "Pregunte sobre la auditoría o consulte cualquier estado, municipio, zona, sección o urna. También verifico el código QR del boletín y archivos.",
   log_aria: "Conversación con Atlas", ph: "Pregunte a Atlas…", send: "Enviar", mic: "Decir la pregunta", mic_on: "Escuchando… hable ahora", plus: "Enviar archivo",
   drop: "Suelte el archivo aquí", drop_sub: "Se lee solo en este dispositivo", privacy: "Los archivos se leen solo en este dispositivo. No se envía nada.",
-  note: "Atlas no es IA: responde con la base de la auditoría y los datos publicados. No saca conclusiones. Verifique siempre en la fuente.",
   exp_conv: "Exportar conversación", exp_empty: "La conversación aún está vacía.", err: "Algo salió mal. Intente de nuevo.",
   fn: {
     ask: ["Preguntar sobre la auditoría", "Pruebas, método, código, cómo ejecutar y replicar."],
@@ -1866,6 +1865,7 @@ window.I18N.ES.at = {
   up: {
     foto: ["Foto del código QR del boletín", "Compara el boletín impreso con el archivo del TSE."],
     camera: ["Cámara (leer QR)", "Apunte al código QR del boletín."],
+    arquivo: ["Enviar archivo", "Imagen, planilla o archivo descargado. Atlas identifica el tipo."],
     hash: ["Verificar archivo (hash)", "Cualquier archivo descargado del sitio o del TSE."],
     lista: ["Lista de secciones (CSV)", "Columnas uf, zona, secao."],
     apuracao: ["Mi conteo (CSV)", "Sus números, comparados con el TSE."],
