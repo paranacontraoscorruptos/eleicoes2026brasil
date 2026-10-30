@@ -60,19 +60,10 @@
   // --- blocos reutilizáveis ------------------------------------------------------
   // Link para o Atlas; com pergunta, ela já chega feita
   const linkAtlas = (q) => "#/atlas" + (q ? "?q=" + encodeURIComponent(q) : "");
-  function botCta(compacto) {
+  // Faixa curta que leva ao Atlas, no fim das páginas
+  function botCta() {
     const L = t();
-    if (compacto) {
-      return `<aside class="bot-band"><span class="bot-band-ico" aria-hidden="true">${icone("globe")}</span><p><b>${esc(L.bot_cta_title)}</b></p><a class="btn btn-bot" href="#/atlas">${esc(L.bot_cta_btn)}</a></aside>`;
-    }
-    return `<section class="bot-cta" aria-labelledby="bot-cta-h">
-      <div class="bot-cta-ico" aria-hidden="true">${icone("globe")}</div>
-      <div class="bot-cta-body">
-        <h2 id="bot-cta-h">${esc(L.bot_cta_title)}</h2>
-        <p>${esc(L.bot_cta_text)}</p>
-        <div class="bot-cta-actions"><a class="btn btn-bot btn-lg" href="#/atlas">${icone("globe")} ${esc(L.bot_cta_btn)}</a></div>
-        <p class="small muted">${esc(L.bot_cta_small)}</p>
-      </div></section>`;
+    return `<aside class="bot-band"><span class="bot-band-ico" aria-hidden="true">${icone("globe")}</span><p><b>${esc(L.bot_cta_title)}</b></p><a class="btn btn-bot" href="#/atlas">${esc(L.bot_cta_btn)}</a></aside>`;
   }
 
   // Grupo do Telegram: chamada completa na página inicial, faixa curta no rodapé
@@ -285,7 +276,6 @@
     ${destaqueAtlas()}
     ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
     ${destaqueUnanimidade()}
-    ${botCta(false)}
     ${telegram(false)}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
       <div class="tiles tiles-3">${tiles}</div>
@@ -313,7 +303,7 @@
   function destaqueAtlas() {
     const L = t(), X = L.at;
     return `<section class="at-dest" aria-labelledby="at-dest-h">
-      <div class="at-dest-txt"><p class="kicker">${esc(X.dest_kicker)}</p><h2 id="at-dest-h"><span class="at-marca" aria-hidden="true">${icone("globe")}</span> Atlas</h2><p>${esc(X.dest_txt)}</p>
+      <div class="at-dest-txt"><p class="kicker">${esc(X.dest_kicker)}</p><h2 id="at-dest-h"><span class="at-marca" aria-hidden="true">${icone("globe")}</span> ${esc(X.dest_t)}</h2><p>${esc(X.dest_txt)}</p>
         <div class="btn-row"><a class="btn btn-bot btn-lg" href="#/atlas">${icone("globe")} ${esc(X.dest_btn)}</a></div></div>
       <ul class="at-dest-l">${X.dest_itens.map(([ic, txt]) => `<li>${icone(ic)}<span>${esc(txt)}</span></li>`).join("")}</ul>
     </section>`;
@@ -436,7 +426,7 @@
       <div class="figs">${lider.map((c) => fig(c.nr, "brasil", L.r_klimek_br(titulo(c.nome)))).join("")}${lider.map((c) => fig(c.nr, "por_uf", L.r_klimek_uf(titulo(c.nome)))).join("")}</div></section>
     <section class="card"><h2>${esc(L.r_integ_title)}</h2><ul class="plain">${integ.map((x) => `<li>${x}</li>`).join("")}</ul></section>
     <section><h2>${esc(L.r_dl_title)}</h2><div class="btn-row">${rel}<a class="btn btn-ghost" href="#/downloads">${esc(L.all_files)}</a></div></section>
-    ${botCta(true)}`;
+    ${botCta()}`;
   }
 
   function paginaTestes(foco) {
@@ -462,7 +452,7 @@
     }).join("");
     return `<header class="page-head"><h1>${esc(L.tests_title)}</h1><p class="lead">${esc(L.tests_sub)}</p>${acoes(false)}
       <ul class="legend inline">${L.legend.map(([c, nm]) => `<li>${chip(c, nm)}</li>`).join("")}<li class="muted small">${esc(L.th_anom)} / ${esc(L.th_info)}</li></ul></header>
-      <div class="tests">${cards}</div>${botCta(true)}`;
+      <div class="tests">${cards}</div>${botCta()}`;
   }
 
   function formSecao(compacto, uf, z, s) {
@@ -484,7 +474,7 @@
       <section class="card">${formSecao(false, uf, z, s)}</section>
       <p class="note small">${esc(L.lk_privacy)}</p>
       <div id="lk-saved"></div>
-      <div id="lk-result" aria-live="polite"></div>${botCta(true)}`;
+      <div id="lk-result" aria-live="polite"></div>${botCta()}`;
   }
 
   async function zona(uf, z) {
@@ -598,7 +588,7 @@
       <section><h2>${esc(L.rp_nucleo_title)}</h2>${tabela(["", { PT: "SHA-256 do núcleo analítico", EN: "Analytical core SHA-256", ES: "SHA-256 del núcleo analítico" }[state.lang], { PT: "SHA-512 do manifesto", EN: "Manifest SHA-512", ES: "SHA-512 del manifiesto" }[state.lang]], vals)}<p class="small muted">${esc(L.rp_env)}</p></section>
       <section class="card"><h2>${esc(L.vr.rp_t)}</h2><p>${esc(L.vr.rp_motor)}</p><p>${esc(L.vr.rp_txt)}</p>${blocoCodigo("python auditoria-eleicoes-2026-Brasil/variacao_entre_turnos.py --dados site/data --saida auditoria-eleicoes-2026-Brasil/resultados-2turno")}
         <p class="small muted">${esc(L.vr.rp_note)}</p><a class="btn btn-sm" href="#/variacao">${icone("swap")} ${esc(L.vr.title)}</a></section>
-      ${botCta(true)}`;
+      ${botCta()}`;
   }
 
   function paginaDownloads() {
@@ -617,7 +607,7 @@
       ${grupo(L.dl_code, R.downloads.filter((d) => d.turno === 0))}
       ${[1, 2].map((n) => grupo(L.dl_round(n), R.downloads.filter((d) => d.turno === n).sort(ord))).join("")}
       <section><h2>${esc(L.rp_hash_title)}</h2>${blocoCodigo("certutil -hashfile Relatorio_Tecnico_Auditoria_Eleicoes_2026_PT.md SHA512")}</section>
-      ${botCta(true)}`;
+      ${botCta()}`;
   }
 
   function paginaLimitacoes() {
@@ -629,7 +619,7 @@
       </div>
       <section><h2>${esc(L.lm_expected_title)}</h2><p>${esc(L.lm_expected)}</p></section>
       <section><h2>${esc(L.lm_site_title)}</h2><p>${esc(L.lm_site)}</p></section>
-      ${botCta(true)}`;
+      ${botCta()}`;
   }
 
   // --- roteamento ------------------------------------------------------------------
@@ -840,7 +830,7 @@
   }
 
   // --- efeitos --------------------------------------------------------------------
-  const SEL_RV = ".card, .tile, .page-card, .test-card, figure, .table-wrap, .bot-cta, .bot-band, .tg-cta, .steps > li, .legend > li, main section > h2, main section > .sec-sub, .h-row, main > section > p, .btn-row, .page-head > p, .page-head > ul";
+  const SEL_RV = ".card, .tile, .page-card, .test-card, figure, .table-wrap, .bot-band, .tg-cta, .steps > li, .legend > li, main section > h2, main section > .sec-sub, .h-row, main > section > p, .btn-row, .page-head > p, .page-head > ul";
   let obs = null;
 
   function revelar(el) {

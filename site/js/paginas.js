@@ -245,7 +245,7 @@
           <div class="h-row"><span></span><button class="btn btn-sm btn-ghost" type="button" data-toggle-view="mp">${esc(L.show_table)}</button></div>
           <div data-view="mp-chart" hidden></div><div data-view="mp-table" hidden id="mapa-tab"></div>
         </section>
-        <p class="small muted">${esc(L.mp_src)}</p>${A.botCta(true)}`;
+        <p class="small muted">${esc(L.mp_src)}</p>${A.botCta()}`;
     },
     async iniciar() {
       const L = t();
@@ -335,7 +335,7 @@
 
   function paginaUfIndice() {
     const L = t();
-    return `${cabecalho(L.uf_title, L.uf_sub, false)}<section id="uf-idx">${carregando()}</section>${A.botCta(true)}`;
+    return `${cabecalho(L.uf_title, L.uf_sub, false)}<section id="uf-idx">${carregando()}</section>${A.botCta()}`;
   }
   async function iniciarUfIndice() {
     const L = t(), oc = await ocorrencias().catch(() => null);
@@ -347,7 +347,7 @@
 
   function paginaUf(uf) {
     const L = t();
-    return `<header class="page-head"><p class="kicker">${esc(L.uf_kicker)}</p><h1>${esc(A.ufNome(uf))} (${uf})</h1>${A.acoes(true)}</header><div id="uf-body" class="pg-body">${carregando()}</div>${A.botCta(true)}`;
+    return `<header class="page-head"><p class="kicker">${esc(L.uf_kicker)}</p><h1>${esc(A.ufNome(uf))} (${uf})</h1>${A.acoes(true)}</header><div id="uf-body" class="pg-body">${carregando()}</div>${A.botCta()}`;
   }
   async function iniciarUf(uf) {
     const L = t();
@@ -408,7 +408,7 @@
   }
 
   function paginaMun(uf, cod) {
-    return `<div id="mun-body" class="pg-body">${carregando()}</div>${A.botCta(true)}`;
+    return `<div id="mun-body" class="pg-body">${carregando()}</div>${A.botCta()}`;
   }
   async function iniciarMun(uf, cod) {
     const L = t();
@@ -506,7 +506,7 @@
         </form></section>
         <div class="h-row li-head"><p id="li-res" class="li-res" aria-live="polite"></p><button class="btn btn-sm" type="button" id="li-csv">${icone("download")} ${esc(L.li_csv)}</button></div>
         <div id="li-tab">${carregando()}</div><div id="li-est"></div>
-        <p class="small muted">${esc(L.li_note)}</p>${A.botCta(true)}`;
+        <p class="small muted">${esc(L.li_note)}</p>${A.botCta()}`;
     },
     async iniciar() {
       const L = t(), q = A.state.query;
@@ -603,7 +603,7 @@
         ${bloco("T03", L.gr_ld_title, esc(L.gr_ld_sub), ft("T03", seletor("t", L.x_round, opTurno(false), "2")), L.gr_src_sec)}
         ${bloco("T13", L.gr_dg_title, esc(L.gr_dg_sub), ft("T13", seletor("t", L.x_round, opTurno(false), "2") + seletor("teste", L.x_test, [["T13", `13. ${A.nomeTeste("T13")}`], ["T14", `14. ${A.nomeTeste("T14")}`]], "T13")), L.gr_src_res)}
         ${bloco("T15", L.gr_kl_title, esc(L.gr_kl_sub), ft("T15", seletor("t", L.x_round, opTurno(false), "2")), L.gr_src_res)}
-        ${A.botCta(true)}`;
+        ${A.botCta()}`;
     },
     async iniciar(p) {
       const L = t();
@@ -718,7 +718,7 @@
       const L = t();
       return `${cabecalho(L.gl_title, L.gl_sub, false)}
         <label class="mini-search big">${icone("search")}<input type="search" id="gl-q" placeholder="${esc(L.gl_ph)}" aria-label="${esc(L.gl_ph)}"></label>
-        <nav class="gl-letters" id="gl-letters" aria-label="${esc(L.gl_letters)}"></nav><div id="gl-list">${carregando()}</div>${A.botCta(true)}`;
+        <nav class="gl-letters" id="gl-letters" aria-label="${esc(L.gl_letters)}"></nav><div id="gl-list">${carregando()}</div>${A.botCta()}`;
     },
     async iniciar(p) {
       const L = t();
@@ -789,7 +789,7 @@
           <p class="small muted">${esc(L.vf_privacy)}</p></section>
         <div id="vf-res" aria-live="polite"></div>
         <section class="card"><h2>${esc(L.vf_how_title)}</h2><ul class="checks">${L.vf_how(nf(R().downloads.length)).map((x) => `<li>${x}</li>`).join("")}</ul>
-          <p class="btn-row"><a class="btn btn-sm" href="#/downloads">${icone("download")} ${esc(L.vf_go_dl)}</a><a class="btn btn-sm btn-ghost" href="#/replicar">${icone("terminal")} ${esc(L.vf_go_rp)}</a></p></section>${A.botCta(true)}`;
+          <p class="btn-row"><a class="btn btn-sm" href="#/downloads">${icone("download")} ${esc(L.vf_go_dl)}</a><a class="btn btn-sm btn-ghost" href="#/replicar">${icone("terminal")} ${esc(L.vf_go_rp)}</a></p></section>${A.botCta()}`;
     },
     iniciar() {
       const L = t();
@@ -904,7 +904,7 @@
             <p id="bu-qr-st" class="small" aria-live="polite"></p><details class="bu-raw" hidden><summary>${esc(L.bu_raw)}</summary><pre></pre></details></div>
           <div data-pane="num" hidden><p class="small muted">${esc(L.bu_num_help)}</p><form id="bu-num" class="bu-num"></form></div>
           <p class="small muted">${esc(L.bu_privacy)}</p></section>
-        <div id="bu-res" aria-live="polite"></div>${A.botCta(true)}`;
+        <div id="bu-res" aria-live="polite"></div>${A.botCta()}`;
     },
     iniciar() {
       const L = t(), fs = $("#bu-sec"), fn = $("#bu-num");
@@ -1042,7 +1042,7 @@
     titulo: () => t().sv_title,
     html() {
       const L = t();
-      return `${cabecalho(L.sv_title, L.sv_sub, false)}<div id="sv-body"></div>${A.botCta(true)}`;
+      return `${cabecalho(L.sv_title, L.sv_sub, false)}<div id="sv-body"></div>${A.botCta()}`;
     },
     iniciar() {
       const L = t(), F = window.FERR;
@@ -1072,7 +1072,7 @@
     html() {
       const L = t();
       return `${cabecalho(L.up_title, L.up_sub, false, `<a class="btn btn-sm" href="feed.xml" data-feed>${icone("rss")} ${esc(L.up_rss)}</a><a class="btn btn-sm btn-tg" href="${A.TELEGRAM}" target="_blank" rel="noopener">${icone("tg")} ${esc(L.tg_btn)}</a>`)}
-        <div id="up-list">${carregando()}</div>${A.botCta(true)}`;
+        <div id="up-list">${carregando()}</div>${A.botCta()}`;
     },
     async iniciar() {
       const L = t(), lg = A.state.lang;

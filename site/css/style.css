@@ -216,8 +216,7 @@ main > section, main > .grid2, main > .tests, main > .tiles, main > .card { marg
 .h-row h2 { margin: 0; }
 section > h2:first-child, .card > h2:first-child, .h-row h2 { position: relative; padding-left: 16px; }
 section > h2:first-child::before, .card > h2:first-child::before, .h-row h2::before { content: ""; position: absolute; left: 0; top: .18em; bottom: .18em; width: 5px; border-radius: 4px; background: linear-gradient(180deg, var(--accent), var(--yellow)); }
-.bot-cta h2::before, .page-card h2::before { display: none; }
-.bot-cta h2 { padding-left: 0 !important; }
+.page-card h2::before { display: none; }
 ul.plain { padding-left: 1.1em; } ul.plain li { margin-bottom: .5em; }
 .checks, .crosses { list-style: none; padding: 0; margin: 0 0 1em; }
 .checks li, .crosses li { position: relative; padding-left: 30px; margin-bottom: .75em; }
@@ -357,15 +356,8 @@ td .btn-copy { position: static; margin-top: 4px; }
 @media (max-width: 560px) { .foot-tg .btn { width: 100%; } }
 
 /* --- chamada do assistente (borda animada) ------------------------------------------- */
-.bot-cta { position: relative; display: flex; gap: 22px; align-items: flex-start; padding: 26px; border-radius: 20px; border: 2px solid transparent; background: linear-gradient(135deg, color-mix(in srgb, var(--surface-2) 90%, transparent), var(--surface)) padding-box, conic-gradient(from var(--ang), #009c3b, #ffdf00, #1f4bc4, #ffdf00, #009c3b) border-box; animation: borda 6s linear infinite; box-shadow: var(--shadow), 0 20px 60px -30px rgba(255, 212, 0, .45); overflow: hidden; }
 @keyframes borda { to { --ang: 360deg; } }
-.bot-cta::before { content: ""; position: absolute; width: 260px; height: 260px; right: -80px; top: -120px; background: radial-gradient(circle, rgba(255, 212, 0, .18), transparent 65%); pointer-events: none; }
-.bot-cta h2 { margin-bottom: .35em; }
-.bot-cta-ico { position: relative; flex: none; width: 60px; height: 60px; border-radius: 18px; background: linear-gradient(135deg, #ffe14d, #f0b800); color: var(--yellow-ink); display: grid; place-items: center; box-shadow: 0 10px 26px -8px rgba(255, 212, 0, .7); animation: quica 3s ease-in-out infinite; }
-.bot-cta-ico svg { width: 32px; height: 32px; }
 @keyframes quica { 0%, 100% { transform: translateY(0) rotate(0); } 15% { transform: translateY(-6px) rotate(-6deg); } 30% { transform: translateY(0) rotate(0); } }
-.bot-cta-actions { margin: 6px 0 10px; }
-@media (max-width: 560px) { .bot-cta { flex-direction: column; padding: 20px; } .bot-cta .btn-lg { width: 100%; } }
 .bot-band { position: relative; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border-radius: 16px; padding: 16px 20px; margin-top: 44px; border: 2px solid transparent; background: linear-gradient(var(--surface), var(--surface)) padding-box, conic-gradient(from var(--ang), #009c3b, #ffdf00, #1f4bc4, #ffdf00, #009c3b) border-box; animation: borda 6s linear infinite; }
 .bot-band p { margin: 0; flex: 1 1 220px; }
 .bot-band-ico { color: var(--yellow-text); display: grid; }
@@ -866,7 +858,7 @@ figcaption { color: #48473f; font-size: .85rem; margin-top: 6px; }
   :root, :root[data-theme], :root[data-contrast] { --bg: #fff; --surface: #fff; --surface-2: #f3f3f3; --surface-3: #e8e8e8; --ink: #000; --ink-2: #222; --muted: #444; --line: #bbb; --line-2: #999;
     --accent: #006b2e; --accent-ink: #fff; --accent-soft: #e6f3ea; --yellow-text: #6b5300; --series-1: #2e7d4a; --shadow: none; --glow: none; color-scheme: light; }
   body { background: #fff !important; font-size: 11pt; }
-  body::before, .site-head, .badge-bar, .site-foot, .atlas-launcher, .bot-band, .bot-cta, .tg-cta, .hero-visual, .hero-canvas, .pg-acoes, .lk-more,
+  body::before, .site-head, .badge-bar, .site-foot, .atlas-launcher, .bot-band, .tg-cta, .hero-visual, .hero-canvas, .pg-acoes, .lk-more,
   .card:has(> .lk-form), .card:has(> .bu-form), .card:has(> .drop), .filters, .btn:not(a), .btn-copy, .pager, .gr-idx, .mini-search, .gl-letters, .tabs, .drop, .lk-form, #lk-saved, .note, [data-toggle-view], #vlibras-access-wrapper, dialog { display: none !important; }
   main { max-width: none; padding: 0; }
   .anim .rv { opacity: 1 !important; transform: none !important; }

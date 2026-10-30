@@ -200,7 +200,7 @@
   // --- Brasil ----------------------------------------------------------------------------------------------
   function htmlBrasil() {
     const L = V();
-    return `${cabecalho(L.kicker, L.title, L.sub)}<div id="vr-body" class="pg-body">${carregando()}</div>${A.botCta(true)}`;
+    return `${cabecalho(L.kicker, L.title, L.sub)}<div id="vr-body" class="pg-body">${carregando()}</div>${A.botCta()}`;
   }
   async function iniciarBrasil() {
     const L = V(), G = t();
@@ -283,7 +283,7 @@
   // --- estado ----------------------------------------------------------------------------------------------
   function htmlUf(uf) {
     const L = V();
-    return `${cabecalho(L.kicker, `${A.ufNome(uf)} (${uf})`, "", [[L.voltar, "#/variacao"]])}<div id="vr-body" class="pg-body">${carregando()}</div>${A.botCta(true)}`;
+    return `${cabecalho(L.kicker, `${A.ufNome(uf)} (${uf})`, "", [[L.voltar, "#/variacao"]])}<div id="vr-body" class="pg-body">${carregando()}</div>${A.botCta()}`;
   }
   async function iniciarUf(uf) {
     const L = V(), G = t();
@@ -347,7 +347,7 @@
   const nz = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
   // --- município -------------------------------------------------------------------------------------------
-  function htmlMun() { return `<div id="vr-body" class="pg-body">${carregando()}</div>${A.botCta(true)}`; }
+  function htmlMun() { return `<div id="vr-body" class="pg-body">${carregando()}</div>${A.botCta()}`; }
   async function iniciarMun(uf, cod) {
     const L = V(), G = t();
     let D, U, muns;

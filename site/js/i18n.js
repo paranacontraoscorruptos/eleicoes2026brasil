@@ -54,9 +54,7 @@ window.I18N = {
     tl_title: "Linha do tempo",
     tl: [["4 out 2026", "Eleição: 1º turno"], ["24 out 2026", "Relatório Técnico do 1º turno emitido"], ["25 out 2026", "Eleição: 2º turno"], ["28 out 2026", "Relatório Técnico do 2º turno emitido"]],
     bot_cta_title: "Tem alguma dúvida? Pergunte ao Atlas",
-    bot_cta_text: "Pergunte sobre os testes, os resultados, os dados, o código ou a sua seção. Cada resposta mostra de onde veio a informação.",
     bot_cta_btn: "Perguntar ao Atlas",
-    bot_cta_small: "O Atlas responde com base nos relatórios, nos dados e no código.",
     // grupo do Telegram
     tg_title: "Participe do grupo no Telegram",
     tg_text: "Entre no grupo para receber as novidades da auditoria e conversar com outras pessoas que estão analisando os dados.",
@@ -282,9 +280,7 @@ window.I18N = {
     tl_title: "Timeline",
     tl: [["Oct 4, 2026", "Election: 1st round"], ["Oct 24, 2026", "1st round Technical Report issued"], ["Oct 25, 2026", "Election: 2nd round"], ["Oct 28, 2026", "2nd round Technical Report issued"]],
     bot_cta_title: "Have a question? Ask Atlas",
-    bot_cta_text: "Ask about the tests, the results, the data, the code or your section. Every answer shows where the information came from.",
     bot_cta_btn: "Ask Atlas",
-    bot_cta_small: "Atlas answers from the reports, the data and the code.",
     // Telegram group
     tg_title: "Be part of our Telegram group",
     tg_text: "Join the group to get the audit's updates and talk with other people who are analyzing the data.",
@@ -501,9 +497,7 @@ window.I18N = {
     tl_title: "Línea de tiempo",
     tl: [["4 oct 2026", "Elección: 1.ª vuelta"], ["24 oct 2026", "Informe Técnico de la 1.ª vuelta emitido"], ["25 oct 2026", "Elección: 2.ª vuelta"], ["28 oct 2026", "Informe Técnico de la 2.ª vuelta emitido"]],
     bot_cta_title: "¿Tiene alguna duda? Pregunte a Atlas",
-    bot_cta_text: "Pregunte sobre las pruebas, los resultados, los datos, el código o su sección. Cada respuesta muestra de dónde salió la información.",
     bot_cta_btn: "Preguntar a Atlas",
-    bot_cta_small: "Atlas responde con base en los informes, los datos y el código.",
     // grupo de Telegram
     tg_title: "Únase al grupo de Telegram",
     tg_text: "Entre al grupo para recibir las novedades de la auditoría y conversar con otras personas que están analizando los datos.",
@@ -1743,8 +1737,8 @@ window.I18N.PT.at = {
   ap_format: "Não reconheci as colunas. A primeira linha precisa ter uf, zona, secao e pelo menos um número (aptos, votaram, número do candidato, brancos ou nulos).",
   ap_ok: (n) => `${n} números iguais ao arquivo do TSE`, ap_diff: (n) => `${n} número(s) diferente(s) do arquivo do TSE`,
   ap_sum: (t, i, d, n, v) => `${t} linhas · ${i} iguais · ${d} diferentes · ${n} seções não achadas · ${v} inválidas.`, th_local: "Seção", th_yours: "Sua apuração",
-  dest_kicker: "Novo", dest_txt: "Uma conversa para consultar qualquer estado, município, zona, seção ou urna, conferir o QR Code do boletim e arquivos, comparar com o TSE e baixar o que precisar.",
-  dest_btn: "Abrir o Atlas", dest_itens: [["search", "Estado, município, zona, seção e urna"], ["qr", "Confere o QR Code do boletim e arquivos"], ["download", "Leva direto ao download"], ["shield", "Compara com o TSE e o IBGE"]],
+  dest_kicker: "Tem alguma dúvida?", dest_t: "Pergunte ao Atlas", dest_txt: "Uma conversa para consultar qualquer estado, município, zona, seção ou urna, conferir o QR Code do boletim e arquivos, comparar com o TSE e baixar o que precisar. Cada resposta mostra de onde veio a informação.",
+  dest_btn: "Fazer uma pergunta", dest_itens: [["search", "Estado, município, zona, seção e urna"], ["qr", "Confere o QR Code do boletim e arquivos"], ["download", "Leva direto ao download"], ["shield", "Compara com o TSE e o IBGE"]],
   think: {
     guia: [["Abrindo a função…", "Preparando a função…", "Carregando a função…"], ["Separando exemplos…", "Escolhendo exemplos…", "Preparando as instruções…"]],
     mun: [["Procurando o município na lista do TSE…", "Localizando o município nos dados…", "Achando o município nos arquivos…"],
@@ -1902,8 +1896,8 @@ window.I18N.EN.at = {
   ap_format: "I did not recognize the columns. The first row must have uf, zona, secao and at least one number (aptos, votaram, candidate number, brancos or nulos).",
   ap_ok: (n) => `${n} numbers equal to the TSE file`, ap_diff: (n) => `${n} number(s) different from the TSE file`,
   ap_sum: (t, i, d, n, v) => `${t} rows · ${i} equal · ${d} different · ${n} sections not found · ${v} invalid.`, th_local: "Section", th_yours: "Your count",
-  dest_kicker: "New", dest_txt: "A chat to look up any state, municipality, zone, section or voting machine, check the report QR code and files, compare with the TSE and download what you need.",
-  dest_btn: "Open Atlas", dest_itens: [["search", "State, municipality, zone, section and machine"], ["qr", "Checks the report QR code and files"], ["download", "Takes you straight to the download"], ["shield", "Compares with the TSE and the IBGE"]],
+  dest_kicker: "Have a question?", dest_t: "Ask Atlas", dest_txt: "A chat to look up any state, municipality, zone, section or voting machine, check the report QR code and files, compare with the TSE and download what you need. Every answer shows where the information came from.",
+  dest_btn: "Ask a question", dest_itens: [["search", "State, municipality, zone, section and machine"], ["qr", "Checks the report QR code and files"], ["download", "Takes you straight to the download"], ["shield", "Compares with the TSE and the IBGE"]],
   think: {
     guia: [["Opening the function…", "Preparing the function…", "Loading the function…"], ["Picking examples…", "Choosing examples…", "Preparing the instructions…"]],
     mun: [["Looking up the municipality in the TSE list…", "Finding the municipality in the data…", "Locating the municipality in the files…"],
@@ -2061,8 +2055,8 @@ window.I18N.ES.at = {
   ap_format: "No reconocí las columnas. La primera fila debe tener uf, zona, secao y al menos un número (aptos, votaram, número del candidato, brancos o nulos).",
   ap_ok: (n) => `${n} números iguales al archivo del TSE`, ap_diff: (n) => `${n} número(s) diferente(s) del archivo del TSE`,
   ap_sum: (t, i, d, n, v) => `${t} filas · ${i} iguales · ${d} diferentes · ${n} secciones no encontradas · ${v} inválidas.`, th_local: "Sección", th_yours: "Su conteo",
-  dest_kicker: "Nuevo", dest_txt: "Una conversación para consultar cualquier estado, municipio, zona, sección o urna, verificar el código QR del boletín y archivos, comparar con el TSE y descargar lo que necesite.",
-  dest_btn: "Abrir Atlas", dest_itens: [["search", "Estado, municipio, zona, sección y urna"], ["qr", "Verifica el código QR del boletín y archivos"], ["download", "Lleva directo a la descarga"], ["shield", "Compara con el TSE y el IBGE"]],
+  dest_kicker: "¿Tiene alguna duda?", dest_t: "Pregunte a Atlas", dest_txt: "Una conversación para consultar cualquier estado, municipio, zona, sección o urna, verificar el código QR del boletín y archivos, comparar con el TSE y descargar lo que necesite. Cada respuesta muestra de dónde salió la información.",
+  dest_btn: "Hacer una pregunta", dest_itens: [["search", "Estado, municipio, zona, sección y urna"], ["qr", "Verifica el código QR del boletín y archivos"], ["download", "Lleva directo a la descarga"], ["shield", "Compara con el TSE y el IBGE"]],
   think: {
     guia: [["Abriendo la función…", "Preparando la función…", "Cargando la función…"], ["Separando ejemplos…", "Eligiendo ejemplos…", "Preparando las instrucciones…"]],
     mun: [["Buscando el municipio en la lista del TSE…", "Ubicando el municipio en los datos…", "Encontrando el municipio en los archivos…"],

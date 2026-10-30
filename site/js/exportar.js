@@ -51,7 +51,7 @@
   const textoTrechos = (rs) => rs.map((r) => r.txt).join("");
 
   // --- modelo: blocos na ordem em que aparecem -------------------------------------------------------------------------
-  const PULAR = ".at-acts, .caret, script, style, noscript, form, .filters, .pg-acoes, .bot-band, .bot-cta, .tg-cta, .skip, .atlas-launcher, .print-head, .tip, dialog, "
+  const PULAR = ".at-acts, .caret, script, style, noscript, form, .filters, .pg-acoes, .bot-band, .tg-cta, .skip, .atlas-launcher, .print-head, .tip, dialog, "
     + ".at-btns, .chips, .msg-rel, input, select, textarea, button:not(.at-lk), .btn-copy, .hero-canvas, .hero-visual, [hidden], .at-doc-imp, .at-menu-mais, .at-cam, .lk-form, .tabs, "
     + ".doc-ir, .at-status, .sh-qr, .at-sem, nav, .map-side form";
   const ehIcone = (svg) => svg.getAttribute("aria-hidden") === "true" || (svg.getBoundingClientRect().width || +svg.getAttribute("width") || 0) <= ICON_PX;
@@ -1290,8 +1290,8 @@ document.querySelectorAll("[data-count]").forEach(function(el){el.textContent=fm
       <p class="doc-meta">${esc(meta.titulo)} · ${esc(E().made(meta.quando))}</p><p class="doc-selo">${esc(L.badge)}</p>
       ${meta.url ? `<div class="doc-vivo">${qr}<div><b>${esc(E().open)}</b><p>${esc(L.at.doc_live_note_html)}</p><a href="${esc(meta.url)}">${esc(meta.url.replace(/^https:\/\//, ""))}</a></div></div>` : ""}</header>`;
     const corpo = document.createElement("div"); corpo.className = "pg-doc-corpo";
-    Array.from(main.children).forEach((c) => { if (!c.matches(".print-head, .bot-band, .bot-cta, .tg-cta")) corpo.append(c.cloneNode(true)); });
-    corpo.querySelectorAll(".pg-acoes, form.filters, .lk-form, .tabs, script, .hero-canvas, .bot-band, .bot-cta, .tg-cta, [data-toggle-view]").forEach((x) => x.remove());
+    Array.from(main.children).forEach((c) => { if (!c.matches(".print-head, .bot-band, .tg-cta")) corpo.append(c.cloneNode(true)); });
+    corpo.querySelectorAll(".pg-acoes, form.filters, .lk-form, .tabs, script, .hero-canvas, .bot-band, .tg-cta, [data-toggle-view]").forEach((x) => x.remove());
     corpo.querySelectorAll(".rv").forEach((x) => { x.classList.remove("rv", "rv-l", "rv-s", "in"); x.style.removeProperty("--d"); });
     corpo.querySelectorAll("[data-count]").forEach((x) => { x.textContent = nf(+x.dataset.count); });
     corpo.querySelectorAll(".tw-on").forEach((h) => { const s = h.querySelector(".sr-only"); if (s) h.textContent = s.textContent; h.classList.remove("tw-on"); });
