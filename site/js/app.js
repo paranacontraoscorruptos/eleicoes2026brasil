@@ -456,7 +456,7 @@
       const codigo = X.funcs[tid].map((f) => `<a href="${BLOB}#L${f.ini}-L${f.fim}" target="_blank" rel="noopener"><code>${esc(f.nome)}</code></a>`).join(" · ");
       const cp = tid === "T11" && R.complementar && R.complementar.encerramento_tardio, cpn = (n) => nf(cp.turnos[n].sinalizadas);
       const prev = cp ? `<div class="note enc-nota"><h3>${icone("help")} ${esc(L.ex.enc_t)}</h3><p>${esc(L.ex.enc_nota(cpn(1), cpn(2)))}</p>
-        <p class="btn-row"><a class="btn btn-sm" href="#/lista?teste=T11&nivel=a">${icone("list")} ${esc(L.f_list)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.csv" download>${icone("download")} ${esc(L.ex.enc_csv)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.py" download>${icone("code")} ${esc(L.ex.enc_py)}</a></p></div>` : "";
+        <p class="btn-row"><a class="btn btn-sm btn-primary" href="#/encerramento-tardio">${icone("clock")} ${esc(L.ex.et_title)}</a><a class="btn btn-sm" href="#/lista?teste=T11&nivel=a">${icone("list")} ${esc(L.f_list)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.csv" download>${icone("download")} ${esc(L.ex.enc_csv)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.py" download>${icone("code")} ${esc(L.ex.enc_py)}</a></p></div>` : "";
       const vhr = tid === "T11" && R.complementar && R.complementar.votos_apos_horario;
       const prevVh = vhr ? `<div class="note enc-nota"><h3>${icone("clock")} ${esc(L.ex.vh_t)}</h3><p>${esc(L.ex.vh_info(nf(vhr.turnos[1].secoes), nf(vhr.turnos[1].votos_apos), nf(vhr.turnos[2].secoes), nf(vhr.turnos[2].votos_apos)))}</p>
         <p class="btn-row"><a class="btn btn-sm btn-ghost" href="${vhr.csv_secoes}" download>${icone("download")} ${esc(L.ex.vh_csv_secoes)}</a><a class="btn btn-sm btn-ghost" href="${vhr.script}" download>${icone("code")} ${esc(L.ex.vh_py)}</a></p>
@@ -574,7 +574,7 @@
           f.o.map((o) => [`<a href="#/testes/${o[0]}">${numTeste(o[0])}. ${esc(nomeTeste(o[0]))}</a><br><span class="small muted">${esc((R.categorias[o[2]] || {})[state.lang] || o[2])}</span>`,
             chip(o[1] === "a" ? "red" : "amber", o[1] === "a" ? L.lv_a : L.lv_i), esc(o[3] && o[3] !== "—" ? o[3] : "—"), esc(dec(o[4] || "—")), esc(dec(o[5] || "—")),
             o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))]))
-          + (f.o.some((o) => o[2] === "encerramento_tardio") ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_sec)} <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(L.ex.enc_csv)}</a></p>` : "");
+          + (f.o.some((o) => o[2] === "encerramento_tardio") ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_sec)} <a href="#/encerramento-tardio">${esc(L.ex.et_title)}</a> · <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(L.ex.enc_csv)}</a></p>` : "");
       } else fl = `<p>${chip("green", L.lk_noflags)}</p>`;
       return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}<div class="vh-slot" data-t="${n}"${f && f.o.some((o) => o[2] === "encerramento_tardio") ? " data-vh" : ""}></div></section>`;
     }).join("");

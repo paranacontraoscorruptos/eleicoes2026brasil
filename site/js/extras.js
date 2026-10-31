@@ -49,7 +49,8 @@
   // --- menu: páginas novas na fileira de ferramentas ---------------------------------------------------------
   [["sim", "#/simulador"], ["places", "#/locais"], ["faq", "#/perguntas"], ["anatomy", "#/anatomia"], ["query", "#/consulta"], ["press", "#/imprensa"], ["embed", "#/incorporar"], ["devs", "#/dados"], ["proofs", "#/provas"]]
     .forEach((x) => A.MAIS.push(x));
-  Object.assign(A.ICO_MAIS, { sim: "lab", places: "building", faq: "help", anatomy: "receipt", query: "db", press: "news", embed: "code", devs: "braces", proofs: "seal" });
+  A.MAIS.splice(1, 0, ["late", "#/encerramento-tardio"]);
+  Object.assign(A.ICO_MAIS, { late: "clock", sim: "lab", places: "building", faq: "help", anatomy: "receipt", query: "db", press: "news", embed: "code", devs: "braces", proofs: "seal" });
 
   // ===================================================================================================
   // Sinalizações por seção (a partir de ocorrencias.json): "UF|zona|seção" -> {turno: [[teste, nível]]}
@@ -603,12 +604,12 @@
   }
   function linhaHtml(r, gi, k, ident) {
     const E = X(), l = r.m.linhas[gi];
-    const cel = l.map((v, i) => `<td>${fmtCel(v, ident[i])}</td>`).join("");
+    const cel = l.map((v, i) => `<td>${r.fmt && r.fmt[i] ? r.fmt[i](v) : fmtCel(v, ident[i])}</td>`).join("");
     const sel = r.sel === gi ? " cq-sel" : "";
     return `<tr class="cq-lin${sel}" tabindex="0" data-i="${gi}"><td class="cq-n">${nf(k + 1)}</td>${r.temSec ? `<td class="cq-sin">${chipsSinal(r, r.ler(l))}</td>` : ""}${cel}${r.G ? `<td class="cq-acao"><button class="icon-btn" type="button" data-grupo="${gi}" aria-label="${esc(E.cq_ver_linhas)}" title="${esc(E.cq_ver_linhas)}">${icone("list")}</button></td>` : ""}</tr>`;
   }
   function voltarHtml() {
-    const ant = cq.hist[cq.hist.length - 1];
+    const ant = cq.res && cq.res.fonte ? null : cq.hist[cq.hist.length - 1];
     return ant ? `<p class="cq-voltar"><button class="btn btn-sm" type="button" data-voltar>‹ ${esc(X().cq_voltar(nf(ant.m.linhas.length)))}</button></p>` : "";
   }
   function mostrarRes() {
@@ -616,7 +617,7 @@
     if (!box || !r) return;
     dicaEsconder();
     const m = r.m, n = m.linhas.length;
-    $("#cq-info").textContent = `${E.cq_turno_info(E.cq_turno_ops[r.turno || 0])} · ${E.cq_linhas(nf(n), nf(r.ms))}` + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
+    $("#cq-info").textContent = r.info ? r.info(n) : `${E.cq_turno_info(E.cq_turno_ops[r.turno || 0])} · ${E.cq_linhas(nf(n), nf(r.ms))}` + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
     $("#cq-dl").hidden = !n;
     if (!n) { box.innerHTML = `${voltarHtml()}<p class="muted">${esc(E.cq_vazio)}</p>`; return; }
     const np = Math.ceil(n / r.pp);
@@ -626,7 +627,8 @@
     for (let k = ini; k < fim; k++) corpo += linhaHtml(r, r.idx[k], k, ident);
     const cab = `<th scope="col" class="cq-n">#</th>` + (r.temSec ? `<th scope="col" class="cq-sin" title="${esc(E.cq_sin_tip)}">${esc(E.cq_sin_col)}</th>` : "") + m.colunas.map((c, i) => {
       const s = r.ord && r.ord.i === i ? r.ord.d : 0;
-      return `<th scope="col" aria-sort="${s > 0 ? "ascending" : s < 0 ? "descending" : "none"}"><button class="cq-ord" type="button" data-ord="${i}" title="${esc(E.cq_ord_col(c))}">${esc(c)}<span aria-hidden="true">${s > 0 ? "▲" : s < 0 ? "▼" : "↕"}</span></button></th>`;
+      const rot = r.rot ? r.rot[i] : c;
+      return `<th scope="col" aria-sort="${s > 0 ? "ascending" : s < 0 ? "descending" : "none"}"><button class="cq-ord" type="button" data-ord="${i}" title="${esc(E.cq_ord_col(rot))}">${esc(rot)}<span aria-hidden="true">${s > 0 ? "▲" : s < 0 ? "▼" : "↕"}</span></button></th>`;
     }).join("") + (r.G ? `<th scope="col"><span class="sr-only">${esc(E.cq_ver_linhas)}</span></th>` : "");
     box.innerHTML = `${voltarHtml()}${paginador(r, "topo")}<div class="table-wrap cq-wrap"><table class="num-cols cq-tab"><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table></div>${paginador(r, "base")}
       <p class="small muted cq-uso">${icone("help")} ${esc(E.cq_uso)}</p>`;
@@ -812,10 +814,10 @@
   }
   function dadosLinha(r, gi) {
     const l = r.m.linhas[gi], e = r.ler(l), d = destino(e);
-    const k = d ? `${d.tipo}|${JSON.stringify(e)}` : `linha|${r.id}|${gi}`;
+    const k = (r.fonte ? "arq|" : "") + (d ? `${d.tipo}|${JSON.stringify(e)}` : `linha|${r.id}|${gi}`);
     if (!cacheInfo.has(k)) {
       if (cacheInfo.size > 400) cacheInfo.clear();
-      cacheInfo.set(k, carregarDados(e, d).catch(() => ({ tipo: "linha", e, d: null, href: null })));
+      cacheInfo.set(k, (r.fonte ? r.fonte(e, d) : carregarDados(e, d)).catch(() => ({ tipo: "linha", e, d: null, href: null })));
     }
     return cacheInfo.get(k);
   }
@@ -1155,7 +1157,7 @@
     dica.tm = setTimeout(async () => {
       const r = cq.res, gi = +tr.dataset.i;
       if (!r || dica.tr !== tr) return;
-      if (!dica.el || !dica.el.isConnected) { dica.el = document.createElement("div"); dica.el.className = "tip cq-dica"; dica.el.setAttribute("role", "tooltip"); document.body.append(dica.el); }
+      if (!dica.el || !dica.el.isConnected) { dica.el = document.createElement("div"); dica.el.className = "tip cq-dica"; dica.el.setAttribute("role", "tooltip"); dica.el.hidden = true; document.body.append(dica.el); }
       const dd = await dadosLinha(r, gi);
       if (dica.tr !== tr || cq.res !== r) return;
       dica.el.innerHTML = resumo(dd, r, gi); dica.el.hidden = false; dicaPos();
@@ -1184,7 +1186,7 @@
       }
       if (ev.target.closest("[data-voltar]")) {
         const ant = cq.hist.pop(); if (!ant) return;
-        cq.res = ant; $("#cq-sql").value = ant.sql; mostrarRes(); return;
+        cq.res = cq.consultaRes = ant; $("#cq-sql").value = ant.sql; mostrarRes(); return;
       }
       const g = ev.target.closest("[data-grupo]");
       if (g) { abrirGrupo(+g.dataset.grupo); return; }
@@ -1356,14 +1358,14 @@
         const t0 = performance.now();
         try {
           const m = await pedir({ tipo: "sql", sql, turno: cq.turno });
-          cq.res = { id: ++cqResSeq, m, sql, turno: cq.turno, ms: Math.round(performance.now() - t0), pag: 0, pp: ppSalvo(), ord: null, sel: null, ler: leitor(m.colunas), G: agrupada(sql, m.colunas) };
+          cq.res = cq.consultaRes = { id: ++cqResSeq, m, sql, turno: cq.turno, ms: Math.round(performance.now() - t0), pag: 0, pp: ppSalvo(), ord: null, sel: null, ler: leitor(m.colunas), G: agrupada(sql, m.colunas) };
           const nomes = m.colunas.map(nomeCol);
           cq.res.temSec = ["uf", "zona", "secao"].every((c) => nomes.includes(c));
           if (cq.res.temSec) { try { cq.sin = await sinaisSecoes(); } catch (e2) { cq.sin = null; } }
           ordenar(cq.res);
           mostrarRes();
           $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });
-        } catch (e) { cq.res = null; $("#cq-res").innerHTML = `${voltarHtml()}<p class="alert"><b>${esc(E.cq_erro)}:</b> ${esc(e.message)}</p>`; }
+        } catch (e) { cq.res = cq.consultaRes = null; $("#cq-res").innerHTML = `${voltarHtml()}<p class="alert"><b>${esc(E.cq_erro)}:</b> ${esc(e.message)}</p>`; }
       }
       cq.rodar = rodar;
       ligarRes($("#cq-res"));
@@ -1392,6 +1394,7 @@
       linkConsulta();
       if (cq.colunas.secoes) montarForm();
       // volta de uma página aberta pelo resultado: a tabela, a página e a linha continuam onde estavam
+      cq.res = cq.consultaRes || null;
       if (cq.res && $("#cq-sql").value.trim() === cq.res.sql && cq.res.turno === cq.turno) {
         mostrarRes();
         const v = cq.res.volta; cq.res.volta = null;
@@ -1403,6 +1406,197 @@
       }
       // link com estados e consulta: carrega e roda
       if (A.state.query.get("ufs") && marcados().some((u) => !cq.carregados.has(u))) { await carregar(); if (A.state.query.get("q")) rodar(); }
+    },
+  };
+
+  // ===================================================================================================
+  // Páginas de anomalia (uma por anomalia grave): a mesma tabela, dica, painel e lista voto a voto da consulta,
+  // com os dados já prontos (sem carregar estados nem escrever SQL)
+  // ===================================================================================================
+  const hhmmss = (n) => (n == null ? null : String(n).padStart(6, "0").replace(/^(\d\d)(\d\d)(\d\d)$/, "$1:$2:$3"));
+  // Uma seção no formato do painel da consulta, lida dos arquivos do site: zona, local de votação e log da urna
+  async function dadosSecaoArq(e, d) {
+    const out = { e, d, href: d && d.href ? d.href : null };
+    if (!d || d.tipo !== "secao") return Object.assign(out, { tipo: "linha" });
+    const Z = await A.zona(e.uf, e.z), rec = Z && Z.s[String(e.s)];
+    if (!rec) return Object.assign(out, { tipo: "linha" });
+    const mun = Z.mun[rec[0]] || ["", ""], ordem = R().ordem_votos;
+    const todos = [...new Set(ordem["1"].concat(ordem["2"]))].filter((nr) => nr !== "95" && nr !== "96");
+    const [ls, vhR] = await Promise.all([locais(e.uf).catch(() => []), vhSecao(e.uf, e.z, e.s).catch(() => ({}))]);
+    const l = ls.find((x) => +x[0] === e.z && String(x[2]) === String(mun[0]) && x[10].some((v) => +v === e.s));
+    const ts = [1, 2].filter((n) => rec[n]).map((n) => {
+      const tv = rec[n], v = {};
+      ordem[n].forEach((nr, i) => { v[nr] = tv[5][i] || 0; });
+      const sn = rec[3] && rec[3][String(n)];
+      const x = { turno: n, uf: e.uf, cod_mun: mun[0], municipio: mun[1], zona: e.z, secao: e.s, local: l ? l[1] : null, aptos: tv[0], comparecimento: tv[1], faltosos: tv[0] - tv[1],
+        abertura: hhmmss(tv[2]), encerramento: hhmmss(tv[3]), agregadas: tv[4] ? String(tv[4]) : null,
+        validos: Object.keys(v).reduce((a, nr) => a + (nr === "95" || nr === "96" ? 0 : v[nr]), 0), brancos: v["95"] || 0, nulos: v["96"] || 0,
+        sinalizada: sn && sn.o.some((o) => o[1] === "a") ? 1 : 0 };
+      todos.forEach((nr) => { x["v" + nr] = ordem[n].includes(nr) ? v[nr] || 0 : null; });
+      return x;
+    });
+    const fl = [1, 2].flatMap((n) => ((rec[3] && rec[3][String(n)]) || { o: [] }).o.map((o) => [n, o[0], o[1], o[2]]))
+      .sort((a, b) => a[0] - b[0] || String(a[2]).localeCompare(String(b[2])) || String(a[1]).localeCompare(String(b[1])));
+    return Object.assign(out, { tipo: "secao", ts, fl, loc: l ? [l[3], l[4], l[5]] : null, munNome: A.titulo(mun[1] || ""), vh: vhR,
+      hLocal: l ? `#/locais/${e.uf}/${mun[0]}/${e.z}-${l[1]}` : null, hMun: `#/uf/${e.uf}/${mun[0]}` });
+  }
+
+  // --- Urnas que fecharam tarde (encerramento 1 h ou mais depois do horário oficial) ------------------------------
+  const ET_COLS = ["uf", "municipio", "zona", "secao", "turno", "atraso", "votos_apos", "abertura", "encerramento", "fim", "ultimo_voto"];
+  const ET_MIN = [60, 120, 180, 240, 300, 360];
+  const et = { dados: null, res: null, chave: null, f: { turno: 0, uf: "", mun: "", min: 60 } };
+  const atrasoTxt = (m) => `+${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`;
+  function etDados() {
+    if (!et.dados) {
+      et.dados = Promise.all([dado("site/data/anomalias/encerramento_tardio.json"), A.municipios()]).then(([D, M]) => D.l.map((x) => {
+        const mun = A.titulo(((M[x[1]] || {})[x[2]] || [x[2]])[0]);
+        return { t: x[0], uf: x[1], cod: x[2], z: x[3], s: x[4], ab: hhmmss(x[5]), en: hhmmss(x[6]), fim: `${String(x[7]).padStart(2, "0")}:00`, fuso: x[8],
+          min: x[9], va: x[10], vd: x[11], ult: hhmmss(x[12]), mun, k: nz(mun) };
+      }));
+      et.dados.catch(() => { et.dados = null; });
+    }
+    return et.dados;
+  }
+  // filtros vindos do endereço (#/encerramento-tardio?turno=1&uf=BA&mun=salvador&min=120)
+  function etLerFiltros(q) {
+    const f = { turno: 0, uf: "", mun: "", min: 60 };
+    if (["1", "2"].includes(q.get("turno"))) f.turno = +q.get("turno");
+    const uf = (q.get("uf") || "").toUpperCase(); if (window.UF_NOMES[uf]) f.uf = uf;
+    f.mun = (q.get("mun") || "").slice(0, 60);
+    const m = +q.get("min"); if (ET_MIN.includes(m)) f.min = m;
+    return f;
+  }
+  const etChave = (f) => JSON.stringify([A.state.lang, f.turno, f.uf, nz(f.mun.trim()), f.min]);
+  function etFiltrar(ls, f) {
+    const q = nz(f.mun.trim());
+    return ls.filter((x) => (!f.turno || x.t === f.turno) && (!f.uf || x.uf === f.uf) && x.min >= f.min && (!q || x.k.includes(q)));
+  }
+  function etRes(ls, total) {
+    const E = X(), L = t(), C = E.et_col;
+    const fmt = { atraso: (v) => `<b class="et-atraso">${esc(atrasoTxt(v))}</b>`, turno: (v) => esc(L.round(v)), votos_apos: (v) => (v == null ? "—" : nf(v)) };
+    const r = { id: ++cqResSeq, m: { colunas: ET_COLS, linhas: ls.map((x) => [x.uf, x.mun, x.z, x.s, x.t, x.min, x.va, x.ab, x.en, x.fim, x.ult]) },
+      sql: null, turno: 0, ms: 0, pag: 0, pp: ppSalvo(), ord: et.res ? et.res.ord : null, sel: null, ler: leitor(ET_COLS), G: null, temSec: true,
+      fonte: dadosSecaoArq, rot: ET_COLS.map((c) => C[c] || c), fmt: ET_COLS.map((c) => fmt[c] || null), linhasEt: ls,
+      info: (n) => E.et_info(nf(n), nf(total), n === total) };
+    ordenar(r);
+    return r;
+  }
+  function etCsv(ls) {
+    const cab = ["turno", "uf", "cod_mun", "municipio", "zona", "secao", "abertura", "encerramento", "fim_oficial_local", "fuso_utc", "minutos_depois_do_horario", "votos_depois_do_horario", "votos_no_dia", "ultimo_voto"];
+    const linhas = ls.map((x) => [x.t, x.uf, x.cod, x.mun, x.z, x.s, x.ab, x.en, x.fim, x.fuso, x.min, x.va, x.vd, x.ult]);
+    baixar(`urnas_que_fecharam_tarde_${new Date().toISOString().slice(0, 10)}.csv`, "﻿" + [cab].concat(linhas).map((l) => l.map(csvCampo).join(",")).join("\r\n"), "text/csv;charset=utf-8");
+  }
+  const SQL_ET = "SELECT s.uf, s.municipio, s.zona, s.secao, s.turno, s.abertura, s.encerramento\nFROM secoes s JOIN sinalizacoes g\n  ON g.uf = s.uf AND g.zona = s.zona AND g.secao = s.secao AND g.turno = s.turno\nWHERE g.categoria = 'encerramento_tardio'\nORDER BY s.encerramento DESC";
+
+  const pgEncTardio = {
+    ativo: "late",
+    titulo: () => X().et_title,
+    html() {
+      const E = X(), L = t(), C = R().complementar || {}, ET = C.encerramento_tardio, VH = C.votos_apos_horario;
+      const f = (et.f = etLerFiltros(A.state.query));
+      let kpis = "", faixas = "";
+      if (ET) {
+        const T1 = ET.turnos["1"], T2 = ET.turnos["2"];
+        const vh1 = VH && VH.turnos["1"];
+        kpis = `<div class="et-kpis">
+          <div class="et-dest"><span class="et-k-t">${esc(L.round(1))}</span><b>${nA(T1.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T1.sinalizadas / T1.analisadas, 1), nf(T1.analisadas)))}</span></div>
+          <div><span class="et-k-t">${esc(L.round(2))}</span><b>${nA(T2.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T2.sinalizadas / T2.analisadas, 4), nf(T2.analisadas)))}</span></div>
+          ${vh1 ? `<div class="et-dest"><span class="et-k-t">${esc(E.et_k_va)}</span><b>${nA(vh1.votos_apos)}</b><span>${esc(E.et_k_va_sub(pct(vh1.votos_apos / (vh1.votos_dia || 1), 1), nf(vh1.votos_dia)))}</span></div>` : ""}
+          <div id="et-max"><span class="et-k-t">${esc(E.et_k_max)}</span><b>—</b><span></span></div></div>`;
+        const fx = T1.faixas, mx = fx[">=60min"] || 1;
+        faixas = `<section class="card"><h2>${esc(E.et_faixas_t)}</h2><p class="small muted">${esc(E.et_faixas_n)}</p><ul class="et-faixas">${ET_MIN.map((m, i) => {
+          const n = fx[`>=${m}min`] || 0;
+          return `<li><button type="button" data-et-min="${m}" aria-pressed="${f.min === m}"><span>${esc(E.et_min_op(m / 60))}</span><span class="et-fb"><i style="--w:${Math.max(0.6, (100 * n) / mx).toFixed(2)}%;--i:${i}"></i></span><em>${nA(n)}</em></button></li>`;
+        }).join("")}</ul></section>`;
+      }
+      const vhUfs = VH && VH.ufs ? `<li>${esc(E.vh_csv_todos)}: ${VH.ufs.map((u) => `<a href="site/data/complementar/votos_apos_horario/${u}.csv.gz" download>${u}</a>`).join(" · ")}</li>` : "";
+      return `${cabecalho(E.et_title, E.et_sub, false)}
+        <section class="card et-sobre"><h2>${esc(E.et_oque_t)}</h2><ul>${E.et_oque.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+          <p class="btn-row"><a class="btn btn-sm" href="#/testes/T11">${icone("flask")} ${esc(E.et_t11)}</a><a class="btn btn-sm btn-ghost" href="#/graficos">${icone("chart")} ${esc(E.et_graf)}</a></p></section>
+        ${kpis}${faixas}
+        <section class="card cq-p" id="cq-res-c"><h2>${esc(E.et_lista_t)}</h2>
+          <form class="et-filtros" id="et-f" onsubmit="return false">
+            <div class="cq-turnos" role="radiogroup" aria-label="${esc(E.cq_turno_t)}"><span class="cq-turnos-r">${icone("vote")} ${esc(E.et_f_turno)}</span>
+              <span class="cq-turnos-b">${[0, 1, 2].map((n) => `<button type="button" role="radio" aria-checked="${f.turno === n}" data-et-turno="${n}">${esc(E.cq_turno_ops[n])}<small data-et-n="${n}"></small></button>`).join("")}</span></div>
+            <div class="filters">
+              <label><span>${esc(E.et_f_uf)}</span><select name="uf"><option value="">${esc(E.et_f_uf_todos)}</option></select></label>
+              <label><span>${esc(E.et_f_mun)}</span><input name="mun" type="search" autocomplete="off" placeholder="${esc(E.et_f_mun_ph)}" value="${esc(f.mun)}"></label>
+              <label><span>${esc(E.et_f_min)}</span><select name="min">${ET_MIN.map((m) => `<option value="${m}"${f.min === m ? " selected" : ""}>${esc(E.et_min_op(m / 60))}</option>`).join("")}</select></label>
+              <button class="btn btn-sm btn-ghost" type="button" id="et-limpar">${icone("close")} ${esc(E.et_limpar)}</button></div></form>
+          <p class="small muted" id="cq-info" aria-live="polite"></p><div id="cq-res">${carregando()}</div>
+          <div class="btn-row" id="cq-dl" hidden><button class="btn btn-sm" type="button" id="et-csv">${icone("download")} ${esc(E.et_csv)}</button>
+            <a class="btn btn-sm btn-ghost" href="#/consulta?q=${encodeURIComponent(SQL_ET)}">${icone("db")} ${esc(E.et_consulta)}</a></div>
+          <p class="small muted">${esc(E.cq_hora_local)}</p></section>
+        <section class="card"><h2>${esc(E.et_arq_t)}</h2><ul class="et-arq">
+          <li><a href="site/data/complementar/encerramento_tardio.csv" download>${esc(E.et_arq_lista)}</a> · <a href="site/data/complementar/encerramento_tardio.py" download>${esc(E.enc_py)}</a></li>
+          <li><a href="site/data/complementar/votos_apos_horario_secoes.csv" download>${esc(E.vh_csv_secoes)}</a> · <a href="site/data/complementar/votos_apos_horario.py" download>${esc(E.vh_py)}</a></li>
+          ${vhUfs}
+          <li><a href="site/data/anomalias/encerramento_tardio.json" download>${esc(E.et_arq_json)}</a> · <a href="site/data/anomalias/gerar.py" download>${esc(E.et_arq_py)}</a></li></ul>
+          <p class="small muted">${esc(E.et_arq_n)}</p></section>${A.botCta()}`;
+    },
+    async iniciar() {
+      const E = X(), box = $("#cq-res"), form = $("#et-f");
+      let ls;
+      try { [ls] = await Promise.all([etDados(), sinaisSecoes().then((m) => { cq.sin = m; }).catch(() => { cq.sin = null; })]); }
+      catch (e) { box.innerHTML = erroDados(e); return; }
+      if (!box.isConnected) return;
+      // maior atraso (a lista vem do mais atrasado para o menos)
+      const top = ls[0], km = $("#et-max");
+      if (top && km) km.innerHTML = `<span class="et-k-t">${esc(E.et_k_max)}</span><b>${esc(atrasoTxt(top.min))}</b><span><a href="#/secao/${top.uf}/${top.z}/${top.s}">${esc(`${top.mun} (${top.uf}) · ${t().th_zone} ${top.z} · ${t().th_section} ${top.s}`)}</a> · ${esc(t().round(top.t))}</span>`;
+      animarPainel($("#main"));
+      // estados com urnas na lista, com a contagem
+      const porUf = {}; ls.forEach((x) => { porUf[x.uf] = (porUf[x.uf] || 0) + 1; });
+      const selUf = form.elements.uf;
+      selUf.innerHTML = `<option value="">${esc(E.et_f_uf_todos)} (${nf(ls.length)})</option>` + Object.keys(porUf).sort((a, b) => (a === "ZZ") - (b === "ZZ") || A.ufNome(a).localeCompare(A.ufNome(b)))
+        .map((u) => `<option value="${u}">${esc(A.ufNome(u))} (${nf(porUf[u])})</option>`).join("");
+      selUf.value = et.f.uf;
+      const contar = () => {
+        const f0 = Object.assign({}, et.f, { turno: 0 });
+        const base = etFiltrar(ls, f0), c = { 0: base.length, 1: 0, 2: 0 };
+        base.forEach((x) => { c[x.t]++; });
+        $$("[data-et-n]").forEach((el) => { el.textContent = ` (${nf(c[el.dataset.etN])})`; });
+      };
+      const mostrar = (manter) => {
+        const k = etChave(et.f);
+        if (!(manter && et.res && et.chave === k)) { et.res = etRes(etFiltrar(ls, et.f), ls.length); et.chave = k; }
+        cq.res = et.res;
+        mostrarRes();
+        $("#cq-dl").hidden = !et.res.m.linhas.length;
+        contar();
+      };
+      const endereco = () => {
+        const q = new URLSearchParams();
+        if (et.f.turno) q.set("turno", et.f.turno);
+        if (et.f.uf) q.set("uf", et.f.uf);
+        if (et.f.mun.trim()) q.set("mun", et.f.mun.trim());
+        if (et.f.min !== 60) q.set("min", et.f.min);
+        const h = `#/encerramento-tardio${[...q.keys()].length ? `?${q}` : ""}`;
+        if (location.hash !== h) history.replaceState(history.state, "", h);
+      };
+      const aplicar = () => {
+        fecharPainel();
+        $$("[data-et-turno]").forEach((b) => b.setAttribute("aria-checked", String(+b.dataset.etTurno === et.f.turno)));
+        $$("[data-et-min]").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.etMin === et.f.min)));
+        form.elements.min.value = String(et.f.min);
+        endereco(); mostrar(false);
+      };
+      form.addEventListener("click", (ev) => { const b = ev.target.closest("[data-et-turno]"); if (b) { et.f.turno = +b.dataset.etTurno; aplicar(); } });
+      selUf.addEventListener("change", () => { et.f.uf = selUf.value; aplicar(); });
+      form.elements.min.addEventListener("change", () => { et.f.min = +form.elements.min.value; aplicar(); });
+      let tm = 0;
+      form.elements.mun.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(() => { et.f.mun = form.elements.mun.value; aplicar(); }, 250); });
+      $("#et-limpar").addEventListener("click", () => { et.f = { turno: 0, uf: "", mun: "", min: 60 }; selUf.value = ""; form.elements.mun.value = ""; aplicar(); });
+      $$("[data-et-min]").forEach((b) => b.addEventListener("click", () => { et.f.min = +b.dataset.etMin; aplicar(); $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" }); }));
+      $("#et-csv").addEventListener("click", () => { if (et.res) etCsv(et.res.idx.map((i) => et.res.linhasEt[i])); });
+      ligarRes(box);
+      mostrar(true);
+      // volta de uma página aberta pelo painel: a lista, a página e a linha continuam onde estavam
+      const v = et.res.volta; et.res.volta = null;
+      if (v) {
+        const tr = $(`#cq-res tr[data-i="${v.i}"]`);
+        if (tr) { tr.scrollIntoView({ block: "center" }); tr.classList.add("cq-volta"); setTimeout(() => tr.classList.remove("cq-volta"), 2600); }
+        if (v.painel) setTimeout(() => abrirPainel(v.i), 0);
+      }
     },
   };
 
@@ -1707,6 +1901,6 @@ curl -s ${base}SHA256SUMS.txt | head`;
   };
   document.addEventListener("pagina", (e) => { if (e.detail.ativo !== "sim") document.documentElement.classList.remove("sim-on"); });
 
-  Object.assign(A.paginas, { simulador: pgSimulador, locais: pgLocais, perguntas: pgPerguntas, anatomia: pgAnatomia, consulta: pgConsulta, imprensa: pgImprensa, incorporar: pgIncorporar, widget: pgWidget, dados: pgDados, provas: pgProvas });
+  Object.assign(A.paginas, { "encerramento-tardio": pgEncTardio, simulador: pgSimulador, locais: pgLocais, perguntas: pgPerguntas, anatomia: pgAnatomia, consulta: pgConsulta, imprensa: pgImprensa, incorporar: pgIncorporar, widget: pgWidget, dados: pgDados, provas: pgProvas });
   A.extras = { locais, sinalizacoes, md };
 })();

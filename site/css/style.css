@@ -2166,3 +2166,29 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
 .vh-slot:empty { display: none; }
 @media (max-width: 700px) { .vh-votos td, .vh-votos th { padding: 4px 4px; font-size: .78rem; } .vh-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .vh-dia rect.b { transition: none; transform: none; } }
+
+/* Páginas de anomalia: urnas que fecharam tarde */
+.et-sobre ul { margin: 0 0 4px; padding-left: 1.15em; }
+.et-sobre li + li { margin-top: 6px; }
+.et-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 0 0 18px; }
+.et-kpis > div { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--surface); min-width: 0; }
+.et-kpis .et-dest { border-color: color-mix(in srgb, var(--red) 50%, var(--line)); }
+.et-kpis b { display: block; font-size: 1.7rem; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--ink); margin: 2px 0; }
+.et-kpis > div > span { display: block; font-size: .82rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.et-kpis > div > .et-k-t { font-weight: 700; color: var(--ink); font-size: .88rem; }
+.et-faixas { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.et-faixas button { width: 100%; display: grid; grid-template-columns: minmax(7.5em, 10em) 1fr minmax(4.5em, auto); align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: 600 .9rem var(--font); padding: 8px 12px; cursor: pointer; text-align: left; min-height: 42px; }
+.et-faixas button:hover, .et-faixas button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.et-faixas button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.et-fb { height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); overflow: hidden; }
+.et-fb i { display: block; height: 100%; width: var(--w); background: var(--red); border-radius: inherit; transform: scaleX(0); transform-origin: left center; transition: transform 1s cubic-bezier(.2, .8, .2, 1) calc(var(--i, 0) * 70ms); }
+.cq-cheio .et-fb i { transform: scaleX(1); }
+.et-faixas em { font-style: normal; text-align: right; font-variant-numeric: tabular-nums; font-weight: 800; }
+.et-filtros { margin: 6px 0 12px; }
+.et-filtros .filters { margin-top: 10px; }
+.et-filtros .cq-turnos-b small { font-weight: 600; opacity: .8; }
+.et-atraso { color: var(--red); white-space: nowrap; }
+.et-arq { margin: 0; padding-left: 1.15em; }
+.et-arq li + li { margin-top: 6px; }
+@media (max-width: 700px) { .et-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .et-kpis b { font-size: 1.3rem; } .et-faixas button { grid-template-columns: 7em 1fr auto; gap: 8px; } }
+@media (prefers-reduced-motion: reduce) { .et-fb i { transition: none; transform: none; } }

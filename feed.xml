@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sat, 31 Oct 2026 15:00:00 -0300</lastBuildDate>
+  <lastBuildDate>Sat, 31 Oct 2026 19:20:00 -0300</lastBuildDate>
+  <item>
+    <title>Página nova: Urnas que fecharam tarde</title>
+    <link>https://paranacontraoscorruptos.org/#/encerramento-tardio</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-31-16</guid>
+    <pubDate>Sat, 31 Oct 2026 19:20:00 -0300</pubDate>
+    <category>Site</category>
+    <description>As 43.607 urnas que encerraram 1 hora ou mais depois do horário oficial (43.605 no 1º turno e 2 no 2º turno) agora estão numa página só, sem precisar montar consulta. Filtre por turno, estado, município e atraso; passe o mouse numa urna para ver o resumo; clique para abrir o painel com os votos, os gráficos e o botão Ver o horário de cada voto. Anomalia estatística para conferir na ata da mesa, não conclusão.</description>
+  </item>
   <item>
     <title>Votos depois do horário, voto a voto, pelo log da urna</title>
     <link>https://paranacontraoscorruptos.org/#/testes/T11</link>

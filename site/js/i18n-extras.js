@@ -5,14 +5,15 @@
   "use strict";
   const I = window.I18N;
 
-  Object.assign(I.PT.nav, { sim: "Simulador", places: "Locais de votação", faq: "Perguntas", anatomy: "Anatomia do boletim", query: "Consulta avançada",
+  Object.assign(I.PT.nav, { sim: "Simulador", places: "Locais de votação", faq: "Perguntas", anatomy: "Anatomia do boletim", late: "Urnas que fecharam tarde", query: "Consulta avançada",
     press: "Kit de imprensa", embed: "Incorporar", devs: "Programadores", proofs: "Provas e cópias" });
-  Object.assign(I.EN.nav, { sim: "Simulator", places: "Polling places", faq: "FAQ", anatomy: "Tally sheet anatomy", query: "Advanced query",
+  Object.assign(I.EN.nav, { sim: "Simulator", places: "Polling places", faq: "FAQ", anatomy: "Tally sheet anatomy", late: "Machines that closed late", query: "Advanced query",
     press: "Press kit", embed: "Embed", devs: "For developers", proofs: "Proofs and copies" });
-  Object.assign(I.ES.nav, { sim: "Simulador", places: "Locales de votación", faq: "Preguntas", anatomy: "Anatomía del boletín", query: "Consulta avanzada",
+  Object.assign(I.ES.nav, { sim: "Simulador", places: "Locales de votación", faq: "Preguntas", anatomy: "Anatomía del boletín", late: "Urnas que cerraron tarde", query: "Consulta avanzada",
     press: "Kit de prensa", embed: "Incorporar", devs: "Programadores", proofs: "Pruebas y copias" });
 
   Object.assign(I.PT.pg2, {
+    late: ["Urnas que fecharam tarde", "Urnas que encerraram 1 hora ou mais depois do horário, com o horário de cada voto pelo log da urna."],
     sim: ["Simulador de anomalias", "Mude dados fictícios e veja como cada teste reage, com missões, provas e nota final."],
     places: ["Locais de votação", "Escolas e prédios onde se vota, com todas as seções de cada local lado a lado."],
     faq: ["Perguntas frequentes", "As dúvidas mais comuns sobre o site, a análise, a urna e os dados, com respostas curtas."],
@@ -23,6 +24,7 @@
     devs: ["Para programadores", "Os arquivos de dados do site, campo a campo, com exemplos de código."],
     proofs: ["Provas e cópias", "Prova de data no Bitcoin e cópias no Internet Archive de cada arquivo publicado."] });
   Object.assign(I.EN.pg2, {
+    late: ["Machines that closed late", "Machines that closed 1 hour or more after the official time, with the time of each vote from the machine log."],
     sim: ["Anomaly simulator", "Change fictitious data and see how each test reacts, with missions, exams and a final grade."],
     places: ["Polling places", "Schools and buildings where people vote, with all the sections of each place side by side."],
     faq: ["FAQ", "The most common questions about the site, the analysis, the machine and the data, with short answers."],
@@ -33,6 +35,7 @@
     devs: ["For developers", "The site's data files, field by field, with code examples."],
     proofs: ["Proofs and copies", "Bitcoin proof of date and Internet Archive copies of every published file."] });
   Object.assign(I.ES.pg2, {
+    late: ["Urnas que cerraron tarde", "Urnas que cerraron 1 hora o más después del horario, con la hora de cada voto según el log de la urna."],
     sim: ["Simulador de anomalías", "Cambie datos ficticios y vea cómo reacciona cada prueba, con misiones, exámenes y nota final."],
     places: ["Locales de votación", "Escuelas y edificios donde se vota, con todas las secciones de cada local lado a lado."],
     faq: ["Preguntas frecuentes", "Las dudas más comunes sobre el sitio, el análisis, la urna y los datos, con respuestas cortas."],
@@ -179,6 +182,23 @@
     vh_resumo: (a, b) => `Votos depois do horário (log da urna): ${a} no 1º turno · ${b} no 2º turno`,
     vh_info: (s1, v1, s2, v2) => `Nas ${s1} seções do 1º turno sinalizadas por encerramento tardio, o log da urna registra ${v1} votos gravados depois do horário oficial; nas ${s2} do 2º turno, ${v2}. Cada seção mostra a lista voto a voto, com hora, forma de liberação e o que a urna registrou depois do horário.`,
     vh_csv_todos: "Todos os votos depois do horário (CSV por estado)", vh_csv_secoes: "Resumo por seção (CSV)", vh_py: "Script (baixa e lê os logs)",
+    // página "Urnas que fecharam tarde"
+    et_title: "Urnas que fecharam tarde",
+    et_sub: "As urnas que encerraram 1 hora ou mais depois do horário oficial e o horário de cada voto gravado depois disso, pelo log da urna.",
+    et_oque_t: "O que esta página mostra",
+    et_oque: ["O horário oficial de votação termina às 17h de Brasília no 1º turno e às 19h de Brasília no 2º turno, quando o encerramento foi estendido. Cada município usa o seu fuso; no Exterior valem as mesmas horas locais.",
+      "Esta lista traz as urnas que encerraram 1 hora ou mais depois desse horário. Para cada uma, o log publicado pelo TSE mostra a hora de cada voto gravado depois do horário.",
+      "Votar depois do horário é permitido para quem estava na fila no fim do horário (recebe senha). Por isso, cada urna da lista é uma anomalia estatística para conferir na ata da mesa, não uma conclusão sobre a causa.",
+      "É uma análise complementar (prévia): ainda não faz parte do Relatório Técnico."],
+    et_t11: "Teste 11 (horários)", et_graf: "Gráfico de encerramento das urnas",
+    et_k_urnas: (p, tot) => `${p} das ${tot} seções`, et_k_va: "Votos depois do horário (1º turno)", et_k_va_sub: (p, tot) => `${p} dos ${tot} votos dessas urnas no dia`, et_k_max: "Maior atraso",
+    et_faixas_t: "Quanto tempo depois do horário (1º turno)", et_faixas_n: "Clique numa faixa para filtrar a lista.", et_min_op: (h) => `${h} h ou mais`,
+    et_lista_t: "Lista das urnas", et_f_turno: "Turno", et_f_uf: "Estado", et_f_uf_todos: "Todos os estados", et_f_mun: "Município", et_f_mun_ph: "Digite o nome", et_f_min: "Depois do horário", et_limpar: "Limpar filtros",
+    et_info: (n, tot, todas) => (todas ? `${tot} urnas` : `${n} de ${tot} urnas com estes filtros`),
+    et_col: { uf: "UF", municipio: "Município", zona: "Zona", secao: "Seção", turno: "Turno", abertura: "Abertura", encerramento: "Encerramento", fim: "Fim oficial", atraso: "Depois do horário", votos_apos: "Votos depois do horário", ultimo_voto: "Último voto" },
+    et_csv: "Baixar esta lista (CSV)", et_consulta: "Abrir na consulta avançada",
+    et_arq_t: "Arquivos e fontes", et_arq_lista: "Lista completa (CSV)", et_arq_json: "Dados desta página (JSON)", et_arq_py: "Script desta página",
+    et_arq_n: "Fontes: boletins de urna e logs das urnas publicados pelo TSE (arquivo-urna). Os horários são os do relógio da urna, em hora local. O log não mostra quem votou nem em quem.",
     cq_sin_col: "Sinal", cq_sin_tip: "Testes que sinalizaram a seção (vermelho: anomalia; amarelo: informativo)",
     cq_sn_oque: "O que o teste confere", cq_sn_ver: "Ver o teste",
     cq_nivel_exp: { a: "Anomalia: o dado ficou fora do que o teste espera. Indica o que conferir primeiro (ata da mesa, boletim impresso), não a causa.", i: "Informativo: registro para conferência, sem peso de anomalia." },
@@ -413,6 +433,23 @@
     vh_resumo: (a, b) => `Votes after the official time (machine log): ${a} in round 1 · ${b} in round 2`,
     vh_info: (s1, v1, s2, v2) => `In the ${s1} round 1 sections flagged for late closing, the machine log records ${v1} votes after the official time; in the ${s2} round 2 sections, ${v2}. Each section shows the vote-by-vote list, with time, release method and what the machine recorded after the official time.`,
     vh_csv_todos: "All votes after the official time (CSV per state)", vh_csv_secoes: "Summary per section (CSV)", vh_py: "Script (downloads and reads the logs)",
+    // "Machines that closed late" page
+    et_title: "Machines that closed late",
+    et_sub: "Voting machines that closed 1 hour or more after the official time, and the time of each vote recorded after it, from the machine log.",
+    et_oque_t: "What this page shows",
+    et_oque: ["The official voting time ends at 5 pm Brasília time in round 1 and at 7 pm Brasília time in round 2, when closing was extended. Each municipality uses its own time zone; abroad, the same local times apply.",
+      "This list has the machines that closed 1 hour or more after that time. For each one, the log published by the TSE shows the time of each vote recorded after the official time.",
+      "Voting after the official time is allowed for people who were in line when it ended (they get a number). So each machine on the list is a statistical anomaly to check in the polling station minutes, not a conclusion about the cause.",
+      "It is a complementary analysis (preview): not yet part of the Technical Report."],
+    et_t11: "Test 11 (times)", et_graf: "Machine closing chart",
+    et_k_urnas: (p, tot) => `${p} of ${tot} sections`, et_k_va: "Votes after the official time (round 1)", et_k_va_sub: (p, tot) => `${p} of the ${tot} votes of these machines that day`, et_k_max: "Longest delay",
+    et_faixas_t: "How long after the official time (round 1)", et_faixas_n: "Click a range to filter the list.", et_min_op: (h) => `${h} h or more`,
+    et_lista_t: "List of machines", et_f_turno: "Round", et_f_uf: "State", et_f_uf_todos: "All states", et_f_mun: "Municipality", et_f_mun_ph: "Type the name", et_f_min: "After the official time", et_limpar: "Clear filters",
+    et_info: (n, tot, todas) => (todas ? `${tot} machines` : `${n} of ${tot} machines with these filters`),
+    et_col: { uf: "State", municipio: "Municipality", zona: "Zone", secao: "Section", turno: "Round", abertura: "Opening", encerramento: "Closing", fim: "Official end", atraso: "After the official time", votos_apos: "Votes after the official time", ultimo_voto: "Last vote" },
+    et_csv: "Download this list (CSV)", et_consulta: "Open in the advanced query",
+    et_arq_t: "Files and sources", et_arq_lista: "Full list (CSV)", et_arq_json: "Data of this page (JSON)", et_arq_py: "Script of this page",
+    et_arq_n: "Sources: tally sheets and voting machine logs published by the TSE (arquivo-urna). Times are from the machine clock, in local time. The log does not show who voted or for whom.",
     cq_sin_col: "Flag", cq_sin_tip: "Tests that flagged the section (red: anomaly; yellow: informational)",
     cq_sn_oque: "What the test checks", cq_sn_ver: "See the test",
     cq_nivel_exp: { a: "Anomaly: the data fell outside what the test expects. It shows what to check first (polling station minutes, printed report), not the cause.", i: "Informational: a record for checking, without the weight of an anomaly." },
@@ -643,6 +680,23 @@
     vh_resumo: (a, b) => `Votos después del horario (log de la urna): ${a} en la 1ª vuelta · ${b} en la 2ª vuelta`,
     vh_info: (s1, v1, s2, v2) => `En las ${s1} secciones de la 1ª vuelta señaladas por cierre tardío, el log de la urna registra ${v1} votos después del horario oficial; en las ${s2} de la 2ª vuelta, ${v2}. Cada sección muestra la lista voto a voto, con hora, forma de habilitación y lo que la urna registró después del horario.`,
     vh_csv_todos: "Todos los votos después del horario (CSV por estado)", vh_csv_secoes: "Resumen por sección (CSV)", vh_py: "Script (descarga y lee los logs)",
+    // página "Urnas que cerraron tarde"
+    et_title: "Urnas que cerraron tarde",
+    et_sub: "Las urnas que cerraron 1 hora o más después del horario oficial y la hora de cada voto registrado después, según el log de la urna.",
+    et_oque_t: "Qué muestra esta página",
+    et_oque: ["El horario oficial de votación termina a las 17 h de Brasilia en la 1.ª vuelta y a las 19 h de Brasilia en la 2.ª vuelta, cuando el cierre se extendió. Cada municipio usa su huso horario; en el Exterior rigen las mismas horas locales.",
+      "Esta lista trae las urnas que cerraron 1 hora o más después de ese horario. Para cada una, el log publicado por el TSE muestra la hora de cada voto registrado después del horario.",
+      "Votar después del horario está permitido para quien estaba en la fila al terminar el horario (recibe un número). Por eso, cada urna de la lista es una anomalía estadística para verificar en el acta de la mesa, no una conclusión sobre la causa.",
+      "Es un análisis complementario (avance): aún no forma parte del Informe Técnico."],
+    et_t11: "Prueba 11 (horarios)", et_graf: "Gráfico de cierre de las urnas",
+    et_k_urnas: (p, tot) => `${p} de ${tot} secciones`, et_k_va: "Votos después del horario (1.ª vuelta)", et_k_va_sub: (p, tot) => `${p} de los ${tot} votos de estas urnas en el día`, et_k_max: "Mayor retraso",
+    et_faixas_t: "Cuánto tiempo después del horario (1.ª vuelta)", et_faixas_n: "Haga clic en un rango para filtrar la lista.", et_min_op: (h) => `${h} h o más`,
+    et_lista_t: "Lista de urnas", et_f_turno: "Vuelta", et_f_uf: "Estado", et_f_uf_todos: "Todos los estados", et_f_mun: "Municipio", et_f_mun_ph: "Escriba el nombre", et_f_min: "Después del horario", et_limpar: "Limpiar filtros",
+    et_info: (n, tot, todas) => (todas ? `${tot} urnas` : `${n} de ${tot} urnas con estos filtros`),
+    et_col: { uf: "UF", municipio: "Municipio", zona: "Zona", secao: "Sección", turno: "Vuelta", abertura: "Apertura", encerramento: "Cierre", fim: "Fin oficial", atraso: "Después del horario", votos_apos: "Votos después del horario", ultimo_voto: "Último voto" },
+    et_csv: "Descargar esta lista (CSV)", et_consulta: "Abrir en la consulta avanzada",
+    et_arq_t: "Archivos y fuentes", et_arq_lista: "Lista completa (CSV)", et_arq_json: "Datos de esta página (JSON)", et_arq_py: "Script de esta página",
+    et_arq_n: "Fuentes: boletines de urna y logs de las urnas publicados por el TSE (arquivo-urna). Los horarios son los del reloj de la urna, en hora local. El log no muestra quién votó ni por quién.",
     cq_sin_col: "Señal", cq_sin_tip: "Pruebas que señalaron la sección (rojo: anomalía; amarillo: informativo)",
     cq_sn_oque: "Qué verifica la prueba", cq_sn_ver: "Ver la prueba",
     cq_nivel_exp: { a: "Anomalía: el dato quedó fuera de lo que la prueba espera. Indica qué verificar primero (acta de la mesa, boletín impreso), no la causa.", i: "Informativo: registro para verificación, sin peso de anomalía." },
