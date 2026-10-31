@@ -7,7 +7,8 @@ Usa somente os dados públicos do site (site/data/secoes/<UF>/<zona>.json) e as 
 - abertura e encerramento estão em hora local;
 - o fuso de cada município é inferido, entre os fusos possíveis da UF (FUSOS_UF, diferença para Brasília),
   pelo 10º percentil das aberturas do município no turno (uma abertura regular nunca é antes das 8h);
-- horário oficial: 8h às 17h (hora de Brasília), convertido para a hora local; no Exterior (ZZ), 17h em hora local;
+- horário oficial de encerramento (hora de Brasília): 17h no 1º turno e 19h no 2º turno (encerramento estendido para as
+  19h no 2º turno), convertido para a hora local; no Exterior (ZZ), as mesmas horas em hora local;
 - entram as seções com abertura, encerramento e comparecimento > 0.
 
 Sinal (anomalia, categoria "encerramento_tardio"): encerramento >= horário oficial local + ATRASO_ENCERRAMENTO_MIN.
@@ -22,7 +23,7 @@ from pathlib import Path
 import pandas as pd
 
 HORA_INICIO_OFICIAL = 8          # hora de Brasília (igual ao motor)
-HORA_FIM_OFICIAL = 17            # hora de Brasília (igual ao motor; vale para os dois turnos)
+HORA_FIM_OFICIAL = {1: 17, 2: 19}  # hora de Brasília: 1º turno 17h; 2º turno 19h (encerramento estendido)
 FUSOS_UF = {"AC": (-2,), "AM": (-2, -1), "RO": (-1,), "RR": (-1,), "MT": (-1,), "MS": (-1,), "PE": (0, 1), "ZZ": (0,)}
 ATRASO_ENCERRAMENTO_MIN = 60     # minutos depois do horário oficial local
 
@@ -59,7 +60,7 @@ def main():
     # fuso local do município (mesma regra do T11)
     q = s.groupby(["turno", "uf", "cod_mun"])["h_ab"].transform(lambda v: v.quantile(0.10))
     s["offset"] = [min(FUSOS_UF.get(u, (0,)), key=lambda o: abs(h - HORA_INICIO_OFICIAL - o)) for u, h in zip(s["uf"], q)]
-    s["fim_local"] = HORA_FIM_OFICIAL + s["offset"]
+    s["fim_local"] = s["turno"].map(HORA_FIM_OFICIAL) + s["offset"]
     s["min_apos"] = ((s["h_enc"] - s["fim_local"]) * 60).round().astype(int)
     s["enc_brasilia"] = s["h_enc"] - s["offset"]
     sinal = s[s["min_apos"] >= ATRASO_ENCERRAMENTO_MIN].sort_values(["turno", "min_apos", "uf", "zona", "secao"], ascending=[True, False, True, True, True])
@@ -72,7 +73,7 @@ def main():
             fuso = "hora local" if r.uf == "ZZ" else f"UTC{r.offset - 3:+d}"
             w.writerow([r.turno, r.uf, r.cod_mun, r.municipio, r.zona, r.secao, hms(r.ab), hms(r.enc), fuso, f"{int(r.fim_local):02d}:00", r.min_apos])
 
-    resumo = {"criterio": {"hora_fim_oficial_brasilia": HORA_FIM_OFICIAL, "atraso_min": ATRASO_ENCERRAMENTO_MIN, "fusos_uf": FUSOS_UF}, "turnos": {}}
+    resumo = {"criterio": {"hora_fim_oficial_brasilia": {str(k): v for k, v in HORA_FIM_OFICIAL.items()}, "atraso_min": ATRASO_ENCERRAMENTO_MIN, "fusos_uf": FUSOS_UF}, "turnos": {}}
     for t in (1, 2):
         st, sg = s[s["turno"] == t], sinal[sinal["turno"] == t]
         br = st[st["uf"] != "ZZ"]["enc_brasilia"]

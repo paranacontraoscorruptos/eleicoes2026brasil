@@ -662,7 +662,9 @@
         const pos = (min) => (min - H.ini) / H.passo;
         tabelaEm("fecha", [L.gr_th_range, L.th_sections], H.b.map((v, i) => [v, i]).filter(([v]) => v > 0).map(([v, i]) => [`${hhmm(H.ini + i * H.passo)}–${hhmm(H.ini + (i + 1) * H.passo - 1)}`, nf(v)])
           .concat(H.antes ? [[`< ${hhmm(H.ini)}`, nf(H.antes)]] : []).concat(H.depois ? [[`≥ ${hhmm(H.ini + H.b.length * H.passo)}`, nf(H.depois)]] : []));
-        return histograma(w, { titulo: L.gr_fc_title, bins, linhas: [{ i: pos(17 * 60), rot: L.gr_fc_l1, esq: true }], eixoX: L.gr_fc_x });
+        const hf = val("fecha", "t") === "2" ? 19 : 17;   // 2º turno: encerramento estendido para as 19h de Brasília
+        const lns = [{ i: pos(hf * 60), rot: L.gr_fc_l1(hf), esq: hf === 17 }].concat(hf !== 17 ? [{ i: pos(17 * 60), rot: L.gr_fc_l0, esq: true }] : []);
+        return histograma(w, { titulo: L.gr_fc_title, bins, linhas: lns, eixoX: L.gr_fc_x });
       });
 
       desenhos.set("T04", (w) => {

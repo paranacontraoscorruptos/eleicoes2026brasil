@@ -423,6 +423,8 @@
   const candsT = (n) => R().turnos[n].presidente.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96");
   const seg = (h) => { const m = /^(\d\d):(\d\d):(\d\d)$/.exec(h || ""); return m ? +m[1] * 3600 + +m[2] * 60 + +m[3] : null; };
   const duracao = (a, b) => { const x = seg(a), y = seg(b); if (x == null || y == null || y < x) return "—"; const s = y - x; return `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, "0")} min`; };
+  // encerramento 1 h depois do horário oficial (hora local): 18h no 1º turno; 20h no 2º, estendido para as 19h de Brasília
+  const tardeH = (n) => (+n === 2 ? 20 : 18);
   const comSinal = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + nf(Math.abs(v));
   const pp1 = (x) => (A.state.lang === "EN" ? x.toFixed(1) : x.toFixed(1).replace(".", ","));
   let cqResSeq = 0;
@@ -637,6 +639,167 @@
     if (rolar) $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
+  // --- votos depois do horário oficial: lidos do log da urna (seções sinalizadas por encerramento tardio) ------------
+  const vh = { zonas: new Map(), recs: new Map() };
+  function vhZona(uf, z) {
+    const k = `${uf}/${z}`;
+    if (!vh.zonas.has(k)) {
+      if (vh.zonas.size > 60) vh.zonas.clear();
+      vh.zonas.set(k, fetch(`site/data/votoshora/${uf}/${z}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null));
+    }
+    return vh.zonas.get(k);
+  }
+  async function vhSecao(uf, z, s) {
+    const Z = await vhZona(uf, +z), o = {};
+    [1, 2].forEach((n) => { const r = Z && Z.s[`${n}|${+s}`]; if (r) { o[n] = r; vh.recs.set(`${uf}|${+z}|${+s}|${n}`, r); } });
+    return o;
+  }
+  const vhH = (s) => {
+    if (s == null) return "—";
+    const d = Math.floor(s / 86400), r = s - 86400 * d;
+    return `${String(Math.floor(r / 3600)).padStart(2, "0")}:${String(Math.floor((r % 3600) / 60)).padStart(2, "0")}:${String(r % 60).padStart(2, "0")}${d ? " (+1)" : ""}`;
+  };
+  const vhHM = (s) => vhH(s).slice(0, 5);
+  const vhDur = (s) => {
+    if (s == null) return "—";
+    s = Math.max(0, Math.round(s));
+    if (s < 60) return `${s} s`;
+    if (s < 3600) return `${Math.floor(s / 60)} min${s % 60 ? ` ${String(s % 60).padStart(2, "0")} s` : ""}`;
+    return `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, "0")} min`;
+  };
+  // votos depois do fim: [dt desde o anterior, segundos na cabine, segundos do atendimento até a liberação, liberação+identificador, marcas]
+  function vhVotos(rec) {
+    let tc = rec.fim;
+    const n0 = rec.tot - rec.apos;
+    return rec.v.map((x, i) => {
+      tc += x[0];
+      const th = tc - x[1], ti = th - x[2], c = x[3];
+      return { n: n0 + i + 1, tc, th, ti, dt: x[0], cab: x[1], lib: c[0], k: c[0] === "D" ? +c.slice(1, -1) || 1 : 0, id: c.slice(-1), fl: x[4] };
+    });
+  }
+  const vhLib = (v, E) => (v.lib === "D" ? E.vh_lib.D(v.k) : E.vh_lib[v.lib] || E.vh_lib["?"]);
+  const vhMarcas = (fl, E) => [1, 2, 4, 8, 16].filter((b) => fl & b).map((b) => E.vh_fl[b]);
+  // gráfico do dia: barras de 10 minutos, as de depois do fim oficial em destaque
+  function vhGrafico(rec, E) {
+    const [b0, cs] = rec.b;
+    if (!cs || !cs.length) return "";
+    const fimB = rec.fim / 600, encB = rec.e != null ? rec.e / 600 : null;
+    const ini = Math.min(b0, Math.floor(fimB) - 6), fimX = Math.max(b0 + cs.length, Math.ceil(encB != null ? encB : fimB) + 1);
+    const nb = fimX - ini, W = 640, H = 110, top = 4, base = H - 1, bw = W / nb, mx = Math.max(1, ...cs);
+    const x = (b) => ((b - ini) * bw).toFixed(1), pc = (b) => ((100 * (b - ini)) / nb).toFixed(2);
+    const antes = rec.tot - rec.apos, temEnc = encB != null && encB > fimB + 1;
+    // barras e linhas no SVG (esticado na largura); textos em HTML, para não deformar
+    let h = `<svg class="vh-dia" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">`, eixo = "";
+    for (let hr = Math.ceil((ini * 600) / 3600); hr * 6 <= fimX; hr++) {
+      const xb = hr * 6;
+      if (xb < ini) continue;
+      h += `<line class="vh-grade" x1="${x(xb)}" x2="${x(xb)}" y1="${top}" y2="${base}"/>`;
+      if (hr % 2 === 0) { const p = +pc(xb); eixo += `<span style="left:${p}%"${p < 4 ? ' class="ini"' : p > 96 ? ' class="fim"' : ""}>${hr % 24}h</span>`; }
+    }
+    cs.forEach((c, i) => {
+      if (!c) return;
+      const b = b0 + i, alt = Math.max(2, ((base - top) * c) / mx), dep = b * 600 >= rec.fim;
+      h += `<rect class="b ${dep ? "dep" : "ant"}" style="--i:${i}" x="${(+x(b) + 0.5).toFixed(1)}" y="${(base - alt).toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${alt.toFixed(1)}"><title>${esc(E.vh_bin(vhHM(b * 600), vhHM((b + 1) * 600), c))}</title></rect>`;
+    });
+    h += `<line class="vh-base" x1="0" x2="${W}" y1="${base}" y2="${base}"/><line class="vh-fim" x1="${x(fimB)}" x2="${x(fimB)}" y1="0" y2="${base}"/>`;
+    if (temEnc) h += `<line class="vh-encl" x1="${x(encB)}" x2="${x(encB)}" y1="${top}" y2="${base}"/>`;
+    const pf = +pc(fimB);
+    return `<div class="vh-dia-w" role="img" aria-label="${esc(E.vh_graf_aria(nf(antes), nf(rec.apos), vhHM(rec.fim)))}"><span class="vh-rot${pf > 62 ? " dir" : ""}" style="left:${pf}%">${esc(E.vh_graf_fim(vhHM(rec.fim)))}</span>${h}</svg><div class="vh-x" aria-hidden="true">${eixo}</div></div>
+      <p class="vh-leg small" aria-hidden="true"><span class="ant">${esc(E.vh_graf_leg_a)}</span><span class="dep">${esc(E.vh_graf_leg_d)}</span>${temEnc ? `<span class="enc">${esc(E.vh_graf_enc)} ${esc(vhHM(rec.e))}</span>` : ""}</p>`;
+  }
+  // eventos depois do fim (sem números de título): repetições seguidas viram "N vezes"
+  function vhEventos(rec, E) {
+    const ev = rec.ev || [];
+    if (!ev.length) return "";
+    const gr = [];
+    ev.forEach(([tt, c]) => { const u = gr[gr.length - 1]; if (u && u.c === c) { u.n++; u.t2 = tt; } else gr.push({ c, t: tt, t2: tt, n: 1 }); });
+    const rot = (c) => { const [k, h] = c.split(":"); const f = E.vh_ev[k]; return typeof f === "function" ? f(c.slice(k.length + 1) || h || "") : f || k; };
+    return `<details class="vh-ev"><summary>${esc(E.vh_ev_t(vhHM(rec.fim), nf(ev.length)))}</summary><ul>${gr.map((g) => `<li><time>${vhH(g.t)}${g.n > 1 ? `–${vhH(g.t2)}` : ""}</time> ${esc(rot(g.c))}${g.n > 1 ? ` <small>(${esc(E.vh_ev_vezes(nf(g.n)))})</small>` : ""}</li>`).join("")}</ul></details>`;
+  }
+  // bloco de um turno: números, tabela por hora, gráfico do dia, registros da urna e botão da lista voto a voto
+  function vhHtml(rec, n, chave, E, comTitulo) {
+    const L = t(), f = vhHM(rec.fim), hb = n === 2 ? 19 : 17, loc = rec.fim !== hb * 3600;
+    const hs = rec.h || [], mxh = Math.max(1, ...hs), h0 = Math.floor(rec.fim / 3600);
+    let h = `<section class="vh" data-vh-k="${esc(chave)}"><h4>${esc(E.vh_t_sec(f))}${comTitulo ? ` · ${esc(L.round(n))}` : ""}</h4>
+      <p class="small muted">${esc(E.vh_fonte(f, loc, hb))}</p>
+      <div class="vh-kpis"><div><b>${nA(rec.tot)}</b><span>${esc(E.vh_dia)}</span></div>
+        <div class="vh-dest"><b>${nA(rec.apos)}</b><span>${esc(E.vh_apos(f))} · ${pA(rec.apos / (rec.tot || 1), 1)}</span></div>
+        <div><b>${esc(vhH(rec.u))}</b><span>${esc(E.vh_ult)}</span></div><div><b>${esc(vhH(rec.e))}</b><span>${esc(E.vh_enc)}</span></div></div>`;
+    if (hs.length && rec.apos) {
+      h += `<div class="cq-p-tw"><table class="cq-p-t vh-horas"><caption>${esc(E.vh_hora_t)}${loc ? ` <small>${esc(E.vh_hora_loc)}</small>` : ""}</caption><thead><tr><th scope="col">${esc(E.vh_hora)}</th><th scope="col">${esc(E.cq_votos)}</th><th></th></tr></thead><tbody>${hs.map((c, i) => `<tr><th scope="row">${i === 7 ? esc(E.vh_hora_mais(h0 + 7)) : `${h0 + i}h–${h0 + i + 1}h`}</th><td>${nA(c)}</td><td><span class="cq-barra"><i style="--w:${((100 * c) / mxh).toFixed(1)}%;--i:${i}"></i></span></td></tr>`).join("")}</tbody></table></div>`;
+    }
+    h += `<h5 class="vh-sub">${esc(E.vh_graf_t)}</h5>${vhGrafico(rec, E)}`;
+    const sd = rec.sd || [0, 0, 0, 0];
+    const kv = [[E.vh_gap, rec.gap != null && rec.apos ? vhDur(rec.gap) : "—"], [E.vh_ult_enc, rec.u != null && rec.e != null ? vhDur(rec.e - rec.u) : "—"],
+      [E.vh_sd, E.vh_sd_v(pct(sd[0] / (sd[1] || 1), 1), pct(sd[2] / (sd[3] || 1), 1))]];
+    if (rec.cpf) kv.push([E.vh_cpf, nf(rec.cpf)]);
+    if (rec.jv) kv.push([E.vh_jv, nf(rec.jv)]);
+    if (rec.ur > 1) kv.push([E.vh_urnas, nf(rec.ur)]);
+    if (rec.bu != null) kv.push([E.vh_bu, rec.bu === rec.tot ? `${icone("check")} ${esc(E.vh_bu_ok(nf(rec.tot)))}` : esc(E.vh_bu_dif(nf(rec.tot), nf(rec.bu)))]);
+    h += `<dl class="cq-p-dl vh-dl">${kv.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v.startsWith("<") ? v : esc(v)}</dd></div>`).join("")}</dl>`;
+    h += vhEventos(rec, E);
+    h += rec.apos
+      ? `<p class="vh-acoes"><button class="btn btn-sm btn-primary vh-ver" type="button" aria-expanded="false" data-vh-ver="${esc(chave)}">${icone("list")} <span>${esc(E.vh_ver(nf(rec.apos)))}</span></button></p><div class="vh-lista" hidden></div>`
+      : `<p class="small muted">${esc(E.vh_nenhum(f))}</p>`;
+    return h + `<p class="small muted vh-nota">${esc(E.vh_nota)}</p></section>`;
+  }
+  // lista voto a voto (montada só quando o botão é clicado)
+  function vhLista(rec, chave, E) {
+    const vs = vhVotos(rec), f = vhHM(rec.fim);
+    const linhas = vs.map((v, i) => {
+      const pausa = i > 0 && v.dt >= 900 ? `<tr class="vh-pausa"><td colspan="4">${esc(E.vh_pausa(vhDur(v.dt)))}</td></tr>` : "";
+      const det = [E.vh_c_det(vhH(v.ti), vhH(v.th)), `${E.vh_c_cab.toLowerCase()} ${vhDur(v.cab)}`, E.vh_id[v.id]].concat(vhMarcas(v.fl, E)).filter(Boolean).join(" · ");
+      return `${pausa}<tr class="vh-v${v.lib !== "D" ? " vh-sd" : ""}"><td>${nf(v.n)}º</td><td><b>${vhH(v.tc)}</b></td><td>${esc(vhDur(v.dt))}${i === 0 ? ` <small>${esc(E.vh_desde(f))}</small>` : ""}</td><td>${esc(vhLib(v, E))}</td></tr>
+        <tr class="vh-d"><td></td><td colspan="3">${esc(det)}</td></tr>`;
+    }).join("");
+    const k = chave.split("|"), urlTse = rec.url || "";
+    return `<p class="vh-lista-t"><b>${esc(E.vh_lista_t(nf(vs.length), f))}</b></p>
+      <div class="cq-p-tw vh-tw"><table class="cq-p-t vh-votos"><thead><tr><th scope="col" title="${esc(E.vh_c_n_t)}">${esc(E.vh_c_n)}</th><th scope="col">${esc(E.vh_c_grav)}</th><th scope="col">${esc(E.vh_c_int)}</th><th scope="col">${esc(E.vh_c_lib)}</th></tr></thead><tbody>${linhas}</tbody></table></div>
+      <p class="btn-row"><button class="btn btn-sm" type="button" data-vh-csv="${esc(chave)}">${icone("download")} ${esc(E.vh_csv)}</button>${urlTse ? `<a class="btn btn-sm btn-ghost" href="${esc(urlTse)}" target="_blank" rel="noopener">${icone("link")} ${esc(E.vh_tse)}</a>` : ""}</p>
+      ${(rec.sha || []).length ? `<p class="small muted vh-sha">${esc(E.vh_sha)}: ${rec.sha.map((x) => `<code class="wrap">${esc(x)}</code>`).join(" ")}</p>` : ""}
+      <p class="small muted">${esc(`${k[0]} · ${t().th_zone} ${k[1]} · ${t().th_section} ${k[2]} · ${t().round(+k[3])}`)}</p>`;
+  }
+  function vhCsv(rec, chave) {
+    const E = X(), [uf, z, s, n] = chave.split("|");
+    const cab = ["turno", "uf", "zona", "secao", "ordem_no_dia", "inicio_atendimento", "liberado", "voto_gravado", "segundos_desde_anterior", "segundos_na_cabine", "liberacao", "identificador", "observacoes"];
+    const ls = vhVotos(rec).map((v) => [n, uf, z, s, v.n, vhH(v.ti), vhH(v.th), vhH(v.tc), v.dt, v.cab, vhLib(v, E), E.vh_id[v.id] || "", vhMarcas(v.fl, E).join("; ")]);
+    baixar(`votos_apos_${vhHM(rec.fim).replace(":", "h")}_${uf}_z${z}_s${s}_t${n}.csv`, "﻿" + [cab].concat(ls).map((l) => l.map(csvCampo).join(",")).join("\n"), "text/csv;charset=utf-8");
+  }
+  // cliques (painel da consulta e página da seção)
+  document.addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-vh-ver]");
+    if (b) {
+      const E = X(), rec = vh.recs.get(b.dataset.vhVer), box = b.closest(".vh"), lista = box && box.querySelector(".vh-lista");
+      if (!rec || !lista) return;
+      const abrir = b.getAttribute("aria-expanded") !== "true";
+      if (abrir && !lista.dataset.ok) { lista.innerHTML = vhLista(rec, b.dataset.vhVer, E); lista.dataset.ok = "1"; }
+      lista.hidden = !abrir;
+      b.setAttribute("aria-expanded", String(abrir));
+      b.querySelector("span").textContent = abrir ? E.vh_esconder : E.vh_ver(nf(rec.apos));
+      if (abrir) lista.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      return;
+    }
+    const c = ev.target.closest("[data-vh-csv]");
+    if (c) { const rec = vh.recs.get(c.dataset.vhCsv); if (rec) vhCsv(rec, c.dataset.vhCsv); }
+  });
+  // página da seção: preenche o bloco de cada turno que tem log lido
+  document.addEventListener("secao", async (ev) => {
+    const d = ev.detail || {};
+    const slots = $$(".vh-slot[data-vh]");
+    if (!slots.length) return;
+    const recs = await vhSecao(d.uf, d.z, d.s), E = X();
+    let algum = false;
+    slots.forEach((sl) => {
+      const n = +sl.dataset.t, rec = recs[n];
+      if (!rec || !sl.isConnected) return;
+      sl.innerHTML = vhHtml(rec, n, `${d.uf}|${+d.z}|${+d.s}|${n}`, E, false);
+      algum = true;
+    });
+    const box = slots[0].closest("#lk-result") || slots[0].parentElement;
+    if (algum && box) animarPainel(box);
+  });
+  A.votosHora = { secao: vhSecao, html: vhHtml };
+
   // --- dados de uma linha (para o painel e para a dica) ---------------------------------------------------------------
   const cacheInfo = new Map();
   function ondeDe(e, tipo) {
@@ -667,8 +830,10 @@
         `SELECT l.nome, l.endereco, l.bairro FROM main.secoes s JOIN locais l ON l.uf = s.uf AND l.zona = s.zona AND l.local = s.local AND l.cod_mun = s.cod_mun WHERE ${ws} LIMIT 1`]);
       const ts = objs(S);
       if (!ts.length) return Object.assign(out, { tipo: "linha" });
+      // log da urna: só existe nas seções sinalizadas por encerramento tardio
+      const vhP = F.linhas.some((f) => f[3] === "encerramento_tardio") ? vhSecao(e.uf, e.z, e.s).catch(() => ({})) : Promise.resolve({});
       const x = ts[0];
-      return Object.assign(out, { tipo: tp, ts, fl: F.linhas, loc: Lc.linhas[0] || null, munNome: A.titulo(x.municipio || ""),
+      return Object.assign(out, { tipo: tp, ts, fl: F.linhas, loc: Lc.linhas[0] || null, munNome: A.titulo(x.municipio || ""), vh: await vhP,
         hLocal: x.local != null ? `#/locais/${e.uf}/${x.cod_mun}/${e.z}-${x.local}` : null, hMun: `#/uf/${e.uf}/${x.cod_mun}` });
     }
     if (tp === "local" || tp === "mun" || tp === "zona" || tp === "uf") {
@@ -678,7 +843,7 @@
       const e2 = Object.assign({}, e, { cod });
       const vs = (cq.colunas.secoes || []).filter((c) => /^v\d+$/.test(c));
       const sqls = [`SELECT turno, COUNT(*) AS secoes, SUM(aptos) AS aptos, SUM(comparecimento) AS comparecimento, SUM(faltosos) AS faltosos, SUM(validos) AS validos,
-        SUM(brancos) AS brancos, SUM(nulos) AS nulos, SUM(sinalizada) AS sinalizadas, SUM(encerramento >= '18:00:00') AS tarde, MIN(abertura) AS abertura, MAX(encerramento) AS encerramento${vs.map((c) => `, SUM(${c}) AS ${c}`).join("")}
+        SUM(brancos) AS brancos, SUM(nulos) AS nulos, SUM(sinalizada) AS sinalizadas, SUM(encerramento >= CASE turno WHEN 2 THEN '20:00:00' ELSE '18:00:00' END) AS tarde, MIN(abertura) AS abertura, MAX(encerramento) AS encerramento${vs.map((c) => `, SUM(${c}) AS ${c}`).join("")}
         FROM main.secoes WHERE ${ondeDe(e2, tp)} GROUP BY turno ORDER BY turno`];
       if (tp === "local") sqls.push(`SELECT nome, endereco, bairro, secoes FROM locais WHERE ${ondeDe(e2, "local")} LIMIT 1`);
       const [G, Lc] = await varias(sqls);
@@ -785,7 +950,7 @@
       linha(E.cq_validos, (x) => nA(x.validos), num("validos")),
       linha(L.blank, (x) => nA(x.brancos), num("brancos")), linha(L.null_, (x) => nA(x.nulos), num("nulos")));
     if (sec) {
-      linhas.push(linha(L.lk_open, (x) => esc(x.abertura || "—")), linha(L.lk_close, (x) => `${esc(x.encerramento || "—")}${seg(x.encerramento) >= 18 * 3600 ? ` <span class="cq-tarde" title="${esc(E.cq_nota_tarde)}">!</span>` : ""}`),
+      linhas.push(linha(L.lk_open, (x) => esc(x.abertura || "—")), linha(L.lk_close, (x, n) => `${esc(x.encerramento || "—")}${seg(x.encerramento) >= tardeH(n) * 3600 ? ` <span class="cq-tarde" title="${esc(E.cq_nota_tarde)}">!</span>` : ""}`),
         linha(E.cq_tempo, (x) => duracao(x.abertura, x.encerramento)));
       if (ns.some((n) => by[n].agregadas)) linhas.push(linha(L.lk_agreg, (x) => esc(x.agregadas || "—")));
     } else {
@@ -796,6 +961,13 @@
     return `<section class="cq-p-res"><h3>${esc(ns.length === 2 ? E.cq_t_resumo2 : E.cq_t_resumo)}</h3><div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th>${th}</tr></thead><tbody>${linhas.join("")}</tbody></table></div></section>`;
   }
   const htmlVotacao = (dd, tf) => htmlVotos(dd, tf) + htmlComparacao(dd, tf);
+  // 4) votos depois do horário oficial (log da urna), depois do resumo; a lista voto a voto abre no botão
+  function htmlVHPainel(dd, tf) {
+    const E = X(), L = t(), e = dd.e, vr = dd.vh || {}, ns = turnosVer(porTurno(dd.ts), tf);
+    if (!ns.length || !Object.keys(vr).length) return "";
+    return `<section class="vh-painel"><h3>${esc(E.vh_t)}</h3>${ns.map((n) => (vr[n] ? vhHtml(vr[n], n, `${e.uf}|${+e.z}|${+e.s}|${n}`, E, true)
+      : `<p class="small muted vh-sem">${esc(E.vh_sem(L.round(n)))}</p>`)).join("")}</section>`;
+  }
   function htmlSinais(dd, tf) {
     const E = X(), L = t(), cat = R().categorias || {};
     const ns = turnosVer(porTurno(dd.ts), tf);
@@ -816,8 +988,8 @@
     if (dd.tipo === "secao") {
       kick = `${e.uf} · ${dd.munNome}`; tit = `${L.th_zone} ${e.z} · ${L.th_section} ${e.s}`;
       sub = dd.loc ? [A.titulo(dd.loc[0]), dd.loc[2] && A.titulo(dd.loc[2])].filter(Boolean).join(" · ") : "";
-      corpo = htmlVotacao(dd, tf) + htmlSinais(dd, tf) + htmlResumo(dd, tf);
-      if ((dd.ts || []).some((x) => (!tf || x.turno === tf) && seg(x.encerramento) >= 18 * 3600)) corpo += `<p class="cq-p-nota">${icone("help")} ${esc(E.cq_nota_tarde)}</p>`;
+      corpo = htmlVotacao(dd, tf) + htmlSinais(dd, tf) + htmlResumo(dd, tf) + htmlVHPainel(dd, tf);
+      if ((dd.ts || []).some((x) => (!tf || x.turno === tf) && seg(x.encerramento) >= tardeH(x.turno) * 3600)) corpo += `<p class="cq-p-nota">${icone("help")} ${esc(E.cq_nota_tarde)}</p>`;
       corpo += `<p class="small muted">${esc(E.cq_hora_local)}</p>`;
     } else if (dd.tipo === "local") {
       kick = `${e.uf} · ${dd.munNome || ""}`; tit = dd.loc ? A.titulo(dd.loc[0]) : `${X().lc_local} ${e.loc}`;
@@ -875,7 +1047,11 @@
         const extra = dd.tipo === "secao" ? `${L.lk_close} ${x.encerramento || "—"}` : `${nf(x.secoes)} ${E.cq_secoes.toLowerCase()} · ${nf(x.sinalizadas || 0)} ${E.cq_nivel.a}`;
         return `<div class="cq-d-t"><b>${esc(L.round(n))}</b> · ${esc(L.lk_comp)} ${pct(x.comparecimento / (x.aptos || 1), 1)} · ${esc(extra)}${lid ? `<br>${esc(lid)}` : ""}</div>`;
       }).join("");
-      if (dd.tipo === "secao") { const fl = dd.fl.filter((f) => ns.includes(f[0])), n = fl.length; h += `<div class="cq-d-t">${esc(E.cq_t_sin)}: ${n ? fl.map((f) => `${A.numTeste(f[1])}${f[2] === "a" ? "" : "ⁱ"}`).join(", ") : esc(E.cq_nenhuma)}</div>`; }
+      if (dd.tipo === "secao") {
+        const fl = dd.fl.filter((f) => ns.includes(f[0])), n = fl.length;
+        h += `<div class="cq-d-t">${esc(E.cq_t_sin)}: ${n ? fl.map((f) => `${A.numTeste(f[1])}${f[2] === "a" ? "" : "ⁱ"}`).join(", ") : esc(E.cq_nenhuma)}</div>`;
+        ns.forEach((k) => { const v = dd.vh && dd.vh[k]; if (v) h += `<div class="cq-d-t"><b>${esc(L.round(k))}</b> · ${esc(E.vh_dica(nf(v.apos), vhHM(v.fim), v.u != null ? vhHM(v.u) : ""))}</div>`; });
+      }
     } else if (dd.tipo === "linha" || !dd.ts) {
       const ident = r.m.colunas.map(identCol), l = r.m.linhas[gi];
       h += r.m.colunas.slice(0, 8).map((col, i) => `<div class="cq-d-t"><b>${esc(col)}</b>: ${fmtCel(l[i], ident[i])}</div>`).join("");

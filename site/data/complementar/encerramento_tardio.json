@@ -1,6 +1,9 @@
 {
  "criterio": {
-  "hora_fim_oficial_brasilia": 17,
+  "hora_fim_oficial_brasilia": {
+   "1": 17,
+   "2": 19
+  },
   "atraso_min": 60,
   "fusos_uf": {
    "AC": [
@@ -84,15 +87,15 @@
   },
   "2": {
    "secoes_analisadas": 499178,
-   "sinalizadas": 7097,
-   "pct": 0.014217,
+   "sinalizadas": 2,
+   "pct": 4e-06,
    "faixas": {
-    ">=60min": 7097,
-    ">=120min": 6528,
-    ">=180min": 2,
+    ">=60min": 2,
+    ">=120min": 1,
+    ">=180min": 1,
     ">=240min": 1,
-    ">=300min": 1,
-    ">=360min": 1
+    ">=300min": 0,
+    ">=360min": 0
    },
    "encerramento_brasilia": {
     "mediana": 17.0289,
@@ -102,30 +105,8 @@
     "a_partir_19h": 0.0128
    },
    "por_uf": {
-    "AC": 1,
-    "AL": 2,
-    "AM": 1,
-    "BA": 994,
-    "CE": 1,
-    "DF": 17,
-    "ES": 2,
-    "GO": 2,
-    "MA": 4,
-    "MG": 4,
-    "MT": 9,
-    "PA": 9,
-    "PB": 312,
-    "PE": 701,
-    "PI": 10,
-    "PR": 1,
-    "RJ": 3196,
-    "RN": 3,
-    "RO": 1,
-    "RS": 4,
-    "SC": 1,
-    "SE": 54,
-    "SP": 1765,
-    "ZZ": 3
+    "MG": 1,
+    "RJ": 1
    }
   }
  }

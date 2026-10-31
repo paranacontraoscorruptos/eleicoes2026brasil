@@ -157,6 +157,7 @@
       db: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/>',
       seal: '<circle cx="12" cy="9" r="5.5"/><path d="m9.6 9 1.7 1.7 3.1-3.2M8.6 13.6 7 21l5-2.5 5 2.5-1.6-7.4"/>',
       archive: '<path d="M3 5h18v4H3zM5 9v10h14V9M10 13h4"/>',
+      clock: '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
       locate: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/>',
       text: '<path d="M4 6h16M4 10h16M4 14h10M4 18h7"/>',
       lab: '<path d="M9 3h6M10 3v6.5L4.6 18.2A1.9 1.9 0 0 0 6.2 21h11.6a1.9 1.9 0 0 0 1.6-2.8L14 9.5V3M7.3 15h9.4"/>',
@@ -456,13 +457,17 @@
       const cp = tid === "T11" && R.complementar && R.complementar.encerramento_tardio, cpn = (n) => nf(cp.turnos[n].sinalizadas);
       const prev = cp ? `<div class="note enc-nota"><h3>${icone("help")} ${esc(L.ex.enc_t)}</h3><p>${esc(L.ex.enc_nota(cpn(1), cpn(2)))}</p>
         <p class="btn-row"><a class="btn btn-sm" href="#/lista?teste=T11&nivel=a">${icone("list")} ${esc(L.f_list)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.csv" download>${icone("download")} ${esc(L.ex.enc_csv)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.py" download>${icone("code")} ${esc(L.ex.enc_py)}</a></p></div>` : "";
+      const vhr = tid === "T11" && R.complementar && R.complementar.votos_apos_horario;
+      const prevVh = vhr ? `<div class="note enc-nota"><h3>${icone("clock")} ${esc(L.ex.vh_t)}</h3><p>${esc(L.ex.vh_info(nf(vhr.turnos[1].secoes), nf(vhr.turnos[1].votos_apos), nf(vhr.turnos[2].secoes), nf(vhr.turnos[2].votos_apos)))}</p>
+        <p class="btn-row"><a class="btn btn-sm btn-ghost" href="${vhr.csv_secoes}" download>${icone("download")} ${esc(L.ex.vh_csv_secoes)}</a><a class="btn btn-sm btn-ghost" href="${vhr.script}" download>${icone("code")} ${esc(L.ex.vh_py)}</a></p>
+        <p class="small">${esc(L.ex.vh_csv_todos)}: ${vhr.ufs.map((u) => `<a href="site/data/complementar/votos_apos_horario/${u}.csv.gz" download>${u}</a>`).join(" · ")}</p></div>` : "";
       return `<article class="test-card" id="${tid}">
         <details${foco === tid ? " open" : ""}>
           <summary><span class="tnum">${numTeste(tid)}</span><span class="tmain"><span class="tname">${esc(tx.nome)}</span><span class="ttype">${esc(tipoTeste(tid))}</span>
             <span class="tsimple">${esc(X.simples[state.lang][tid])}</span><span class="tres">${res(r1, 1)}${res(r2, 2)}</span>${cp ? `<span class="tprev small">${esc(L.ex.enc_resumo(cpn(1), cpn(2)))}</span>` : ""}</span></summary>
           <div class="tbody">
             <h3>${esc(L.f_obj)}</h3><p>${esc(tx.objetivo)}</p>
-            <h3>${esc(L.f_met)}</h3><p>${esc(tx.metodo)}</p>${prev}
+            <h3>${esc(L.f_met)}</h3><p>${esc(tx.metodo)}</p>${prev}${prevVh}
             <h3>${esc(L.f_crit)}</h3><p>${esc(tx.criterio)}</p>
             <h3>${esc(L.f_lim)}</h3><p>${esc(tx.limites)}</p>
             <p class="btn-row"><a class="btn btn-bot btn-sm" href="${esc(linkAtlas(L.ask_test(numTeste(tid))))}">${icone("globe")} ${esc(L.f_ask)}</a>
@@ -571,7 +576,7 @@
             o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))]))
           + (f.o.some((o) => o[2] === "encerramento_tardio") ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_sec)} <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(L.ex.enc_csv)}</a></p>` : "");
       } else fl = `<p>${chip("green", L.lk_noflags)}</p>`;
-      return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}</section>`;
+      return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}<div class="vh-slot" data-t="${n}"${f && f.o.some((o) => o[2] === "encerramento_tardio") ? " data-vh" : ""}></div></section>`;
     }).join("");
     const nomeMun = titulo(d.mun[1]);
     const cart = [];
@@ -652,6 +657,7 @@
   }
 
   async function render() {
+    if (!state.R) return;   // os dados ainda estão carregando: iniciar() chama render() quando chegarem
     const L = t(), p = rota(), main = $("#main");
     let html, ativo = "home", tit = L.hero_title, pg = null;
     state.cartao = null;

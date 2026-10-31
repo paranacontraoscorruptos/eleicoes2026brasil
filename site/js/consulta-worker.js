@@ -11,7 +11,7 @@ const hora = (h) => { if (!h) return null; const s = String(h).padStart(6, "0");
 
 function colunas() {
   const out = {};
-  ["secoes", "sinalizacoes", "locais", "candidatos", "testes", "municipios"].forEach((tab) => {
+  ["secoes", "sinalizacoes", "locais", "candidatos", "testes", "municipios", "votos_horario"].forEach((tab) => {
     out[tab] = db.exec(`PRAGMA table_info(${tab})`)[0].values.map((v) => v[1]);
   });
   return out;
@@ -36,7 +36,11 @@ async function iniciar(m) {
     CREATE TABLE locais (uf TEXT, zona INTEGER, local INTEGER, cod_mun TEXT, nome TEXT, endereco TEXT, bairro TEXT, lat REAL, lon REAL, tipo INTEGER, acessibilidade INTEGER, secoes INTEGER);
     CREATE TABLE candidatos (turno INTEGER, numero TEXT, nome TEXT, votos INTEGER);
     CREATE TABLE testes (id TEXT, nome TEXT);
-    CREATE TABLE municipios (uf TEXT, codigo TEXT, nome TEXT);`);
+    CREATE TABLE municipios (uf TEXT, codigo TEXT, nome TEXT);
+    CREATE TABLE votos_horario (uf TEXT, cod_mun TEXT, zona INTEGER, secao INTEGER, turno INTEGER, fim TEXT, votos_dia INTEGER, comparecimento_bu INTEGER,
+      votos_apos INTEGER, h1 INTEGER, h2 INTEGER, h3 INTEGER, h4 INTEGER, h5 INTEGER, h6 INTEGER, h7 INTEGER, h8 INTEGER, ultimo_voto TEXT, encerramento TEXT,
+      min_ultimo_ate_enc REAL, maior_intervalo_min REAL, sem_digital_antes INTEGER, votos_antes INTEGER, sem_digital_apos INTEGER, pct_sem_digital_antes REAL,
+      pct_sem_digital_apos REAL, cpf_apos INTEGER, ja_votou_apos INTEGER, urnas INTEGER);`);
   inserirVarios("INSERT INTO candidatos VALUES (?,?,?,?)", ["1", "2"].flatMap((n) => m.cands[n].map((c) => [+n, c[0], c[1], c[2]])));
   inserirVarios("INSERT INTO testes VALUES (?,?)", m.testes);
   const [M, oc] = await Promise.all([json("municipios.json"), json("ocorrencias.json")]);
@@ -90,7 +94,26 @@ async function carregarUf(m) {
   try { await Promise.all(Array.from({ length: 6 }, trabalhador)); } finally { db.run("COMMIT"); st.free(); }
   db.run("CREATE INDEX IF NOT EXISTS i_sec ON secoes(uf, zona, secao); CREATE INDEX IF NOT EXISTS i_loc ON secoes(uf, zona, cod_mun, local); CREATE INDEX IF NOT EXISTS i_mun ON secoes(uf, cod_mun)");
   totalSecoes += n;
+  try { await votosHorario(uf); } catch (e) { /* sem a tabela de votos depois do horário */ }
   return { secoes: totalSecoes };
+}
+
+// Votos depois do horário oficial (log da urna), só nas seções sinalizadas por encerramento tardio
+const hs = (x) => { if (x == null) return null; const d = Math.floor(x / 86400), r = x - 86400 * d; return `${String(Math.floor(r / 3600) + 24 * d).padStart(2, "0")}:${String(Math.floor((r % 3600) / 60)).padStart(2, "0")}:${String(r % 60).padStart(2, "0")}`; };
+async function votosHorario(uf) {
+  let V;
+  try { V = await json(`votoshora/${uf}.json`); } catch (e) { return; }
+  const ix = Object.fromEntries(V.campos.map((c, i) => [c, i]));
+  const r1 = (x) => (x == null ? null : Math.round(x * 10) / 10);
+  inserirVarios(`INSERT INTO votos_horario VALUES (${Array(29).fill("?").join(",")})`, V.l.map((l) => {
+    const g = (c) => l[ix[c]], u = g("ultimo_voto"), e = g("encerramento");
+    return [uf, String(g("cod_mun")), g("zona"), g("secao"), g("turno"), hs(g("fim")).slice(0, 5), g("votos_dia"), g("comparecimento_bu"), g("votos_apos")]
+      .concat([1, 2, 3, 4, 5, 6, 7, 8].map((k) => g("h" + k)))
+      .concat([hs(u), hs(e), u != null && e != null ? r1((e - u) / 60) : null, g("maior_intervalo") == null ? null : r1(g("maior_intervalo") / 60),
+        g("sem_digital_antes"), g("votos_antes"), g("sem_digital_apos"), g("votos_antes") ? r1((100 * g("sem_digital_antes")) / g("votos_antes")) : null,
+        g("votos_apos") ? r1((100 * g("sem_digital_apos")) / g("votos_apos")) : null, g("cpf_apos"), g("ja_votou_apos"), g("urnas")]);
+  }));
+  db.run("CREATE INDEX IF NOT EXISTS i_vh ON votos_horario(uf, zona, secao)");
 }
 
 // Turno da consulta: visões temporárias com o mesmo nome das tabelas (secoes, sinalizacoes, candidatos) deixam só
@@ -99,10 +122,11 @@ let turnoVista = 0;
 function aplicarTurno(t) {
   t = t === 1 || t === 2 ? t : 0;
   if (t === turnoVista) return;
-  db.run("DROP VIEW IF EXISTS temp.secoes; DROP VIEW IF EXISTS temp.sinalizacoes; DROP VIEW IF EXISTS temp.candidatos;");
+  db.run("DROP VIEW IF EXISTS temp.secoes; DROP VIEW IF EXISTS temp.sinalizacoes; DROP VIEW IF EXISTS temp.candidatos; DROP VIEW IF EXISTS temp.votos_horario;");
   if (t) db.run(`CREATE TEMP VIEW secoes AS SELECT * FROM main.secoes WHERE turno = ${t};
     CREATE TEMP VIEW sinalizacoes AS SELECT * FROM main.sinalizacoes WHERE turno = ${t};
-    CREATE TEMP VIEW candidatos AS SELECT * FROM main.candidatos WHERE turno = ${t};`);
+    CREATE TEMP VIEW candidatos AS SELECT * FROM main.candidatos WHERE turno = ${t};
+    CREATE TEMP VIEW votos_horario AS SELECT * FROM main.votos_horario WHERE turno = ${t};`);
   turnoVista = t;
 }
 
