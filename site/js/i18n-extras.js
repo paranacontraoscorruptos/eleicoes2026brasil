@@ -230,7 +230,7 @@
     pv_manif_t: "Manifestos", pv_manif_txt: "Um manifesto lista o código de vários arquivos de uma vez. Com a prova do manifesto, todos os arquivos dele ficam provados juntos.",
     pv_arq_t: "Cópias no Internet Archive", pv_arq_txt: "O Internet Archive guarda cópias de páginas da web com data e hora. Mesmo que este site saia do ar, as cópias continuam lá.",
     pv_th_end: "Endereço", pv_th_data: "Data da cópia", pv_ver: "Ver cópia", pv_todas: "Ver todas as cópias do site", pv_agora: "Guardar uma cópia desta página agora", pv_agora_note: "Abre o Internet Archive em outra aba; a cópia fica pública.",
-    pv_archive_today: "Guardar no archive.today", pv_sem_copias: "As cópias desta versão ainda estão sendo feitas.",
+    pv_archive_today: "Guardar no archive.today", pv_sem_copias: "Ainda não há cópias listadas aqui. Use o botão “Guardar uma cópia desta página agora” acima; a lista completa fica em “Ver todas as cópias do site”.",
   };
 
   // ===================================================================================================
@@ -400,7 +400,7 @@
     pv_manif_t: "Manifests", pv_manif_txt: "A manifest lists the codes of many files at once. With the manifest's proof, all its files are proven together.",
     pv_arq_t: "Internet Archive copies", pv_arq_txt: "The Internet Archive keeps dated copies of web pages. Even if this site goes offline, the copies stay there.",
     pv_th_end: "Address", pv_th_data: "Copy date", pv_ver: "See copy", pv_todas: "See all copies of the site", pv_agora: "Save a copy of this page now", pv_agora_note: "Opens the Internet Archive in another tab; the copy is public.",
-    pv_archive_today: "Save on archive.today", pv_sem_copias: "The copies of this version are still being made.",
+    pv_archive_today: "Save on archive.today", pv_sem_copias: "No copies are listed here yet. Use the “Save a copy of this page now” button above; the full list is under “See all copies of the site”.",
   };
 
   // ===================================================================================================
@@ -570,6 +570,6 @@
     pv_manif_t: "Manifiestos", pv_manif_txt: "Un manifiesto lista el código de varios archivos a la vez. Con la prueba del manifiesto, todos sus archivos quedan probados juntos.",
     pv_arq_t: "Copias en el Internet Archive", pv_arq_txt: "El Internet Archive guarda copias de páginas web con fecha y hora. Aunque este sitio salga del aire, las copias siguen allí.",
     pv_th_end: "Dirección", pv_th_data: "Fecha de la copia", pv_ver: "Ver copia", pv_todas: "Ver todas las copias del sitio", pv_agora: "Guardar una copia de esta página ahora", pv_agora_note: "Abre el Internet Archive en otra pestaña; la copia es pública.",
-    pv_archive_today: "Guardar en archive.today", pv_sem_copias: "Las copias de esta versión todavía se están haciendo.",
+    pv_archive_today: "Guardar en archive.today", pv_sem_copias: "Todavía no hay copias listadas aquí. Use el botón “Guardar una copia de esta página ahora” arriba; la lista completa está en “Ver todas las copias del sitio”.",
   };
 })();
