@@ -1,5 +1,5 @@
 /* Consulta avançada: banco SQLite (sql.js) num Worker. Carrega os dados do site por estado e responde às consultas,
-   sem travar a página. Mensagens: {tipo: "iniciar" | "uf" | "sql"}; as respostas voltam com o mesmo id. */
+   sem travar a página. Mensagens: {tipo: "iniciar" | "uf" | "sql" | "varias"}; as respostas voltam com o mesmo id. */
 "use strict";
 importScripts("vendor/sqljs/sql-wasm.js");
 
@@ -111,6 +111,7 @@ onmessage = async (e) => {
     if (m.tipo === "iniciar") r = await iniciar(m);
     else if (m.tipo === "uf") r = await carregarUf(m);
     else if (m.tipo === "sql") r = consultar(m);
+    else if (m.tipo === "varias") r = { res: m.sqls.map((sql) => { try { return consultar({ sql }); } catch (err) { return { erro: String((err && err.message) || err) }; } }) };
     else throw new Error("tipo desconhecido");
     postMessage(Object.assign({ id: m.id }, r));
   } catch (err) {

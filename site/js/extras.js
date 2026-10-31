@@ -408,6 +408,541 @@
   }
   const csvCampo = (v) => (v == null ? "" : /[",\n;]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
 
+  // ===================================================================================================
+  // Consulta avançada: resultado em páginas, ordem por coluna, painel flutuante da linha e dica no mouse
+  // ===================================================================================================
+  const CQ_PP = [50, 100, 250, 500, 1000];
+  const ppSalvo = () => { try { const v = +localStorage.getItem("cq_pp"); return CQ_PP.includes(v) ? v : 100; } catch (e) { return 100; } };
+  const sqlTxt = (v) => `'${String(v).replace(/'/g, "''")}'`;
+  const sqlLit = (v) => (typeof v === "number" ? String(v) : sqlTxt(v));
+  const nomeCol = (c) => String(c).toLowerCase().replace(/^.*\./, "");
+  const identCol = (c) => /^(zona|secao|local|turno|cod_mun|codigo|numero|id|lat|lon)$/.test(nomeCol(c));
+  const fmtCel = (v, ident) => (v == null ? "—" : typeof v === "number" ? (Number.isInteger(v) && !ident ? nf(v) : String(v).replace(".", A.state.lang === "EN" ? "." : ",")) : esc(v));
+  const varias = (sqls) => pedir({ tipo: "varias", sqls }).then((m) => m.res.map((x) => { if (x.erro) throw new Error(x.erro); return x; }));
+  const objs = (res) => res.linhas.map((l) => Object.fromEntries(res.colunas.map((c, i) => [c, l[i]])));
+  const candsT = (n) => R().turnos[n].presidente.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96");
+  const seg = (h) => { const m = /^(\d\d):(\d\d):(\d\d)$/.exec(h || ""); return m ? +m[1] * 3600 + +m[2] * 60 + +m[3] : null; };
+  const duracao = (a, b) => { const x = seg(a), y = seg(b); if (x == null || y == null || y < x) return "—"; const s = y - x; return `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, "0")} min`; };
+  const comSinal = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + nf(Math.abs(v));
+  const pp1 = (x) => (A.state.lang === "EN" ? x.toFixed(1) : x.toFixed(1).replace(".", ","));
+  let cqResSeq = 0;
+  cq.hist = [];
+
+  // O que a linha identifica (pelas colunas do resultado): seção, local, município, zona, estado, teste, candidato, turno
+  function leitor(cols) {
+    const ix = {};
+    cols.forEach((c, i) => { const k = nomeCol(c); if (!(k in ix)) ix[k] = i; });
+    const g = (l, k) => (k in ix ? l[ix[k]] : null);
+    const int = (l, k) => { const v = g(l, k); return v != null && /^\d+$/.test(String(v)) ? +v : null; };
+    return (l) => {
+      const ufv = String(g(l, "uf") || ""), t_ = int(l, "turno");
+      const cod = g(l, "cod_mun") != null ? g(l, "cod_mun") : g(l, "codigo");
+      const te = [g(l, "teste"), g(l, "id")].find((v) => /^T\d{2}$/.test(String(v || "")));
+      const nr = g(l, "numero"), mun = g(l, "municipio");
+      return { uf: /^[A-Z]{2}$/.test(ufv) && window.UF_NOMES[ufv] ? ufv : null, z: int(l, "zona"), s: int(l, "secao"), loc: int(l, "local"),
+        t: t_ === 1 || t_ === 2 ? t_ : null, cod: cod != null && /^\d+$/.test(String(cod)) ? String(cod) : null,
+        mun: typeof mun === "string" && mun ? mun : null, teste: te || null, nivel: ["a", "i"].includes(g(l, "nivel")) ? g(l, "nivel") : null,
+        nr: nr != null && /^\d{2}$/.test(String(nr)) ? String(nr) : null };
+    };
+  }
+  function destino(e) {
+    if (e.uf && e.z != null && e.s != null) return { tipo: "secao", href: `#/secao/${e.uf}/${e.z}/${e.s}` };
+    if (e.uf && e.z != null && e.loc != null) return { tipo: "local", href: e.cod ? `#/locais/${e.uf}/${e.cod}/${e.z}-${e.loc}` : null };
+    if (e.teste) {
+      const q = new URLSearchParams();
+      if (e.t) q.set("t", e.t);
+      if (e.uf) q.set("uf", e.uf);
+      if (e.uf && e.cod) q.set("mun", e.cod);
+      if (e.uf && e.z != null) q.set("z", e.z);
+      if (e.nivel) q.set("nivel", e.nivel);
+      if ([...q.keys()].length) { q.set("teste", e.teste); return { tipo: "lista", href: `#/lista?${q}` }; }
+      return { tipo: "teste", href: `#/testes/${e.teste}` };
+    }
+    if ((e.uf && e.cod) || e.mun) return { tipo: "mun", href: e.uf && e.cod ? `#/uf/${e.uf}/${e.cod}` : null };
+    if (e.uf && e.z != null) return { tipo: "zona", href: `#/lista?uf=${e.uf}&z=${e.z}${e.t ? `&t=${e.t}` : ""}` };
+    if (e.uf) return { tipo: "uf", href: `#/uf/${e.uf}` };
+    if (e.nr) return { tipo: "cand", href: `#/turno/${e.t || 2}` };
+    if (e.t) return { tipo: "turno", href: `#/turno/${e.t}` };
+    return null;
+  }
+  // Endereço que falta (código do município pelo nome, ou município do local)
+  async function resolver(e, d) {
+    if (!d) return null;
+    if (d.href) return d.href;
+    try {
+      if (d.tipo === "local") {
+        const [r] = await varias([`SELECT l.cod_mun FROM locais l LEFT JOIN municipios m ON m.uf = l.uf AND m.codigo = l.cod_mun WHERE l.uf = ${sqlTxt(e.uf)} AND l.zona = ${e.z} AND l.local = ${e.loc}${e.mun ? ` ORDER BY m.nome = ${sqlTxt(e.mun)} DESC` : ""} LIMIT 1`]);
+        if (r.linhas.length) return `#/locais/${e.uf}/${r.linhas[0][0]}/${e.z}-${e.loc}`;
+      } else if (d.tipo === "mun") {
+        const [r] = await varias([`SELECT uf, codigo FROM municipios WHERE nome = ${sqlTxt(e.mun)}${e.uf ? ` AND uf = ${sqlTxt(e.uf)}` : ""} LIMIT 2`]);
+        if (r.linhas.length === 1) return `#/uf/${r.linhas[0][0]}/${r.linhas[0][1]}`;
+        if (e.uf) return `#/uf/${e.uf}`;
+      }
+    } catch (err) { /* banco ainda não pronto */ }
+    return null;
+  }
+
+  // Consulta agrupada simples (SELECT … FROM … [WHERE …] GROUP BY …): cada grupo pode abrir as suas linhas
+  function partes(s) {
+    const out = []; let d = 0, q = null, cur = "";
+    for (const ch of s) {
+      if (q) { if (ch === q) q = null; } else if (ch === "'" || ch === '"') q = ch; else if (ch === "(") d++; else if (ch === ")") d--;
+      else if (ch === "," && !d) { out.push(cur.trim()); cur = ""; continue; }
+      cur += ch;
+    }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+  }
+  const nzSql = (s) => String(s).replace(/\s+/g, " ").trim().toLowerCase();
+  function agrupada(sql, cols) {
+    const s = sql.trim().replace(/;\s*$/, "");
+    if ((s.match(/\bselect\b/gi) || []).length !== 1 || /\b(union|intersect|except)\b/i.test(s)) return null;
+    const m = s.match(/^select\s+([\s\S]+?)\s+from\s+([\s\S]+?)(?:\s+where\s+([\s\S]+?))?\s+group\s+by\s+([\s\S]+?)(?:\s+having\s+[\s\S]+?)?(?:\s+order\s+by\s+[\s\S]+?)?(?:\s+limit\s+\d+(?:\s*(?:,|offset)\s*\d+)?)?$/i);
+    if (!m) return null;
+    const itens = partes(m[1].replace(/^distinct\s+/i, "")).map((x) => {
+      const a = x.match(/^([\s\S]+?)\s+as\s+"?([A-Za-z_]\w*)"?$/i) || x.match(/^([\s\S]*[\w)\]])\s+"?([A-Za-z_]\w*)"?$/);
+      if (a && !/^(end|asc|desc)$/i.test(a[2])) return { expr: a[1], nome: a[2].toLowerCase() };
+      return { expr: x, nome: /^[\w.]+$/.test(x) ? nomeCol(x) : x.toLowerCase() };
+    });
+    const nomes = cols.map((c) => String(c).toLowerCase());
+    const grupos = partes(m[4]).map((gx) => {
+      const it = /^\d+$/.test(gx) ? itens[+gx - 1] : itens.find((x) => x.nome === gx.toLowerCase() || nzSql(x.expr) === nzSql(gx));
+      let ci = it ? nomes.indexOf(it.nome) : -1;
+      if (ci < 0) ci = nomes.findIndex((c) => nomeCol(c) === nomeCol(gx));
+      return { expr: it ? it.expr : gx, ci };
+    });
+    if (!grupos.length || grupos.some((g) => g.ci < 0)) return null;
+    return { from: m[2].trim(), where: m[3] ? m[3].trim() : null, grupos };
+  }
+  function sqlGrupo(G, l) {
+    const conds = G.grupos.map((g) => (l[g.ci] == null ? `${g.expr} IS NULL` : `${g.expr} = ${sqlLit(l[g.ci])}`));
+    return `SELECT *\nFROM ${G.from}\nWHERE ${G.where ? `(${G.where})\n  AND ` : ""}${conds.join("\n  AND ")}`;
+  }
+
+  function ordenar(r) {
+    const L = r.m.linhas;
+    r.idx = Array.from({ length: L.length }, (_, i) => i);
+    if (!r.ord) return;
+    const { i, d } = r.ord, col = new Intl.Collator(A.state.lang === "EN" ? "en" : "pt", { numeric: true, sensitivity: "base" });
+    r.idx.sort((a, b) => {
+      const x = L[a][i], y = L[b][i];
+      if (x == null || y == null) return (x == null) - (y == null) || a - b;
+      return d * (typeof x === "number" && typeof y === "number" ? x - y : col.compare(String(x), String(y))) || a - b;
+    });
+  }
+
+  // --- tabela e páginas --------------------------------------------------------------------------------------------
+  function paginador(r, pos) {
+    const E = X(), n = r.m.linhas.length, np = Math.max(1, Math.ceil(n / r.pp)), a = r.pag * r.pp + 1, b = Math.min(n, (r.pag + 1) * r.pp);
+    const bt = (k, txt, dis, rot, cls) => `<button class="btn btn-sm btn-ghost${cls ? " " + cls : ""}" type="button" data-pg="${k}"${dis ? " disabled" : ""}${rot ? ` aria-label="${esc(rot)}" title="${esc(rot)}"` : ""}>${txt}</button>`;
+    return `<nav class="cq-pag" aria-label="${esc(E.cq_pag_nav)}" data-pos="${pos}">
+      <div class="cq-pag-b">${bt("ini", "«", r.pag === 0, E.cq_pag_ini, "cq-pag-x")}${bt("ant", `‹ <span>${esc(E.cq_pag_ant)}</span>`, r.pag === 0)}
+        <label class="cq-pag-n"><span>${esc(E.cq_pagina)}</span><input type="number" min="1" max="${np}" value="${r.pag + 1}" inputmode="numeric" aria-label="${esc(E.cq_pagina)}"><span>${esc(E.cq_de)} ${nf(np)}</span></label>
+        ${bt("prox", `<span>${esc(E.cq_pag_prox)}</span> ›`, r.pag >= np - 1)}${bt("fim", "»", r.pag >= np - 1, E.cq_pag_fim, "cq-pag-x")}</div>
+      <span class="cq-pag-i">${esc(E.cq_faixa(nf(a), nf(b), nf(n)))}</span>
+      <label class="cq-pag-pp"><span>${esc(E.cq_porpag)}</span><select>${CQ_PP.map((x) => `<option value="${x}"${x === r.pp ? " selected" : ""}>${x}</option>`).join("")}</select></label></nav>`;
+  }
+  function linhaHtml(r, gi, k, ident) {
+    const E = X(), l = r.m.linhas[gi];
+    const cel = l.map((v, i) => `<td>${fmtCel(v, ident[i])}</td>`).join("");
+    const sel = r.sel === gi ? " cq-sel" : "";
+    return `<tr class="cq-lin${sel}" tabindex="0" data-i="${gi}"><td class="cq-n">${nf(k + 1)}</td>${cel}${r.G ? `<td class="cq-acao"><button class="icon-btn" type="button" data-grupo="${gi}" aria-label="${esc(E.cq_ver_linhas)}" title="${esc(E.cq_ver_linhas)}">${icone("list")}</button></td>` : ""}</tr>`;
+  }
+  function voltarHtml() {
+    const ant = cq.hist[cq.hist.length - 1];
+    return ant ? `<p class="cq-voltar"><button class="btn btn-sm" type="button" data-voltar>‹ ${esc(X().cq_voltar(nf(ant.m.linhas.length)))}</button></p>` : "";
+  }
+  function mostrarRes() {
+    const E = X(), r = cq.res, box = $("#cq-res");
+    if (!box || !r) return;
+    dicaEsconder();
+    const m = r.m, n = m.linhas.length;
+    $("#cq-info").textContent = E.cq_linhas(nf(n), nf(r.ms)) + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
+    $("#cq-dl").hidden = !n;
+    if (!n) { box.innerHTML = `${voltarHtml()}<p class="muted">${esc(E.cq_vazio)}</p>`; return; }
+    const np = Math.ceil(n / r.pp);
+    r.pag = Math.min(Math.max(0, r.pag), np - 1);
+    const ident = m.colunas.map(identCol), ini = r.pag * r.pp, fim = Math.min(n, ini + r.pp);
+    let corpo = "";
+    for (let k = ini; k < fim; k++) corpo += linhaHtml(r, r.idx[k], k, ident);
+    const cab = `<th scope="col" class="cq-n">#</th>` + m.colunas.map((c, i) => {
+      const s = r.ord && r.ord.i === i ? r.ord.d : 0;
+      return `<th scope="col" aria-sort="${s > 0 ? "ascending" : s < 0 ? "descending" : "none"}"><button class="cq-ord" type="button" data-ord="${i}" title="${esc(E.cq_ord_col(c))}">${esc(c)}<span aria-hidden="true">${s > 0 ? "▲" : s < 0 ? "▼" : "↕"}</span></button></th>`;
+    }).join("") + (r.G ? `<th scope="col"><span class="sr-only">${esc(E.cq_ver_linhas)}</span></th>` : "");
+    box.innerHTML = `${voltarHtml()}${paginador(r, "topo")}<div class="table-wrap cq-wrap"><table class="num-cols cq-tab"><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table></div>${paginador(r, "base")}
+      <p class="small muted cq-uso">${icone("help")} ${esc(E.cq_uso)}</p>`;
+  }
+  function irPagina(p, rolar) {
+    const r = cq.res; if (!r) return;
+    const np = Math.max(1, Math.ceil(r.m.linhas.length / r.pp));
+    r.pag = Math.min(Math.max(0, p), np - 1);
+    mostrarRes();
+    if (rolar) $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+
+  // --- dados de uma linha (para o painel e para a dica) ---------------------------------------------------------------
+  const cacheInfo = new Map();
+  function ondeDe(e, tipo) {
+    const u = e.uf ? `uf = ${sqlTxt(e.uf)}` : null;
+    if (tipo === "secao") return `${u} AND zona = ${e.z} AND secao = ${e.s}`;
+    if (tipo === "local") return `${u} AND zona = ${e.z} AND local = ${e.loc}${e.cod ? ` AND cod_mun = ${sqlTxt(e.cod)}` : ""}`;
+    if (tipo === "mun") return [u, e.cod ? `cod_mun = ${sqlTxt(e.cod)}` : `municipio = ${sqlTxt(e.mun)}`].filter(Boolean).join(" AND ");
+    if (tipo === "zona") return `${u} AND zona = ${e.z}`;
+    return u;
+  }
+  function dadosLinha(r, gi) {
+    const l = r.m.linhas[gi], e = r.ler(l), d = destino(e);
+    const k = d ? `${d.tipo}|${JSON.stringify(e)}` : `linha|${r.id}|${gi}`;
+    if (!cacheInfo.has(k)) {
+      if (cacheInfo.size > 400) cacheInfo.clear();
+      cacheInfo.set(k, carregarDados(e, d).catch(() => ({ tipo: "linha", e, d: null, href: null })));
+    }
+    return cacheInfo.get(k);
+  }
+  async function carregarDados(e, d) {
+    const out = { e, d, href: await resolver(e, d) };
+    if (!d) return Object.assign(out, { tipo: "linha" });
+    const tp = d.tipo;
+    if (tp === "secao") {
+      const w = ondeDe(e, "secao"), ws = `s.uf = ${sqlTxt(e.uf)} AND s.zona = ${e.z} AND s.secao = ${e.s}`;
+      const [S, F, Lc] = await varias([`SELECT * FROM secoes WHERE ${w} ORDER BY turno`,
+        `SELECT turno, teste, nivel, categoria FROM sinalizacoes WHERE ${w} ORDER BY turno, nivel, teste`,
+        `SELECT l.nome, l.endereco, l.bairro FROM secoes s JOIN locais l ON l.uf = s.uf AND l.zona = s.zona AND l.local = s.local AND l.cod_mun = s.cod_mun WHERE ${ws} LIMIT 1`]);
+      const ts = objs(S);
+      if (!ts.length) return Object.assign(out, { tipo: "linha" });
+      const x = ts[0];
+      return Object.assign(out, { tipo: tp, ts, fl: F.linhas, loc: Lc.linhas[0] || null, munNome: A.titulo(x.municipio || ""),
+        hLocal: x.local != null ? `#/locais/${e.uf}/${x.cod_mun}/${e.z}-${x.local}` : null, hMun: `#/uf/${e.uf}/${x.cod_mun}` });
+    }
+    if (tp === "local" || tp === "mun" || tp === "zona" || tp === "uf") {
+      let cod = e.cod;
+      const mh = /^#\/(?:uf|locais)\/[A-Z]{2}\/(\d+)/.exec(out.href || "");
+      if (!cod && mh) cod = mh[1];
+      const e2 = Object.assign({}, e, { cod });
+      const vs = (cq.colunas.secoes || []).filter((c) => /^v\d+$/.test(c));
+      const sqls = [`SELECT turno, COUNT(*) AS secoes, SUM(aptos) AS aptos, SUM(comparecimento) AS comparecimento, SUM(faltosos) AS faltosos, SUM(validos) AS validos,
+        SUM(brancos) AS brancos, SUM(nulos) AS nulos, SUM(sinalizada) AS sinalizadas, SUM(encerramento >= '18:00:00') AS tarde, MIN(abertura) AS abertura, MAX(encerramento) AS encerramento${vs.map((c) => `, SUM(${c}) AS ${c}`).join("")}
+        FROM secoes WHERE ${ondeDe(e2, tp)} GROUP BY turno ORDER BY turno`];
+      if (tp === "local") sqls.push(`SELECT nome, endereco, bairro, secoes FROM locais WHERE ${ondeDe(e2, "local")} LIMIT 1`);
+      const [G, Lc] = await varias(sqls);
+      const munNome = cod && e.uf ? await munNome_(e.uf, cod) : e.mun ? A.titulo(e.mun) : "";
+      return Object.assign(out, { tipo: tp, ts: objs(G), loc: Lc ? Lc.linhas[0] || null : null, munNome, hMun: tp === "local" && cod ? `#/uf/${e.uf}/${cod}` : null });
+    }
+    if (tp === "teste" || tp === "lista") {
+      const w = [`teste = ${sqlTxt(e.teste)}`].concat(e.uf ? [`uf = ${sqlTxt(e.uf)}`] : [], e.t ? [`turno = ${e.t}`] : [], e.uf && e.cod ? [`cod_mun = ${sqlTxt(e.cod)}`] : [],
+        e.uf && e.z != null ? [`zona = ${e.z}`] : [], e.nivel ? [`nivel = ${sqlTxt(e.nivel)}`] : []).join(" AND ");
+      const [S] = await varias([`SELECT turno, nivel, COUNT(*) AS n FROM sinalizacoes WHERE ${w} GROUP BY turno, nivel ORDER BY turno, nivel`]);
+      return Object.assign(out, { tipo: tp, cont: S.linhas });
+    }
+    return Object.assign(out, { tipo: tp });
+  }
+  const munNome_ = (uf, cod) => munNome(uf, cod).catch(() => cod);
+
+  // --- conteúdo: votos de cada turno, diferença entre candidatos e ganho do 1º para o 2º turno ---------------------------
+  function porTurno(ts) { const o = {}; (ts || []).forEach((x) => { o[x.turno] = x; }); return o; }
+  function rankCands(n, x) {
+    return candsT(n).map((c) => ({ nr: c.nr, nome: A.titulo(c.nome), v: x["v" + c.nr] || 0 })).filter((c) => c.v > 0).sort((a, b) => b.v - a.v);
+  }
+  function htmlVotacao(dd) {
+    const E = X(), L = t(), by = porTurno(dd.ts), ns = [1, 2].filter((n) => by[n]), sec = dd.tipo === "secao";
+    if (!ns.length) return `<p class="muted small">${esc(E.cq_nao_carregado)}</p>`;
+    const tSel = dd.e.t;
+    const th = ns.map((n) => `<th scope="col"${tSel === n ? ' class="on"' : ""}>${esc(L.round(n))}</th>`).join("") + (ns.length === 2 ? `<th scope="col">${esc(E.cq_dif)}</th>` : "");
+    const linha = (rot, f, num, dica) => {
+      const vs = ns.map((n) => f(by[n], n));
+      const dif = ns.length === 2 && num ? (() => { const a = num(by[1]), b = num(by[2]); return a == null || b == null ? "" : `<span class="${b - a > 0 ? "cq-pos" : b - a < 0 ? "cq-neg" : ""}">${comSinal(b - a)}</span>`; })() : "";
+      return `<tr><th scope="row"${dica ? ` title="${esc(dica)}"` : ""}>${esc(rot)}</th>${vs.map((v, i) => `<td${tSel === ns[i] ? ' class="on"' : ""}>${v}</td>`).join("")}${ns.length === 2 ? `<td>${dif}</td>` : ""}</tr>`;
+    };
+    const num = (k) => (x) => (x[k] == null ? null : x[k]);
+    const linhas = [];
+    if (!sec) linhas.push(linha(E.cq_secoes, (x) => nf(x.secoes), num("secoes")));
+    linhas.push(linha(L.lk_aptos, (x) => nf(x.aptos), num("aptos")),
+      linha(L.lk_comp, (x) => `${nf(x.comparecimento)} <small>(${pct(x.comparecimento / (x.aptos || 1), 1)})</small>`, num("comparecimento")),
+      linha(L.lk_abst, (x) => nf(x.faltosos), num("faltosos")),
+      linha(E.cq_validos, (x) => nf(x.validos), num("validos")),
+      linha(L.blank, (x) => nf(x.brancos), num("brancos")), linha(L.null_, (x) => nf(x.nulos), num("nulos")));
+    if (sec) {
+      linhas.push(linha(L.lk_open, (x) => esc(x.abertura || "—")), linha(L.lk_close, (x) => `${esc(x.encerramento || "—")}${seg(x.encerramento) >= 18 * 3600 ? ` <span class="cq-tarde" title="${esc(E.cq_nota_tarde)}">!</span>` : ""}`),
+        linha(E.cq_tempo, (x) => duracao(x.abertura, x.encerramento)));
+      if (ns.some((n) => by[n].agregadas)) linhas.push(linha(L.lk_agreg, (x) => esc(x.agregadas || "—")));
+    } else {
+      linhas.push(linha(E.cq_primeira, (x) => esc(x.abertura || "—")), linha(E.cq_ultima, (x) => esc(x.encerramento || "—")),
+        linha(E.cq_tarde, (x) => `${nf(x.tarde || 0)} <small>(${pct((x.tarde || 0) / (x.secoes || 1), 1)})</small>`, num("tarde")),
+        linha(E.cq_anom, (x) => `${nf(x.sinalizadas || 0)} <small>(${pct((x.sinalizadas || 0) / (x.secoes || 1), 1)})</small>`, num("sinalizadas")));
+    }
+    let h = `<h3>${esc(E.cq_t_resumo)}</h3><div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th>${th}</tr></thead><tbody>${linhas.join("")}</tbody></table></div>`;
+    // votos para Presidente em cada turno
+    h += `<h3>${esc(E.cq_t_votos)}</h3>`;
+    ns.forEach((n) => {
+      const x = by[n], cs = rankCands(n, x), val = x.validos || cs.reduce((a, c) => a + c.v, 0) || 1;
+      h += `<div class="cq-p-turno${tSel === n ? " on" : ""}"><h4>${esc(L.round(n))} <small>· ${esc(L.roundDate[n])}</small></h4>`;
+      if (!cs.length) { h += `<p class="muted small">${esc(E.cq_sem_votos)}</p></div>`; return; }
+      h += `<table class="cq-p-t cq-p-c"><thead><tr><th scope="col">${esc(E.cq_cand)}</th><th scope="col">${esc(E.cq_votos)}</th><th scope="col">${esc(E.cq_pct)}</th></tr></thead><tbody>${cs.map((c) => `<tr><th scope="row">${esc(c.nome)} <small>(${c.nr})</small></th><td>${nf(c.v)}</td><td><span class="cq-barra" style="--w:${(100 * c.v / val).toFixed(1)}%"></span>${pct(c.v / val, 1)}</td></tr>`).join("")}</tbody></table>`;
+      if (cs.length > 1) h += `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_vant(cs[0].nome, cs[1].nome, nf(cs[0].v - cs[1].v), pp1(100 * (cs[0].v - cs[1].v) / val)))}</p>`;
+      else h += `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_unico(cs[0].nome))}</p>`;
+      h += `</div>`;
+    });
+    // do 1º para o 2º turno
+    if (by[1] && by[2]) {
+      const cs2 = candsT(2), v1 = (nr) => by[1]["v" + nr] || 0, v2 = (nr) => by[2]["v" + nr] || 0;
+      const ls = cs2.map((c) => [`${esc(A.titulo(c.nome))} <small>(${c.nr})</small>`, v1(c.nr), v2(c.nr)])
+        .concat([[esc(L.blank), by[1].brancos || 0, by[2].brancos || 0], [esc(L.null_), by[1].nulos || 0, by[2].nulos || 0], [esc(L.lk_comp), by[1].comparecimento || 0, by[2].comparecimento || 0]]);
+      h += `<h3>${esc(E.cq_t_comp)}</h3><div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th><th scope="col">${esc(L.round(1))}</th><th scope="col">${esc(L.round(2))}</th><th scope="col">${esc(E.cq_ganho)}</th></tr></thead><tbody>
+        ${ls.map(([rot, a, b]) => `<tr><th scope="row">${rot}</th><td>${nf(a)}</td><td>${nf(b)}</td><td class="${b - a > 0 ? "cq-pos" : b - a < 0 ? "cq-neg" : ""}">${comSinal(b - a)}</td></tr>`).join("")}</tbody></table></div>`;
+      if (cs2.length === 2) {
+        const [a, b] = cs2, d1 = v1(a.nr) - v1(b.nr), d2 = v2(a.nr) - v2(b.nr);
+        h += `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_dist(A.titulo(a.nome), A.titulo(b.nome), comSinal(d1), comSinal(d2)))}</p>`;
+      }
+    }
+    return h;
+  }
+  function htmlSinais(dd) {
+    const E = X(), L = t(), cat = R().categorias || {};
+    const ns = [1, 2].filter((n) => porTurno(dd.ts)[n]);
+    return `<h3>${esc(E.cq_t_sin)}</h3>${ns.map((n) => {
+      const fs = dd.fl.filter((f) => f[0] === n);
+      return `<div class="cq-p-sin"><h4>${esc(L.round(n))}</h4>${fs.length ? `<ul>${fs.map((f) => `<li><a href="#/testes/${f[1]}">${esc(A.numTeste(f[1]))}. ${esc(A.nomeTeste(f[1]))}</a> ${chip(f[2] === "a" ? "red" : "amber", E.cq_nivel[f[2]] || f[2])}<br><span class="small muted">${esc((cat[f[3]] || {})[A.state.lang] || f[3] || "")}</span></li>`).join("")}</ul>` : `<p class="small muted">${esc(E.cq_nenhuma)}</p>`}</div>`;
+    }).join("")}`;
+  }
+  function htmlColunas(r, gi) {
+    const E = X(), l = r.m.linhas[gi], ident = r.m.colunas.map(identCol);
+    return `<dl class="cq-p-dl">${r.m.colunas.map((c, i) => `<div><dt><code>${esc(c)}</code>${E.cq_col[/^v\d+$/.test(nomeCol(c)) ? "vNN" : nomeCol(c)] ? ` <small>${esc(E.cq_col[/^v\d+$/.test(nomeCol(c)) ? "vNN" : nomeCol(c)])}</small>` : ""}</dt><dd>${fmtCel(l[i], ident[i])}</dd></div>`).join("")}</dl>`;
+  }
+  // título, corpo e botões do painel
+  function conteudo(dd, r, gi) {
+    const E = X(), L = t(), e = dd.e, x0 = (dd.ts || [])[0] || {};
+    let kick = "", tit = "", sub = "", corpo = "";
+    if (dd.tipo === "secao") {
+      kick = `${e.uf} · ${dd.munNome}`; tit = `${L.th_zone} ${e.z} · ${L.th_section} ${e.s}`;
+      sub = dd.loc ? [A.titulo(dd.loc[0]), dd.loc[2] && A.titulo(dd.loc[2])].filter(Boolean).join(" · ") : "";
+      corpo = htmlVotacao(dd) + htmlSinais(dd);
+      if ((dd.ts || []).some((x) => seg(x.encerramento) >= 18 * 3600)) corpo += `<p class="cq-p-nota">${icone("help")} ${esc(E.cq_nota_tarde)}</p>`;
+      corpo += `<p class="small muted">${esc(E.cq_hora_local)}</p>`;
+    } else if (dd.tipo === "local") {
+      kick = `${e.uf} · ${dd.munNome || ""}`; tit = dd.loc ? A.titulo(dd.loc[0]) : `${X().lc_local} ${e.loc}`;
+      sub = [`${L.th_zone} ${e.z} · ${X().lc_local} ${e.loc}`, dd.loc && dd.loc[1] && A.titulo(dd.loc[1]), dd.loc && dd.loc[2] && A.titulo(dd.loc[2])].filter(Boolean).join(" · ");
+      corpo = htmlVotacao(dd);
+    } else if (dd.tipo === "mun") { kick = e.uf ? A.ufNome(e.uf) : ""; tit = dd.munNome || A.titulo(e.mun || e.cod || ""); corpo = htmlVotacao(dd); }
+    else if (dd.tipo === "zona") { kick = A.ufNome(e.uf); tit = `${L.th_zone} ${e.z}`; corpo = htmlVotacao(dd); }
+    else if (dd.tipo === "uf") { kick = E.cq_estado; tit = `${A.ufNome(e.uf)} (${e.uf})`; corpo = htmlVotacao(dd); }
+    else if (dd.tipo === "teste" || dd.tipo === "lista") {
+      kick = `${E.cq_teste} ${A.numTeste(e.teste)}`; tit = A.nomeTeste(e.teste);
+      sub = [e.uf ? A.ufNome(e.uf) : E.cq_brasil, e.t ? L.round(e.t) : "", e.z != null ? `${L.th_zone} ${e.z}` : ""].filter(Boolean).join(" · ");
+      const c = {}; (dd.cont || []).forEach(([n, nv, q]) => { c[n] = c[n] || { a: 0, i: 0 }; c[n][nv] = q; });
+      const ns = [1, 2].filter((n) => !e.t || e.t === n);
+      corpo = `<div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th>${ns.map((n) => `<th scope="col">${esc(L.round(n))}</th>`).join("")}</tr></thead><tbody>
+        <tr><th scope="row">${chip("red", E.cq_nivel.a)}</th>${ns.map((n) => `<td>${nf((c[n] || {}).a || 0)}</td>`).join("")}</tr>
+        <tr><th scope="row">${chip("amber", E.cq_nivel.i)}</th>${ns.map((n) => `<td>${nf((c[n] || {}).i || 0)}</td>`).join("")}</tr></tbody></table></div>
+        <p class="small muted">${esc(E.cq_ocorr)}</p>`;
+    } else if (dd.tipo === "cand") {
+      const nr = e.nr, ns = [1, 2].filter((n) => R().turnos[n].presidente.candidatos.some((c) => c.nr === nr));
+      const c0 = ns.length ? R().turnos[ns[0]].presidente.candidatos.find((c) => c.nr === nr) : null;
+      kick = E.cq_cand; tit = c0 ? `${A.titulo(c0.nome)} (${nr})` : nr;
+      corpo = `<div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th><th scope="col">${esc(E.cq_votos)}</th><th scope="col">${esc(E.cq_pct)}</th></tr></thead><tbody>${ns.map((n) => {
+        const P = R().turnos[n].presidente, c = P.candidatos.find((y) => y.nr === nr), val = candsT(n).reduce((a, y) => a + y.votos, 0) || 1;
+        return `<tr><th scope="row">${esc(L.round(n))}</th><td>${nf(c.votos)}</td><td>${pct(c.votos / val, 2)}</td></tr>`;
+      }).join("")}</tbody></table></div>`;
+    } else if (dd.tipo === "turno") {
+      const T = R().turnos[e.t], P = T.presidente;
+      kick = L.roundDate[e.t]; tit = L.round(e.t);
+      corpo = `<dl class="cq-p-dl"><div><dt>${esc(E.cq_secoes)}</dt><dd>${nf(T.entrada.secoes)}</dd></div><div><dt>${esc(E.cq_anom)}</dt><dd>${nf(T.secoes_sinalizadas)}</dd></div>
+        <div><dt>${esc(L.lk_aptos)}</dt><dd>${nf(P.aptos)}</dd></div><div><dt>${esc(L.lk_comp)}</dt><dd>${nf(P.comparecimento)} (${pct(P.comparecimento / P.aptos, 1)})</dd></div></dl>`;
+    } else { kick = r.G ? E.cq_grupo : ""; tit = E.cq_t_dados; }
+    if (dd.tipo !== "linha" && dd.tipo !== "secao") corpo += `<h3>${esc(E.cq_t_dados)}</h3>${htmlColunas(r, gi)}`;
+    else if (dd.tipo === "linha") corpo = htmlColunas(r, gi);
+    const acoes = [];
+    if (dd.href) acoes.push(`<a class="btn btn-sm btn-primary" href="${dd.href}" data-ir>${icone("arrow")} ${esc(E.cq_abrir[dd.tipo] || E.cq_abrir.secao)}</a>`);
+    if (dd.tipo === "secao") {
+      if (dd.hLocal) acoes.push(`<a class="btn btn-sm btn-ghost" href="${dd.hLocal}" data-ir>${icone("building")} ${esc(E.cq_ir_local)}</a>`);
+      acoes.push(`<a class="btn btn-sm btn-ghost" href="${dd.hMun}" data-ir>${icone("map")} ${esc(E.cq_ir_mun)}</a>`);
+    }
+    if (dd.hMun && dd.tipo === "local") acoes.push(`<a class="btn btn-sm btn-ghost" href="${dd.hMun}" data-ir>${icone("map")} ${esc(E.cq_ir_mun)}</a>`);
+    if (r.G) acoes.push(`<button class="btn btn-sm btn-ghost" type="button" data-grupo="${gi}">${icone("list")} ${esc(E.cq_ver_linhas)}</button>`);
+    void x0;
+    return { kick, tit, sub, corpo, acoes: acoes.join("") };
+  }
+  // resumo curto (dica ao passar o mouse)
+  function resumo(dd, r, gi) {
+    const E = X(), L = t(), e = dd.e, by = porTurno(dd.ts);
+    const c = conteudo(dd, r, gi);
+    let h = `<strong>${esc(c.tit)}</strong>${c.kick ? `<div class="cq-d-k">${esc(c.kick)}</div>` : ""}`;
+    const ns = [1, 2].filter((n) => by[n] && (!e.t || e.t === n || dd.tipo !== "secao"));
+    if (dd.ts && ns.length) {
+      h += ns.map((n) => {
+        const x = by[n], cs = rankCands(n, x), val = x.validos || 1;
+        const lid = cs.length > 1 ? `${cs[0].nr} ${pct(cs[0].v / val, 1)} × ${cs[1].nr} ${pct(cs[1].v / val, 1)} (${comSinal(cs[0].v - cs[1].v)})` : "";
+        const extra = dd.tipo === "secao" ? `${L.lk_close} ${x.encerramento || "—"}` : `${nf(x.secoes)} ${E.cq_secoes.toLowerCase()} · ${nf(x.sinalizadas || 0)} ${E.cq_nivel.a}`;
+        return `<div class="cq-d-t"><b>${esc(L.round(n))}</b> · ${esc(L.lk_comp)} ${pct(x.comparecimento / (x.aptos || 1), 1)} · ${esc(extra)}${lid ? `<br>${esc(lid)}` : ""}</div>`;
+      }).join("");
+      if (dd.tipo === "secao") { const n = dd.fl.length; h += `<div class="cq-d-t">${esc(E.cq_t_sin)}: ${n ? dd.fl.map((f) => `${A.numTeste(f[1])}${f[2] === "a" ? "" : "ⁱ"}`).join(", ") : esc(E.cq_nenhuma)}</div>`; }
+    } else if (dd.tipo === "linha" || !dd.ts) {
+      const ident = r.m.colunas.map(identCol), l = r.m.linhas[gi];
+      h += r.m.colunas.slice(0, 8).map((col, i) => `<div class="cq-d-t"><b>${esc(col)}</b>: ${fmtCel(l[i], ident[i])}</div>`).join("");
+    }
+    return h + `<div class="cq-d-ir">${esc(E.cq_dica_clique)}</div>`;
+  }
+
+  // --- painel flutuante ---------------------------------------------------------------------------------------------
+  const painel = { el: null, gi: null, seq: 0 };
+  function painelEl() {
+    if (painel.el && painel.el.isConnected) return painel.el;
+    const E = X(), el = document.createElement("aside");
+    el.className = "cq-painel"; el.hidden = true; el.tabIndex = -1;
+    el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "false"); el.setAttribute("aria-labelledby", "cq-p-tit");
+    el.innerHTML = `<div class="cq-p-head"><div><p class="cq-p-kick"></p><h2 id="cq-p-tit"></h2><p class="cq-p-sub small muted"></p></div>
+      <button class="icon-btn" type="button" data-p="x" aria-label="${esc(E.cq_p_fechar)}" title="${esc(E.cq_p_fechar)} (Esc)">${icone("close")}</button></div>
+      <div class="cq-p-body"></div>
+      <div class="cq-p-foot"><div class="btn-row cq-p-acoes"></div>
+        <div class="cq-p-nav"><button class="btn btn-sm btn-ghost" type="button" data-p="ant" aria-label="${esc(E.cq_p_ant)}" title="${esc(E.cq_p_ant)} (↑)">‹</button><span class="small muted"></span><button class="btn btn-sm btn-ghost" type="button" data-p="prox" aria-label="${esc(E.cq_p_prox)}" title="${esc(E.cq_p_prox)} (↓)">›</button></div></div>`;
+    document.body.append(el);
+    el.addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-p]");
+      if (b) { if (b.dataset.p === "x") fecharPainel(true); else passoPainel(b.dataset.p === "prox" ? 1 : -1); return; }
+      const g = ev.target.closest("[data-grupo]");
+      if (g) { fecharPainel(); abrirGrupo(+g.dataset.grupo); return; }
+      if (ev.target.closest("a[href^='#']") && cq.res) cq.res.volta = { i: painel.gi, painel: true };
+    });
+    el.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") { ev.preventDefault(); fecharPainel(true); }
+      else if ((ev.key === "ArrowDown" || ev.key === "ArrowUp") && !ev.target.closest("input,select,textarea")) { ev.preventDefault(); passoPainel(ev.key === "ArrowDown" ? 1 : -1); }
+    });
+    painel.el = el;
+    return el;
+  }
+  async function abrirPainel(gi) {
+    const r = cq.res; if (!r) return;
+    const E = X(), el = painelEl(), seq = ++painel.seq;
+    painel.gi = gi; r.sel = gi;
+    dicaEsconder();
+    $$("#cq-res tr.cq-sel").forEach((tr) => tr.classList.remove("cq-sel"));
+    const tr = $(`#cq-res tr[data-i="${gi}"]`); if (tr) tr.classList.add("cq-sel");
+    const k = r.idx.indexOf(gi), n = r.m.linhas.length;
+    el.querySelector(".cq-p-nav span").textContent = E.cq_p_linha(nf(k + 1), nf(n));
+    el.querySelector('[data-p="ant"]').disabled = k <= 0;
+    el.querySelector('[data-p="prox"]').disabled = k >= n - 1;
+    const aberto = !el.hidden;
+    const hd = $("#site-head");
+    el.style.top = innerWidth > 700 && hd ? `${Math.max(12, Math.round(hd.getBoundingClientRect().bottom) + 10)}px` : "";
+    if (!aberto) { el.hidden = false; document.documentElement.classList.add("cq-p-on"); }
+    el.querySelector(".cq-p-body").innerHTML = carregando();
+    const dd = await dadosLinha(r, gi);
+    if (seq !== painel.seq || cq.res !== r) return;
+    const c = conteudo(dd, r, gi);
+    el.querySelector(".cq-p-kick").textContent = c.kick;
+    el.querySelector("#cq-p-tit").textContent = c.tit;
+    const sub = el.querySelector(".cq-p-sub"); sub.textContent = c.sub; sub.hidden = !c.sub;
+    el.querySelector(".cq-p-body").innerHTML = c.corpo;
+    el.querySelector(".cq-p-body").scrollTop = 0;
+    el.querySelector(".cq-p-acoes").innerHTML = c.acoes;
+    if (!aberto) el.focus({ preventScroll: true });
+  }
+  function fecharPainel(foco) {
+    if (!painel.el || painel.el.hidden) return;
+    painel.el.hidden = true; painel.seq++;
+    document.documentElement.classList.remove("cq-p-on");
+    const r = cq.res;
+    if (r) { r.sel = null; const tr = $(`#cq-res tr[data-i="${painel.gi}"]`); if (tr) { tr.classList.remove("cq-sel"); if (foco) tr.focus({ preventScroll: true }); } }
+  }
+  function passoPainel(dir) {
+    const r = cq.res; if (!r || painel.gi == null) return;
+    const k = r.idx.indexOf(painel.gi) + dir;
+    if (k < 0 || k >= r.idx.length) return;
+    const gi = r.idx[k], pag = Math.floor(k / r.pp);
+    if (pag !== r.pag) { r.pag = pag; r.sel = gi; mostrarRes(); }
+    const tr = $(`#cq-res tr[data-i="${gi}"]`);
+    if (tr) tr.scrollIntoView({ block: "nearest" });
+    abrirPainel(gi);
+  }
+  function abrirGrupo(gi) {
+    const r = cq.res; if (!r || !r.G || !cq.rodar) return;
+    cq.hist.push(r); if (cq.hist.length > 5) cq.hist.shift();
+    $("#cq-sql").value = sqlGrupo(r.G, r.m.linhas[gi]);
+    cq.rodar(true);
+  }
+
+  // --- dica ao passar o mouse ---------------------------------------------------------------------------------------
+  const dica = { el: null, tr: null, tm: 0, x: 0, y: 0 };
+  function dicaPos() {
+    const el = dica.el; if (!el || el.hidden) return;
+    const r = el.getBoundingClientRect(); let x = dica.x + 16, y = dica.y + 18;
+    if (x + r.width > innerWidth - 8) x = Math.max(8, dica.x - r.width - 16);
+    if (y + r.height > innerHeight - 8) y = Math.max(8, dica.y - r.height - 14);
+    el.style.left = x + "px"; el.style.top = y + "px";
+  }
+  function dicaEsconder() { clearTimeout(dica.tm); dica.tr = null; if (dica.el) dica.el.hidden = true; }
+  function dicaMostrar(tr) {
+    if (dica.tr === tr) return;
+    dica.tr = tr; clearTimeout(dica.tm);
+    if (dica.el) dica.el.hidden = true;
+    dica.tm = setTimeout(async () => {
+      const r = cq.res, gi = +tr.dataset.i;
+      if (!r || dica.tr !== tr) return;
+      if (!dica.el || !dica.el.isConnected) { dica.el = document.createElement("div"); dica.el.className = "tip cq-dica"; dica.el.setAttribute("role", "tooltip"); document.body.append(dica.el); }
+      const dd = await dadosLinha(r, gi);
+      if (dica.tr !== tr || cq.res !== r) return;
+      dica.el.innerHTML = resumo(dd, r, gi); dica.el.hidden = false; dicaPos();
+    }, 220);
+  }
+  window.addEventListener("scroll", () => dicaEsconder(), { passive: true });
+  // ao trocar de página (ou de idioma) o painel fecha e é refeito no idioma atual
+  document.addEventListener("pagina", () => { dicaEsconder(); fecharPainel(); if (painel.el) { painel.el.remove(); painel.el = null; } if (dica.el) { dica.el.remove(); dica.el = null; } });
+
+  // Liga os eventos da área de resultado (uma vez por página aberta)
+  function ligarRes(box) {
+    const abrirLinha = (gi) => abrirPainel(gi);
+    box.addEventListener("click", async (ev) => {
+      const r = cq.res; if (!r) return;
+      const pg = ev.target.closest("[data-pg]");
+      if (pg) {
+        const np = Math.ceil(r.m.linhas.length / r.pp), alvo = { ini: 0, ant: r.pag - 1, prox: r.pag + 1, fim: np - 1 }[pg.dataset.pg];
+        irPagina(alvo, pg.closest(".cq-pag").dataset.pos === "base"); return;
+      }
+      const o = ev.target.closest("[data-ord]");
+      if (o) {
+        const i = +o.dataset.ord, d = r.ord && r.ord.i === i ? (r.ord.d === 1 ? -1 : 0) : 1;
+        r.ord = d ? { i, d } : null; ordenar(r); r.pag = 0; mostrarRes(); return;
+      }
+      if (ev.target.closest("[data-voltar]")) {
+        const ant = cq.hist.pop(); if (!ant) return;
+        cq.res = ant; $("#cq-sql").value = ant.sql; mostrarRes(); return;
+      }
+      const g = ev.target.closest("[data-grupo]");
+      if (g) { abrirGrupo(+g.dataset.grupo); return; }
+      const tr = ev.target.closest("tr.cq-lin");
+      if (!tr || ev.target.closest("button,input,select")) return;
+      if (ev.ctrlKey || ev.metaKey || ev.shiftKey) novaAba(+tr.dataset.i); else abrirLinha(+tr.dataset.i);
+    });
+    // Ctrl+clique ou botão do meio: abre a página da linha em outra aba
+    const novaAba = async (gi) => { const r = cq.res, e = r.ler(r.m.linhas[gi]), h = await resolver(e, destino(e)); if (h) window.open(new URL(h, location.href).href, "_blank", "noopener"); };
+    box.addEventListener("auxclick", (ev) => { const tr = ev.button === 1 && ev.target.closest("tr.cq-lin"); if (tr) { ev.preventDefault(); novaAba(+tr.dataset.i); } });
+    box.addEventListener("keydown", (ev) => {
+      const tr = ev.target.closest && ev.target.closest("tr.cq-lin");
+      if (tr && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); abrirLinha(+tr.dataset.i); }
+      else if (tr && (ev.key === "ArrowDown" || ev.key === "ArrowUp")) { ev.preventDefault(); const o = ev.key === "ArrowDown" ? tr.nextElementSibling : tr.previousElementSibling; if (o) o.focus(); }
+    });
+    box.addEventListener("change", (ev) => {
+      const r = cq.res; if (!r) return;
+      if (ev.target.matches(".cq-pag-n input")) irPagina((parseInt(ev.target.value, 10) || 1) - 1, ev.target.closest(".cq-pag").dataset.pos === "base");
+      else if (ev.target.matches(".cq-pag-pp select")) {
+        const prim = r.pag * r.pp; r.pp = +ev.target.value; r.pag = Math.floor(prim / r.pp);
+        try { localStorage.setItem("cq_pp", String(r.pp)); } catch (e) { /* sem armazenamento */ }
+        mostrarRes();
+      }
+    });
+    box.addEventListener("pointerover", (ev) => {
+      if (ev.pointerType !== "mouse") return;
+      const tr = ev.target.closest("tr.cq-lin");
+      if (tr) { dica.x = ev.clientX; dica.y = ev.clientY; dicaMostrar(tr); } else dicaEsconder();
+    });
+    box.addEventListener("pointermove", (ev) => { if (ev.pointerType === "mouse") { dica.x = ev.clientX; dica.y = ev.clientY; dicaPos(); } });
+    box.addEventListener("pointerleave", dicaEsconder);
+    box.addEventListener("focusin", (ev) => {
+      const tr = ev.target.closest("tr.cq-lin"); if (!tr || !tr.matches(":focus-visible")) return;
+      const rc = tr.getBoundingClientRect(); dica.x = rc.left + 40; dica.y = rc.bottom - 4; dicaMostrar(tr);
+    });
+    box.addEventListener("focusout", dicaEsconder);
+  }
+
   const pgConsulta = {
     ativo: "query",
     titulo: () => X().cq_title,
@@ -427,13 +962,13 @@
               <label><span>${esc(E.cq_medida)}</span><select name="medida"></select></label>
               <label><span>${esc(E.cq_ordenar)}</span><select name="ordem"></select></label>
               <label><span>&nbsp;</span><select name="dir"><option value="DESC">${esc(E.cq_desc)}</option><option value="ASC">${esc(E.cq_asc)}</option></select></label>
-              <label><span>${esc(E.cq_limite)}</span><input type="number" name="lim" min="1" max="1000000" value="1000"></label></div>
+              <label><span>${esc(E.cq_limite)}</span><input type="number" name="lim" min="1" max="1000000" value="100000"></label></div>
             <details class="cq-cols"><summary>${esc(E.cq_cols)} (<span id="cq-ncols">${esc(E.cq_todas)}</span>)</summary><div id="cq-colbox"></div></details>
             <h3 class="small">${esc(E.cq_filtros)}</h3><div id="cq-filtros"></div><button class="btn btn-sm btn-ghost" type="button" id="cq-addf">${icone("plus")} ${esc(E.cq_add_f)}</button>
             <div class="btn-row cq-gerar"><button class="btn" type="submit">${icone("code")} ${esc(E.cq_montar)}</button></div>
           </form>
           <h3 class="small">${esc(E.cq_exemplos)}</h3><div class="cq-ex">${E.cq_ex.map(([r], i) => `<button class="chipq" type="button" data-ex="${i}">${esc(r)}</button>`).join("")}</div>
-          <label class="cq-sql-l"><span>${esc(E.cq_sql)}</span><textarea id="cq-sql" rows="7" spellcheck="false">${esc(q.get("q") || E.cq_ex[0][1])}</textarea></label>
+          <label class="cq-sql-l"><span>${esc(E.cq_sql)}</span><textarea id="cq-sql" rows="7" spellcheck="false">${esc(q.get("q") || (cq.res && cq.res.sql) || E.cq_ex[0][1])}</textarea></label>
           <div class="btn-row"><button class="btn btn-primary" type="button" id="cq-rodar">${icone("play")} ${esc(E.cq_rodar)}</button><button class="btn btn-sm btn-ghost" type="button" id="cq-link">${icone("link")} ${esc(E.cq_link)}</button></div>
           <details class="cq-ref"><summary>${esc(E.cq_tabelas_t)}</summary><div id="cq-ref"></div></details></section>
         <section class="card cq-p" id="cq-res-c"><h2>${esc(E.cq_p3)}</h2><p class="small muted" id="cq-info"></p><div id="cq-res"></div>
@@ -441,7 +976,6 @@
     },
     async iniciar() {
       const E = X(), f = $("#cq-form");
-      let ultimo = null;
       const marcados = () => $$("#cq-ufs input:checked").map((i) => i.value);
       $("#cq-todos").addEventListener("click", () => $$("#cq-ufs input").forEach((i) => { i.checked = true; }));
       $("#cq-nenhum").addEventListener("click", () => $$("#cq-ufs input:not(:disabled)").forEach((i) => { i.checked = false; }));
@@ -496,7 +1030,7 @@
         e.preventDefault();
         if (!cq.colunas.secoes) { status(E.cq_antes); return; }
         const tab = f.elements.tab.value, grupo = f.elements.grupo.value, med = f.elements.medida.value, ord = f.elements.ordem.value, dir = f.elements.dir.value;
-        const lim = Math.max(1, Math.min(1000000, parseInt(f.elements.lim.value, 10) || 1000));
+        const lim = Math.max(1, Math.min(1000000, parseInt(f.elements.lim.value, 10) || 100000));
         const where = $$("#cq-filtros .cq-f").map((d) => {
           const c = d.querySelector(".cq-fc").value, o = d.querySelector(".cq-fo").value, v = d.querySelector(".cq-fv").value.trim();
           if (!v) return null;
@@ -520,26 +1054,27 @@
       });
       $(".cq-ex").addEventListener("click", (e) => { const b = e.target.closest("[data-ex]"); if (!b) return; $("#cq-sql").value = E.cq_ex[+b.dataset.ex][1]; if (cq.colunas.secoes) rodar(); });
 
-      async function rodar() {
+      async function rodar(manter) {
         if (!cq.carregados.size) { status(E.cq_antes); $("#cq-carregar").focus(); return; }
         const sql = $("#cq-sql").value.trim();
+        if (manter !== true) cq.hist = [];
+        fecharPainel();
         $("#cq-res").innerHTML = carregando(); $("#cq-info").textContent = ""; $("#cq-dl").hidden = true;
         const t0 = performance.now();
         try {
           const m = await pedir({ tipo: "sql", sql });
-          ultimo = m;
-          const ms = Math.round(performance.now() - t0), MAX = 500;
-          $("#cq-info").textContent = E.cq_linhas(nf(m.linhas.length), nf(ms)) + (m.linhas.length > MAX ? ` · ${E.cq_mostrando(nf(MAX))}` : "") + (m.cortado ? " …" : "");
-          const ident = m.colunas.map((c) => /^(zona|secao|local|turno|cod_mun|codigo|numero|id|lat|lon)$/i.test(c));
-          const fmt = (v, i) => (v == null ? "—" : typeof v === "number" ? (Number.isInteger(v) && !ident[i] ? nf(v) : String(v).replace(".", A.state.lang === "EN" ? "." : ",")) : esc(v));
-          $("#cq-res").innerHTML = m.linhas.length ? tabela(m.colunas.map(esc), m.linhas.slice(0, MAX).map((l) => l.map(fmt)), "num-cols cq-tab") : `<p class="muted">${esc(E.cq_vazio)}</p>`;
-          $("#cq-dl").hidden = !m.linhas.length;
+          cq.res = { id: ++cqResSeq, m, sql, ms: Math.round(performance.now() - t0), pag: 0, pp: ppSalvo(), ord: null, sel: null, ler: leitor(m.colunas), G: agrupada(sql, m.colunas) };
+          ordenar(cq.res);
+          mostrarRes();
           $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });
-        } catch (e) { $("#cq-res").innerHTML = `<p class="alert"><b>${esc(E.cq_erro)}:</b> ${esc(e.message)}</p>`; }
+        } catch (e) { cq.res = null; $("#cq-res").innerHTML = `${voltarHtml()}<p class="alert"><b>${esc(E.cq_erro)}:</b> ${esc(e.message)}</p>`; }
       }
-      $("#cq-rodar").addEventListener("click", rodar);
+      cq.rodar = rodar;
+      ligarRes($("#cq-res"));
+      $("#cq-rodar").addEventListener("click", () => rodar());
       $("#cq-dl").addEventListener("click", (e) => {
-        const b = e.target.closest("[data-cq]"); if (!b || !ultimo) return;
+        const b = e.target.closest("[data-cq]"), r = cq.res; if (!b || !r) return;
+        const ultimo = { colunas: r.m.colunas, linhas: r.idx.map((i) => r.m.linhas[i]) };
         const nome = `consulta-${new Date().toISOString().slice(0, 10)}`;
         if (b.dataset.cq === "csv") baixar(nome + ".csv", "﻿" + [ultimo.colunas].concat(ultimo.linhas).map((l) => l.map(csvCampo).join(",")).join("\r\n"), "text/csv;charset=utf-8");
         else baixar(nome + ".json", JSON.stringify(ultimo.linhas.map((l) => Object.fromEntries(l.map((v, i) => [ultimo.colunas[i], v])))), "application/json");
@@ -550,6 +1085,16 @@
       $("#cq-link").addEventListener("pointerdown", linkConsulta); $("#cq-link").addEventListener("focus", linkConsulta);
       linkConsulta();
       if (cq.colunas.secoes) montarForm();
+      // volta de uma página aberta pelo resultado: a tabela, a página e a linha continuam onde estavam
+      if (cq.res && $("#cq-sql").value.trim() === cq.res.sql) {
+        mostrarRes();
+        const v = cq.res.volta; cq.res.volta = null;
+        if (v) {
+          const tr = $(`#cq-res tr[data-i="${v.i}"]`);
+          if (tr) { tr.scrollIntoView({ block: "center" }); tr.classList.add("cq-volta"); setTimeout(() => tr.classList.remove("cq-volta"), 2600); }
+          if (v.painel) setTimeout(() => abrirPainel(v.i), 0);
+        }
+      }
       // link com estados e consulta: carrega e roda
       if (A.state.query.get("ufs") && marcados().some((u) => !cq.carregados.has(u))) { await carregar(); if (A.state.query.get("q")) rodar(); }
     },
