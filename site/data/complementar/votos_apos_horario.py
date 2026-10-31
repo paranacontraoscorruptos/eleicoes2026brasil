@@ -17,7 +17,8 @@ horário oficial local), em cada turno em que foram sinalizadas. Para cada uma:
    17h de Brasília no 1º turno e 19h no 2º turno, encerramento estendido, convertidos para a hora local; no Exterior,
    as mesmas horas locais). Os horários são os do relógio da urna.
 
-O log não informa em quem o eleitor votou nem quem é o eleitor. Os números de título de mesários que aparecem no log
+Quando o .logjez traz duas cópias do log da mesma urna, cada linha (urna, data e hora, assinatura da linha) conta uma
+vez só. O log não informa em quem o eleitor votou nem quem é o eleitor. Os números de título de mesários que aparecem no log
 não são gravados em nenhuma saída.
 
 Conferência: o total de votos computados no log de cada seção é comparado com o comparecimento do BU (site/data/secoes).
@@ -170,6 +171,7 @@ def ler(textos, dia):
     d, m, a = (int(x) for x in dia.split("/"))
     dseg = (datetime.date(a, m, d) + datetime.timedelta(days=1)).strftime("%d/%m/%Y")
     votos, eventos, urnas = [], [], []
+    vistos = set()   # o .logjez pode trazer cópias do log da mesma urna (ex.: MI e ME): linha igual conta uma vez só
     for txt in textos:
         cur, urna, prim = None, None, None
         for ln in txt.splitlines():
@@ -186,7 +188,12 @@ def ler(textos, dia):
             urna = urna or p[2]
             prim = t if prim is None else prim
             nivel, msg = p[1], p[4]
-            if nivel == "ERRO":
+            assin = (p[2], p[0], p[5])
+            repetida = assin in vistos
+            vistos.add(assin)
+            if repetida:
+                pass
+            elif nivel == "ERRO":
                 eventos.append((t, "erro"))
             else:
                 for cod, ini in EVENTOS:
@@ -247,9 +254,10 @@ def ler(textos, dia):
                 fl = cur["fl"] | (16 if cur["mes"] and lib in ("N", "S") else 0)
                 th = cur["th"] if cur["th"] is not None else t
                 ti = cur["ti"] if cur["ti"] is not None else th
-                votos.append((t, th, ti, lib, cur["id"] or "?", fl))
+                if not repetida:
+                    votos.append((t, th, ti, lib, cur["id"] or "?", fl))
                 cur = None
-        if prim is not None:
+        if prim is not None and (prim, urna) not in urnas:
             urnas.append((prim, urna))
     votos.sort(key=lambda v: v[0])
     eventos.sort()
