@@ -1258,6 +1258,7 @@
       <div class="ax-row"><span>${esc(L.ax_contrast)}</span><button type="button" class="sw-btn" data-ct aria-pressed="${alto}"><span></span>${esc(alto ? L.ax_on : L.ax_off)}</button></div>
       <div class="ax-row"><span>${esc(L.ax_theme)}</span><div class="seg" role="group" aria-label="${esc(L.ax_theme)}"><button type="button" data-th="dark" aria-pressed="${!claro}">${icone("moon")} ${esc(L.ax_dark)}</button><button type="button" data-th="light" aria-pressed="${claro}">${icone("sun")} ${esc(L.ax_light)}</button></div></div>
       <div class="ax-row"><span>${esc(L.ax_libras)}<small>${esc(L.ax_libras_note)}</small></span><button type="button" class="sw-btn" data-vl aria-pressed="${vl}"><span></span>${esc(vl ? L.ax_on : L.ax_off)}</button></div>
+      ${L.ex ? `<div class="ax-row"><span>${esc(L.ex.ax_simple)}<small>${esc(L.ex.ax_simple_note)}</small></span><button type="button" class="sw-btn" data-ls aria-pressed="${A.ler("simples") === "1"}"><span></span>${esc(A.ler("simples") === "1" ? L.ax_on : L.ax_off)}</button></div>` : ""}
       <div class="ax-row"><span>${esc(L.ax_voice)}<small>${esc(L.ax_voice_note)}</small></span><a class="btn btn-sm btn-bot" href="#/atlas">${icone("mic")} ${esc(L.bot_cta_btn)}</a></div>
       <div class="ax-row"><span>${esc(L.app_install)}<small>${esc(L.app_note)}</small></span><button type="button" class="btn btn-sm" data-install>${icone("phone")} ${esc(L.app_btn)}</button></div>`, "dlg-a11y");
     d.addEventListener("click", (e) => {
@@ -1267,6 +1268,8 @@
       if (c) { const on = raiz.getAttribute("data-contrast") !== "alto"; if (on) raiz.setAttribute("data-contrast", "alto"); else raiz.removeAttribute("data-contrast"); A.guardar("contraste", on ? "alto" : ""); c.setAttribute("aria-pressed", String(on)); c.lastChild.textContent = on ? L.ax_on : L.ax_off; return; }
       const th = e.target.closest("[data-th]");
       if (th) { if ((raiz.getAttribute("data-theme") === "light") !== (th.dataset.th === "light")) $("#theme-btn").click(); $$("[data-th]", d).forEach((b) => b.setAttribute("aria-pressed", String(b === th))); return; }
+      const ls = e.target.closest("[data-ls]");
+      if (ls) { const on = ls.getAttribute("aria-pressed") !== "true"; if (A.linguagemSimples) A.linguagemSimples(on); else A.guardar("simples", on ? "1" : "0"); ls.setAttribute("aria-pressed", String(on)); ls.lastChild.textContent = on ? L.ax_on : L.ax_off; return; }
       const v = e.target.closest("[data-vl]");
       if (v) { const on = v.getAttribute("aria-pressed") !== "true"; A.guardar("libras", on ? "1" : "0"); v.setAttribute("aria-pressed", String(on)); v.lastChild.textContent = on ? L.ax_on : L.ax_off; libras(); return; }
       if (e.target.closest('a[href^="#/atlas"], [data-install]')) d.close();

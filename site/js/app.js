@@ -149,6 +149,16 @@
       back: '<path d="M19 12H5m5-5-5 5 5 5"/>',
       expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5m11-5v5h-5"/>',
       grip: '<path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke-width="3.2"/>',
+      building: '<path d="M4 20V9l8-5 8 5v11M3 20h18M10 20v-5h4v5M8 11h.01M12 11h.01M16 11h.01" />',
+      help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.3c-.7.3-1.2 1-1.2 1.8v.5M12 17h.01"/>',
+      receipt: '<path d="M6 3h12v18l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4L6 21zM9 8h6M9 12h6M9 16h3"/>',
+      news: '<path d="M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2M7 9h7M7 13h7M7 16h4"/>',
+      braces: '<path d="M8 4c-2 0-2.5 1-2.5 3v2c0 1.5-.8 2.5-2 3 1.2.5 2 1.5 2 3v2c0 2 .5 3 2.5 3M16 4c2 0 2.5 1 2.5 3v2c0 1.5.8 2.5 2 3-1.2.5-2 1.5-2 3v2c0 2-.5 3-2.5 3"/>',
+      db: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/>',
+      seal: '<circle cx="12" cy="9" r="5.5"/><path d="m9.6 9 1.7 1.7 3.1-3.2M8.6 13.6 7 21l5-2.5 5 2.5-1.6-7.4"/>',
+      archive: '<path d="M3 5h18v4H3zM5 9v10h14V9M10 13h4"/>',
+      locate: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/>',
+      text: '<path d="M4 6h16M4 10h16M4 14h10M4 18h7"/>',
     }[n];
     return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
   }
@@ -244,7 +254,7 @@
     state.cartao = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: L.hero_title,
       linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
         [L.st_aptos, nf(P2.aptos)], [L.st_comp, `${nf(P2.comparecimento)} (${pct(P2.comparecimento / P2.aptos)})`]], barras: [barrasTurno(2, 2)] };
-    const ferr = MAIS.filter(([k]) => k !== "saved").map(([k, h], i) => {
+    const ferr = MAIS.filter(([k]) => !["saved", "embed", "devs"].includes(k)).map(([k, h], i) => {
       const [tit, desc] = L.pg2[k];
       return `<a class="page-card spot tilt${i % 3 === 1 ? " y" : ""}" href="${h}"><span class="pc-ico">${icone(ICO_MAIS[k])}</span>
         <span class="pc-title">${esc(tit)}</span><span class="pc-desc">${esc(desc)}</span><span class="pc-go">${esc(L.pg_open)} ${icone("arrow")}</span></a>`;
@@ -653,7 +663,7 @@
     efeitos(main);
     if (p[0] === "secao") await iniciarSecao(p[1], p[2], p[3]);
     if (pg && pg.iniciar) await pg.iniciar(p);
-    document.dispatchEvent(new CustomEvent("pagina", { detail: { rota: p, titulo: tit } }));
+    document.dispatchEvent(new CustomEvent("pagina", { detail: { rota: p, titulo: tit, ativo } }));
   }
 
   async function iniciarSecao(uf, z, s) {
@@ -751,7 +761,7 @@
         <div class="foot-col"><h3>${esc(L.ft_data)}</h3><ul>
           <li><a href="#/downloads">${esc(L.nav.downloads)}</a></li><li><a href="#/replicar">${esc(L.nav.replicate)}</a></li>
           <li>${ext(TSE_PORTAL, L.ft_tse_portal)}</li><li>${ext(TSE_RESULTADOS, L.ft_tse_res)}</li>
-          <li><a href="feed.xml" data-feed>${esc(L.ft_feed)}</a></li></ul></div>
+          <li><a href="feed.xml" data-feed>${esc(L.ft_feed)}</a></li>${L.ex ? `<li><a href="estados/">${esc(L.ex.ft_estatico)}</a></li>` : ""}</ul></div>
         <div class="foot-col"><h3>${esc(L.ft_author)}</h3><ul>
           ${A ? `<li><b>${esc(A.nome)}</b></li><li>${ext(`https://www.instagram.com/${A.instagram.replace("@", "")}/`, "Instagram " + A.instagram)}</li>` : ""}
           <li><a class="btn btn-bot btn-sm" href="#/atlas">${icone("globe")} ${esc(L.bot_cta_btn)}</a></li></ul></div>
@@ -1097,9 +1107,13 @@
   }
 
   async function iniciar() {
+    // ?lang= e ?tema= no endereço (modo incorporado) valem só para esta visita; nada é salvo
+    const qs = new URLSearchParams(location.search), pedido = (qs.get("lang") || "").toUpperCase(), tq = qs.get("tema");
     const salvo = ler("lang");
     const nav = (navigator.language || "pt").slice(0, 2).toLowerCase();
-    state.lang = LANGS.includes(salvo) ? salvo : nav === "en" ? "EN" : nav === "es" ? "ES" : "PT";
+    state.lang = LANGS.includes(pedido) ? pedido : LANGS.includes(salvo) ? salvo : nav === "en" ? "EN" : nav === "es" ? "ES" : "PT";
+    if (tq === "claro") document.documentElement.setAttribute("data-theme", "light");
+    else if (tq === "escuro") document.documentElement.removeAttribute("data-theme");
     tema(false);
     montarCabecalho();
     eventos(); dicas(); efeitosGlobais();

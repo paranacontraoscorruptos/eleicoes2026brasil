@@ -1,8 +1,8 @@
 /* Modo offline do app: guarda o essencial do site e as páginas e dados que o visitante já abriu.
    Código, estilos e dados resumidos vêm primeiro da rede (sempre a versão nova); sem internet, usa a cópia guardada. */
-const VERSAO = "bu2026-v30";
-const ESSENCIAL = ["./", "index.html", "manifest.webmanifest", "site/css/style.css", "site/js/i18n.js", "site/js/app.js", "site/js/paginas.js", "site/js/variacao.js", "site/js/ferramentas.js",
-  "site/js/exportar.js", "site/js/consulta.js", "site/js/motor.js", "site/js/motor-worker.js", "site/js/bot.js", "site/js/atlas.js", "site/js/sites.js", "site/data/resumo.json", "site/data/testes_extra.json", "site/fonts/space-grotesk-latin-wght-normal.woff2", "site/img/favicon.svg",
+const VERSAO = "bu2026-v31";
+const ESSENCIAL = ["./", "index.html", "manifest.webmanifest", "site/css/style.css", "site/js/i18n.js", "site/js/i18n-extras.js", "site/js/app.js", "site/js/paginas.js", "site/js/variacao.js", "site/js/ferramentas.js",
+  "site/js/exportar.js", "site/js/consulta.js", "site/js/motor.js", "site/js/motor-worker.js", "site/js/bot.js", "site/js/atlas.js", "site/js/sites.js", "site/js/extras.js", "site/js/consulta-worker.js", "site/data/resumo.json", "site/data/testes_extra.json", "site/fonts/space-grotesk-latin-wght-normal.woff2", "site/img/favicon.svg",
   "site/img/bandeira.svg", "site/img/icon-192.png"];
 
 self.addEventListener("install", (e) => {
@@ -42,6 +42,6 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET" || url.origin !== self.location.origin) return;
   // arquivos grandes dos relatórios: só pela rede
   if (url.pathname.includes("/auditoria-eleicoes-2026-Brasil/") && !/\.png$/.test(url.pathname)) return;
-  if (/\/site\/(data\/(secoes|ufs|mapas)\/|fonts\/|img\/|js\/vendor\/)/.test(url.pathname) || /\.png$/.test(url.pathname)) { e.respondWith(copiaPrimeiro(req, e)); return; }
+  if (/\/site\/(data\/(secoes|ufs|mapas|locais)\/|fonts\/|img\/|js\/vendor\/)/.test(url.pathname) || /\.png$/.test(url.pathname)) { e.respondWith(copiaPrimeiro(req, e)); return; }
   e.respondWith(redePrimeiro(req));
 });

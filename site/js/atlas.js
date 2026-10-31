@@ -932,7 +932,8 @@
   function nomePagina(dest) {
     const L = t(), N = L.nav;
     return { "#/mapa": N.map, "#/downloads": N.downloads, "#/testes": N.tests, "#/graficos": N.charts, "#/glossario": N.glossary, "#/limitacoes": N.limits, "#/replicar": N.replicate,
-      "#/atualizacoes": N.updates, "#/lista": N.list, "#/variacao": L.pg2.vary[0], "#/turno/1": L.round(1), "#/turno/2": L.round(2), "#/": N.home }[dest] || dest;
+      "#/atualizacoes": N.updates, "#/lista": N.list, "#/variacao": L.pg2.vary[0], "#/turno/1": L.round(1), "#/turno/2": L.round(2), "#/": N.home,
+      "#/locais": N.places, "#/perguntas": N.faq, "#/anatomia": N.anatomy, "#/consulta": N.query, "#/imprensa": N.press, "#/incorporar": N.embed, "#/dados": N.devs, "#/provas": N.proofs }[dest] || dest;
   }
   async function executar(a, d, q, resto) {
     const T = X(), m = d && d._m;

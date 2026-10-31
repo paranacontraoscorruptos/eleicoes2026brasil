@@ -593,12 +593,13 @@
         <p class="small muted">${sub}</p><div data-view="${id}-chart">${grafico(id, () => "")}</div><div data-view="${id}-table" hidden id="tab-${id}"></div>
         <div class="h-row"><p class="small muted gr-src">${esc(extra || "")}</p><button class="btn btn-sm btn-ghost" type="button" data-toggle-view="${id}">${esc(L.show_table)}</button></div></section>`;
       const ft = (nome, ops) => `<form class="filters inline" data-g="${nome}">${ops}</form>`;
-      const indice = [["oc", L.gr_oc_title], ["T11", L.gr_ab_title], ["T04", L.gr_cp_title], ["T03", L.gr_ld_title], ["T13", L.gr_dg_title], ["T15", L.gr_kl_title]];
+      const indice = [["oc", L.gr_oc_title], ["T11", L.gr_ab_title], ["fecha", L.gr_fc_title], ["T04", L.gr_cp_title], ["T03", L.gr_ld_title], ["T13", L.gr_dg_title], ["T15", L.gr_kl_title]];
       return `${cabecalho(L.gr_title, L.gr_sub, false)}
         <nav class="gr-idx" aria-label="${esc(L.gr_title)}">${indice.map(([id, nm]) => `<a class="chipq" href="#/graficos/${id}">${esc(nm)}</a>`).join("")}</nav>
         <p class="note small">${esc(L.gr_note)}</p>
         ${bloco("oc", L.gr_oc_title, esc(L.gr_oc_sub), ft("oc", seletor("t", L.x_round, opTurno(false), "2") + seletor("teste", L.x_test, opTeste(L.x_all_tests), "") + seletor("m", L.gr_measure, [["n", L.gr_m_n], ["r", L.gr_m_r]], "r")), L.gr_src_oc)}
         ${bloco("T11", L.gr_ab_title, esc(L.gr_ab_sub), ft("T11", seletor("t", L.x_round, opTurno(false), "2")), L.gr_src_sec)}
+        ${bloco("fecha", L.gr_fc_title, esc(L.gr_fc_sub), ft("fecha", seletor("t", L.x_round, opTurno(false), "2")), L.gr_src_sec)}
         ${bloco("T04", L.gr_cp_title, esc(L.gr_cp_sub), ft("T04", seletor("t", L.x_round, opTurno(false), "2")), L.gr_src_sec)}
         ${bloco("T03", L.gr_ld_title, esc(L.gr_ld_sub), ft("T03", seletor("t", L.x_round, opTurno(false), "2")), L.gr_src_sec)}
         ${bloco("T13", L.gr_dg_title, esc(L.gr_dg_sub), ft("T13", seletor("t", L.x_round, opTurno(false), "2") + seletor("teste", L.x_test, [["T13", `13. ${A.nomeTeste("T13")}`], ["T14", `14. ${A.nomeTeste("T14")}`]], "T13")), L.gr_src_res)}
@@ -650,6 +651,17 @@
         tabelaEm("T11", [L.gr_th_range, L.th_sections], H.b.map((v, i) => [v, i]).filter(([v]) => v > 0).map(([v, i]) => [`${hhmm(H.ini + i * H.passo)}–${hhmm(H.ini + (i + 1) * H.passo - 1)}`, nf(v)])
           .concat(H.antes ? [[`< ${hhmm(H.ini)}`, nf(H.antes)]] : []).concat(H.depois ? [[`≥ ${hhmm(H.ini + H.b.length * H.passo)}`, nf(H.depois)]] : []));
         return histograma(w, { titulo: L.gr_ab_title, bins, linhas: [{ i: pos(8 * 60), rot: L.gr_ab_l1, esq: true }, { i: pos(9 * 60), rot: L.gr_ab_l2 }], eixoX: L.gr_ab_x });
+      });
+
+      // encerramento, já em hora de Brasília (cada município convertido pelo seu fuso)
+      desenhos.set("fecha", (w) => {
+        const H = G[val("fecha", "t")].fecha;
+        if (!H) return "";
+        const bins = H.b.map((v, i) => { const m = H.ini + i * H.passo; return { v, eixo: m % 30 === 0 ? hhmm(m) : null, dica: `${hhmm(m)}–${hhmm(m + H.passo - 1)}\n${L.gr_n_sec(nf(v))}`, foco: m < 17 * 60 }; });
+        const pos = (min) => (min - H.ini) / H.passo;
+        tabelaEm("fecha", [L.gr_th_range, L.th_sections], H.b.map((v, i) => [v, i]).filter(([v]) => v > 0).map(([v, i]) => [`${hhmm(H.ini + i * H.passo)}–${hhmm(H.ini + (i + 1) * H.passo - 1)}`, nf(v)])
+          .concat(H.antes ? [[`< ${hhmm(H.ini)}`, nf(H.antes)]] : []).concat(H.depois ? [[`≥ ${hhmm(H.ini + H.b.length * H.passo)}`, nf(H.depois)]] : []));
+        return histograma(w, { titulo: L.gr_fc_title, bins, linhas: [{ i: pos(17 * 60), rot: L.gr_fc_l1, esq: true }], eixoX: L.gr_fc_x });
       });
 
       desenhos.set("T04", (w) => {

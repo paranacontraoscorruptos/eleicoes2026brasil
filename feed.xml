@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Fri, 30 Oct 2026 14:00:00 -0300</lastBuildDate>
+  <lastBuildDate>Sat, 31 Oct 2026 12:00:00 -0300</lastBuildDate>
+  <item>
+    <title>Novas páginas: locais de votação, perguntas, consulta avançada e mais</title>
+    <link>https://paranacontraoscorruptos.org/#/locais</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-31-12</guid>
+    <pubDate>Sat, 31 Oct 2026 12:00:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Locais de votação, com todas as seções de cada escola lado a lado (cadastro do TSE de 2026) e o botão Perto de mim; Perguntas frequentes; Anatomia do boletim de urna; Consulta avançada, para filtrar e cruzar os dados no navegador; Kit de imprensa; Incorporar em outros sites; Para programadores; Provas e cópias (prova de data no Bitcoin e cópias no Internet Archive); gráfico do horário de encerramento das urnas; e a caixa Linguagem simples no topo de cada página.</description>
+  </item>
   <item>
     <title>Motor v2.2.0: variação entre turnos incluída</title>
     <link>https://paranacontraoscorruptos.org/#/replicar</link>
