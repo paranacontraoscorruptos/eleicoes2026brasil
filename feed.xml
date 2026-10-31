@@ -9,6 +9,14 @@
   <language>pt-BR</language>
   <lastBuildDate>Sat, 31 Oct 2026 15:00:00 -0300</lastBuildDate>
   <item>
+    <title>Votos depois do horário, voto a voto, pelo log da urna</title>
+    <link>https://paranacontraoscorruptos.org/#/testes/T11</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-31-15</guid>
+    <pubDate>Sat, 31 Oct 2026 17:30:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>Prévia, ainda fora do Relatório Técnico: o site leu o log de cada urna sinalizada por encerramento tardio e mostra, voto a voto, o que foi gravado depois do horário oficial: 2.174.517 votos em 43.605 seções do 1º turno e 0 votos em 2 seções do 2º turno. Está na página da seção e no painel da consulta avançada (botão Ver o horário de cada voto). Correção: no 2º turno, o horário oficial de encerramento considerado passou a ser 19h de Brasília (encerramento estendido); por isso, só 2 seções do 2º turno continuam sinalizadas por encerramento tardio.</description>
+  </item>
+  <item>
     <title>Análise complementar: urnas que encerraram 1 hora ou mais depois do horário</title>
     <link>https://paranacontraoscorruptos.org/#/lista?teste=T11&amp;nivel=a</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-31-14</guid>

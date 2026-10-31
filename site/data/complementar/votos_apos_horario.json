@@ -1,0 +1,81 @@
+{
+ "criterio": {
+  "secoes": "sinalizadas por encerramento tardio (encerramento_tardio.csv)",
+  "depois_do_horario": "voto gravado a partir do horário oficial local (17h de Brasília; Exterior: 17h locais)",
+  "fonte": "log da urna (.logjez) do TSE, arquivo-urna, pleitos 3220 (1º turno) e 3221 (2º turno)"
+ },
+ "gerado_em": "2026-10-31 20:35",
+ "falhas_download": [],
+ "log_diferente_do_bu": [
+  [
+   1,
+   "BA",
+   39934,
+   183,
+   175,
+   236,
+   272
+  ],
+  [
+   1,
+   "RN",
+   16039,
+   29,
+   28,
+   241,
+   242
+  ]
+ ],
+ "turnos": {
+  "1": {
+   "secoes": 43605,
+   "votos_dia": 12719038,
+   "votos_apos": 2174517,
+   "pct_apos": 0.170966,
+   "faixas_votos_apos": {
+    "101-200": 680,
+    "11-50": 24813,
+    "51-100": 17285,
+    "1-10": 671,
+    "0": 156
+   },
+   "ultimo_voto_horas_apos_fim": {
+    "-1": 156,
+    "0": 5289,
+    "1": 30747,
+    "2": 6215,
+    "3": 1019,
+    "4": 149,
+    "5": 28,
+    "6": 2
+   },
+   "sem_digital_antes_pct": 0.133091,
+   "sem_digital_apos_pct": 0.118021,
+   "liberacao_apos": {
+    "D": 1917872,
+    "S": 138952,
+    "N": 117686,
+    "?": 7
+   },
+   "cpf_apos": 386003,
+   "ja_votou_apos": 7124
+  },
+  "2": {
+   "secoes": 2,
+   "votos_dia": 317,
+   "votos_apos": 0,
+   "pct_apos": 0.0,
+   "faixas_votos_apos": {
+    "0": 2
+   },
+   "ultimo_voto_horas_apos_fim": {
+    "-1": 2
+   },
+   "sem_digital_antes_pct": 0.170347,
+   "sem_digital_apos_pct": 0,
+   "liberacao_apos": {},
+   "cpf_apos": 0,
+   "ja_votou_apos": 0
+  }
+ }
+}

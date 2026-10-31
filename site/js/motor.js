@@ -592,7 +592,8 @@
     + "genera crea haz exporta guarda muestra muestrame abre descarga lee comparte envia resume calcula imprime traduce dame").split(" ");
   const RE_VERBO = new RegExp(`^(?:${VERBOS.join("|")})\\b`);
   const RE_OBJETO = /^(?:o|a|os|as|um|uma|the|an?|el|la|los|las|un|una)\s+(?:relatorio|report|informe|mapa|map|ranking|imagem|imagens|image|images|imagen|video|videos|carrossel|carousel|carrusel|pdf|resumo|summary|resumen|grafico|chart|comparacao|comparison|comparacion)\b/;
-  const RE_FORTE = /\s*;\s*|\s*,?\s+(?:e\s+)?(?:depois(?:\s+disso)?|em\s+seguida|ent[aã]o|and\s+then|then|after\s+that|afterwards|y\s+luego|luego|y\s+despu[eé]s|despu[eé]s|a\s+continuaci[oó]n)\s+/iu;
+  // "depois das 17h", "depois do horário", "después de las 17 h": é hora, não uma nova etapa
+  const RE_FORTE = /\s*;\s*|\s*,?\s+(?:e\s+)?(?:depois(?:\s+disso)?|em\s+seguida|ent[aã]o|and\s+then|then|after\s+that|afterwards|y\s+luego|luego|y\s+despu[eé]s|despu[eé]s|a\s+continuaci[oó]n)\s+(?!(?:d[aeo]s?|del|de\s+las?)\s+(?:\d|h|meia|fim|fin|encerr|cierre|fecha|vot))/iu;
   function etapas(texto) {
     const out = [];
     String(texto || "").split(RE_FORTE).forEach((parte) => {
