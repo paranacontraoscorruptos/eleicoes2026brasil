@@ -5,14 +5,15 @@
   "use strict";
   const I = window.I18N;
 
-  Object.assign(I.PT.nav, { places: "Locais de votação", faq: "Perguntas", anatomy: "Anatomia do boletim", query: "Consulta avançada",
+  Object.assign(I.PT.nav, { sim: "Simulador", places: "Locais de votação", faq: "Perguntas", anatomy: "Anatomia do boletim", query: "Consulta avançada",
     press: "Kit de imprensa", embed: "Incorporar", devs: "Programadores", proofs: "Provas e cópias" });
-  Object.assign(I.EN.nav, { places: "Polling places", faq: "FAQ", anatomy: "Tally sheet anatomy", query: "Advanced query",
+  Object.assign(I.EN.nav, { sim: "Simulator", places: "Polling places", faq: "FAQ", anatomy: "Tally sheet anatomy", query: "Advanced query",
     press: "Press kit", embed: "Embed", devs: "For developers", proofs: "Proofs and copies" });
-  Object.assign(I.ES.nav, { places: "Locales de votación", faq: "Preguntas", anatomy: "Anatomía del boletín", query: "Consulta avanzada",
+  Object.assign(I.ES.nav, { sim: "Simulador", places: "Locales de votación", faq: "Preguntas", anatomy: "Anatomía del boletín", query: "Consulta avanzada",
     press: "Kit de prensa", embed: "Incorporar", devs: "Programadores", proofs: "Pruebas y copias" });
 
   Object.assign(I.PT.pg2, {
+    sim: ["Simulador de anomalias", "Mude dados fictícios e veja como cada teste reage, com missões, provas e nota final."],
     places: ["Locais de votação", "Escolas e prédios onde se vota, com todas as seções de cada local lado a lado."],
     faq: ["Perguntas frequentes", "As dúvidas mais comuns sobre o site, a análise, a urna e os dados, com respostas curtas."],
     anatomy: ["Anatomia do boletim", "Cada parte do boletim de urna explicada, e o que o site confere em cada uma."],
@@ -22,6 +23,7 @@
     devs: ["Para programadores", "Os arquivos de dados do site, campo a campo, com exemplos de código."],
     proofs: ["Provas e cópias", "Prova de data no Bitcoin e cópias no Internet Archive de cada arquivo publicado."] });
   Object.assign(I.EN.pg2, {
+    sim: ["Anomaly simulator", "Change fictitious data and see how each test reacts, with missions, exams and a final grade."],
     places: ["Polling places", "Schools and buildings where people vote, with all the sections of each place side by side."],
     faq: ["FAQ", "The most common questions about the site, the analysis, the machine and the data, with short answers."],
     anatomy: ["Tally sheet anatomy", "Each part of the tally sheet explained, and what the site checks in each one."],
@@ -31,6 +33,7 @@
     devs: ["For developers", "The site's data files, field by field, with code examples."],
     proofs: ["Proofs and copies", "Bitcoin proof of date and Internet Archive copies of every published file."] });
   Object.assign(I.ES.pg2, {
+    sim: ["Simulador de anomalías", "Cambie datos ficticios y vea cómo reacciona cada prueba, con misiones, exámenes y nota final."],
     places: ["Locales de votación", "Escuelas y edificios donde se vota, con todas las secciones de cada local lado a lado."],
     faq: ["Preguntas frecuentes", "Las dudas más comunes sobre el sitio, el análisis, la urna y los datos, con respuestas cortas."],
     anatomy: ["Anatomía del boletín", "Cada parte del boletín de urna explicada, y lo que el sitio verifica en cada una."],

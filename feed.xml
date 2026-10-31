@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sat, 31 Oct 2026 12:00:00 -0300</lastBuildDate>
+  <lastBuildDate>Sat, 31 Oct 2026 15:00:00 -0300</lastBuildDate>
+  <item>
+    <title>Simulador de anomalias: aprenda os 15 testes com dados fictícios</title>
+    <link>https://paranacontraoscorruptos.org/#/simulador</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-31-13</guid>
+    <pubDate>Sat, 31 Oct 2026 15:00:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Página educativa em que você muda números inventados e vê como cada teste reage: 180 missões (fazer sinalizar, alarme falso e passou despercebido), explicação simples e técnica, modo livre, provas com nota, prova final, boletim e perguntas e respostas. Os dados são fictícios e a página não pode ser compartilhada, copiada nem impressa.</description>
+  </item>
   <item>
     <title>Novas páginas: locais de votação, perguntas, consulta avançada e mais</title>
     <link>https://paranacontraoscorruptos.org/#/locais</link>

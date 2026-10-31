@@ -47,9 +47,9 @@
   const munNome = async (uf, cod) => { const M = await A.municipios(); const m = M[uf] && M[uf][cod]; return m ? A.titulo(m[0]) : cod; };
 
   // --- menu: páginas novas na fileira de ferramentas ---------------------------------------------------------
-  [["places", "#/locais"], ["faq", "#/perguntas"], ["anatomy", "#/anatomia"], ["query", "#/consulta"], ["press", "#/imprensa"], ["embed", "#/incorporar"], ["devs", "#/dados"], ["proofs", "#/provas"]]
+  [["sim", "#/simulador"], ["places", "#/locais"], ["faq", "#/perguntas"], ["anatomy", "#/anatomia"], ["query", "#/consulta"], ["press", "#/imprensa"], ["embed", "#/incorporar"], ["devs", "#/dados"], ["proofs", "#/provas"]]
     .forEach((x) => A.MAIS.push(x));
-  Object.assign(A.ICO_MAIS, { places: "building", faq: "help", anatomy: "receipt", query: "db", press: "news", embed: "code", devs: "braces", proofs: "seal" });
+  Object.assign(A.ICO_MAIS, { sim: "lab", places: "building", faq: "help", anatomy: "receipt", query: "db", press: "news", embed: "code", devs: "braces", proofs: "seal" });
 
   // ===================================================================================================
   // Sinalizações por seção (a partir de ocorrencias.json): "UF|zona|seção" -> {turno: [[teste, nível]]}
@@ -670,7 +670,7 @@
         $("#eb-auto").innerHTML = blocoCodigo(`<script>addEventListener("message",function(e){if(e.origin==="${SITE.replace(/\/$/, "")}"&&e.data&&e.data.buAltura)document.querySelectorAll("iframe[data-bu-2026]").forEach(function(f){if(f.contentWindow===e.source)f.style.height=e.data.buAltura+"px"})});<\/script>`);
         $("#eb-abrir").href = url;
         clearTimeout(tm);
-        tm = setTimeout(() => { $("#eb-previa").innerHTML = `<iframe src="./?embed=1&lang=${v.lang}&tema=${v.tema}${rota}" width="100%" height="${alt}" style="border:0" loading="lazy" title="${esc(E.eb_previa)}"></iframe>`; }, 350);
+        tm = setTimeout(() => { if (!$("#eb-previa")) return; $("#eb-previa").innerHTML = `<iframe src="./?embed=1&lang=${v.lang}&tema=${v.tema}${rota}" width="100%" height="${alt}" style="border:0" loading="lazy" title="${esc(E.eb_previa)}"></iframe>`; }, 350);
       };
       f.elements.uf.addEventListener("change", () => { f.elements.mun.value = ""; preencherMun(); });
       f.addEventListener("input", atualizar); f.addEventListener("change", atualizar);
@@ -742,10 +742,11 @@ curl -s ${base}SHA256SUMS.txt | head`;
     },
     async iniciar() {
       const E = X();
-      $("#dv-motor").textContent = E.dv_motor(R().motor.versao);
+      ($("#dv-motor") || {}).textContent = E.dv_motor(R().motor.versao);
       let C = { arquivos: [] };
       try { C = await dado("site/data/catalogo.json"); } catch (e) { /* sem catálogo */ }
       const por = {}; C.arquivos.forEach((a) => { por[a.p] = a; });
+      if (!$("#dv-arqs")) return;   // a pessoa já saiu da página
       $("#dv-arqs").innerHTML = Object.entries(E.dv_desc).map(([p, [desc, campos]]) => {
         const c = p.split(", ").map((x) => por[x]).filter(Boolean);
         const tam = c.length ? c.map((x) => (x.n > 1 ? E.dv_n_arq(nf(x.n), tamanho(x.bytes)) : tamanho(x.bytes))).join(" + ") : "";
@@ -785,15 +786,15 @@ curl -s ${base}SHA256SUMS.txt | head`;
         const linha = (x) => [`<a href="${esc(x.p)}" download>${esc(x.p.split("/").slice(-2).join("/"))}</a>`, `<details class="sha"><summary><code>${esc(x.sha256.slice(0, 16))}…</code></summary><code class="wrap">${esc(x.sha256)}</code></details>`,
           `<a class="btn btn-sm" href="${esc(x.ots)}" download>${icone("download")} .ots</a>`, estado(x)];
         const cab = [E.pv_th_arq, E.pv_th_sha, E.pv_th_prova, E.pv_th_estado].map(esc);
-        $("#pv-ots").innerHTML = `<p class="small muted">${esc(E.pv_registrado(dataHora(P.data)))}${P.arquivos.some((x) => !x.bloco) ? ` · ${esc(E.pv_pendente_note)}` : ""}</p>
+        ($("#pv-ots") || {}).innerHTML = `<p class="small muted">${esc(E.pv_registrado(dataHora(P.data)))}${P.arquivos.some((x) => !x.bloco) ? ` · ${esc(E.pv_pendente_note)}` : ""}</p>
           <h3>${esc(E.pv_manif_t)}</h3><p class="small">${esc(E.pv_manif_txt)}</p>${tabela(cab, P.manifestos.map(linha), "pv-tab")}
           <h3>${esc(t().nav.downloads)}</h3>${tabela(cab, P.arquivos.map(linha), "pv-tab")}`;
-      } catch (e) { $("#pv-ots").innerHTML = `<p class="muted">${esc(E.pv_pendente)}</p>`; }
+      } catch (e) { ($("#pv-ots") || {}).innerHTML = `<p class="muted">${esc(E.pv_pendente)}</p>`; }
       try {
         const C = await dado("site/data/arquivo.json");
-        $("#pv-copias").innerHTML = C.copias && C.copias.length ? tabela([E.pv_th_end, E.pv_th_data, ""].map(esc), C.copias.map((c) => [`<code class="wrap">${esc(c.url.replace(SITE, "/"))}</code>`, esc(dataHora(c.quando)), `<a class="btn btn-sm" href="${esc(c.copia)}" target="_blank" rel="noopener">${icone("archive")} ${esc(E.pv_ver)}</a>`]), "pv-tab")
+        ($("#pv-copias") || {}).innerHTML = C.copias && C.copias.length ? tabela([E.pv_th_end, E.pv_th_data, ""].map(esc), C.copias.map((c) => [`<code class="wrap">${esc(c.url.replace(SITE, "/"))}</code>`, esc(dataHora(c.quando)), `<a class="btn btn-sm" href="${esc(c.copia)}" target="_blank" rel="noopener">${icone("archive")} ${esc(E.pv_ver)}</a>`]), "pv-tab")
           : `<p class="muted">${esc(E.pv_sem_copias)}</p>`;
-      } catch (e) { $("#pv-copias").innerHTML = `<p class="muted">${esc(E.pv_sem_copias)}</p>`; }
+      } catch (e) { ($("#pv-copias") || {}).innerHTML = `<p class="muted">${esc(E.pv_sem_copias)}</p>`; }
     },
   };
 
@@ -827,6 +828,34 @@ curl -s ${base}SHA256SUMS.txt | head`;
     }
   });
 
-  Object.assign(A.paginas, { locais: pgLocais, perguntas: pgPerguntas, anatomia: pgAnatomia, consulta: pgConsulta, imprensa: pgImprensa, incorporar: pgIncorporar, widget: pgWidget, dados: pgDados, provas: pgProvas });
+  // ===================================================================================================
+  // Simulador de anomalias: arquivos carregados só quando a página é aberta
+  // ===================================================================================================
+  let simBase = null;
+  const simIdioma = {};
+  function simScript(src) {
+    return new Promise((ok, erro) => { const el = document.createElement("script"); el.src = "site/js/" + src; el.onload = ok; el.onerror = () => erro(new Error(src)); document.head.append(el); });
+  }
+  function simCarregar() {
+    if (!simBase) simBase = simScript("simulador-motor.js").then(() => simScript("simulador.js"));
+    const lg = A.state.lang;
+    if (!simIdioma[lg]) simIdioma[lg] = simScript(`simulador-${lg.toLowerCase()}.js`).catch(() => (lg === "PT" ? Promise.reject(new Error("PT")) : simScript("simulador-pt.js")));
+    return Promise.all([simBase, simIdioma[lg]]);
+  }
+  const pgSimulador = {
+    ativo: "sim",
+    titulo: () => t().nav.sim,
+    html() { document.documentElement.classList.add("sim-on"); return `<div id="sim-raiz" class="sim-carregando">${carregando()}</div>`; },
+    async iniciar(p) {
+      try { await simCarregar(); } catch (e) { $("#sim-raiz").innerHTML = erroDados(e); return; }
+      if (!$("#sim-raiz") || (location.hash || "").indexOf("#/simulador") !== 0) return;
+      $("#main").innerHTML = A.simulador.html(p);
+      A.simulador.ligar(true);
+      A.simulador.iniciar(p);
+    },
+  };
+  document.addEventListener("pagina", (e) => { if (e.detail.ativo !== "sim") document.documentElement.classList.remove("sim-on"); });
+
+  Object.assign(A.paginas, { simulador: pgSimulador, locais: pgLocais, perguntas: pgPerguntas, anatomia: pgAnatomia, consulta: pgConsulta, imprensa: pgImprensa, incorporar: pgIncorporar, widget: pgWidget, dados: pgDados, provas: pgProvas });
   A.extras = { locais, sinalizacoes, md };
 })();

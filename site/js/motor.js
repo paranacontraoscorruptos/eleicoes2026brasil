@@ -620,7 +620,7 @@
   const REDES = [["whatsapp", /\b(?:whatsapp|whats|zap|zapzap|wpp|wa)\b/], ["telegram", /\btelegram\b/], ["x", /\b(?:twitter|x)\b/], ["email", /\b(?:email|e mail|correo|gmail|mail)\b/],
     ["instagram", /\b(?:instagram|insta|ig|reels?)\b/], ["tiktok", /\btik ?tok\b/], ["kwai", /\bkwai\b/], ["youtube", /\b(?:youtube|yt|shorts)\b/], ["facebook", /\b(?:facebook|face|fb)\b/]];
   const PAGINAS = [["#/turno/1", /\b(?:1o? turno|primeiro turno|first round|round 1|1st round|primera vuelta|1a vuelta)\b/], ["#/turno/2", /\b(?:2o? turno|segundo turno|second round|round 2|2nd round|segunda vuelta|2a vuelta)\b/],
-    ["#/locais", /\b(?:locais de votacao|local de votacao|polling places?|locales de votacion|local de votacion)\b/], ["#/perguntas", /\b(?:perguntas frequentes|faq|preguntas frecuentes)\b/],
+    ["#/simulador", /\b(?:simulador(?: de anomalias| de anomalias)?|simulator|anomaly simulator|simulador de anomalias)\b/], ["#/locais", /\b(?:locais de votacao|local de votacao|polling places?|locales de votacion|local de votacion)\b/], ["#/perguntas", /\b(?:perguntas frequentes|faq|preguntas frecuentes)\b/],
     ["#/anatomia", /\b(?:anatomia)\b/], ["#/consulta", /\b(?:consulta avancada|advanced query|consulta avanzada|consulta sql)\b/], ["#/imprensa", /\b(?:kit de imprensa|imprensa|press kit|kit de prensa)\b/],
     ["#/incorporar", /\b(?:incorporar|embed)\b/], ["#/dados", /\b(?:programadores|developers|desarrolladores)\b/], ["#/provas", /\b(?:provas e copias|proofs and copies|pruebas y copias)\b/],
     ["#/downloads", /\b(?:downloads?|descargas)\b/], ["#/testes", /\b(?:testes|tests|pruebas)\b/], ["#/graficos", /\b(?:graficos|charts|graficas)\b/], ["#/glossario", /\b(?:glossario|glossary|glosario)\b/],
