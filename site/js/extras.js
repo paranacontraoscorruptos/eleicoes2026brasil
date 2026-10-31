@@ -606,7 +606,7 @@
     const E = X(), l = r.m.linhas[gi];
     const cel = l.map((v, i) => `<td>${r.fmt && r.fmt[i] ? r.fmt[i](v) : fmtCel(v, ident[i])}</td>`).join("");
     const sel = r.sel === gi ? " cq-sel" : "";
-    return `<tr class="cq-lin${sel}" tabindex="0" data-i="${gi}"><td class="cq-n">${nf(k + 1)}</td>${r.temSec ? `<td class="cq-sin">${chipsSinal(r, r.ler(l))}</td>` : ""}${cel}${r.G ? `<td class="cq-acao"><button class="icon-btn" type="button" data-grupo="${gi}" aria-label="${esc(E.cq_ver_linhas)}" title="${esc(E.cq_ver_linhas)}">${icone("list")}</button></td>` : ""}</tr>`;
+    return `<tr class="cq-lin${sel}" tabindex="0" data-i="${gi}">${r.semNum ? "" : `<td class="cq-n">${nf(k + 1)}</td>`}${r.temSec ? `<td class="cq-sin">${chipsSinal(r, r.ler(l))}</td>` : ""}${cel}${r.G ? `<td class="cq-acao"><button class="icon-btn" type="button" data-grupo="${gi}" aria-label="${esc(E.cq_ver_linhas)}" title="${esc(E.cq_ver_linhas)}">${icone("list")}</button></td>` : ""}</tr>`;
   }
   function voltarHtml() {
     const ant = cq.res && cq.res.fonte ? null : cq.hist[cq.hist.length - 1];
@@ -625,12 +625,12 @@
     const ident = m.colunas.map(identCol), ini = r.pag * r.pp, fim = Math.min(n, ini + r.pp);
     let corpo = "";
     for (let k = ini; k < fim; k++) corpo += linhaHtml(r, r.idx[k], k, ident);
-    const cab = `<th scope="col" class="cq-n">#</th>` + (r.temSec ? `<th scope="col" class="cq-sin" title="${esc(E.cq_sin_tip)}">${esc(E.cq_sin_col)}</th>` : "") + m.colunas.map((c, i) => {
+    const cab = (r.semNum ? "" : `<th scope="col" class="cq-n">#</th>`) + (r.temSec ? `<th scope="col" class="cq-sin" title="${esc(E.cq_sin_tip)}">${esc(E.cq_sin_col)}</th>` : "") + m.colunas.map((c, i) => {
       const s = r.ord && r.ord.i === i ? r.ord.d : 0;
       const rot = r.rot ? r.rot[i] : c;
-      return `<th scope="col" aria-sort="${s > 0 ? "ascending" : s < 0 ? "descending" : "none"}"><button class="cq-ord" type="button" data-ord="${i}" title="${esc(E.cq_ord_col(rot))}">${esc(rot)}<span aria-hidden="true">${s > 0 ? "▲" : s < 0 ? "▼" : "↕"}</span></button></th>`;
+      return `<th scope="col" aria-sort="${s > 0 ? "ascending" : s < 0 ? "descending" : "none"}"><button class="cq-ord" type="button" data-ord="${i}" title="${esc(E.cq_ord_col(rot.replace(/\n/g, " ")))}"><span class="cq-rot">${esc(rot).replace(/\n/g, "<br>")}</span><span class="cq-seta" aria-hidden="true">${s > 0 ? "▲" : s < 0 ? "▼" : "↕"}</span></button></th>`;
     }).join("") + (r.G ? `<th scope="col"><span class="sr-only">${esc(E.cq_ver_linhas)}</span></th>` : "");
-    box.innerHTML = `${voltarHtml()}${paginador(r, "topo")}<div class="table-wrap cq-wrap"><table class="num-cols cq-tab"><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table></div>${paginador(r, "base")}
+    box.innerHTML = `${voltarHtml()}${paginador(r, "topo")}<div class="table-wrap cq-wrap"><table class="num-cols cq-tab${r.tabCls ? " " + r.tabCls : ""}"><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table></div>${paginador(r, "base")}
       <p class="small muted cq-uso">${icone("help")} ${esc(E.cq_uso)}</p>`;
   }
   function irPagina(p, rolar) {
@@ -1446,13 +1446,14 @@
   const ET_MIN = [60, 120, 180, 240, 300, 360];
   const et = { dados: null, res: null, chave: null, f: { turno: 0, uf: "", mun: "", min: 60 } };
   const atrasoTxt = (m) => `+${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`;
+  const atrasoCurto = (m) => `+${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}min`;
   function etDados() {
     if (!et.dados) {
-      et.dados = Promise.all([dado("site/data/anomalias/encerramento_tardio.json"), A.municipios()]).then(([D, M]) => D.l.map((x) => {
+      et.dados = Promise.all([dado("site/data/anomalias/encerramento_tardio.json"), A.municipios()]).then(([D, M]) => { et.votacao = D.r || null; return D.l.map((x) => {
         const mun = A.titulo(((M[x[1]] || {})[x[2]] || [x[2]])[0]);
         return { t: x[0], uf: x[1], cod: x[2], z: x[3], s: x[4], ab: hhmmss(x[5]), en: hhmmss(x[6]), fim: `${String(x[7]).padStart(2, "0")}:00`, fuso: x[8],
           min: x[9], va: x[10], vd: x[11], ult: hhmmss(x[12]), mun, k: nz(mun) };
-      }));
+      }); });
       et.dados.catch(() => { et.dados = null; });
     }
     return et.dados;
@@ -1473,13 +1474,54 @@
   }
   function etRes(ls, total) {
     const E = X(), L = t(), C = E.et_col;
-    const fmt = { atraso: (v) => `<b class="et-atraso">${esc(atrasoTxt(v))}</b>`, turno: (v) => esc(L.round(v)), votos_apos: (v) => (v == null ? "—" : nf(v)) };
+    // fim oficial: 17h de Brasília no 1º turno, 19h no 2º (com os dois turnos, 17h e a nota com asterisco)
+    const h = et.f.turno === 2 ? "19h" : et.f.turno === 1 ? "17h" : "17h*";
+    const fmt = { atraso: (v) => `<b class="et-atraso">${esc(atrasoCurto(v))}</b>`, turno: (v) => esc(E.et_turno_c(v)), votos_apos: (v) => (v == null ? "—" : nf(v)),
+      municipio: (v) => `<span class="et-mun">${esc(v)}</span>` };
+    const rot = ET_COLS.map((c) => (typeof C[c] === "function" ? C[c](h) : C[c] || c));
     const r = { id: ++cqResSeq, m: { colunas: ET_COLS, linhas: ls.map((x) => [x.uf, x.mun, x.z, x.s, x.t, x.min, x.va, x.ab, x.en, x.fim, x.ult]) },
       sql: null, turno: 0, ms: 0, pag: 0, pp: ppSalvo(), ord: et.res ? et.res.ord : null, sel: null, ler: leitor(ET_COLS), G: null, temSec: true,
-      fonte: dadosSecaoArq, rot: ET_COLS.map((c) => C[c] || c), fmt: ET_COLS.map((c) => fmt[c] || null), linhasEt: ls,
+      fonte: dadosSecaoArq, rot, fmt: ET_COLS.map((c) => fmt[c] || null), linhasEt: ls, semNum: true, tabCls: "et-tab",
       info: (n) => E.et_info(nf(n), nf(total), n === total) };
     ordenar(r);
     return r;
+  }
+  // números e barras crescem quando o bloco aparece na tela, ao rolar (não ao abrir a página): começa quando o topo do bloco
+  // passa de 3/4 da altura da tela, para a pessoa ver o bloco inteiro crescer; cada bloco uma vez
+  let etObs = null;
+  function etContar(el) {
+    el.classList.add("cq-cheio");
+    const els = $$("[data-cn],[data-cp]", el), t0 = performance.now(), dur = 1100;
+    const passo = (agora) => {
+      if (!el.isConnected) return;
+      const k = Math.min(1, (agora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      els.forEach((x) => { x.textContent = x.dataset.cn != null ? nf(Math.round(+x.dataset.cn * e)) : pct(+x.dataset.cp * e, +x.dataset.cd || 0); });
+      if (k < 1) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  }
+  const etZerar = (blocos) => blocos.forEach((b) => $$("[data-cn],[data-cp]", b).forEach((x) => { x.textContent = x.dataset.cn != null ? nf(0) : pct(0, +x.dataset.cd || 0); }));
+  function etAnimarAoVer(blocos) {
+    if (etObs) { etObs.disconnect(); etObs = null; }
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) { blocos.forEach((b) => b.classList.add("cq-cheio")); return; }
+    etZerar(blocos);
+    etObs = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) { etObs.unobserve(en.target); etContar(en.target); } }), { rootMargin: "0px 0px -24% 0px", threshold: 0 });
+    blocos.forEach((b) => etObs.observe(b));
+  }
+  // votação dessas urnas no dia todo (boletim de urna): total de votos e percentual dos válidos de Lula (13) e Flávio (22)
+  function etVotacao(E) {
+    const V = et.votacao, kt = $("#et-tot"), kc = $("#et-cand");
+    if (!V || !V["1"] || !kt || !kc) return;
+    const v1 = V["1"], cands = R().turnos["1"].presidente.candidatos, nome = (nr) => A.titulo((cands.find((c) => c.nr === nr) || { nome: nr }).nome);
+    const nrs = ["13", "22"].sort((a, b) => v1.votos[b] - v1.votos[a]);
+    kt.innerHTML = `<span class="et-k-t">${esc(E.et_k_tot)}</span><b>${nA(v1.comparecimento)}</b><span>${esc(E.et_k_tot_sub(nf(v1.secoes)))}</span>`;
+    const v2 = V["2"], p2 = v2 && v2.validos ? nrs.map((nr) => `${nome(nr)} ${pct(v2.votos[nr] / v2.validos)}`).join(" · ") : "";
+    kc.innerHTML = `<span class="et-k-t">${esc(E.et_cand_t)}</span><span>${esc(E.et_cand_n)}</span>
+      <ul class="et-cb">${nrs.map((nr, i) => {
+        const p = v1.votos[nr] / (v1.validos || 1);
+        return `<li><span class="et-cn"><span class="lc-dot ${corCand(nr)}" aria-hidden="true"></span>${esc(nome(nr))} (${nr})</span><span class="et-fb"><i class="${corCand(nr)}" style="--w:${(100 * p).toFixed(2)}%;--i:${i}"></i></span><b data-cp="${p}" data-cd="2">${esc(pct(p))}</b><em>${E.et_cand_votos(nA(v1.votos[nr]))}</em></li>`;
+      }).join("")}</ul>${p2 ? `<span class="et-cand-2">${esc(E.et_cand_t2(nf(v2.secoes), nf(v2.comparecimento), p2))}</span>` : ""}`;
+    kc.hidden = false;
   }
   function etCsv(ls) {
     const cab = ["turno", "uf", "cod_mun", "municipio", "zona", "secao", "abertura", "encerramento", "fim_oficial_local", "fuso_utc", "minutos_depois_do_horario", "votos_depois_do_horario", "votos_no_dia", "ultimo_voto"];
@@ -1501,8 +1543,10 @@
         kpis = `<div class="et-kpis">
           <div class="et-dest"><span class="et-k-t">${esc(L.round(1))}</span><b>${nA(T1.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T1.sinalizadas / T1.analisadas, 1), nf(T1.analisadas)))}</span></div>
           <div><span class="et-k-t">${esc(L.round(2))}</span><b>${nA(T2.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T2.sinalizadas / T2.analisadas, 4), nf(T2.analisadas)))}</span></div>
-          ${vh1 ? `<div class="et-dest"><span class="et-k-t">${esc(E.et_k_va)}</span><b>${nA(vh1.votos_apos)}</b><span>${esc(E.et_k_va_sub(pct(vh1.votos_apos / (vh1.votos_dia || 1), 1), nf(vh1.votos_dia)))}</span></div>` : ""}
-          <div id="et-max"><span class="et-k-t">${esc(E.et_k_max)}</span><b>—</b><span></span></div></div>`;
+          <div id="et-tot"><span class="et-k-t">${esc(E.et_k_tot)}</span><b>—</b><span></span></div>
+          ${vh1 ? `<div class="et-dest"><span class="et-k-t">${esc(E.et_k_va)}</span><b>${nA(vh1.votos_apos)}</b><span>${esc(E.et_k_va_sub(pct(vh1.votos_apos / (vh1.votos_dia || 1), 1)))}</span></div>` : ""}
+          <div id="et-max"><span class="et-k-t">${esc(E.et_k_max)}</span><b>—</b><span></span></div>
+          <div class="et-cand" id="et-cand" hidden></div></div>`;
         const fx = T1.faixas, mx = fx[">=60min"] || 1;
         faixas = `<section class="card"><h2>${esc(E.et_faixas_t)}</h2><p class="small muted">${esc(E.et_faixas_n)}</p><ul class="et-faixas">${ET_MIN.map((m, i) => {
           const n = fx[`>=${m}min`] || 0;
@@ -1526,7 +1570,7 @@
           <p class="small muted" id="cq-info" aria-live="polite"></p><div id="cq-res">${carregando()}</div>
           <div class="btn-row" id="cq-dl" hidden><button class="btn btn-sm" type="button" id="et-csv">${icone("download")} ${esc(E.et_csv)}</button>
             <a class="btn btn-sm btn-ghost" href="#/consulta?q=${encodeURIComponent(SQL_ET)}">${icone("db")} ${esc(E.et_consulta)}</a></div>
-          <p class="small muted">${esc(E.cq_hora_local)}</p></section>
+          <p class="small muted">${esc(E.et_nota_h)}</p></section>
         <section class="card"><h2>${esc(E.et_arq_t)}</h2><ul class="et-arq">
           <li><a href="site/data/complementar/encerramento_tardio.csv" download>${esc(E.et_arq_lista)}</a> · <a href="site/data/complementar/encerramento_tardio.py" download>${esc(E.enc_py)}</a></li>
           <li><a href="site/data/complementar/votos_apos_horario_secoes.csv" download>${esc(E.vh_csv_secoes)}</a> · <a href="site/data/complementar/votos_apos_horario.py" download>${esc(E.vh_py)}</a></li>
@@ -1536,6 +1580,7 @@
     },
     async iniciar() {
       const E = X(), box = $("#cq-res"), form = $("#et-f");
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) etZerar($$(".et-kpis > div, .et-faixas"));
       let ls;
       try { [ls] = await Promise.all([etDados(), sinaisSecoes().then((m) => { cq.sin = m; }).catch(() => { cq.sin = null; })]); }
       catch (e) { box.innerHTML = erroDados(e); return; }
@@ -1543,7 +1588,8 @@
       // maior atraso (a lista vem do mais atrasado para o menos)
       const top = ls[0], km = $("#et-max");
       if (top && km) km.innerHTML = `<span class="et-k-t">${esc(E.et_k_max)}</span><b>${esc(atrasoTxt(top.min))}</b><span><a href="#/secao/${top.uf}/${top.z}/${top.s}">${esc(`${top.mun} (${top.uf}) · ${t().th_zone} ${top.z} · ${t().th_section} ${top.s}`)}</a> · ${esc(t().round(top.t))}</span>`;
-      animarPainel($("#main"));
+      etVotacao(E);
+      etAnimarAoVer($$(".et-kpis > div, .et-faixas"));
       // estados com urnas na lista, com a contagem
       const porUf = {}; ls.forEach((x) => { porUf[x.uf] = (porUf[x.uf] || 0) + 1; });
       const selUf = form.elements.uf;
