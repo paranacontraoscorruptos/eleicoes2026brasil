@@ -630,8 +630,81 @@
       const rot = r.rot ? r.rot[i] : c;
       return `<th scope="col" aria-sort="${s > 0 ? "ascending" : s < 0 ? "descending" : "none"}"><button class="cq-ord" type="button" data-ord="${i}" title="${esc(E.cq_ord_col(rot.replace(/\n/g, " ")))}"><span class="cq-rot">${esc(rot).replace(/\n/g, "<br>")}</span><span class="cq-seta" aria-hidden="true">${s > 0 ? "▲" : s < 0 ? "▼" : "↕"}</span></button></th>`;
     }).join("") + (r.G ? `<th scope="col"><span class="sr-only">${esc(E.cq_ver_linhas)}</span></th>` : "");
-    box.innerHTML = `${voltarHtml()}${paginador(r, "topo")}<div class="table-wrap cq-wrap"><table class="num-cols cq-tab${r.tabCls ? " " + r.tabCls : ""}"><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table></div>${paginador(r, "base")}
+    const tab = `<div class="table-wrap cq-wrap"><table class="num-cols cq-tab${r.tabCls ? " " + r.tabCls : ""}"><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table></div>`;
+    const rolx = r.barraTopo ? `<p class="small muted cq-rolx-t" hidden><span aria-hidden="true">↔</span> ${esc(E.cq_rolx_t)}</p>
+      <div class="cq-rolx" hidden><button class="icon-btn cq-rolx-a" type="button" data-rolx="-1" aria-label="${esc(E.cq_rolx_esq)}" title="${esc(E.cq_rolx_esq)}">‹</button>
+        <div class="cq-rolx-tr" aria-hidden="true"><span class="cq-rolx-pol"></span></div>
+        <button class="icon-btn cq-rolx-a" type="button" data-rolx="1" aria-label="${esc(E.cq_rolx_dir)}" title="${esc(E.cq_rolx_dir)}">›</button></div>` : "";
+    const toque = matchMedia("(hover: none)").matches;
+    const dl = r.dicaLinha && !dlinFechada() ? `<div class="cq-dlin" role="note" hidden><p>${esc(toque ? E.cq_dlin_toque : E.cq_dlin_clique)}</p>
+      <button class="cq-dlin-x" type="button" data-dlin-x aria-label="${esc(E.cq_dlin_x)}" title="${esc(E.cq_dlin_x)}">${icone("close")}</button></div>` : "";
+    box.innerHTML = `${voltarHtml()}${paginador(r, "topo")}${rolx}${r.barraTopo || dl ? `<div class="cq-rolw">${tab}${dl}</div>` : tab}${paginador(r, "base")}
       <p class="small muted cq-uso">${icone("help")} ${esc(E.cq_uso)}</p>`;
+    if (r.barraTopo) ligarRolx(box);
+    if (dl) ligarDlin(box);
+  }
+  // balãozinho apontando para a 1ª linha: aparece quando a tabela chega na tela; fecha no X ou ao abrir uma linha
+  // (fechado uma vez, não volta neste navegador)
+  const dlinFechada = () => { try { return localStorage.getItem("cq_dica_linha") === "1"; } catch (e) { return false; } };
+  const dlin = { visto: false, obs: null, ro: null };
+  function fecharDlin() {
+    try { localStorage.setItem("cq_dica_linha", "1"); } catch (e) { /* sem armazenamento: fecha só agora */ }
+    const b = $(".cq-dlin"); if (b) b.remove();
+    $$("tr.cq-dlin-alvo").forEach((tr) => tr.classList.remove("cq-dlin-alvo"));
+    if (dlin.obs) { dlin.obs.disconnect(); dlin.obs = null; }
+  }
+  function ligarDlin(box) {
+    const bl = $(".cq-dlin", box), rw = $(".cq-rolw", box), tr = $("tr.cq-lin", box);
+    if (!bl || !rw || !tr) return;
+    const pos = () => { if (bl.isConnected) bl.style.top = `${Math.round(tr.getBoundingClientRect().bottom - rw.getBoundingClientRect().top + 10)}px`; };
+    const mostrar = () => { dlin.visto = true; bl.hidden = false; tr.classList.add("cq-dlin-alvo"); pos(); };
+    $("[data-dlin-x]", bl).addEventListener("click", (ev) => { ev.stopPropagation(); fecharDlin(); });
+    if (dlin.ro) dlin.ro.disconnect();
+    if ("ResizeObserver" in window) { dlin.ro = new ResizeObserver(pos); dlin.ro.observe(tr); }
+    if (dlin.obs) { dlin.obs.disconnect(); dlin.obs = null; }
+    if (dlin.visto || !("IntersectionObserver" in window)) { mostrar(); return; }
+    dlin.obs = new IntersectionObserver((ents) => { if (ents.some((en) => en.isIntersecting)) { dlin.obs.disconnect(); dlin.obs = null; mostrar(); } }, { rootMargin: "0px 0px -20% 0px", threshold: 0 });
+    dlin.obs.observe(tr);
+  }
+  // barra no alto da tabela (só aparece quando a tabela não cabe na largura): setas, trilho com a parte visível arrastável
+  // e sombra no lado que ainda tem colunas escondidas
+  let rolxRO = null;
+  function ligarRolx(box) {
+    const w = $(".cq-wrap", box), bar = $(".cq-rolx", box), txt = $(".cq-rolx-t", box), rw = $(".cq-rolw", box);
+    if (!w || !bar) return;
+    const tr = $(".cq-rolx-tr", bar), pol = $(".cq-rolx-pol", bar), [be, bd] = $$("[data-rolx]", bar);
+    const suave = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+    const atual = () => {
+      const sw = w.scrollWidth, cw = w.clientWidth, mx = sw - cw, x = w.scrollLeft, tem = mx > 2;
+      bar.hidden = !tem; if (txt) txt.hidden = !tem;
+      rw.classList.toggle("ve-e", tem && x > 2); rw.classList.toggle("ve-d", tem && x < mx - 2);
+      if (!tem) return;
+      const f = cw / sw;
+      pol.style.width = `${(100 * f).toFixed(2)}%`; pol.style.left = `${(100 * (1 - f) * Math.min(1, x / mx)).toFixed(2)}%`;
+      be.disabled = x <= 2; bd.disabled = x >= mx - 2;
+      if (x > 2) bar.classList.remove("novo");
+    };
+    bar.classList.add("novo");
+    w.addEventListener("scroll", atual, { passive: true });
+    // presa logo abaixo do cabeçalho do site (que muda de altura ao rolar)
+    const hd = $("#site-head"), topo = () => { if (hd) bar.style.top = `${Math.max(0, Math.round(hd.getBoundingClientRect().height) - 1)}px`; };
+    if (rolxRO) rolxRO.disconnect();
+    if ("ResizeObserver" in window) { rolxRO = new ResizeObserver(() => { topo(); atual(); }); rolxRO.observe(w); if (hd) rolxRO.observe(hd); }
+    topo();
+    [be, bd].forEach((b) => b.addEventListener("click", () => w.scrollBy({ left: +b.dataset.rolx * Math.max(120, w.clientWidth * 0.75), behavior: suave() })));
+    // arrastar a parte clara do trilho move a tabela; tocar fora dela anda uma tela para aquele lado
+    let arr = null;
+    tr.addEventListener("pointerdown", (ev) => {
+      if (ev.button > 0) return;
+      ev.preventDefault();
+      if (ev.target === pol) { arr = { x: ev.clientX, l: w.scrollLeft, k: w.scrollWidth / tr.clientWidth }; tr.setPointerCapture(ev.pointerId); pol.classList.add("arr"); return; }
+      const rp = pol.getBoundingClientRect();
+      w.scrollBy({ left: (ev.clientX < rp.left ? -1 : 1) * w.clientWidth * 0.75, behavior: suave() });
+    });
+    tr.addEventListener("pointermove", (ev) => { if (arr) w.scrollLeft = arr.l + (ev.clientX - arr.x) * arr.k; });
+    const solta = () => { arr = null; pol.classList.remove("arr"); };
+    tr.addEventListener("pointerup", solta); tr.addEventListener("pointercancel", solta);
+    atual();
   }
   function irPagina(p, rolar) {
     const r = cq.res; if (!r) return;
@@ -891,6 +964,40 @@
     void raiz.offsetWidth;
     requestAnimationFrame(() => requestAnimationFrame(() => { if (id === animSeq) raiz.classList.add("cq-cheio"); }));
   }
+  // contagem de um bloco (ou de um número sozinho): de 0 até o valor, com as barras enchendo junto
+  const CONTA = "[data-cn],[data-cp],[data-cs]";
+  function contarBloco(el) {
+    el.classList.add("cq-cheio");
+    const els = el.matches(CONTA) ? [el] : $$(CONTA, el), t0 = performance.now(), dur = 1100;
+    if (!els.length) return;
+    const passo = (agora) => {
+      if (!el.isConnected) return;
+      const k = Math.min(1, (agora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      els.forEach((x) => {
+        if (x.dataset.cn != null) x.textContent = nf(Math.round(+x.dataset.cn * e));
+        else if (x.dataset.cp != null) x.textContent = pct(+x.dataset.cp * e, +x.dataset.cd || 0);
+        else x.textContent = comSinal(Math.round(+x.dataset.cs * e));
+      });
+      if (k < 1) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  }
+  // painel ao rolar: cada linha de tabela, gráfico ou número começa zerado e cresce quando aparece dentro do painel
+  let pnObs = null;
+  const PN_UNID = "tr, .cq-graf-l, .vh-kpis > div, .vh-dia-w, .cq-medidor, p, dd, li";
+  function animarAoRolar(corpo) {
+    if (pnObs) { pnObs.disconnect(); pnObs = null; }
+    ++animSeq;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) { corpo.classList.add("cq-cheio"); return; }
+    corpo.classList.remove("cq-cheio");
+    const us = new Set();
+    $$(`${CONTA},.cq-barra,.cq-medidor,.cq-graf-b,.vh-dia,.et-fb`, corpo).forEach((x) => us.add(x.closest(PN_UNID) || x));
+    $$(CONTA, corpo).forEach((x) => { x.textContent = x.dataset.cn != null ? nf(0) : x.dataset.cp != null ? pct(0, +x.dataset.cd || 0) : comSinal(0); });
+    const obs = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) { obs.unobserve(en.target); contarBloco(en.target); } }),
+      { root: corpo, rootMargin: "0px 0px -8% 0px", threshold: 0 });
+    us.forEach((u) => obs.observe(u));
+    pnObs = obs;
+  }
   // turnos que o painel mostra: o turno escolhido na consulta (ou os dois)
   const turnosVer = (by, tf) => [1, 2].filter((n) => by[n] && (!tf || n === tf));
   // 1) votos para Presidente: 1º turno, depois 2º turno
@@ -1092,6 +1199,7 @@
     const r = cq.res; if (!r) return;
     const E = X(), el = painelEl(), seq = ++painel.seq;
     painel.gi = gi; r.sel = gi;
+    if (r.dicaLinha && $(".cq-dlin")) fecharDlin();
     dicaEsconder();
     $$("#cq-res tr.cq-sel").forEach((tr) => tr.classList.remove("cq-sel"));
     const tr = $(`#cq-res tr[data-i="${gi}"]`); if (tr) tr.classList.add("cq-sel");
@@ -1112,13 +1220,14 @@
     const sub = el.querySelector(".cq-p-sub"); sub.textContent = c.sub; sub.hidden = !c.sub;
     const corpo = el.querySelector(".cq-p-body");
     corpo.innerHTML = c.corpo; corpo.scrollTop = 0;
-    animarPainel(corpo);
+    if (r.animRolar) animarAoRolar(corpo); else animarPainel(corpo);
     el.querySelector(".cq-p-acoes").innerHTML = c.acoes;
     if (!aberto) el.focus({ preventScroll: true });
   }
   function fecharPainel(foco) {
     if (!painel.el || painel.el.hidden) return;
     painel.el.hidden = true; painel.seq++;
+    if (pnObs) { pnObs.disconnect(); pnObs = null; }
     document.documentElement.classList.remove("cq-p-on");
     const r = cq.res;
     if (r) { r.sel = null; const tr = $(`#cq-res tr[data-i="${painel.gi}"]`); if (tr) { tr.classList.remove("cq-sel"); if (foco) tr.focus({ preventScroll: true }); } }
@@ -1481,7 +1590,7 @@
     const rot = ET_COLS.map((c) => (typeof C[c] === "function" ? C[c](h) : C[c] || c));
     const r = { id: ++cqResSeq, m: { colunas: ET_COLS, linhas: ls.map((x) => [x.uf, x.mun, x.z, x.s, x.t, x.min, x.va, x.ab, x.en, x.fim, x.ult]) },
       sql: null, turno: 0, ms: 0, pag: 0, pp: ppSalvo(), ord: et.res ? et.res.ord : null, sel: null, ler: leitor(ET_COLS), G: null, temSec: true,
-      fonte: dadosSecaoArq, rot, fmt: ET_COLS.map((c) => fmt[c] || null), linhasEt: ls, semNum: true, tabCls: "et-tab",
+      fonte: dadosSecaoArq, rot, fmt: ET_COLS.map((c) => fmt[c] || null), linhasEt: ls, semNum: true, tabCls: "et-tab", barraTopo: true, animRolar: true, dicaLinha: true,
       info: (n) => E.et_info(nf(n), nf(total), n === total) };
     ordenar(r);
     return r;
@@ -1489,17 +1598,7 @@
   // números e barras crescem quando o bloco aparece na tela, ao rolar (não ao abrir a página): começa quando o topo do bloco
   // passa de 3/4 da altura da tela, para a pessoa ver o bloco inteiro crescer; cada bloco uma vez
   let etObs = null;
-  function etContar(el) {
-    el.classList.add("cq-cheio");
-    const els = $$("[data-cn],[data-cp]", el), t0 = performance.now(), dur = 1100;
-    const passo = (agora) => {
-      if (!el.isConnected) return;
-      const k = Math.min(1, (agora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-      els.forEach((x) => { x.textContent = x.dataset.cn != null ? nf(Math.round(+x.dataset.cn * e)) : pct(+x.dataset.cp * e, +x.dataset.cd || 0); });
-      if (k < 1) requestAnimationFrame(passo);
-    };
-    requestAnimationFrame(passo);
-  }
+  const etContar = (el) => contarBloco(el);
   const etZerar = (blocos) => blocos.forEach((b) => $$("[data-cn],[data-cp]", b).forEach((x) => { x.textContent = x.dataset.cn != null ? nf(0) : pct(0, +x.dataset.cd || 0); }));
   function etAnimarAoVer(blocos) {
     if (etObs) { etObs.disconnect(); etObs = null; }
