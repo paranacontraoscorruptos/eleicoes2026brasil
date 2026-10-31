@@ -840,18 +840,23 @@
     const ls = vhVotos(rec).map((v) => [n, uf, z, s, v.n, vhH(v.ti), vhH(v.th), vhH(v.tc), v.dt, v.cab, vhLib(v, E), E.vh_id[v.id] || "", vhMarcas(v.fl, E).join("; ")]);
     baixar(`votos_apos_${vhHM(rec.fim).replace(":", "h")}_${uf}_z${z}_s${s}_t${n}.csv`, "﻿" + [cab].concat(ls).map((l) => l.map(csvCampo).join(",")).join("\n"), "text/csv;charset=utf-8");
   }
+  // abre/fecha a lista voto a voto de um botão "Ver o horário de cada voto"
+  function vhAlternar(b, rolar) {
+    const E = X(), rec = vh.recs.get(b.dataset.vhVer), box = b.closest(".vh"), lista = box && box.querySelector(".vh-lista");
+    if (!rec || !lista) return;
+    const abrir = b.getAttribute("aria-expanded") !== "true";
+    if (abrir && !lista.dataset.ok) { lista.innerHTML = vhLista(rec, b.dataset.vhVer, E); lista.dataset.ok = "1"; }
+    lista.hidden = !abrir;
+    b.setAttribute("aria-expanded", String(abrir));
+    b.querySelector("span").textContent = abrir ? E.vh_esconder : E.vh_ver(nf(rec.apos));
+    if (abrir && rolar) lista.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
   // cliques (painel da consulta e página da seção)
   document.addEventListener("click", (ev) => {
     const b = ev.target.closest("[data-vh-ver]");
     if (b) {
-      const E = X(), rec = vh.recs.get(b.dataset.vhVer), box = b.closest(".vh"), lista = box && box.querySelector(".vh-lista");
-      if (!rec || !lista) return;
-      const abrir = b.getAttribute("aria-expanded") !== "true";
-      if (abrir && !lista.dataset.ok) { lista.innerHTML = vhLista(rec, b.dataset.vhVer, E); lista.dataset.ok = "1"; }
-      lista.hidden = !abrir;
-      b.setAttribute("aria-expanded", String(abrir));
-      b.querySelector("span").textContent = abrir ? E.vh_esconder : E.vh_ver(nf(rec.apos));
-      if (abrir) lista.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      vhAlternar(b, true);
+      if (b.closest(".cq-painel")) vhUsado();
       return;
     }
     const c = ev.target.closest("[data-vh-csv]");
@@ -1179,9 +1184,17 @@
       <button class="icon-btn" type="button" data-p="x" aria-label="${esc(E.cq_p_fechar)}" title="${esc(E.cq_p_fechar)} (Esc)">${icone("close")}</button></div>
       <div class="cq-p-body"></div>
       <div class="cq-p-foot"><div class="btn-row cq-p-acoes"></div>
-        <div class="cq-p-nav"><button class="btn btn-sm btn-ghost" type="button" data-p="ant" aria-label="${esc(E.cq_p_ant)}" title="${esc(E.cq_p_ant)} (↑)">‹</button><span class="small muted"></span><button class="btn btn-sm btn-ghost" type="button" data-p="prox" aria-label="${esc(E.cq_p_prox)}" title="${esc(E.cq_p_prox)} (↓)">›</button></div></div>`;
+        <div class="cq-p-nav"><button class="btn btn-sm btn-ghost" type="button" data-p="ant" aria-label="${esc(E.cq_p_ant)}" title="${esc(E.cq_p_ant)} (↑)">‹</button><span class="small muted"></span><button class="btn btn-sm btn-ghost" type="button" data-p="prox" aria-label="${esc(E.cq_p_prox)}" title="${esc(E.cq_p_prox)} (↓)">›</button></div></div>
+      <div class="cq-p-rolar" role="note" hidden><span class="cq-p-rolar-s" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 6 6 6 6-6M6 12l6 6 6-6"/></svg></span><p>${esc(E.cq_rolar)}</p>
+        <button class="cq-dlin-x" type="button" data-rolar-x aria-label="${esc(E.cq_dlin_x)}" title="${esc(E.cq_dlin_x)}">${icone("close")}</button></div>`;
     document.body.append(el);
+    const corpo = el.querySelector(".cq-p-body");
+    corpo.addEventListener("scroll", () => { if (corpo.scrollTop > 24) { guia.rolou = true; rolarEsconder(); } }, { passive: true });
     el.addEventListener("click", (ev) => {
+      if (ev.target.closest("[data-rolar-x]")) { guardar("cq_dica_rolar"); rolarEsconder(); return; }
+      if (ev.target.closest("[data-vhb-x]")) { guardar("cq_dica_vh"); vhbFechar(); return; }
+      if (ev.target.closest("[data-vh-ir], .cq-vhb")) { irVH(); return; }
+      if (ev.target.closest(".cq-p-rolar")) { const c = el.querySelector(".cq-p-body"); c.scrollBy({ top: c.clientHeight * 0.7, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); return; }
       const b = ev.target.closest("[data-p]");
       if (b) { if (b.dataset.p === "x") fecharPainel(true); else passoPainel(b.dataset.p === "prox" ? 1 : -1); return; }
       const g = ev.target.closest("[data-grupo]");
@@ -1221,13 +1234,64 @@
     const corpo = el.querySelector(".cq-p-body");
     corpo.innerHTML = c.corpo; corpo.scrollTop = 0;
     if (r.animRolar) animarAoRolar(corpo); else animarPainel(corpo);
-    el.querySelector(".cq-p-acoes").innerHTML = c.acoes;
+    // botão "Ver horário de cada voto" também no rodapé (primeiro, pulsando), quando a urna tem votos depois do horário
+    const vb = r.guiaPainel && corpo.querySelector("[data-vh-ver]"), ac = el.querySelector(".cq-p-acoes");
+    ac.innerHTML = (vb ? `<button class="btn btn-sm btn-primary cq-p-vh pulsa" type="button" data-vh-ir>${icone("clock")} <span>${esc(E.vh_ir)}</span></button>` : "") + c.acoes;
+    ac.classList.toggle("cq-p-acoes-g", !!vb);
     if (!aberto) el.focus({ preventScroll: true });
+    if (r.guiaPainel) guiaLigar(el, corpo, vb);
+  }
+  // --- guias do painel: aviso "role para baixo" (celular) e balão sobre o botão da lista voto a voto -----------------
+  const guia = { rolou: false, obs: null };
+  const guardado = (k) => { try { return localStorage.getItem(k) === "1"; } catch (e) { return false; } };
+  const guardar = (k) => { try { localStorage.setItem(k, "1"); } catch (e) { /* sem armazenamento: vale só agora */ } };
+  function rolarEsconder() { const g = painel.el && painel.el.querySelector(".cq-p-rolar"); if (g) g.hidden = true; }
+  function vhbFechar() {
+    if (guia.obs) { guia.obs.disconnect(); guia.obs = null; }
+    $$(".cq-vhb").forEach((x) => x.remove());
+    $$(".cq-vhb-alvo").forEach((x) => x.classList.remove("cq-vhb-alvo"));
+  }
+  // a pessoa abriu a lista (no botão de dentro ou no do rodapé): o balão não volta e o rodapé para de pulsar
+  function vhUsado() {
+    guardar("cq_dica_vh"); vhbFechar();
+    const f = painel.el && painel.el.querySelector("[data-vh-ir]"); if (f) f.classList.remove("pulsa");
+  }
+  function guiaLigar(el, corpo, vb) {
+    vhbFechar();
+    // 1) celular: "role para baixo" logo ao abrir, até a pessoa rolar o painel pela 1ª vez
+    const g = el.querySelector(".cq-p-rolar");
+    const mais = corpo.scrollHeight - corpo.clientHeight > 60;
+    g.hidden = !(innerWidth <= 700 && mais && !guia.rolou && !guardado("cq_dica_rolar"));
+    if (!g.hidden) g.style.bottom = `${el.querySelector(".cq-p-foot").offsetHeight + 12}px`;
+    // 2) balão em cima do botão de dentro, quando ele aparece ao rolar
+    if (!vb || guardado("cq_dica_vh")) return;
+    const E = X(), rec = vh.recs.get(vb.dataset.vhVer), alvo = vb.closest(".vh-acoes");
+    if (!rec || !alvo) return;
+    const toque = matchMedia("(hover: none)").matches, q = rec.apos;
+    const bl = document.createElement("div");
+    bl.className = "cq-vhb"; bl.setAttribute("role", "note"); bl.hidden = true;
+    bl.innerHTML = `<p>${esc(E.vh_dica_b(q, nf(q), vhHM(rec.fim), toque))}</p><button class="cq-dlin-x" type="button" data-vhb-x aria-label="${esc(E.cq_dlin_x)}" title="${esc(E.cq_dlin_x)}">${icone("close")}</button>`;
+    alvo.append(bl);
+    const mostrar = () => { bl.hidden = false; vb.classList.add("cq-vhb-alvo"); };
+    if (!("IntersectionObserver" in window)) { mostrar(); return; }
+    guia.obs = new IntersectionObserver((ents) => { if (ents.some((en) => en.isIntersecting)) { guia.obs.disconnect(); guia.obs = null; mostrar(); } },
+      { root: corpo, rootMargin: "0px 0px -6% 0px", threshold: 1 });
+    guia.obs.observe(vb);
+  }
+  // rodapé: abre a lista voto a voto e leva o painel até ela
+  function irVH() {
+    const corpo = painel.el && painel.el.querySelector(".cq-p-body"), b = corpo && corpo.querySelector("[data-vh-ver]");
+    if (!b) return;
+    if (b.getAttribute("aria-expanded") !== "true") vhAlternar(b, false);
+    vhUsado(); rolarEsconder(); guia.rolou = true;
+    const alvo = b.closest(".vh-acoes") || b;
+    corpo.scrollTo({ top: corpo.scrollTop + alvo.getBoundingClientRect().top - corpo.getBoundingClientRect().top - 8, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }
   function fecharPainel(foco) {
     if (!painel.el || painel.el.hidden) return;
     painel.el.hidden = true; painel.seq++;
     if (pnObs) { pnObs.disconnect(); pnObs = null; }
+    vhbFechar(); rolarEsconder();
     document.documentElement.classList.remove("cq-p-on");
     const r = cq.res;
     if (r) { r.sel = null; const tr = $(`#cq-res tr[data-i="${painel.gi}"]`); if (tr) { tr.classList.remove("cq-sel"); if (foco) tr.focus({ preventScroll: true }); } }
@@ -1590,7 +1654,7 @@
     const rot = ET_COLS.map((c) => (typeof C[c] === "function" ? C[c](h) : C[c] || c));
     const r = { id: ++cqResSeq, m: { colunas: ET_COLS, linhas: ls.map((x) => [x.uf, x.mun, x.z, x.s, x.t, x.min, x.va, x.ab, x.en, x.fim, x.ult]) },
       sql: null, turno: 0, ms: 0, pag: 0, pp: ppSalvo(), ord: et.res ? et.res.ord : null, sel: null, ler: leitor(ET_COLS), G: null, temSec: true,
-      fonte: dadosSecaoArq, rot, fmt: ET_COLS.map((c) => fmt[c] || null), linhasEt: ls, semNum: true, tabCls: "et-tab", barraTopo: true, animRolar: true, dicaLinha: true,
+      fonte: dadosSecaoArq, rot, fmt: ET_COLS.map((c) => fmt[c] || null), linhasEt: ls, semNum: true, tabCls: "et-tab", barraTopo: true, animRolar: true, dicaLinha: true, guiaPainel: true,
       info: (n) => E.et_info(nf(n), nf(total), n === total) };
     ordenar(r);
     return r;
