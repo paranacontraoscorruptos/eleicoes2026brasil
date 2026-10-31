@@ -526,6 +526,22 @@
     return `SELECT *\nFROM ${G.from}\nWHERE ${G.where ? `(${G.where})\n  AND ` : ""}${conds.join("\n  AND ")}`;
   }
 
+  // Sinalizações de cada seção (ocorrencias.json): "UF|zona|seção" -> [[turno, teste, nível, categoria]]
+  let mapaSin = null;
+  async function sinaisSecoes() {
+    if (mapaSin) return mapaSin;
+    const oc = await A.paginasExtra.ocorrencias(), m = new Map();
+    oc.forEach((o) => { if (o[2] == null || o[3] == null) return; const k = `${o[0]}|${o[2]}|${o[3]}`; let a = m.get(k); if (!a) m.set(k, (a = [])); a.push([o[4], o[5], o[6], o[7]]); });
+    return (mapaSin = m);
+  }
+  function chipsSinal(r, e) {
+    if (!cq.sin || !e.uf || e.z == null || e.s == null) return "—";
+    const fs = (cq.sin.get(`${e.uf}|${e.z}|${e.s}`) || []).filter((f) => (e.t ? f[0] === e.t : !r.turno || f[0] === r.turno));
+    if (!fs.length) return `<span class="cq-sn-ok" aria-label="${esc(X().cq_nenhuma)}">—</span>`;
+    const vistos = new Set(), cat = R().categorias || {};
+    return fs.filter((f) => { const k = f[0] + f[1] + f[2]; if (vistos.has(k)) return false; vistos.add(k); return true; }).sort((a, b) => (a[2] === "a" ? 0 : 1) - (b[2] === "a" ? 0 : 1) || a[1].localeCompare(b[1]))
+      .map((f) => `<span class="cq-sn cq-sn-${f[2]}" title="${esc(`${t().round(f[0])} · ${A.numTeste(f[1])}. ${A.nomeTeste(f[1])} — ${(cat[f[3]] || {})[A.state.lang] || f[3]} (${X().cq_nivel[f[2]]})`)}">${A.numTeste(f[1])}</span>`).join("");
+  }
   function ordenar(r) {
     const L = r.m.linhas;
     r.idx = Array.from({ length: L.length }, (_, i) => i);
@@ -553,7 +569,7 @@
     const E = X(), l = r.m.linhas[gi];
     const cel = l.map((v, i) => `<td>${fmtCel(v, ident[i])}</td>`).join("");
     const sel = r.sel === gi ? " cq-sel" : "";
-    return `<tr class="cq-lin${sel}" tabindex="0" data-i="${gi}"><td class="cq-n">${nf(k + 1)}</td>${cel}${r.G ? `<td class="cq-acao"><button class="icon-btn" type="button" data-grupo="${gi}" aria-label="${esc(E.cq_ver_linhas)}" title="${esc(E.cq_ver_linhas)}">${icone("list")}</button></td>` : ""}</tr>`;
+    return `<tr class="cq-lin${sel}" tabindex="0" data-i="${gi}"><td class="cq-n">${nf(k + 1)}</td>${r.temSec ? `<td class="cq-sin">${chipsSinal(r, r.ler(l))}</td>` : ""}${cel}${r.G ? `<td class="cq-acao"><button class="icon-btn" type="button" data-grupo="${gi}" aria-label="${esc(E.cq_ver_linhas)}" title="${esc(E.cq_ver_linhas)}">${icone("list")}</button></td>` : ""}</tr>`;
   }
   function voltarHtml() {
     const ant = cq.hist[cq.hist.length - 1];
@@ -572,7 +588,7 @@
     const ident = m.colunas.map(identCol), ini = r.pag * r.pp, fim = Math.min(n, ini + r.pp);
     let corpo = "";
     for (let k = ini; k < fim; k++) corpo += linhaHtml(r, r.idx[k], k, ident);
-    const cab = `<th scope="col" class="cq-n">#</th>` + m.colunas.map((c, i) => {
+    const cab = `<th scope="col" class="cq-n">#</th>` + (r.temSec ? `<th scope="col" class="cq-sin" title="${esc(E.cq_sin_tip)}">${esc(E.cq_sin_col)}</th>` : "") + m.colunas.map((c, i) => {
       const s = r.ord && r.ord.i === i ? r.ord.d : 0;
       return `<th scope="col" aria-sort="${s > 0 ? "ascending" : s < 0 ? "descending" : "none"}"><button class="cq-ord" type="button" data-ord="${i}" title="${esc(E.cq_ord_col(c))}">${esc(c)}<span aria-hidden="true">${s > 0 ? "▲" : s < 0 ? "▼" : "↕"}</span></button></th>`;
     }).join("") + (r.G ? `<th scope="col"><span class="sr-only">${esc(E.cq_ver_linhas)}</span></th>` : "");
@@ -1124,6 +1140,9 @@
         try {
           const m = await pedir({ tipo: "sql", sql, turno: cq.turno });
           cq.res = { id: ++cqResSeq, m, sql, turno: cq.turno, ms: Math.round(performance.now() - t0), pag: 0, pp: ppSalvo(), ord: null, sel: null, ler: leitor(m.colunas), G: agrupada(sql, m.colunas) };
+          const nomes = m.colunas.map(nomeCol);
+          cq.res.temSec = ["uf", "zona", "secao"].every((c) => nomes.includes(c));
+          if (cq.res.temSec) { try { cq.sin = await sinaisSecoes(); } catch (e2) { cq.sin = null; } }
           ordenar(cq.res);
           mostrarRes();
           $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });

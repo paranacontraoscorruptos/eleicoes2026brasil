@@ -505,6 +505,7 @@
           <button class="btn btn-sm btn-ghost" type="reset">${esc(L.li_clear)}</button>
         </form></section>
         <div class="h-row li-head"><p id="li-res" class="li-res" aria-live="polite"></p><button class="btn btn-sm" type="button" id="li-csv">${icone("download")} ${esc(L.li_csv)}</button></div>
+        ${R().complementar && R().complementar.encerramento_tardio ? `<p class="note small enc-nota">${icone("help")} ${esc(t().ex.enc_nota(nf(R().complementar.encerramento_tardio.turnos[1].sinalizadas), nf(R().complementar.encerramento_tardio.turnos[2].sinalizadas)))} <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(t().ex.enc_csv)}</a></p>` : ""}
         <div id="li-tab">${carregando()}</div><div id="li-est"></div>
         <p class="small muted">${esc(L.li_note)}</p>${A.botCta()}`;
     },

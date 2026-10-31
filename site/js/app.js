@@ -453,13 +453,16 @@
       const r1 = R.turnos["1"].testes.find((x) => x.id === tid), r2 = R.turnos["2"].testes.find((x) => x.id === tid);
       const res = (r, n) => `<span class="res"><span class="muted">${esc(L.round(n))}:</span> ${chip(status(r), `${nf(r.sinal)} / ${nf(r.info)}`)}</span>`;
       const codigo = X.funcs[tid].map((f) => `<a href="${BLOB}#L${f.ini}-L${f.fim}" target="_blank" rel="noopener"><code>${esc(f.nome)}</code></a>`).join(" · ");
+      const cp = tid === "T11" && R.complementar && R.complementar.encerramento_tardio, cpn = (n) => nf(cp.turnos[n].sinalizadas);
+      const prev = cp ? `<div class="note enc-nota"><h3>${icone("help")} ${esc(L.ex.enc_t)}</h3><p>${esc(L.ex.enc_nota(cpn(1), cpn(2)))}</p>
+        <p class="btn-row"><a class="btn btn-sm" href="#/lista?teste=T11&nivel=a">${icone("list")} ${esc(L.f_list)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.csv" download>${icone("download")} ${esc(L.ex.enc_csv)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.py" download>${icone("code")} ${esc(L.ex.enc_py)}</a></p></div>` : "";
       return `<article class="test-card" id="${tid}">
         <details${foco === tid ? " open" : ""}>
           <summary><span class="tnum">${numTeste(tid)}</span><span class="tmain"><span class="tname">${esc(tx.nome)}</span><span class="ttype">${esc(tipoTeste(tid))}</span>
-            <span class="tsimple">${esc(X.simples[state.lang][tid])}</span><span class="tres">${res(r1, 1)}${res(r2, 2)}</span></span></summary>
+            <span class="tsimple">${esc(X.simples[state.lang][tid])}</span><span class="tres">${res(r1, 1)}${res(r2, 2)}</span>${cp ? `<span class="tprev small">${esc(L.ex.enc_resumo(cpn(1), cpn(2)))}</span>` : ""}</span></summary>
           <div class="tbody">
             <h3>${esc(L.f_obj)}</h3><p>${esc(tx.objetivo)}</p>
-            <h3>${esc(L.f_met)}</h3><p>${esc(tx.metodo)}</p>
+            <h3>${esc(L.f_met)}</h3><p>${esc(tx.metodo)}</p>${prev}
             <h3>${esc(L.f_crit)}</h3><p>${esc(tx.criterio)}</p>
             <h3>${esc(L.f_lim)}</h3><p>${esc(tx.limites)}</p>
             <p class="btn-row"><a class="btn btn-bot btn-sm" href="${esc(linkAtlas(L.ask_test(numTeste(tid))))}">${icone("globe")} ${esc(L.f_ask)}</a>
@@ -562,10 +565,11 @@
       }
       let fl;
       if (f && f.o.length) {
-        fl = `<p class="small muted">${esc(L.lk_urna(f.u, f.c, f.l))}</p>` + tabela([L.th_test, "", L.th_cargo, L.th_obs, L.th_ref, L.th_q],
+        fl = (f.u ? `<p class="small muted">${esc(L.lk_urna(f.u, f.c, f.l))}</p>` : "") + tabela([L.th_test, "", L.th_cargo, L.th_obs, L.th_ref, L.th_q],
           f.o.map((o) => [`<a href="#/testes/${o[0]}">${numTeste(o[0])}. ${esc(nomeTeste(o[0]))}</a><br><span class="small muted">${esc((R.categorias[o[2]] || {})[state.lang] || o[2])}</span>`,
             chip(o[1] === "a" ? "red" : "amber", o[1] === "a" ? L.lv_a : L.lv_i), esc(o[3] && o[3] !== "—" ? o[3] : "—"), esc(dec(o[4] || "—")), esc(dec(o[5] || "—")),
-            o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))]));
+            o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))]))
+          + (f.o.some((o) => o[2] === "encerramento_tardio") ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_sec)} <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(L.ex.enc_csv)}</a></p>` : "");
       } else fl = `<p>${chip("green", L.lk_noflags)}</p>`;
       return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}</section>`;
     }).join("");

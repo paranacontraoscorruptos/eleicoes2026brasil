@@ -9,6 +9,14 @@
   <language>pt-BR</language>
   <lastBuildDate>Sat, 31 Oct 2026 15:00:00 -0300</lastBuildDate>
   <item>
+    <title>Análise complementar: urnas que encerraram 1 hora ou mais depois do horário</title>
+    <link>https://paranacontraoscorruptos.org/#/lista?teste=T11&amp;nivel=a</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-10-31-14</guid>
+    <pubDate>Sat, 31 Oct 2026 13:23:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>Prévia, ainda fora do Relatório Técnico: 43.605 seções no 1º turno e 7.097 no 2º turno encerraram 1 hora ou mais depois do horário oficial (17h de Brasília, no fuso de cada município). Estão marcadas como anomalia no teste 11 em cada seção, na lista, no mapa e na consulta avançada. A lista completa (CSV) e o script estão na página Testes.</description>
+  </item>
+  <item>
     <title>Simulador de anomalias: aprenda os 15 testes com dados fictícios</title>
     <link>https://paranacontraoscorruptos.org/#/simulador</link>
     <guid isPermaLink="false">auditoria-bu-2026-2026-10-31-13</guid>

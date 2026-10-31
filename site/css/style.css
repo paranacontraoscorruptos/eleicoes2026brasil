@@ -1713,6 +1713,15 @@ body.atlas-on main { flex: 1 1 auto; min-height: 0; width: 100%; max-width: none
 .cq-ref h4 { margin: 12px 0 4px; }
 .cq-tab td, .cq-tab th { white-space: nowrap; }
 /* resultado em páginas, linhas clicáveis, painel flutuante e dica */
+.cq-tab th.cq-sin, .cq-tab td.cq-sin { text-align: left; white-space: nowrap; }
+.cq-sn { display: inline-grid; place-items: center; min-width: 24px; height: 22px; padding: 0 5px; margin-right: 3px; border-radius: 6px; font: 800 .74rem var(--font); cursor: help; }
+.cq-sn-a { background: color-mix(in srgb, var(--red) 22%, transparent); color: var(--ink); border: 1px solid color-mix(in srgb, var(--red) 70%, transparent); }
+.cq-sn-i { background: color-mix(in srgb, var(--amber) 20%, transparent); color: var(--ink); border: 1px solid color-mix(in srgb, var(--amber) 70%, transparent); }
+.cq-sn-ok { color: var(--ink-2); opacity: .6; }
+.enc-nota { border-left: 3px solid var(--amber); background: color-mix(in srgb, var(--amber) 9%, transparent); padding: 10px 12px; border-radius: 10px; }
+.enc-nota h3 { display: flex; gap: 6px; align-items: center; margin: 0 0 6px; font-size: .95rem; }
+.enc-nota svg { width: 16px; height: 16px; flex: none; vertical-align: -3px; }
+.test-card .tprev { display: block; margin-top: 4px; color: var(--ink-2); }
 .cq-turnos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 8px 0 4px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line-2)); border-radius: 14px; background: var(--accent-soft); }
 .cq-turnos-r { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: .95rem; }
 .cq-turnos-r svg { width: 18px; height: 18px; color: var(--accent); }
