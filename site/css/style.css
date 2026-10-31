@@ -1718,6 +1718,19 @@ body.atlas-on main { flex: 1 1 auto; min-height: 0; width: 100%; max-width: none
 .cq-sn-a { background: color-mix(in srgb, var(--red) 22%, transparent); color: var(--ink); border: 1px solid color-mix(in srgb, var(--red) 70%, transparent); }
 .cq-sn-i { background: color-mix(in srgb, var(--amber) 20%, transparent); color: var(--ink); border: 1px solid color-mix(in srgb, var(--amber) 70%, transparent); }
 .cq-sn-ok { color: var(--ink-2); opacity: .6; }
+button.cq-sn { font-family: var(--font); line-height: 1; }
+button.cq-sn:hover, button.cq-sn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tip.cq-snp { max-width: 340px; z-index: 72; animation-duration: .12s; }
+.tip.cq-snp.fixo { pointer-events: auto; }
+.cq-snp .cq-snp-l { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+.cq-snp .cq-snp-l .chip { font-size: .72rem; padding: 1px 8px; }
+.cq-snp .cq-snp-c { color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+.cq-snp .cq-snp-t, .cq-snp .cq-snp-n { margin-top: 4px; }
+.cq-snp .cq-snp-n { color: var(--ink-2); font-size: .78rem; }
+.cq-snp .cq-snp-a { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--line-2); }
+.cq-snp .cq-snp-a a { display: inline-flex; gap: 5px; align-items: center; font-weight: 700; color: var(--accent); }
+.cq-snp .cq-snp-a svg { width: 15px; height: 15px; }
+.cq-snp .cq-snp-a .icon-btn { width: 30px; height: 30px; }
 .enc-nota { border-left: 3px solid var(--amber); background: color-mix(in srgb, var(--amber) 9%, transparent); padding: 10px 12px; border-radius: 10px; }
 .enc-nota h3 { display: flex; gap: 6px; align-items: center; margin: 0 0 6px; font-size: .95rem; }
 .enc-nota svg { width: 16px; height: 16px; flex: none; vertical-align: -3px; }
@@ -1826,7 +1839,7 @@ th[aria-sort="ascending"] .cq-ord span, th[aria-sort="descending"] .cq-ord span 
 .cq-p-nav .btn { min-width: 44px; font-size: 1.1rem; }
 .cq-p-nav .btn[disabled] { opacity: .35; }
 html.cq-p-on .atlas-launcher { display: none; }
-@media (max-width: 700px) { html.cq-p-on #vlibras-access-wrapper { display: none !important; } .cq-pag-n input { width: 3.6em; } .cq-pag-b { gap: 4px; } .cq-pag-b .btn { padding-left: 10px; padding-right: 10px; } }
+@media (max-width: 700px) { html.cq-p-on #vlibras-access-wrapper, html.cq-snp-on #vlibras-access-wrapper { display: none !important; } .cq-pag-n input { width: 3.6em; } .cq-pag-b { gap: 4px; } .cq-pag-b .btn { padding-left: 10px; padding-right: 10px; } }
 @media (max-width: 700px) {
   .cq-painel { left: 0; right: 0; bottom: 0; top: auto; width: auto; max-height: 82vh; border-radius: 18px 18px 0 0; padding-bottom: env(safe-area-inset-bottom); animation-name: cqpinb; }
   @keyframes cqpinb { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }

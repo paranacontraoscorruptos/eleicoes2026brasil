@@ -540,8 +540,42 @@
     if (!fs.length) return `<span class="cq-sn-ok" aria-label="${esc(X().cq_nenhuma)}">—</span>`;
     const vistos = new Set(), cat = R().categorias || {};
     return fs.filter((f) => { const k = f[0] + f[1] + f[2]; if (vistos.has(k)) return false; vistos.add(k); return true; }).sort((a, b) => (a[2] === "a" ? 0 : 1) - (b[2] === "a" ? 0 : 1) || a[1].localeCompare(b[1]))
-      .map((f) => `<span class="cq-sn cq-sn-${f[2]}" title="${esc(`${t().round(f[0])} · ${A.numTeste(f[1])}. ${A.nomeTeste(f[1])} — ${(cat[f[3]] || {})[A.state.lang] || f[3]} (${X().cq_nivel[f[2]]})`)}">${A.numTeste(f[1])}</span>`).join("");
+      .map((f) => `<button type="button" class="cq-sn cq-sn-${f[2]}" data-sn="${f[0]}|${f[1]}|${f[2]}|${esc(f[3])}" aria-label="${esc(`${t().round(f[0])} · ${X().cq_teste} ${A.numTeste(f[1])}. ${A.nomeTeste(f[1])} — ${(cat[f[3]] || {})[A.state.lang] || f[3]} (${X().cq_nivel[f[2]]})`)}">${A.numTeste(f[1])}</button>`).join("");
   }
+  // Balão que explica o sinal: aparece ao passar o mouse (na hora) e ao tocar/clicar (fica até tocar fora)
+  const snPop = { el: null, b: null, fixo: false };
+  function snConteudo(b, fixo) {
+    const E = X(), L = t(), [tn, te, nv, cat] = b.dataset.sn.split("|"), C = (R().categorias || {})[cat];
+    const simples = ((A.state.extra || {}).simples || {})[A.state.lang] || {};
+    return `<strong>${esc(E.cq_teste)} ${esc(A.numTeste(te))} · ${esc(A.nomeTeste(te))}</strong>
+      <div class="cq-snp-l">${chip(nv === "a" ? "red" : "amber", E.cq_nivel[nv] || nv)} <span>${esc(L.round(+tn))}</span></div>
+      <div class="cq-snp-c">${esc((C && C[A.state.lang]) || cat)}</div>
+      ${simples[te] ? `<div class="cq-snp-t"><b>${esc(E.cq_sn_oque)}:</b> ${esc(simples[te])}</div>` : ""}
+      <div class="cq-snp-n">${esc(E.cq_nivel_exp[nv] || "")}</div>
+      ${fixo ? `<div class="cq-snp-a"><a href="#/testes/${esc(te)}">${icone("arrow")} ${esc(E.cq_sn_ver)}</a><button type="button" class="icon-btn" data-snp-x aria-label="${esc(E.cq_p_fechar)}">${icone("close")}</button></div>` : ""}`;
+  }
+  function snMostrar(b, fixo) {
+    if (!snPop.el || !snPop.el.isConnected) {
+      snPop.el = document.createElement("div"); snPop.el.className = "tip cq-snp"; snPop.el.setAttribute("role", "tooltip"); snPop.el.id = "cq-snp";
+      snPop.el.addEventListener("click", (e) => { if (e.target.closest("[data-snp-x]")) snEsconder(); else if (e.target.closest("a")) { if (cq.res) cq.res.volta = { i: +(b.closest("tr") || {}).dataset?.i }; snEsconder(); } });
+      document.body.append(snPop.el);
+    }
+    dicaEsconder();
+    const el = snPop.el;
+    snPop.b = b; snPop.fixo = !!fixo;
+    el.classList.toggle("fixo", !!fixo);
+    document.documentElement.classList.toggle("cq-snp-on", !!fixo);
+    el.innerHTML = snConteudo(b, fixo); el.hidden = false;
+    b.setAttribute("aria-describedby", "cq-snp");
+    const r = b.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+    let x = Math.min(Math.max(8, r.left), innerWidth - w - 8), y = r.bottom + 8;
+    if (y + h > innerHeight - 8) y = Math.max(8, r.top - h - 8);
+    el.style.left = x + "px"; el.style.top = y + "px";
+  }
+  function snEsconder() { document.documentElement.classList.remove("cq-snp-on"); if (snPop.el) snPop.el.hidden = true; if (snPop.b) snPop.b.removeAttribute("aria-describedby"); snPop.b = null; snPop.fixo = false; }
+  document.addEventListener("click", (e) => { if (snPop.fixo && !e.target.closest(".cq-snp, .cq-sn")) snEsconder(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && snPop.b) snEsconder(); });
+  window.addEventListener("scroll", () => { if (snPop.b) snEsconder(); }, { passive: true });
   function ordenar(r) {
     const L = r.m.linhas;
     r.idx = Array.from({ length: L.length }, (_, i) => i);
@@ -953,13 +987,15 @@
   }
   window.addEventListener("scroll", () => dicaEsconder(), { passive: true });
   // ao trocar de página (ou de idioma) o painel fecha e é refeito no idioma atual
-  document.addEventListener("pagina", () => { dicaEsconder(); fecharPainel(); if (painel.el) { painel.el.remove(); painel.el = null; } if (dica.el) { dica.el.remove(); dica.el = null; } });
+  document.addEventListener("pagina", () => { snEsconder(); if (snPop.el) { snPop.el.remove(); snPop.el = null; } dicaEsconder(); fecharPainel(); if (painel.el) { painel.el.remove(); painel.el = null; } if (dica.el) { dica.el.remove(); dica.el = null; } });
 
   // Liga os eventos da área de resultado (uma vez por página aberta)
   function ligarRes(box) {
     const abrirLinha = (gi) => abrirPainel(gi);
     box.addEventListener("click", async (ev) => {
       const r = cq.res; if (!r) return;
+      const sn = ev.target.closest(".cq-sn");
+      if (sn) { ev.stopPropagation(); if (snPop.b === sn && snPop.fixo) snEsconder(); else snMostrar(sn, true); return; }
       const pg = ev.target.closest("[data-pg]");
       if (pg) {
         const np = Math.ceil(r.m.linhas.length / r.pp), alvo = { ini: 0, ant: r.pag - 1, prox: r.pag + 1, fim: np - 1 }[pg.dataset.pg];
@@ -999,16 +1035,21 @@
     });
     box.addEventListener("pointerover", (ev) => {
       if (ev.pointerType !== "mouse") return;
+      const sn = ev.target.closest(".cq-sn");
+      if (sn) { if (!(snPop.fixo && snPop.b === sn)) snMostrar(sn, false); return; }
+      if (snPop.b && !snPop.fixo) snEsconder();
       const tr = ev.target.closest("tr.cq-lin");
       if (tr) { dica.x = ev.clientX; dica.y = ev.clientY; dicaMostrar(tr); } else dicaEsconder();
     });
     box.addEventListener("pointermove", (ev) => { if (ev.pointerType === "mouse") { dica.x = ev.clientX; dica.y = ev.clientY; dicaPos(); } });
-    box.addEventListener("pointerleave", dicaEsconder);
+    box.addEventListener("pointerleave", () => { dicaEsconder(); if (snPop.b && !snPop.fixo) snEsconder(); });
     box.addEventListener("focusin", (ev) => {
+      const sn = ev.target.closest(".cq-sn");
+      if (sn) { if (sn.matches(":focus-visible") && !snPop.fixo) snMostrar(sn, false); return; }
       const tr = ev.target.closest("tr.cq-lin"); if (!tr || !tr.matches(":focus-visible")) return;
       const rc = tr.getBoundingClientRect(); dica.x = rc.left + 40; dica.y = rc.bottom - 4; dicaMostrar(tr);
     });
-    box.addEventListener("focusout", dicaEsconder);
+    box.addEventListener("focusout", (ev) => { dicaEsconder(); if (ev.target.closest(".cq-sn") && !snPop.fixo) snEsconder(); });
   }
 
   const pgConsulta = {
