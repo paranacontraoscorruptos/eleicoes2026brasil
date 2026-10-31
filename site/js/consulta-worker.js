@@ -49,6 +49,7 @@ async function iniciar(m) {
 
 async function carregarUf(m) {
   const uf = m.uf;
+  aplicarTurno(0);
   const L = (await json(`locais/${uf}.json`)).l;
   const localDe = new Map();
   inserirVarios("INSERT INTO locais VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", L.map((l) => {
@@ -92,7 +93,21 @@ async function carregarUf(m) {
   return { secoes: totalSecoes };
 }
 
+// Turno da consulta: visões temporárias com o mesmo nome das tabelas (secoes, sinalizacoes, candidatos) deixam só
+// o turno escolhido, para qualquer consulta escrita; main.secoes etc. continuam com os dois turnos.
+let turnoVista = 0;
+function aplicarTurno(t) {
+  t = t === 1 || t === 2 ? t : 0;
+  if (t === turnoVista) return;
+  db.run("DROP VIEW IF EXISTS temp.secoes; DROP VIEW IF EXISTS temp.sinalizacoes; DROP VIEW IF EXISTS temp.candidatos;");
+  if (t) db.run(`CREATE TEMP VIEW secoes AS SELECT * FROM main.secoes WHERE turno = ${t};
+    CREATE TEMP VIEW sinalizacoes AS SELECT * FROM main.sinalizacoes WHERE turno = ${t};
+    CREATE TEMP VIEW candidatos AS SELECT * FROM main.candidatos WHERE turno = ${t};`);
+  turnoVista = t;
+}
+
 function consultar(m) {
+  if (m.turno != null) aplicarTurno(m.turno);
   const st = db.prepare(m.sql);
   const cols = st.getColumnNames(), linhas = [];
   let cortado = false;

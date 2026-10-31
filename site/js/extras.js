@@ -427,6 +427,13 @@
   const pp1 = (x) => (A.state.lang === "EN" ? x.toFixed(1) : x.toFixed(1).replace(".", ","));
   let cqResSeq = 0;
   cq.hist = [];
+  // turno da consulta: 1, 2 ou 0 (os dois)
+  cq.turno = (() => { try { const v = localStorage.getItem("cq_turno"); return v === "1" ? 1 : v === "2" ? 2 : 0; } catch (e) { return 0; } })();
+  function seletorTurno(pos) {
+    const E = X();
+    return `<div class="cq-turnos" role="radiogroup" aria-label="${esc(E.cq_turno_t)}" data-pos="${pos}"><span class="cq-turnos-r">${icone("vote")} ${esc(E.cq_turno_t)}</span>
+      <span class="cq-turnos-b">${[1, 2, 0].map((n) => `<button type="button" role="radio" aria-checked="${cq.turno === n}" data-turno="${n}">${esc(E.cq_turno_ops[n])}</button>`).join("")}</span></div>`;
+  }
 
   // O que a linha identifica (pelas colunas do resultado): seção, local, município, zona, estado, teste, candidato, turno
   function leitor(cols) {
@@ -557,7 +564,7 @@
     if (!box || !r) return;
     dicaEsconder();
     const m = r.m, n = m.linhas.length;
-    $("#cq-info").textContent = E.cq_linhas(nf(n), nf(r.ms)) + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
+    $("#cq-info").textContent = `${E.cq_turno_info(E.cq_turno_ops[r.turno || 0])} · ${E.cq_linhas(nf(n), nf(r.ms))}` + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
     $("#cq-dl").hidden = !n;
     if (!n) { box.innerHTML = `${voltarHtml()}<p class="muted">${esc(E.cq_vazio)}</p>`; return; }
     const np = Math.ceil(n / r.pp);
@@ -605,9 +612,9 @@
     const tp = d.tipo;
     if (tp === "secao") {
       const w = ondeDe(e, "secao"), ws = `s.uf = ${sqlTxt(e.uf)} AND s.zona = ${e.z} AND s.secao = ${e.s}`;
-      const [S, F, Lc] = await varias([`SELECT * FROM secoes WHERE ${w} ORDER BY turno`,
-        `SELECT turno, teste, nivel, categoria FROM sinalizacoes WHERE ${w} ORDER BY turno, nivel, teste`,
-        `SELECT l.nome, l.endereco, l.bairro FROM secoes s JOIN locais l ON l.uf = s.uf AND l.zona = s.zona AND l.local = s.local AND l.cod_mun = s.cod_mun WHERE ${ws} LIMIT 1`]);
+      const [S, F, Lc] = await varias([`SELECT * FROM main.secoes WHERE ${w} ORDER BY turno`,
+        `SELECT turno, teste, nivel, categoria FROM main.sinalizacoes WHERE ${w} ORDER BY turno, nivel, teste`,
+        `SELECT l.nome, l.endereco, l.bairro FROM main.secoes s JOIN locais l ON l.uf = s.uf AND l.zona = s.zona AND l.local = s.local AND l.cod_mun = s.cod_mun WHERE ${ws} LIMIT 1`]);
       const ts = objs(S);
       if (!ts.length) return Object.assign(out, { tipo: "linha" });
       const x = ts[0];
@@ -622,7 +629,7 @@
       const vs = (cq.colunas.secoes || []).filter((c) => /^v\d+$/.test(c));
       const sqls = [`SELECT turno, COUNT(*) AS secoes, SUM(aptos) AS aptos, SUM(comparecimento) AS comparecimento, SUM(faltosos) AS faltosos, SUM(validos) AS validos,
         SUM(brancos) AS brancos, SUM(nulos) AS nulos, SUM(sinalizada) AS sinalizadas, SUM(encerramento >= '18:00:00') AS tarde, MIN(abertura) AS abertura, MAX(encerramento) AS encerramento${vs.map((c) => `, SUM(${c}) AS ${c}`).join("")}
-        FROM secoes WHERE ${ondeDe(e2, tp)} GROUP BY turno ORDER BY turno`];
+        FROM main.secoes WHERE ${ondeDe(e2, tp)} GROUP BY turno ORDER BY turno`];
       if (tp === "local") sqls.push(`SELECT nome, endereco, bairro, secoes FROM locais WHERE ${ondeDe(e2, "local")} LIMIT 1`);
       const [G, Lc] = await varias(sqls);
       const munNome = cod && e.uf ? await munNome_(e.uf, cod) : e.mun ? A.titulo(e.mun) : "";
@@ -631,7 +638,7 @@
     if (tp === "teste" || tp === "lista") {
       const w = [`teste = ${sqlTxt(e.teste)}`].concat(e.uf ? [`uf = ${sqlTxt(e.uf)}`] : [], e.t ? [`turno = ${e.t}`] : [], e.uf && e.cod ? [`cod_mun = ${sqlTxt(e.cod)}`] : [],
         e.uf && e.z != null ? [`zona = ${e.z}`] : [], e.nivel ? [`nivel = ${sqlTxt(e.nivel)}`] : []).join(" AND ");
-      const [S] = await varias([`SELECT turno, nivel, COUNT(*) AS n FROM sinalizacoes WHERE ${w} GROUP BY turno, nivel ORDER BY turno, nivel`]);
+      const [S] = await varias([`SELECT turno, nivel, COUNT(*) AS n FROM main.sinalizacoes WHERE ${w} GROUP BY turno, nivel ORDER BY turno, nivel`]);
       return Object.assign(out, { tipo: tp, cont: S.linhas });
     }
     return Object.assign(out, { tipo: tp });
@@ -643,62 +650,106 @@
   function rankCands(n, x) {
     return candsT(n).map((c) => ({ nr: c.nr, nome: A.titulo(c.nome), v: x["v" + c.nr] || 0 })).filter((c) => c.v > 0).sort((a, b) => b.v - a.v);
   }
-  function htmlVotacao(dd) {
+  // números que contam e barras que enchem quando o painel abre (ou passa para outra linha)
+  const nA = (v) => `<span data-cn="${v || 0}">${nf(v || 0)}</span>`;
+  const pA = (x, d) => `<span data-cp="${x || 0}" data-cd="${d}">${pct(x || 0, d)}</span>`;
+  const sA = (v) => `<span data-cs="${v}">${comSinal(v)}</span>`;
+  let animSeq = 0;
+  function animarPainel(raiz) {
+    const id = ++animSeq;
+    raiz.classList.remove("cq-cheio");
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { raiz.classList.add("cq-cheio"); return; }
+    const els = $$("[data-cn],[data-cp],[data-cs]", raiz), t0 = performance.now(), dur = 1100;
+    const passo = (agora) => {
+      if (id !== animSeq) return;
+      const k = Math.min(1, (agora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      els.forEach((el) => {
+        if (el.dataset.cn != null) el.textContent = nf(Math.round(+el.dataset.cn * e));
+        else if (el.dataset.cp != null) el.textContent = pct(+el.dataset.cp * e, +el.dataset.cd);
+        else el.textContent = comSinal(Math.round(+el.dataset.cs * e));
+      });
+      if (k < 1) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+    void raiz.offsetWidth;
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (id === animSeq) raiz.classList.add("cq-cheio"); }));
+  }
+  // turnos que o painel mostra: o turno escolhido na consulta (ou os dois)
+  const turnosVer = (by, tf) => [1, 2].filter((n) => by[n] && (!tf || n === tf));
+  // 1) votos para Presidente: 1º turno, depois 2º turno
+  function htmlVotos(dd, tf) {
+    const E = X(), L = t(), by = porTurno(dd.ts), ns = turnosVer(by, tf);
+    if (!Object.keys(by).length) return `<p class="muted small">${esc(E.cq_nao_carregado)}</p>`;
+    if (!ns.length) return `<p class="muted small">${esc(E.cq_sem_turno(L.round(tf)))}</p>`;
+    return ns.map((n) => {
+      const x = by[n], cs = rankCands(n, x), val = x.validos || cs.reduce((a, c) => a + c.v, 0) || 1;
+      const cp = x.comparecimento / (x.aptos || 1);
+      let h = `<section class="cq-p-turno"><h3>${esc(L.round(n))} <small>· ${esc(L.roundDate[n])}</small></h3><p class="cq-p-rot">${esc(E.cq_t_votos)} · ${esc(L.lk_comp)} ${nA(x.comparecimento)} (${pA(cp, 1)})</p>
+        <div class="cq-medidor" title="${esc(`${L.lk_comp}: ${pct(cp, 1)}`)}"><i style="--w:${(100 * Math.min(1, cp)).toFixed(1)}%"></i></div>`;
+      if (!cs.length) return h + `<p class="muted small">${esc(E.cq_sem_votos)}</p></section>`;
+      h += `<table class="cq-p-t cq-p-c"><thead><tr><th scope="col">${esc(E.cq_cand)}</th><th scope="col">${esc(E.cq_votos)}</th><th scope="col">${esc(E.cq_pct)}</th></tr></thead><tbody>${cs.map((c, i) => `<tr><th scope="row">${esc(c.nome)} <small>(${c.nr})</small></th><td>${nA(c.v)}</td><td><span class="cq-barra"><i style="--w:${(100 * c.v / val).toFixed(1)}%;--i:${i}"></i></span>${pA(c.v / val, 1)}</td></tr>`).join("")}
+        <tr class="cq-p-bn"><th scope="row">${esc(L.blank)}</th><td>${nA(x.brancos)}</td><td></td></tr><tr class="cq-p-bn"><th scope="row">${esc(L.null_)}</th><td>${nA(x.nulos)}</td><td></td></tr></tbody></table>`;
+      h += cs.length > 1 ? `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_vant(cs[0].nome, cs[1].nome, nf(cs[0].v - cs[1].v), pp1(100 * (cs[0].v - cs[1].v) / val)))}</p>` : `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_unico(cs[0].nome))}</p>`;
+      return h + `</section>`;
+    }).join("");
+  }
+  // 2) do 1º para o 2º turno (só quando a consulta é dos dois turnos)
+  function htmlComparacao(dd, tf) {
+    const E = X(), L = t(), by = porTurno(dd.ts);
+    if (tf || !by[1] || !by[2]) return "";
+    const cs2 = candsT(2), v1 = (nr) => by[1]["v" + nr] || 0, v2 = (nr) => by[2]["v" + nr] || 0;
+    const ls = cs2.map((c) => [`${esc(A.titulo(c.nome))} <small>(${c.nr})</small>`, v1(c.nr), v2(c.nr)])
+      .concat([[esc(L.blank), by[1].brancos || 0, by[2].brancos || 0], [esc(L.null_), by[1].nulos || 0, by[2].nulos || 0], [esc(L.lk_comp), by[1].comparecimento || 0, by[2].comparecimento || 0]]);
+    const mx = Math.max(1, ...cs2.flatMap((c) => [v1(c.nr), v2(c.nr)]));
+    const barra = (v, cls, i) => `<div class="cq-graf-b ${cls}"><span><i style="--w:${(100 * v / mx).toFixed(1)}%;--i:${i}"></i></span><em>${nA(v)}</em></div>`;
+    let h = `<section><h3>${esc(E.cq_t_comp)}</h3>
+      <div class="cq-graf" role="img" aria-label="${esc(cs2.map((c) => `${A.titulo(c.nome)}: ${L.round(1)} ${nf(v1(c.nr))}, ${L.round(2)} ${nf(v2(c.nr))}`).join("; "))}">
+        <div class="cq-graf-leg" aria-hidden="true"><span class="t1">${esc(L.round(1))}</span><span class="t2">${esc(L.round(2))}</span></div>
+        ${cs2.map((c, i) => `<div class="cq-graf-l" aria-hidden="true"><b>${esc(A.titulo(c.nome))} <small>(${c.nr})</small> <span class="${v2(c.nr) - v1(c.nr) > 0 ? "cq-pos" : v2(c.nr) - v1(c.nr) < 0 ? "cq-neg" : ""}">${sA(v2(c.nr) - v1(c.nr))}</span></b>${barra(v1(c.nr), "t1", 2 * i)}${barra(v2(c.nr), "t2", 2 * i + 1)}</div>`).join("")}
+      </div>
+      <div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th><th scope="col">${esc(L.round(1))}</th><th scope="col">${esc(L.round(2))}</th><th scope="col">${esc(E.cq_ganho)}</th></tr></thead><tbody>
+      ${ls.map(([rot, a, b]) => `<tr><th scope="row">${rot}</th><td>${nA(a)}</td><td>${nA(b)}</td><td class="${b - a > 0 ? "cq-pos" : b - a < 0 ? "cq-neg" : ""}">${sA(b - a)}</td></tr>`).join("")}</tbody></table></div>`;
+    if (cs2.length === 2) {
+      const [a, b] = cs2, d1 = v1(a.nr) - v1(b.nr), d2 = v2(a.nr) - v2(b.nr);
+      h += `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_dist(A.titulo(a.nome), A.titulo(b.nome), comSinal(d1), comSinal(d2)))}</p>`;
+    }
+    return h + `</section>`;
+  }
+  // 3) resumo (por último): os dois turnos lado a lado, com o turno escolhido em destaque
+  function htmlResumo(dd, tf) {
     const E = X(), L = t(), by = porTurno(dd.ts), ns = [1, 2].filter((n) => by[n]), sec = dd.tipo === "secao";
-    if (!ns.length) return `<p class="muted small">${esc(E.cq_nao_carregado)}</p>`;
-    const tSel = dd.e.t;
+    if (!ns.length) return "";
+    const tSel = tf || dd.e.t;
     const th = ns.map((n) => `<th scope="col"${tSel === n ? ' class="on"' : ""}>${esc(L.round(n))}</th>`).join("") + (ns.length === 2 ? `<th scope="col">${esc(E.cq_dif)}</th>` : "");
-    const linha = (rot, f, num, dica) => {
+    const linha = (rot, f, num) => {
       const vs = ns.map((n) => f(by[n], n));
-      const dif = ns.length === 2 && num ? (() => { const a = num(by[1]), b = num(by[2]); return a == null || b == null ? "" : `<span class="${b - a > 0 ? "cq-pos" : b - a < 0 ? "cq-neg" : ""}">${comSinal(b - a)}</span>`; })() : "";
-      return `<tr><th scope="row"${dica ? ` title="${esc(dica)}"` : ""}>${esc(rot)}</th>${vs.map((v, i) => `<td${tSel === ns[i] ? ' class="on"' : ""}>${v}</td>`).join("")}${ns.length === 2 ? `<td>${dif}</td>` : ""}</tr>`;
+      const dif = ns.length === 2 && num ? (() => { const a = num(by[1]), b = num(by[2]); return a == null || b == null ? "" : `<span class="${b - a > 0 ? "cq-pos" : b - a < 0 ? "cq-neg" : ""}">${sA(b - a)}</span>`; })() : "";
+      return `<tr><th scope="row">${esc(rot)}</th>${vs.map((v, i) => `<td${tSel === ns[i] ? ' class="on"' : ""}>${v}</td>`).join("")}${ns.length === 2 ? `<td>${dif}</td>` : ""}</tr>`;
     };
     const num = (k) => (x) => (x[k] == null ? null : x[k]);
     const linhas = [];
-    if (!sec) linhas.push(linha(E.cq_secoes, (x) => nf(x.secoes), num("secoes")));
-    linhas.push(linha(L.lk_aptos, (x) => nf(x.aptos), num("aptos")),
-      linha(L.lk_comp, (x) => `${nf(x.comparecimento)} <small>(${pct(x.comparecimento / (x.aptos || 1), 1)})</small>`, num("comparecimento")),
-      linha(L.lk_abst, (x) => nf(x.faltosos), num("faltosos")),
-      linha(E.cq_validos, (x) => nf(x.validos), num("validos")),
-      linha(L.blank, (x) => nf(x.brancos), num("brancos")), linha(L.null_, (x) => nf(x.nulos), num("nulos")));
+    if (!sec) linhas.push(linha(E.cq_secoes, (x) => nA(x.secoes), num("secoes")));
+    linhas.push(linha(L.lk_aptos, (x) => nA(x.aptos), num("aptos")),
+      linha(L.lk_comp, (x) => `${nA(x.comparecimento)} <small>(${pA(x.comparecimento / (x.aptos || 1), 1)})</small>`, num("comparecimento")),
+      linha(L.lk_abst, (x) => nA(x.faltosos), num("faltosos")),
+      linha(E.cq_validos, (x) => nA(x.validos), num("validos")),
+      linha(L.blank, (x) => nA(x.brancos), num("brancos")), linha(L.null_, (x) => nA(x.nulos), num("nulos")));
     if (sec) {
       linhas.push(linha(L.lk_open, (x) => esc(x.abertura || "—")), linha(L.lk_close, (x) => `${esc(x.encerramento || "—")}${seg(x.encerramento) >= 18 * 3600 ? ` <span class="cq-tarde" title="${esc(E.cq_nota_tarde)}">!</span>` : ""}`),
         linha(E.cq_tempo, (x) => duracao(x.abertura, x.encerramento)));
       if (ns.some((n) => by[n].agregadas)) linhas.push(linha(L.lk_agreg, (x) => esc(x.agregadas || "—")));
     } else {
       linhas.push(linha(E.cq_primeira, (x) => esc(x.abertura || "—")), linha(E.cq_ultima, (x) => esc(x.encerramento || "—")),
-        linha(E.cq_tarde, (x) => `${nf(x.tarde || 0)} <small>(${pct((x.tarde || 0) / (x.secoes || 1), 1)})</small>`, num("tarde")),
-        linha(E.cq_anom, (x) => `${nf(x.sinalizadas || 0)} <small>(${pct((x.sinalizadas || 0) / (x.secoes || 1), 1)})</small>`, num("sinalizadas")));
+        linha(E.cq_tarde, (x) => `${nA(x.tarde)} <small>(${pA((x.tarde || 0) / (x.secoes || 1), 1)})</small>`, num("tarde")),
+        linha(E.cq_anom, (x) => `${nA(x.sinalizadas)} <small>(${pA((x.sinalizadas || 0) / (x.secoes || 1), 1)})</small>`, num("sinalizadas")));
     }
-    let h = `<h3>${esc(E.cq_t_resumo)}</h3><div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th>${th}</tr></thead><tbody>${linhas.join("")}</tbody></table></div>`;
-    // votos para Presidente em cada turno
-    h += `<h3>${esc(E.cq_t_votos)}</h3>`;
-    ns.forEach((n) => {
-      const x = by[n], cs = rankCands(n, x), val = x.validos || cs.reduce((a, c) => a + c.v, 0) || 1;
-      h += `<div class="cq-p-turno${tSel === n ? " on" : ""}"><h4>${esc(L.round(n))} <small>· ${esc(L.roundDate[n])}</small></h4>`;
-      if (!cs.length) { h += `<p class="muted small">${esc(E.cq_sem_votos)}</p></div>`; return; }
-      h += `<table class="cq-p-t cq-p-c"><thead><tr><th scope="col">${esc(E.cq_cand)}</th><th scope="col">${esc(E.cq_votos)}</th><th scope="col">${esc(E.cq_pct)}</th></tr></thead><tbody>${cs.map((c) => `<tr><th scope="row">${esc(c.nome)} <small>(${c.nr})</small></th><td>${nf(c.v)}</td><td><span class="cq-barra" style="--w:${(100 * c.v / val).toFixed(1)}%"></span>${pct(c.v / val, 1)}</td></tr>`).join("")}</tbody></table>`;
-      if (cs.length > 1) h += `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_vant(cs[0].nome, cs[1].nome, nf(cs[0].v - cs[1].v), pp1(100 * (cs[0].v - cs[1].v) / val)))}</p>`;
-      else h += `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_unico(cs[0].nome))}</p>`;
-      h += `</div>`;
-    });
-    // do 1º para o 2º turno
-    if (by[1] && by[2]) {
-      const cs2 = candsT(2), v1 = (nr) => by[1]["v" + nr] || 0, v2 = (nr) => by[2]["v" + nr] || 0;
-      const ls = cs2.map((c) => [`${esc(A.titulo(c.nome))} <small>(${c.nr})</small>`, v1(c.nr), v2(c.nr)])
-        .concat([[esc(L.blank), by[1].brancos || 0, by[2].brancos || 0], [esc(L.null_), by[1].nulos || 0, by[2].nulos || 0], [esc(L.lk_comp), by[1].comparecimento || 0, by[2].comparecimento || 0]]);
-      h += `<h3>${esc(E.cq_t_comp)}</h3><div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th><th scope="col">${esc(L.round(1))}</th><th scope="col">${esc(L.round(2))}</th><th scope="col">${esc(E.cq_ganho)}</th></tr></thead><tbody>
-        ${ls.map(([rot, a, b]) => `<tr><th scope="row">${rot}</th><td>${nf(a)}</td><td>${nf(b)}</td><td class="${b - a > 0 ? "cq-pos" : b - a < 0 ? "cq-neg" : ""}">${comSinal(b - a)}</td></tr>`).join("")}</tbody></table></div>`;
-      if (cs2.length === 2) {
-        const [a, b] = cs2, d1 = v1(a.nr) - v1(b.nr), d2 = v2(a.nr) - v2(b.nr);
-        h += `<p class="cq-p-dif">${icone("arrow")} ${esc(E.cq_dist(A.titulo(a.nome), A.titulo(b.nome), comSinal(d1), comSinal(d2)))}</p>`;
-      }
-    }
-    return h;
+    return `<section class="cq-p-res"><h3>${esc(ns.length === 2 ? E.cq_t_resumo2 : E.cq_t_resumo)}</h3><div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th>${th}</tr></thead><tbody>${linhas.join("")}</tbody></table></div></section>`;
   }
-  function htmlSinais(dd) {
+  const htmlVotacao = (dd, tf) => htmlVotos(dd, tf) + htmlComparacao(dd, tf);
+  function htmlSinais(dd, tf) {
     const E = X(), L = t(), cat = R().categorias || {};
-    const ns = [1, 2].filter((n) => porTurno(dd.ts)[n]);
+    const ns = turnosVer(porTurno(dd.ts), tf);
+    if (!ns.length) return "";
     return `<h3>${esc(E.cq_t_sin)}</h3>${ns.map((n) => {
       const fs = dd.fl.filter((f) => f[0] === n);
       return `<div class="cq-p-sin"><h4>${esc(L.round(n))}</h4>${fs.length ? `<ul>${fs.map((f) => `<li><a href="#/testes/${f[1]}">${esc(A.numTeste(f[1]))}. ${esc(A.nomeTeste(f[1]))}</a> ${chip(f[2] === "a" ? "red" : "amber", E.cq_nivel[f[2]] || f[2])}<br><span class="small muted">${esc((cat[f[3]] || {})[A.state.lang] || f[3] || "")}</span></li>`).join("")}</ul>` : `<p class="small muted">${esc(E.cq_nenhuma)}</p>`}</div>`;
@@ -710,37 +761,37 @@
   }
   // título, corpo e botões do painel
   function conteudo(dd, r, gi) {
-    const E = X(), L = t(), e = dd.e, x0 = (dd.ts || [])[0] || {};
+    const E = X(), L = t(), e = dd.e, tf = r.turno || 0;
     let kick = "", tit = "", sub = "", corpo = "";
     if (dd.tipo === "secao") {
       kick = `${e.uf} · ${dd.munNome}`; tit = `${L.th_zone} ${e.z} · ${L.th_section} ${e.s}`;
       sub = dd.loc ? [A.titulo(dd.loc[0]), dd.loc[2] && A.titulo(dd.loc[2])].filter(Boolean).join(" · ") : "";
-      corpo = htmlVotacao(dd) + htmlSinais(dd);
-      if ((dd.ts || []).some((x) => seg(x.encerramento) >= 18 * 3600)) corpo += `<p class="cq-p-nota">${icone("help")} ${esc(E.cq_nota_tarde)}</p>`;
+      corpo = htmlVotacao(dd, tf) + htmlSinais(dd, tf) + htmlResumo(dd, tf);
+      if ((dd.ts || []).some((x) => (!tf || x.turno === tf) && seg(x.encerramento) >= 18 * 3600)) corpo += `<p class="cq-p-nota">${icone("help")} ${esc(E.cq_nota_tarde)}</p>`;
       corpo += `<p class="small muted">${esc(E.cq_hora_local)}</p>`;
     } else if (dd.tipo === "local") {
       kick = `${e.uf} · ${dd.munNome || ""}`; tit = dd.loc ? A.titulo(dd.loc[0]) : `${X().lc_local} ${e.loc}`;
       sub = [`${L.th_zone} ${e.z} · ${X().lc_local} ${e.loc}`, dd.loc && dd.loc[1] && A.titulo(dd.loc[1]), dd.loc && dd.loc[2] && A.titulo(dd.loc[2])].filter(Boolean).join(" · ");
-      corpo = htmlVotacao(dd);
-    } else if (dd.tipo === "mun") { kick = e.uf ? A.ufNome(e.uf) : ""; tit = dd.munNome || A.titulo(e.mun || e.cod || ""); corpo = htmlVotacao(dd); }
-    else if (dd.tipo === "zona") { kick = A.ufNome(e.uf); tit = `${L.th_zone} ${e.z}`; corpo = htmlVotacao(dd); }
-    else if (dd.tipo === "uf") { kick = E.cq_estado; tit = `${A.ufNome(e.uf)} (${e.uf})`; corpo = htmlVotacao(dd); }
+      corpo = htmlVotacao(dd, tf) + htmlResumo(dd, tf);
+    } else if (dd.tipo === "mun") { kick = e.uf ? A.ufNome(e.uf) : ""; tit = dd.munNome || A.titulo(e.mun || e.cod || ""); corpo = htmlVotacao(dd, tf) + htmlResumo(dd, tf); }
+    else if (dd.tipo === "zona") { kick = A.ufNome(e.uf); tit = `${L.th_zone} ${e.z}`; corpo = htmlVotacao(dd, tf) + htmlResumo(dd, tf); }
+    else if (dd.tipo === "uf") { kick = E.cq_estado; tit = `${A.ufNome(e.uf)} (${e.uf})`; corpo = htmlVotacao(dd, tf) + htmlResumo(dd, tf); }
     else if (dd.tipo === "teste" || dd.tipo === "lista") {
       kick = `${E.cq_teste} ${A.numTeste(e.teste)}`; tit = A.nomeTeste(e.teste);
       sub = [e.uf ? A.ufNome(e.uf) : E.cq_brasil, e.t ? L.round(e.t) : "", e.z != null ? `${L.th_zone} ${e.z}` : ""].filter(Boolean).join(" · ");
       const c = {}; (dd.cont || []).forEach(([n, nv, q]) => { c[n] = c[n] || { a: 0, i: 0 }; c[n][nv] = q; });
-      const ns = [1, 2].filter((n) => !e.t || e.t === n);
+      const ns = [1, 2].filter((n) => (!e.t || e.t === n) && (!tf || tf === n));
       corpo = `<div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th>${ns.map((n) => `<th scope="col">${esc(L.round(n))}</th>`).join("")}</tr></thead><tbody>
-        <tr><th scope="row">${chip("red", E.cq_nivel.a)}</th>${ns.map((n) => `<td>${nf((c[n] || {}).a || 0)}</td>`).join("")}</tr>
-        <tr><th scope="row">${chip("amber", E.cq_nivel.i)}</th>${ns.map((n) => `<td>${nf((c[n] || {}).i || 0)}</td>`).join("")}</tr></tbody></table></div>
+        <tr><th scope="row">${chip("red", E.cq_nivel.a)}</th>${ns.map((n) => `<td>${nA((c[n] || {}).a)}</td>`).join("")}</tr>
+        <tr><th scope="row">${chip("amber", E.cq_nivel.i)}</th>${ns.map((n) => `<td>${nA((c[n] || {}).i)}</td>`).join("")}</tr></tbody></table></div>
         <p class="small muted">${esc(E.cq_ocorr)}</p>`;
     } else if (dd.tipo === "cand") {
-      const nr = e.nr, ns = [1, 2].filter((n) => R().turnos[n].presidente.candidatos.some((c) => c.nr === nr));
+      const nr = e.nr, ns = [1, 2].filter((n) => (!tf || tf === n) && R().turnos[n].presidente.candidatos.some((c) => c.nr === nr));
       const c0 = ns.length ? R().turnos[ns[0]].presidente.candidatos.find((c) => c.nr === nr) : null;
       kick = E.cq_cand; tit = c0 ? `${A.titulo(c0.nome)} (${nr})` : nr;
       corpo = `<div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th><th scope="col">${esc(E.cq_votos)}</th><th scope="col">${esc(E.cq_pct)}</th></tr></thead><tbody>${ns.map((n) => {
         const P = R().turnos[n].presidente, c = P.candidatos.find((y) => y.nr === nr), val = candsT(n).reduce((a, y) => a + y.votos, 0) || 1;
-        return `<tr><th scope="row">${esc(L.round(n))}</th><td>${nf(c.votos)}</td><td>${pct(c.votos / val, 2)}</td></tr>`;
+        return `<tr><th scope="row">${esc(L.round(n))}</th><td>${nA(c.votos)}</td><td>${pA(c.votos / val, 2)}</td></tr>`;
       }).join("")}</tbody></table></div>`;
     } else if (dd.tipo === "turno") {
       const T = R().turnos[e.t], P = T.presidente;
@@ -758,7 +809,6 @@
     }
     if (dd.hMun && dd.tipo === "local") acoes.push(`<a class="btn btn-sm btn-ghost" href="${dd.hMun}" data-ir>${icone("map")} ${esc(E.cq_ir_mun)}</a>`);
     if (r.G) acoes.push(`<button class="btn btn-sm btn-ghost" type="button" data-grupo="${gi}">${icone("list")} ${esc(E.cq_ver_linhas)}</button>`);
-    void x0;
     return { kick, tit, sub, corpo, acoes: acoes.join("") };
   }
   // resumo curto (dica ao passar o mouse)
@@ -766,7 +816,8 @@
     const E = X(), L = t(), e = dd.e, by = porTurno(dd.ts);
     const c = conteudo(dd, r, gi);
     let h = `<strong>${esc(c.tit)}</strong>${c.kick ? `<div class="cq-d-k">${esc(c.kick)}</div>` : ""}`;
-    const ns = [1, 2].filter((n) => by[n] && (!e.t || e.t === n || dd.tipo !== "secao"));
+    const tf = r.turno || 0;
+    const ns = [1, 2].filter((n) => by[n] && (!tf || n === tf) && (tf || !e.t || e.t === n || dd.tipo !== "secao"));
     if (dd.ts && ns.length) {
       h += ns.map((n) => {
         const x = by[n], cs = rankCands(n, x), val = x.validos || 1;
@@ -774,7 +825,7 @@
         const extra = dd.tipo === "secao" ? `${L.lk_close} ${x.encerramento || "—"}` : `${nf(x.secoes)} ${E.cq_secoes.toLowerCase()} · ${nf(x.sinalizadas || 0)} ${E.cq_nivel.a}`;
         return `<div class="cq-d-t"><b>${esc(L.round(n))}</b> · ${esc(L.lk_comp)} ${pct(x.comparecimento / (x.aptos || 1), 1)} · ${esc(extra)}${lid ? `<br>${esc(lid)}` : ""}</div>`;
       }).join("");
-      if (dd.tipo === "secao") { const n = dd.fl.length; h += `<div class="cq-d-t">${esc(E.cq_t_sin)}: ${n ? dd.fl.map((f) => `${A.numTeste(f[1])}${f[2] === "a" ? "" : "ⁱ"}`).join(", ") : esc(E.cq_nenhuma)}</div>`; }
+      if (dd.tipo === "secao") { const fl = dd.fl.filter((f) => ns.includes(f[0])), n = fl.length; h += `<div class="cq-d-t">${esc(E.cq_t_sin)}: ${n ? fl.map((f) => `${A.numTeste(f[1])}${f[2] === "a" ? "" : "ⁱ"}`).join(", ") : esc(E.cq_nenhuma)}</div>`; }
     } else if (dd.tipo === "linha" || !dd.ts) {
       const ident = r.m.colunas.map(identCol), l = r.m.linhas[gi];
       h += r.m.colunas.slice(0, 8).map((col, i) => `<div class="cq-d-t"><b>${esc(col)}</b>: ${fmtCel(l[i], ident[i])}</div>`).join("");
@@ -831,8 +882,9 @@
     el.querySelector(".cq-p-kick").textContent = c.kick;
     el.querySelector("#cq-p-tit").textContent = c.tit;
     const sub = el.querySelector(".cq-p-sub"); sub.textContent = c.sub; sub.hidden = !c.sub;
-    el.querySelector(".cq-p-body").innerHTML = c.corpo;
-    el.querySelector(".cq-p-body").scrollTop = 0;
+    const corpo = el.querySelector(".cq-p-body");
+    corpo.innerHTML = c.corpo; corpo.scrollTop = 0;
+    animarPainel(corpo);
     el.querySelector(".cq-p-acoes").innerHTML = c.acoes;
     if (!aberto) el.focus({ preventScroll: true });
   }
@@ -949,6 +1001,7 @@
     html() {
       const E = X(), q = A.state.query, sel = new Set((q.get("ufs") || "").split(",").filter(Boolean));
       const ufs = ufsLoc();
+      if (["0", "1", "2"].includes(q.get("turno"))) cq.turno = +q.get("turno");
       return `${cabecalho(E.cq_title, E.cq_sub, false)}
         <section class="card cq-p"><h2>${esc(E.cq_p1)}</h2><p class="small muted">${esc(E.cq_p1_note)}</p>
           <div class="cq-ufs" id="cq-ufs">${ufs.map((u) => `<label class="cq-uf${cq.carregados.has(u) ? " ok" : ""}"><input type="checkbox" value="${u}"${sel.has(u) || cq.carregados.has(u) ? " checked" : ""}${cq.carregados.has(u) ? " disabled" : ""}><span>${u}</span></label>`).join("")}</div>
@@ -956,6 +1009,7 @@
             <button class="btn btn-primary" type="button" id="cq-carregar">${icone("download")} ${esc(E.cq_carregar)}</button></div>
           <p class="small" id="cq-status" aria-live="polite">${cq.carregados.size ? esc(E.cq_carregado([...cq.carregados].join(", "), nf(cq.secoes))) : ""}</p><div class="cq-prog" hidden><span id="cq-prog"></span></div></section>
         <section class="card cq-p"><h2>${esc(E.cq_p2)}</h2>
+          ${seletorTurno("form")}<p class="small muted cq-turnos-n">${esc(E.cq_turno_nota)}</p>
           <form class="cq-form" id="cq-form">
             <div class="filters"><label><span>${esc(E.cq_tab)}</span><select name="tab">${Object.keys(E.cq_desc_tab).map((k) => `<option value="${k}">${k} — ${esc(E.cq_desc_tab[k])}</option>`).join("")}</select></label>
               <label><span>${esc(E.cq_agrupar)}</span><select name="grupo"></select></label>
@@ -971,7 +1025,7 @@
           <label class="cq-sql-l"><span>${esc(E.cq_sql)}</span><textarea id="cq-sql" rows="7" spellcheck="false">${esc(q.get("q") || (cq.res && cq.res.sql) || E.cq_ex[0][1])}</textarea></label>
           <div class="btn-row"><button class="btn btn-primary" type="button" id="cq-rodar">${icone("play")} ${esc(E.cq_rodar)}</button><button class="btn btn-sm btn-ghost" type="button" id="cq-link">${icone("link")} ${esc(E.cq_link)}</button></div>
           <details class="cq-ref"><summary>${esc(E.cq_tabelas_t)}</summary><div id="cq-ref"></div></details></section>
-        <section class="card cq-p" id="cq-res-c"><h2>${esc(E.cq_p3)}</h2><p class="small muted" id="cq-info"></p><div id="cq-res"></div>
+        <section class="card cq-p" id="cq-res-c"><h2>${esc(E.cq_p3)}</h2>${seletorTurno("res")}<p class="small muted" id="cq-info"></p><div id="cq-res"></div>
           <div class="btn-row" id="cq-dl" hidden><button class="btn btn-sm" type="button" data-cq="csv">${icone("download")} ${esc(E.cq_csv)}</button><button class="btn btn-sm btn-ghost" type="button" data-cq="json">${icone("download")} ${esc(E.cq_json)}</button></div></section>${A.botCta()}`;
     },
     async iniciar() {
@@ -1052,7 +1106,13 @@
         $("#cq-sql").value = `SELECT ${sel}\nFROM ${tab}${where.length ? `\nWHERE ${where.join("\n  AND ")}` : ""}${gb}${ob}\nLIMIT ${lim}`;
         rodar();
       });
-      $(".cq-ex").addEventListener("click", (e) => { const b = e.target.closest("[data-ex]"); if (!b) return; $("#cq-sql").value = E.cq_ex[+b.dataset.ex][1]; if (cq.colunas.secoes) rodar(); });
+      $(".cq-ex").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-ex]"); if (!b) return;
+        const sql = E.cq_ex[+b.dataset.ex][1], mt = /\bturno\s*=\s*([12])\b/.exec(sql);
+        // exemplo feito para um turno: o seletor acompanha (senão o resultado viria vazio)
+        if (mt && cq.turno && cq.turno !== +mt[1]) mudarTurno(+mt[1], false);
+        $("#cq-sql").value = sql; if (cq.colunas.secoes) rodar();
+      });
 
       async function rodar(manter) {
         if (!cq.carregados.size) { status(E.cq_antes); $("#cq-carregar").focus(); return; }
@@ -1062,8 +1122,8 @@
         $("#cq-res").innerHTML = carregando(); $("#cq-info").textContent = ""; $("#cq-dl").hidden = true;
         const t0 = performance.now();
         try {
-          const m = await pedir({ tipo: "sql", sql });
-          cq.res = { id: ++cqResSeq, m, sql, ms: Math.round(performance.now() - t0), pag: 0, pp: ppSalvo(), ord: null, sel: null, ler: leitor(m.colunas), G: agrupada(sql, m.colunas) };
+          const m = await pedir({ tipo: "sql", sql, turno: cq.turno });
+          cq.res = { id: ++cqResSeq, m, sql, turno: cq.turno, ms: Math.round(performance.now() - t0), pag: 0, pp: ppSalvo(), ord: null, sel: null, ler: leitor(m.colunas), G: agrupada(sql, m.colunas) };
           ordenar(cq.res);
           mostrarRes();
           $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });
@@ -1071,6 +1131,16 @@
       }
       cq.rodar = rodar;
       ligarRes($("#cq-res"));
+      // turno da consulta: os dois seletores ficam iguais e a consulta roda de novo
+      function mudarTurno(n, rodarJa) {
+        if (cq.turno === n) return;
+        cq.turno = n;
+        try { localStorage.setItem("cq_turno", String(n)); } catch (e) { /* sem armazenamento */ }
+        $$(".cq-turnos [data-turno]").forEach((b) => b.setAttribute("aria-checked", String(+b.dataset.turno === n)));
+        linkConsulta();
+        if (rodarJa !== false && cq.res && cq.carregados.size) rodar();
+      }
+      $$(".cq-turnos").forEach((g) => g.addEventListener("click", (e) => { const b = e.target.closest("[data-turno]"); if (b) mudarTurno(+b.dataset.turno); }));
       $("#cq-rodar").addEventListener("click", () => rodar());
       $("#cq-dl").addEventListener("click", (e) => {
         const b = e.target.closest("[data-cq]"), r = cq.res; if (!b || !r) return;
@@ -1080,13 +1150,13 @@
         else baixar(nome + ".json", JSON.stringify(ultimo.linhas.map((l) => Object.fromEntries(l.map((v, i) => [ultimo.colunas[i], v])))), "application/json");
       });
       // o botão copia pelo [data-copy] do site; o link é refeito a cada mudança
-      const linkConsulta = () => { $("#cq-link").dataset.copy = `${SITE}#/consulta?ufs=${encodeURIComponent((cq.carregados.size ? [...cq.carregados] : marcados()).join(","))}&q=${encodeURIComponent($("#cq-sql").value.trim())}`; };
+      const linkConsulta = () => { $("#cq-link").dataset.copy = `${SITE}#/consulta?ufs=${encodeURIComponent((cq.carregados.size ? [...cq.carregados] : marcados()).join(","))}${cq.turno ? `&turno=${cq.turno}` : ""}&q=${encodeURIComponent($("#cq-sql").value.trim())}`; };
       ["input", "change"].forEach((ev) => { $("#cq-sql").addEventListener(ev, linkConsulta); $("#cq-ufs").addEventListener(ev, linkConsulta); });
       $("#cq-link").addEventListener("pointerdown", linkConsulta); $("#cq-link").addEventListener("focus", linkConsulta);
       linkConsulta();
       if (cq.colunas.secoes) montarForm();
       // volta de uma página aberta pelo resultado: a tabela, a página e a linha continuam onde estavam
-      if (cq.res && $("#cq-sql").value.trim() === cq.res.sql) {
+      if (cq.res && $("#cq-sql").value.trim() === cq.res.sql && cq.res.turno === cq.turno) {
         mostrarRes();
         const v = cq.res.volta; cq.res.volta = null;
         if (v) {
