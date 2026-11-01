@@ -266,7 +266,7 @@ td .btn-copy { position: static; margin-top: 4px; }
 @keyframes ripple { to { transform: scale(40); opacity: 0; } }
 
 /* --- início: herói ------------------------------------------------------------- */
-.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 36px; align-items: center; padding: 34px 0 20px; min-height: 440px; }
+.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 36px; align-items: center; padding: 34px 0 20px; min-height: 440px; overflow-x: clip; }
 .hero-canvas { position: absolute; inset: -40px -16px 0; width: calc(100% + 32px); height: calc(100% + 40px); z-index: -1; pointer-events: none; opacity: .75; -webkit-mask-image: radial-gradient(ellipse at 60% 45%, #000 30%, transparent 75%); mask-image: radial-gradient(ellipse at 60% 45%, #000 30%, transparent 75%); }
 .hero h1 { max-width: 18ch; margin-bottom: .35em; }
 .hero h1:not(.tw-on), .hero h1 .tw-live { background: var(--gy); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -489,7 +489,7 @@ figure:hover img { transform: scale(1.03); }
 figcaption { color: #48473f; font-size: .85rem; margin-top: 6px; }
 
 /* --- testes -------------------------------------------------------------------- */
-.tests { display: grid; gap: 12px; }
+.tests { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
 .test-card details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); transition: border-color .3s, box-shadow .3s; overflow: hidden; }
 .test-card details:hover { border-color: var(--line-2); }
 .test-card details[open] { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: var(--glow); }
@@ -2359,6 +2359,9 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
 .lg-filtros { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; margin-bottom: 8px; }
 .lg-filtros label { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 180px; }
 .lg-filtros select { max-width: 100%; }
+.tc-l, .tc-l details, .tc-l .tbody { min-width: 0; }
+.tests > .tc-l { max-width: 100%; }
+.lg-slot .chip, .round-box .chip { white-space: normal; }
 .aud-dlg .dlg-body > p { margin: 0 0 10px; line-height: 1.5; }
 .aud-d { margin: 10px 0 0; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
 .aud-d summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }

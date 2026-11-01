@@ -40,7 +40,7 @@
     if (/60% de la media de los 15 exámenes/.test(q[1])) q[1] = "Cada examen vale de 0 a 10, y se aprueba con 7. La nota final es el 60% de la media de los 35 exámenes más el 40% del examen final, que se abre después de 15 exámenes. Puede rehacer los exámenes: vale la mejor nota.";
   });
   S.faqGeral.push(
-    ["¿Cuáles son las 35 pruebas?", "Son 15 pruebas en los boletines de urna (T01 a T15), 6 en la variación de la 1.ª a la 2.ª vuelta (V1 a V6) y 14 en los logs de las urnas (L01 a L14). Las pruebas de los logs están en curso."],
+    ["¿Cuáles son las 35 pruebas?", "Son 15 pruebas en los boletines de urna (T01 a T15), 6 en la variación de la 1.ª a la 2.ª vuelta (V1 a V6) y 14 en los logs de las urnas (L01 a L14). Las pruebas de los logs ya se concluyeron en la 1.ª vuelta (resultados en la página Logs de las urnas); la 2.ª vuelta está en curso. Aquí en el simulador, los criterios de las pruebas L son simplificados."],
     ["¿Por qué las pruebas de los logs tienen criterio preliminar?", "Porque todavía se están haciendo: los logs de todas las urnas se están descargando del TSE. El simulador usa los criterios previstos hoy. Cuando cada prueba se concluya y se publique, los criterios pueden ajustarse."],
     ["¿El log de la urna muestra por quién votó la persona?", "No. El log registra la hora de cada voto y de los eventos de la urna (encender, habilitar al elector, huella, cerrar), pero no a quién fue el voto ni el nombre del elector."],
   );

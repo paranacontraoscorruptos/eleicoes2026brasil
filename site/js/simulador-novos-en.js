@@ -40,7 +40,7 @@
     if (/60% of the average of the 15 exams/.test(q[1])) q[1] = "Each exam is graded from 0 to 10, and 7 passes. The final grade is 60% of the average of the 35 exams plus 40% of the final exam, which opens after 15 exams. You can retake exams: the best grade counts.";
   });
   S.faqGeral.push(
-    ["What are the 35 tests?", "15 tests on the tally sheets (T01 to T15), 6 on the change from round 1 to round 2 (V1 to V6) and 14 on the machine logs (L01 to L14). The log tests are in progress."],
+    ["What are the 35 tests?", "15 tests on the tally sheets (T01 to T15), 6 on the change from round 1 to round 2 (V1 to V6) and 14 on the machine logs (L01 to L14). The log tests are completed for round 1 (results on the Voting machine logs page); round 2 is in progress. Here in the simulator, the L test criteria are simplified."],
     ["Why do the log tests have preliminary criteria?", "Because they are still being run: the logs of every machine are being downloaded from the TSE. The simulator uses the criteria planned today. When each test is completed and published, the criteria may be adjusted."],
     ["Does the machine log show who someone voted for?", "No. The log records the time of each vote and of the machine's events (switching on, releasing the voter, fingerprint, closing), but not who the vote went to nor the voter's name."],
   );

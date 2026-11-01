@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sat, 31 Oct 2026 19:20:00 -0300</lastBuildDate>
+  <lastBuildDate>Sun, 01 Nov 2026 13:00:00 -0300</lastBuildDate>
+  <item>
+    <title>Relatório do 1º turno refeito com os 35 testes e resultados dos logs das urnas</title>
+    <link>https://paranacontraoscorruptos.org/#/logs</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-01-17</guid>
+    <pubDate>Sun, 01 Nov 2026 13:00:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>A auditoria do 1º turno foi rodada de novo, do começo, com o motor v3.1.0: boletins de urna (28 arquivos .zip, todos conferidos com o hash oficial do TSE) e o log de 499.176 seções. O relatório novo, em português, inglês e espanhol, substitui o anterior e mostra os 35 testes (V1 a V6 comparam os dois turnos e não se aplicam a um turno só). Os 14 testes dos logs (L01 a L14) registraram 34.038 anomalias estatísticas e 183.659 eventos informativos no 1º turno; veja na página Logs das urnas e na página de cada seção. Anomalia estatística é prioridade de verificação, não conclusão. O 2º turno dos logs está em andamento.</description>
+  </item>
   <item>
     <title>Página nova: Urnas que fecharam tarde</title>
     <link>https://paranacontraoscorruptos.org/#/encerramento-tardio</link>

@@ -42,7 +42,7 @@
     if (/60% da média das 15 provas/.test(q[1])) q[1] = "Cada prova vale de 0 a 10, com aprovação a partir de 7. A nota final é 60% da média das 35 provas mais 40% da prova final, que abre depois de 15 provas. Você pode refazer as provas: vale a melhor nota.";
   });
   S.faqGeral.push(
-    ["Quais são os 35 testes?", "São 15 testes nos boletins de urna (T01 a T15), 6 na variação do 1º para o 2º turno (V1 a V6) e 14 nos logs das urnas (L01 a L14). Os testes dos logs estão em andamento."],
+    ["Quais são os 35 testes?", "São 15 testes nos boletins de urna (T01 a T15), 6 na variação do 1º para o 2º turno (V1 a V6) e 14 nos logs das urnas (L01 a L14). Os testes dos logs já foram concluídos no 1º turno (resultados na página Logs das urnas); o 2º turno está em andamento. Aqui no simulador, os critérios dos testes L são simplificados."],
     ["Por que os testes dos logs têm critério preliminar?", "Porque eles ainda estão sendo feitos: os logs de todas as urnas estão sendo baixados do TSE. O simulador usa os critérios previstos hoje. Quando cada teste for concluído e publicado, os critérios podem ser ajustados."],
     ["O log da urna mostra em quem a pessoa votou?", "Não. O log registra a hora de cada voto e dos eventos da urna (ligar, liberar o eleitor, digital, encerrar), mas não registra em quem foi o voto nem o nome do eleitor."],
   );

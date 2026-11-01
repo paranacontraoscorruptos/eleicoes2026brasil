@@ -20,7 +20,7 @@
     v_ver: "Ver na página Comparar turnos", l01_parcial: "Dados parciais já publicados: as urnas que fecharam 1 hora ou mais depois do horário e os votos gravados depois disso.",
     l01_btn: "Ver as urnas que fecharam tarde", sim: "Simular este teste",
     nivel: { uf: "Estado", municipio: "Município", secao: "Seção" }, tipo_l: "Log da urna",
-    turno_nota: "A auditoria completa tem 35 testes. Além destes 15, há 6 testes da variação entre os turnos (V1 a V6) e 14 testes dos logs das urnas (L01 a L14, em andamento).", ver35: "Ver os 35 testes",
+    turno_nota: "A auditoria completa tem 35 testes. Além destes 15, há 6 testes da variação entre os turnos (V1 a V6) e 14 testes dos logs das urnas (L01 a L14: 1º turno concluído; 2º turno em andamento).", ver35: "Ver os 35 testes",
     V: {
       V1: ["Verifica se a participação de Lula nos votos dos dois finalistas, no 2º turno, ficou muito longe do esperado em algum estado.",
         "Parte da participação de Lula nos votos dos dois finalistas no 1º turno e aplica a mudança, na escala logística, que aconteceu no conjunto dos demais estados. Isso dá a participação esperada no 2º turno. A distância entre o observado e o esperado vira um escore z, com o fator de dispersão estimado no próprio grupo, e passa pelo ajuste de Benjamini–Hochberg.",
@@ -122,7 +122,7 @@
     v_ver: "See it on the Compare rounds page", l01_parcial: "Partial data already published: the machines that closed 1 hour or more after the official time and the votes recorded after it.",
     l01_btn: "See the machines that closed late", sim: "Simulate this test",
     nivel: { uf: "State", municipio: "Municipality", secao: "Section" }, tipo_l: "Machine log",
-    turno_nota: "The full audit has 35 tests. Besides these 15, there are 6 tests on the change between rounds (V1 to V6) and 14 tests on the machine logs (L01 to L14, in progress).", ver35: "See the 35 tests",
+    turno_nota: "The full audit has 35 tests. Besides these 15, there are 6 tests on the change between rounds (V1 to V6) and 14 tests on the machine logs (L01 to L14: round 1 completed; round 2 in progress).", ver35: "See the 35 tests",
     V: {
       V1: ["Checks whether Lula's share of the votes of the two finalists in round 2 was far from the expected value in any state.",
         "Starts from Lula's share of the finalists' votes in round 1 and applies the change, on the logistic scale, seen in all the other states together. This gives the expected share in round 2. The distance between observed and expected becomes a z-score, with the dispersion factor estimated in the group itself, and goes through the Benjamini–Hochberg adjustment.",
@@ -224,7 +224,7 @@
     v_ver: "Ver en la página Comparar vueltas", l01_parcial: "Datos parciales ya publicados: las urnas que cerraron 1 hora o más después del horario y los votos registrados después.",
     l01_btn: "Ver las urnas que cerraron tarde", sim: "Simular esta prueba",
     nivel: { uf: "Estado", municipio: "Municipio", secao: "Sección" }, tipo_l: "Log de la urna",
-    turno_nota: "La auditoría completa tiene 35 pruebas. Además de estas 15, hay 6 pruebas de la variación entre las vueltas (V1 a V6) y 14 pruebas de los logs de las urnas (L01 a L14, en curso).", ver35: "Ver las 35 pruebas",
+    turno_nota: "La auditoría completa tiene 35 pruebas. Además de estas 15, hay 6 pruebas de la variación entre las vueltas (V1 a V6) y 14 pruebas de los logs de las urnas (L01 a L14: 1.ª vuelta concluida; 2.ª vuelta en curso).", ver35: "Ver las 35 pruebas",
     V: {
       V1: ["Verifica si la participación de Lula en los votos de los dos finalistas, en la 2.ª vuelta, quedó muy lejos de lo esperado en algún estado.",
         "Parte de la participación de Lula en los votos de los dos finalistas en la 1.ª vuelta y aplica el cambio, en escala logística, que ocurrió en el conjunto de los demás estados. Eso da la participación esperada en la 2.ª vuelta. La distancia entre lo observado y lo esperado se convierte en un puntaje z, con el factor de dispersión estimado en el propio grupo, y pasa por el ajuste de Benjamini–Hochberg.",

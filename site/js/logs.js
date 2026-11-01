@@ -10,7 +10,7 @@
   const t = () => A.t(), nf = (n) => A.nf(n), pct = (x, d) => A.pct(x, d);
   const R = () => A.state.R;
   // PUBLICADO: liga a página, o menu e os blocos quando os dados do 1º turno (gerar.py) estiverem no site
-  const PUBLICADO = false;
+  const PUBLICADO = true;
   const LG1 = () => (PUBLICADO && R() && R().logs && R().logs["1"]) || null;
   const TESTES_L = Array.from({ length: 14 }, (_, i) => `L${String(i + 1).padStart(2, "0")}`);
 
@@ -113,6 +113,13 @@
     },
   };
   ["PT", "EN", "ES"].forEach((lg) => { if (I[lg]) { I[lg].nav.logs = TXT[lg].nav; } });
+  // cartão da página na inicial e na busca
+  const PG2 = {
+    PT: ["Logs das urnas", "Os 14 testes do log de cada urna no 1º turno: resultados por teste, por estado e seção por seção."],
+    EN: ["Voting machine logs", "The 14 tests on each machine's log in round 1: results by test, by state and section by section."],
+    ES: ["Logs de las urnas", "Las 14 pruebas del log de cada urna en la 1.ª vuelta: resultados por prueba, por estado y sección por sección."],
+  };
+  ["PT", "EN", "ES"].forEach((lg) => { if (I[lg] && I[lg].pg2) I[lg].pg2.logs = PG2[lg]; });
   // descrição dos arquivos novos do pacote na página Downloads
   const DESC = {
     PT: { "dados/logs_sinalizacoes.csv": "Testes L01 a L14: todas as sinalizações, seção por seção", "dados/logs_secoes.csv.gz": "Testes L01 a L14: medidas do log de cada seção (compactado)",
