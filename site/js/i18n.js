@@ -1154,6 +1154,7 @@ Object.assign(window.I18N.ES, {
 
 // Avisos de novidades (notificação do app)
 Object.assign(window.I18N.PT, {
+  ba_app: "Baixe o app", ba_app_d: "avisa quando sai novidade e funciona sem internet", ba_app_c: "avisos e funciona sem internet", ba_av: "Ative os avisos", ba_av_d: "saiba quando sair novidade",
   av_btn: "Ativar avisos", av_t: "Avisos de novidades", av_ja: "Os avisos já estão ligados neste aparelho.",
   av_ok: "Pronto. Este aparelho vai receber um aviso quando sair novidade, mesmo com o app fechado.",
   av_ok_abrir: "Pronto. Neste aparelho, o aviso aparece quando você abrir o site ou o app. Para receber com o app fechado, instale o app pelo Chrome ou pelo Edge (Android ou computador).",
@@ -1163,6 +1164,7 @@ Object.assign(window.I18N.PT, {
   app_av: "Depois de instalar, abra o app e toque em Ativar avisos para saber quando sair novidade.",
 });
 Object.assign(window.I18N.EN, {
+  ba_app: "Get the app", ba_app_d: "notifies you of news and works offline", ba_app_c: "news alerts, works offline", ba_av: "Turn on notifications", ba_av_d: "know when there is news",
   av_btn: "Turn on notifications", av_t: "News notifications", av_ja: "Notifications are already on on this device.",
   av_ok: "Done. This device will get a notice when there is news, even with the app closed.",
   av_ok_abrir: "Done. On this device, the notice shows up when you open the site or the app. To get it with the app closed, install the app with Chrome or Edge (Android or computer).",
@@ -1172,6 +1174,7 @@ Object.assign(window.I18N.EN, {
   app_av: "After installing, open the app and tap Turn on notifications to know when there is news.",
 });
 Object.assign(window.I18N.ES, {
+  ba_app: "Descargue la app", ba_app_d: "avisa cuando hay novedades y funciona sin internet", ba_app_c: "avisos y funciona sin internet", ba_av: "Active los avisos", ba_av_d: "sepa cuando haya novedades",
   av_btn: "Activar avisos", av_t: "Avisos de novedades", av_ja: "Los avisos ya están activados en este dispositivo.",
   av_ok: "Listo. Este dispositivo recibirá un aviso cuando haya novedades, incluso con la app cerrada.",
   av_ok_abrir: "Listo. En este dispositivo, el aviso aparece cuando usted abre el sitio o la app. Para recibirlo con la app cerrada, instale la app con Chrome o Edge (Android o computadora).",

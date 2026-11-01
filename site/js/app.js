@@ -786,10 +786,22 @@
   const MAIS = [["atlas", "#/atlas"], ["vary", "#/variacao"], ["map", "#/mapa"], ["states", "#/uf"], ["list", "#/lista"], ["charts", "#/graficos"], ["glossary", "#/glossario"], ["verify", "#/conferir"],
     ["ballot", "#/boletim"], ["saved", "#/salvas"], ["updates", "#/atualizacoes"]];
 
+  // faixa do alto: aviso de site independente + chamada do app (no app instalado: ligar os avisos; com avisos ligados, só o aviso)
+  function faixaTopo(L) {
+    L = L || t();
+    const noApp = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+    let ligados = false;
+    try { ligados = "Notification" in window && Notification.permission === "granted" && localStorage.getItem("avisos") === "1"; } catch (e) { /* sem armazenamento */ }
+    const app = noApp ? (ligados ? "" : `<button class="badge-app" type="button" data-avisos>${icone("bell")}<b>${esc(L.ba_av)}</b><span>${esc(L.ba_av_d)}</span><i aria-hidden="true">›</i></button>`)
+      : `<button class="badge-app" type="button" data-install>${icone("phone")}<b>${esc(L.ba_app)}</b><span class="ba-l">${esc(L.ba_app_d)}</span><span class="ba-c">${esc(L.ba_app_c)}</span><i aria-hidden="true">›</i></button>`;
+    $("#badge").innerHTML = `<span class="badge-t">${esc(L.badge)}</span>${app}`;
+  }
+  document.addEventListener("avisos", () => faixaTopo());
+
   function montarCabecalho() {
     const L = t();
     marca();
-    $("#badge").textContent = L.badge;
+    faixaTopo(L);
     $("#nav").innerHTML = '<span class="nav-hover" aria-hidden="true"></span><span class="nav-ind" aria-hidden="true"></span>'
       + PAGINAS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${i}">${esc(L.nav[k])}</a>`).join("")
       // no celular as ferramentas ficam no menu lateral; no computador, na segunda fileira (#nav2)

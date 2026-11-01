@@ -167,7 +167,25 @@ p { margin: 0 0 1em; }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; pointer-events: none; }
 .progress span { display: block; height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--gy); box-shadow: 0 0 10px rgba(255, 212, 0, .6); }
 .badge-bar { display: flex; justify-content: center; align-items: center; gap: 8px; background: color-mix(in srgb, var(--surface) 65%, transparent); border-bottom: 1px solid var(--line); color: var(--ink-2); font-size: .78rem; text-align: center; padding: 5px 16px; letter-spacing: .02em; }
-.badge-bar::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 0 0 rgba(255, 212, 0, .6); animation: ping 2.4s infinite; flex: none; }
+.badge-bar { flex-wrap: wrap; column-gap: 18px; row-gap: 4px; }
+.badge-t { display: inline-flex; align-items: center; gap: 8px; }
+.badge-t::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 0 0 rgba(255, 212, 0, .6); animation: ping 2.4s infinite; flex: none; }
+.badge-app { display: inline-flex; align-items: center; gap: 7px; padding: 3px 12px 3px 9px; border: 1px solid color-mix(in srgb, var(--green) 55%, transparent); border-radius: 999px;
+  background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--ink); font: inherit; font-size: .78rem; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+.badge-app svg { flex: none; width: 15px; height: 15px; color: var(--green); }
+.badge-app b { font-weight: 700; color: var(--green); }
+.badge-app span { color: var(--ink-2); }
+.badge-app i { font-style: normal; font-weight: 700; color: var(--green); }
+.badge-app b { white-space: nowrap; }
+.badge-app .ba-c { display: none; }
+.badge-app:hover, .badge-app:focus-visible { background: color-mix(in srgb, var(--green) 22%, transparent); border-color: var(--green); transform: translateY(-1px); }
+@media (max-width: 560px) {
+  .badge-bar { font-size: .74rem; padding: 5px 12px 6px; }
+  .badge-app { font-size: .74rem; padding: 3px 10px 3px 8px; max-width: 100%; }
+  .badge-app span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge-app .ba-l { display: none; }
+  .badge-app .ba-c { display: inline; }
+}
 @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(255, 212, 0, .55); } 80%, 100% { box-shadow: 0 0 0 8px rgba(255, 212, 0, 0); } }
 @media (max-width: 1260px) {
   #menu-btn { display: grid; }
