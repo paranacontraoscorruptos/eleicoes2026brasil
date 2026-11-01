@@ -17,7 +17,8 @@ fmt = lambda n, lg: f"{n:,}".replace(",", "." if lg != "en" else ",")
 
 T = {
     "pt": {"bloco": "Logs das urnas", "sit": "1º turno concluído; 2º turno em andamento",
-           "res": lambda a, i, u: f"**Resultado no 1º turno.** 🔴 {a} anomalia(s) estatística(s) e 🟡 {i} evento(s) informativo(s) em {u} seções com log lido.",
+           "un": lambda n: "seção" if n == 1 else "seções", "nota": "Os números são de seções (urnas), não de votos: 🔴 seções com anomalia estatística · 🟡 seções com informativo.",
+           "res": lambda a, i, u, un: f"**Resultado no 1º turno.** 🔴 {a} {un[0]} com anomalia estatística e 🟡 {i} {un[1]} com informativo, de {u} seções com log lido. Os números são de seções (urnas), não de votos.",
            "oque": "O que verifica", "como": "Como é calculado", "crit": "Critério", "lim": "Limitações", "achado": "O que foi encontrado no 1º turno",
            "ressalva": "Anomalia estatística não é prova de fraude, erro ou irregularidade: indica prioridade de verificação documental (ata da mesa, boletim impresso e registros da urna).",
            "ver": "A lista das seções de cada teste está na página **Logs das urnas**: clique em uma seção para ver o que o teste apurou naquela urna e, nos testes em que importa, a hora de cada voto. A página de cada seção mostra os testes L dela.",
@@ -30,7 +31,8 @@ T = {
                      "- **14 com o 1º turno concluído:** os testes dos logs das urnas (L01 a L14), que usam a hora de cada voto e de cada evento. Os resultados do 1º turno estão publicados; o 2º turno está em andamento."),
                     ("Para os testes dos logs, os dados estão sendo baixados", "Para o 2º turno dos testes dos logs, os dados estão sendo baixados")]},
     "en": {"bloco": "Voting machine logs", "sit": "round 1 completed; round 2 in progress",
-           "res": lambda a, i, u: f"**Round 1 result.** 🔴 {a} statistical anomaly(ies) and 🟡 {i} informational event(s) in {u} sections with a readable log.",
+           "un": lambda n: "section" if n == 1 else "sections", "nota": "The numbers are sections (polling stations), not votes: 🔴 sections with a statistical anomaly · 🟡 sections with an informational flag.",
+           "res": lambda a, i, u, un: f"**Round 1 result.** 🔴 {a} {un[0]} with a statistical anomaly and 🟡 {i} {un[1]} with an informational flag, out of {u} sections with a readable log. The numbers are sections (polling stations), not votes.",
            "oque": "What it checks", "como": "How it is calculated", "crit": "Criterion", "lim": "Limitations", "achado": "What was found in round 1",
            "ressalva": "A statistical anomaly is not proof of fraud, error or irregularity: it sets a priority for documentary checking (polling station minutes, printed tally sheet and machine records).",
            "ver": "The list of sections for each test is on the **Voting machine logs** page: click a section to see what the test found on that machine and, in the tests where it matters, the time of each vote. Each section's page shows its L tests.",
@@ -43,7 +45,8 @@ T = {
                      "- **14 with round 1 completed:** the voting machine log tests (L01 to L14), which use the time of each vote and each event. Round 1 results are published; round 2 is in progress."),
                     ("For the log tests, the data are being downloaded", "For round 2 of the log tests, the data are being downloaded")]},
     "es": {"bloco": "Logs de las urnas", "sit": "1.ª vuelta concluida; 2.ª vuelta en curso",
-           "res": lambda a, i, u: f"**Resultado en la 1.ª vuelta.** 🔴 {a} anomalía(s) estadística(s) y 🟡 {i} evento(s) informativo(s) en {u} secciones con log leído.",
+           "un": lambda n: "sección" if n == 1 else "secciones", "nota": "Los números son de secciones (urnas), no de votos: 🔴 secciones con anomalía estadística · 🟡 secciones con informativo.",
+           "res": lambda a, i, u, un: f"**Resultado en la 1.ª vuelta.** 🔴 {a} {un[0]} con anomalía estadística y 🟡 {i} {un[1]} con informativo, de {u} secciones con log leído. Los números son de secciones (urnas), no de votos.",
            "oque": "Qué verifica", "como": "Cómo se calcula", "crit": "Criterio", "lim": "Limitaciones", "achado": "Qué se encontró en la 1.ª vuelta",
            "ressalva": "La anomalía estadística no es prueba de fraude, error o irregularidad: indica prioridad de verificación documental (acta de la mesa, boletín impreso y registros de la urna).",
            "ver": "La lista de secciones de cada prueba está en la página **Logs de las urnas**: haga clic en una sección para ver qué encontró la prueba en esa urna y, en las pruebas en que importa, la hora de cada voto. La página de cada sección muestra sus pruebas L.",
@@ -66,15 +69,16 @@ for lg, X in T.items():
             for a, b in X["subs"]:
                 it["a"] = it["a"].replace(a, b)
         elif it["i"] == "logs_testes":
-            linhas = [f"- **{t}** — {txt[t]['nome']}: 🔴 {fmt(G['testes'][t]['a'], lg)} · 🟡 {fmt(G['testes'][t]['i'], lg)}" for t in IDS]
-            it["a"] = "\n\n".join([X["intro"], "\n".join(linhas), X["ver"], X["fim"]])
+            # números de seções (urnas), não de votos: a unidade vai ao lado de cada número
+            linhas = [f"- **{t}** — {txt[t]['nome']}: 🔴 {fmt(G['testes'][t]['a'], lg)} {X['un'](G['testes'][t]['a'])} · 🟡 {fmt(G['testes'][t]['i'], lg)} {X['un'](G['testes'][t]['i'])}" for t in IDS]
+            it["a"] = "\n\n".join([X["intro"], X["nota"], "\n".join(linhas), X["ver"], X["fim"]])
             it["s"] = X["s"]
             it["act"] = {"go": "#/logs"}
         elif it["i"].startswith("t_L") and it["i"][2:] in IDS:
             t = it["i"][2:]
             r, tx = G["testes"][t], txt[t]
-            cats = "\n".join(f"- {'🔴' if nv == 'a' else '🟡'} {cat.get(c, c)}: {fmt(n, lg)}" for c, nv, n in r["cats"])
-            partes = [f"**{t} — {tx['nome']}** · {X['bloco']} · {X['sit']}", X["res"](fmt(r["a"], lg), fmt(r["i"], lg), fmt(r["unidades"], lg)),
+            cats = "\n".join(f"- {'🔴' if nv == 'a' else '🟡'} {cat.get(c, c)}: {fmt(n, lg)} {X['un'](n)}" for c, nv, n in r["cats"])
+            partes = [f"**{t} — {tx['nome']}** · {X['bloco']} · {X['sit']}", X["res"](fmt(r["a"], lg), fmt(r["i"], lg), fmt(r["unidades"], lg), (X["un"](r["a"]), X["un"](r["i"]))),
                       f"**{X['oque']}.** {tx['objetivo']}", f"**{X['como']}.** {tx['metodo']}", f"**{X['crit']}.** {tx['criterio']}",
                       f"**{X['lim']}.** {tx['limites']}"]
             if cats:

@@ -2372,6 +2372,7 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
 .lg-faixas em { display: flex; gap: 10px; justify-content: flex-end; font-size: .86rem; }
 .lg-faixas em > span { display: inline-flex; align-items: center; gap: 5px; }
 .lg-faixas em > span::before { content: ""; width: 9px; height: 9px; border-radius: 50%; }
+.lg-faixas em > .lg-un { font-weight: 700; font-size: .92em; color: var(--ink); align-self: center; }
 .lg-na::before { background: var(--red); } .lg-ni::before { background: var(--amber); }
 .lg-ufs { grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); }
 .lg-ufs button { grid-template-columns: minmax(9em, 12em) minmax(40px, 1fr) auto; }

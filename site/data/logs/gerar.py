@@ -5,7 +5,8 @@ Uso: python3 gerar.py [turno] [pasta do pacote] [pasta de saída]   (padrão: 1 
 
 Lê auditoria-eleicoes-2026-Brasil/resultados-<turno>turno/ (relatório PT e dados/resumo_testes.csv,
 logs_sinalizacoes.csv, logs_secoes.csv.gz e logs_falhas.csv) e escreve em site/data/logs/t<turno>/:
-  resumo.json  números de cada teste L, categorias, números gerais de L01, cobertura e textos dos testes
+  resumo.json  números de cada teste L, categorias, números gerais de L01, cobertura e textos dos testes; em "ufs", por estado:
+               a e i (sinalizações, somando os testes), secoes (seções com alguma sinalização) e sa (seções com anomalia)
   <UF>.json    seções com sinalização em algum teste L: [mun, zona, seção, teste, nível, categoria, observado,
                referência, detalhe] (nível "a" = anomalia, "i" = informativo) e, em "sem_log", as seções sem log legível
 e grava o resumo também em site/data/resumo.json, na chave "logs" (sem mudar as outras chaves).
@@ -53,7 +54,7 @@ campo = lambda rot: (re.search(r"\| " + rot + r" \| `?([^|`]+?)`? \|", rel) or [
 res = {r["teste"]: r for r in ler("resumo_testes.csv") if r["teste"] in IDS}
 sin = ler("logs_sinalizacoes.csv")
 cats = defaultdict(Counter)
-por_uf = defaultdict(lambda: {"a": 0, "i": 0, "secoes": set()})
+por_uf = defaultdict(lambda: {"a": 0, "i": 0, "secoes": set(), "sa": set()})
 linhas = defaultdict(list)
 num = lambda x: int(float(x)) if x not in ("", None) else None
 for r in sin:
@@ -64,6 +65,8 @@ for r in sin:
     u = por_uf[r["uf"]]
     u[nv] += 1
     u["secoes"].add((r["zona"], r["secao"]))
+    if nv == "a":
+        u["sa"].add((r["zona"], r["secao"]))
     linhas[r["uf"]].append([r["mun"], int(r["zona"]), int(r["secao"]), r["teste"], nv, r["categoria"],
                             r["observado"] or "", r["referencia"] or "", r["detalhe"] or ""])
 
@@ -94,7 +97,7 @@ resumo = {
     "emissao": campo("Data de emissão"), "relatorio": f"auditoria-eleicoes-2026-Brasil/resultados-{turno}turno/Relatorio_Tecnico_Auditoria_Eleicoes_2026_{{lg}}.md",
     "cobertura": {"com_log": len(sec), "sem_log": len(falhas)}, "geral": g,
     "versao_ref": versoes.most_common(1)[0][0] if versoes else "",
-    "testes": testes, "ufs": {u: {"a": v["a"], "i": v["i"], "secoes": len(v["secoes"])} for u, v in sorted(por_uf.items())},
+    "testes": testes, "ufs": {u: {"a": v["a"], "i": v["i"], "secoes": len(v["secoes"]), "sa": len(v["sa"])} for u, v in sorted(por_uf.items())},
     "txt": txt, "categorias": {c: CATEGORIAS_LOG.get(c, {"PT": c, "EN": c, "ES": c}) for c in sorted(usadas)},
 }
 SAIDA.mkdir(parents=True, exist_ok=True)

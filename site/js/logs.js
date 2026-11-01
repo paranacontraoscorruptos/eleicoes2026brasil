@@ -53,10 +53,11 @@
       k_com: "Seções com log lido", k_com_sub: (n) => `${n} sem log legível`, k_votos: "Votos no log", k_votos_sub: (n) => `em ${n} seções`,
       k_1h: "Votos 1 h ou mais depois do horário oficial", k_1h_sub: (p, s) => `${p} dos votos do log · em ${s} seções`,
       k_sd: "Liberados sem digital 1 h ou mais depois do horário", k_sd_sub: "eleitores, pelo log",
-      k_a: "Anomalias estatísticas", k_a_sub: "somando os 14 testes", k_i: "Informativos", k_i_sub: "somando os 14 testes",
-      k_sin: "Seções com alguma sinalização", k_sin_sub: "em pelo menos um teste L",
-      faixas_t: "Os 14 testes no 1º turno", faixas_n: "Seções sinalizadas em cada teste: em vermelho, as anomalias; em amarelo, os informativos. Clique em um teste para ver a lista.",
-      ufs_t: "Por estado", ufs_n: "Seções com sinalização em algum teste L. Clique em um estado para filtrar a lista.",
+      k_a: "Anomalias estatísticas", k_a_sub: (n) => `seções em vermelho, somando os 14 testes · ${n} seções diferentes`, k_i: "Informativos", k_i_sub: "seções em amarelo, somando os 14 testes",
+      k_sin: "Seções com alguma sinalização", k_sin_sub: "em vermelho ou amarelo, em pelo menos um teste L",
+      faixas_t: "Os 14 testes no 1º turno", faixas_n: "Os números são de seções (urnas), não de votos. Em vermelho, seções com anomalia estatística no teste; em amarelo, seções com informativo. Clique em um teste para ver a lista.",
+      un: "seções", un_t: (a, i) => `${a} seções com anomalia estatística · ${i} seções com informativo`,
+      ufs_t: "Por estado", ufs_n: "Os números são de seções (urnas), não de votos. Em vermelho, seções com anomalia estatística em pelo menos um teste; em amarelo, seções só com informativo. Clique em um estado para filtrar a lista.",
       lista_t: "Seções sinalizadas", f_teste: "Teste", f_nivel: "Nível", n_ops: { "": "Todos", a: "Anomalias", i: "Informativos" },
       f_uf: "Estado", f_uf_todos: "Todos os estados", f_mun: "Município", f_mun_ph: "Digite o nome", limpar: "Limpar filtros",
       info: (n, tot, todas) => (todas ? `${tot} seções` : `${n} de ${tot} seções com estes filtros`),
@@ -149,10 +150,11 @@
       k_com: "Sections with a readable log", k_com_sub: (n) => `${n} with no readable log`, k_votos: "Votes in the log", k_votos_sub: (n) => `in ${n} sections`,
       k_1h: "Votes 1 h or more after the official time", k_1h_sub: (p, s) => `${p} of the votes in the log · in ${s} sections`,
       k_sd: "Released without fingerprint 1 h or more after the official time", k_sd_sub: "voters, from the log",
-      k_a: "Statistical anomalies", k_a_sub: "adding up the 14 tests", k_i: "Informational", k_i_sub: "adding up the 14 tests",
-      k_sin: "Sections with any flag", k_sin_sub: "in at least one L test",
-      faixas_t: "The 14 tests in round 1", faixas_n: "Sections flagged in each test: anomalies in red, informational in yellow. Click a test to see the list.",
-      ufs_t: "By state", ufs_n: "Sections flagged in any L test. Click a state to filter the list.",
+      k_a: "Statistical anomalies", k_a_sub: (n) => `sections in red, adding up the 14 tests · ${n} distinct sections`, k_i: "Informational", k_i_sub: "sections in yellow, adding up the 14 tests",
+      k_sin: "Sections with any flag", k_sin_sub: "in red or yellow, in at least one L test",
+      faixas_t: "The 14 tests in round 1", faixas_n: "The numbers are sections (polling stations), not votes. Red: sections with a statistical anomaly in the test; yellow: sections with an informational flag. Click a test to see the list.",
+      un: "sections", un_t: (a, i) => `${a} sections with a statistical anomaly · ${i} sections with an informational flag`,
+      ufs_t: "By state", ufs_n: "The numbers are sections (polling stations), not votes. Red: sections with a statistical anomaly in at least one test; yellow: sections with informational flags only. Click a state to filter the list.",
       lista_t: "Flagged sections", f_teste: "Test", f_nivel: "Level", n_ops: { "": "All", a: "Anomalies", i: "Informational" },
       f_uf: "State", f_uf_todos: "All states", f_mun: "Municipality", f_mun_ph: "Type the name", limpar: "Clear filters",
       info: (n, tot, todas) => (todas ? `${tot} sections` : `${n} of ${tot} sections with these filters`),
@@ -243,10 +245,11 @@
       k_com: "Secciones con log leído", k_com_sub: (n) => `${n} sin log legible`, k_votos: "Votos en el log", k_votos_sub: (n) => `en ${n} secciones`,
       k_1h: "Votos 1 h o más después del horario oficial", k_1h_sub: (p, s) => `${p} de los votos del log · en ${s} secciones`,
       k_sd: "Habilitados sin huella 1 h o más después del horario", k_sd_sub: "electores, según el log",
-      k_a: "Anomalías estadísticas", k_a_sub: "sumando las 14 pruebas", k_i: "Informativos", k_i_sub: "sumando las 14 pruebas",
-      k_sin: "Secciones con alguna señal", k_sin_sub: "en al menos una prueba L",
-      faixas_t: "Las 14 pruebas en la 1.ª vuelta", faixas_n: "Secciones señaladas en cada prueba: en rojo, las anomalías; en amarillo, los informativos. Haga clic en una prueba para ver la lista.",
-      ufs_t: "Por estado", ufs_n: "Secciones con señal en alguna prueba L. Haga clic en un estado para filtrar la lista.",
+      k_a: "Anomalías estadísticas", k_a_sub: (n) => `secciones en rojo, sumando las 14 pruebas · ${n} secciones distintas`, k_i: "Informativos", k_i_sub: "secciones en amarillo, sumando las 14 pruebas",
+      k_sin: "Secciones con alguna señal", k_sin_sub: "en rojo o amarillo, en al menos una prueba L",
+      faixas_t: "Las 14 pruebas en la 1.ª vuelta", faixas_n: "Los números son de secciones (urnas), no de votos. En rojo, secciones con anomalía estadística en la prueba; en amarillo, secciones con informativo. Haga clic en una prueba para ver la lista.",
+      un: "secciones", un_t: (a, i) => `${a} secciones con anomalía estadística · ${i} secciones con informativo`,
+      ufs_t: "Por estado", ufs_n: "Los números son de secciones (urnas), no de votos. En rojo, secciones con anomalía estadística en al menos una prueba; en amarillo, secciones solo con informativo. Haga clic en un estado para filtrar la lista.",
       lista_t: "Secciones señaladas", f_teste: "Prueba", f_nivel: "Nivel", n_ops: { "": "Todos", a: "Anomalías", i: "Informativos" },
       f_uf: "Estado", f_uf_todos: "Todos los estados", f_mun: "Municipio", f_mun_ph: "Escriba el nombre", limpar: "Limpiar filtros",
       info: (n, tot, todas) => (todas ? `${tot} secciones` : `${n} de ${tot} secciones con estos filtros`),
@@ -377,7 +380,7 @@
       voltar: "Logs das urnas", p: { a: "Prioridade alta", m: "Prioridade média" },
       kt: { log_bu: "Log × boletim de urna", carga: "Carga diferente do boletim", relogio: "Relógio ajustado na votação", tentativas: "Tentativas fora do padrão", desligada: "Votos com a urna desligada", troca: "Votos em duas urnas ao mesmo tempo" },
       k_tot: "Seções em destaque", k_tot_sub: (n) => `em ${n} apontamentos`, k_sub: { a: "seções · prioridade alta", m: "seções · prioridade média" },
-      faixas_t: "Os apontamentos", faixas_n: "Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em um apontamento para ver a lista das seções.",
+      faixas_t: "Os apontamentos", faixas_n: "Os números são de seções (urnas), não de votos. Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em um apontamento para ver a lista das seções.",
       lista_t: "Seções do apontamento", f_grupo: "Apontamento", h_dest: "Casos que chamam atenção", h_porque: "Por que merece atenção", h_conferir: "O que conferir",
       abrir: "Abrir o painel desta seção", ver_teste: (id) => `Todas as seções do teste ${id}`,
       g: {
@@ -436,7 +439,7 @@
       voltar: "Voting machine logs", p: { a: "High priority", m: "Medium priority" },
       kt: { log_bu: "Log × tally sheet", carga: "Load differs from the tally sheet", relogio: "Clock adjusted during voting", tentativas: "Attempts outside the pattern", desligada: "Votes with the machine off", troca: "Votes on two machines at once" },
       k_tot: "Highlighted sections", k_tot_sub: (n) => `in ${n} audit points`, k_sub: { a: "sections · high priority", m: "sections · medium priority" },
-      faixas_t: "The audit points", faixas_n: "In red, high priority; in yellow, medium priority. Click an audit point to see its list of sections.",
+      faixas_t: "The audit points", faixas_n: "The numbers are sections (polling stations), not votes. In red, high priority; in yellow, medium priority. Click an audit point to see its list of sections.",
       lista_t: "Sections in this audit point", f_grupo: "Audit point", h_dest: "Cases that stand out", h_porque: "Why it deserves attention", h_conferir: "What to check",
       abrir: "Open this section's panel", ver_teste: (id) => `All sections in test ${id}`,
       g: {
@@ -495,7 +498,7 @@
       voltar: "Logs de las urnas", p: { a: "Prioridad alta", m: "Prioridad media" },
       kt: { log_bu: "Log × boletín de urna", carga: "Carga distinta del boletín", relogio: "Reloj ajustado en la votación", tentativas: "Intentos fuera del patrón", desligada: "Votos con la urna apagada", troca: "Votos en dos urnas a la vez" },
       k_tot: "Secciones destacadas", k_tot_sub: (n) => `en ${n} señalamientos`, k_sub: { a: "secciones · prioridad alta", m: "secciones · prioridad media" },
-      faixas_t: "Los señalamientos", faixas_n: "En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en un señalamiento para ver la lista de secciones.",
+      faixas_t: "Los señalamientos", faixas_n: "Los números son de secciones (urnas), no de votos. En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en un señalamiento para ver la lista de secciones.",
       lista_t: "Secciones del señalamiento", f_grupo: "Señalamiento", h_dest: "Casos que llaman la atención", h_porque: "Por qué merece atención", h_conferir: "Qué verificar",
       abrir: "Abrir el panel de esta sección", ver_teste: (id) => `Todas las secciones de la prueba ${id}`,
       g: {
@@ -854,7 +857,7 @@
       <div><span class="et-k-t">${esc(E.k_tot)}</span><b>${nA(tot)}</b><span>${esc(E.k_tot_sub(nf(gs.length)))}</span></div></div>`;
     const mx = Math.max(1, ...gs.map((x) => x.n));
     const faixas = `<section class="card"><h2>${esc(E.faixas_t)}</h2><p class="small muted">${esc(E.faixas_n)}</p><ul class="et-faixas lg-faixas dz-faixas">${gs.map((x, k) =>
-      `<li><button type="button" data-dz-g="${x.k}" aria-pressed="${f.g === x.k}"><span><b>${esc(x.teste)}</b> ${esc(E.g[x.k].t)}</span>${barra(x.p === "a" ? x.n : 0, x.p === "a" ? 0 : x.n, mx, k)}<em><span class="${x.p === "a" ? "lg-na" : "lg-ni"}">${nA(x.n)}</span></em></button></li>`).join("")}</ul></section>`;
+      `<li><button type="button" data-dz-g="${x.k}" aria-pressed="${f.g === x.k}"><span><b>${esc(x.teste)}</b> ${esc(E.g[x.k].t)}</span>${barra(x.p === "a" ? x.n : 0, x.p === "a" ? 0 : x.n, mx, k)}<em><span class="${x.p === "a" ? "lg-na" : "lg-ni"}">${nA(x.n)}</span><small class="lg-un">${esc(L().un)}</small></em></button></li>`).join("")}</ul></section>`;
     return kpis + faixas;
   }
   // explicação do apontamento: o que foi encontrado, casos (clique abre o painel da seção), por que merece atenção e o que conferir
@@ -1007,7 +1010,8 @@
   const chaveF = (f) => JSON.stringify([A.state.lang, f.teste, f.nivel, f.uf, API().nz(f.mun.trim())]);
   const kpi = (tit, v, sub, dest) => `<div${dest ? ' class="et-dest"' : ""}><span class="et-k-t">${esc(tit)}</span><b>${API().nA(v)}</b><span>${esc(sub || "")}</span></div>`;
   const barra = (a, i, mx, k) => `<span class="et-fb lg-fb"><i class="a" style="--w:${a ? Math.max(0.6, (100 * a) / mx).toFixed(2) : 0}%;--i:${k}"></i><i class="i" style="--w:${i ? Math.max(0.6, (100 * i) / mx).toFixed(2) : 0}%;--i:${k}"></i></span>`;
-  const contas = (a, i) => `<em><span class="lg-na">${API().nA(a)}</span><span class="lg-ni">${API().nA(i)}</span></em>`;
+  // números das barras: seções (não votos), com a palavra ao lado para não confundir com o nome do teste
+  const contas = (a, i) => { const E = L(); return `<em title="${esc(E.un_t(nf(a), nf(i)))}"><span class="lg-na">${API().nA(a)}</span><span class="lg-ni">${API().nA(i)}</span><small class="lg-un">${esc(E.un)}</small></em>`; };
   const pgLogs = {
     ativo: "logs",
     titulo: (p) => (p && p[1] === "destaques" ? LD().titulo : L().titulo),
@@ -1020,18 +1024,20 @@
       // liberados sem digital 1 h ou mais depois do horário oficial (complementar/votos_apos_horario.json, mesmo critério de votos_1h)
       const VH = (R().complementar || {}).votos_apos_horario, sd1h = VH && VH.turnos && VH.turnos["1"] ? VH.turnos["1"].sem_digital_1h : null;
       const sa = TESTES_L.reduce((a, id) => a + (g.testes[id].a || 0), 0), si = TESTES_L.reduce((a, id) => a + (g.testes[id].i || 0), 0);
+      // por estado: seções diferentes (vermelho: com anomalia em pelo menos um teste; amarelo: só com informativo)
+      const ufA = (u) => (u.sa != null ? u.sa : u.a), ufI = (u) => (u.sa != null ? u.secoes - u.sa : u.i), secA = Object.values(g.ufs).reduce((a, u) => a + ufA(u), 0);
       const kpis = `<div class="et-kpis lg-kpis">${kpi(E.k_com, g.cobertura.com_log, E.k_com_sub(nf(g.cobertura.sem_log)))}${kpi(E.k_votos, G.votos, E.k_votos_sub(nf(G.secoes)))}
-        ${kpi(E.k_1h, G.votos_1h, E.k_1h_sub(pct(G.votos_1h / (G.votos || 1), 2), nf(G.secoes_1h)), true)}${sd1h != null ? kpi(E.k_sd, sd1h, E.k_sd_sub) : ""}${kpi(E.k_a, sa, E.k_a_sub, true)}${kpi(E.k_i, si, E.k_i_sub)}${kpi(E.k_sin, sinSec, E.k_sin_sub)}</div>`;
+        ${kpi(E.k_1h, G.votos_1h, E.k_1h_sub(pct(G.votos_1h / (G.votos || 1), 2), nf(G.secoes_1h)), true)}${sd1h != null ? kpi(E.k_sd, sd1h, E.k_sd_sub) : ""}${kpi(E.k_a, sa, E.k_a_sub(nf(secA)), true)}${kpi(E.k_i, si, E.k_i_sub)}${kpi(E.k_sin, sinSec, E.k_sin_sub)}</div>`;
       const mx = Math.max(1, ...TESTES_L.map((id) => g.testes[id].a + g.testes[id].i));
       const faixas = `<section class="card"><h2>${esc(E.faixas_t)}</h2><p class="small muted">${esc(E.faixas_n)}</p><ul class="et-faixas lg-faixas">${TESTES_L.map((id, k) => {
         const r = g.testes[id];
         return `<li><button type="button" data-lg-t="${id}" aria-pressed="${f.teste === id}"><span><b>${id}</b> ${esc(txtL(id).nome)}</span>${barra(r.a, r.i, mx, k)}${contas(r.a, r.i)}</button></li>`;
       }).join("")}</ul></section>`;
       const ufs = Object.keys(g.ufs).sort((a, b) => (a === "ZZ") - (b === "ZZ") || A.ufNome(a).localeCompare(A.ufNome(b)));
-      const mxu = Math.max(1, ...ufs.map((u) => g.ufs[u].a + g.ufs[u].i));
+      const mxu = Math.max(1, ...ufs.map((u) => ufA(g.ufs[u]) + ufI(g.ufs[u])));
       const porUf = `<section class="card"><h2>${esc(E.ufs_t)}</h2><p class="small muted">${esc(E.ufs_n)}</p><ul class="et-faixas lg-faixas lg-ufs">${ufs.map((u, k) => {
         const x = g.ufs[u];
-        return `<li><button type="button" data-lg-uf="${u}" aria-pressed="${f.uf === u}" title="${esc(`${nf(x.secoes)} · ${E.k_sin.toLowerCase()}`)}"><span><b>${u}</b> ${esc(A.ufNome(u))}</span>${barra(x.a, x.i, mxu, k)}${contas(x.a, x.i)}</button></li>`;
+        return `<li><button type="button" data-lg-uf="${u}" aria-pressed="${f.uf === u}" title="${esc(`${nf(x.secoes)} · ${E.k_sin.toLowerCase()}`)}"><span><b>${u}</b> ${esc(A.ufNome(u))}</span>${barra(ufA(x), ufI(x), mxu, k)}${contas(ufA(x), ufI(x))}</button></li>`;
       }).join("")}</ul></section>`;
       const rel = g.relatorio.replace("{lg}", A.state.lang);
       const t35 = window.T35 ? (window.T35[A.state.lang] || window.T35.PT).titulo : "L01–L14";
@@ -1202,7 +1208,7 @@
     const cats = r.cats.length ? tabela([E.th_cat, E.th_nivel, E.th_qtd], r.cats.map(([c, nv, n]) => [esc(catNome(c)), chip(nv === "a" ? "red" : "amber", nv === "a" ? Lg.lv_a : Lg.lv_i), nf(n)]), "num-cols") : `<p>${chip("green", Lg.lk_noflags || "—")}</p>`;
     return `<article class="test-card tc-l" id="${id}"><details${foco === id ? " open" : ""}>
       <summary><span class="tnum">${id}</span><span class="tmain"><span class="tname">${esc(tx.nome)}</span><span class="ttype">${esc(Z.tipo_l)}</span>
-        <span class="tsimple">${esc(Z.L[id][0])}</span><span class="tres"><span class="res"><span class="muted">${esc(E.res_t1)}:</span> ${chip(cor(r), `${nf(r.a)} / ${nf(r.i)}`)}</span>
+        <span class="tsimple">${esc(Z.L[id][0])}</span><span class="tres"><span class="res"><span class="muted">${esc(E.res_t1)}:</span> ${chip(cor(r), `${nf(r.a)} / ${nf(r.i)} ${E.un}`)}</span>
         <span class="res"><span class="muted">${esc(E.res_t2)}:</span> <span class="chip chip-and"><span class="dot" aria-hidden="true"></span>${esc(E.and_t2)}</span></span></span></span></summary>
       <div class="tbody"><h3>${esc(E.f_obj)}</h3><p>${esc(tx.objetivo)}</p><h3>${esc(Lg.f_met)}</h3><p>${esc(tx.metodo)}</p>${extra || ""}
         <h3>${esc(Lg.f_crit)}</h3><p>${esc(tx.criterio)}</p><h3>${esc(Lg.f_lim)}</h3><p>${esc(tx.limites)}</p>
