@@ -798,8 +798,8 @@ Object.assign(window.I18N.PT, {
   ax_libras: "Libras (VLibras)", ax_libras_note: "Botão azul no lado direito da tela.", ax_voice: "Falar e ouvir",
   ax_voice_note: "No Atlas: toque no microfone para perguntar falando e no alto-falante para ouvir a resposta.", ax_on: "Ligado", ax_off: "Desligado",
   // app
-  app_install: "Instalar app", app_btn: "Instalar", app_note: "Ícone na tela do celular e páginas já visitadas abrindo sem internet.", app_title: "Instalar o app",
-  app_intro: "O site pode virar um app no seu celular ou computador: ganha um ícone e as páginas que você já abriu funcionam mesmo sem internet. Ocupa pouco espaço e não pede cadastro.",
+  app_install: "Instalar app", app_btn: "Instalar", app_note: "Ícone na tela do celular, páginas já visitadas abrindo sem internet e aviso quando sai novidade.", app_title: "Instalar o app",
+  app_intro: "O site pode virar um app no seu celular ou computador: ganha um ícone, as páginas que você já abriu funcionam mesmo sem internet e ele avisa quando sai novidade. Ocupa pouco espaço e não pede cadastro.",
   app_android: ["Abra o site no Chrome.", "Toque no menu <b>⋮</b> (três pontinhos, no canto de cima).", "Toque em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>."],
   app_ios: ["Abra o site no Safari.", "Toque no botão <b>Compartilhar</b> (quadrado com seta para cima).", "Toque em <b>Adicionar à Tela de Início</b>."],
   app_pc: "Computador", app_desktop: ["No Chrome ou no Edge, clique no ícone de instalar na barra de endereço.", "Ou abra o menu do navegador e escolha <b>Instalar Auditoria BU 2026</b>."],
@@ -921,8 +921,8 @@ Object.assign(window.I18N.EN, {
   ax_open: "Accessibility", ax_title: "Accessibility", ax_size: "Text size", ax_contrast: "High contrast", ax_theme: "Theme", ax_dark: "Dark", ax_light: "Light",
   ax_libras: "Libras (VLibras)", ax_libras_note: "Brazilian Sign Language; available only in Portuguese.", ax_voice: "Speak and listen",
   ax_voice_note: "In Atlas: tap the microphone to ask by voice and the speaker to hear the answer.", ax_on: "On", ax_off: "Off",
-  app_install: "Install app", app_btn: "Install", app_note: "Icon on your phone's home screen and visited pages opening offline.", app_title: "Install the app",
-  app_intro: "The site can become an app on your phone or computer: it gets an icon and the pages you have already opened work even without internet. It takes little space and needs no sign-up.",
+  app_install: "Install app", app_btn: "Install", app_note: "Icon on your phone's home screen, visited pages opening offline and a notice when there is news.", app_title: "Install the app",
+  app_intro: "The site can become an app on your phone or computer: it gets an icon, the pages you have already opened work even without internet and it lets you know when there is news. It takes little space and needs no sign-up.",
   app_android: ["Open the site in Chrome.", "Tap the <b>⋮</b> menu (three dots, top corner).", "Tap <b>Install app</b> or <b>Add to Home screen</b>."],
   app_ios: ["Open the site in Safari.", "Tap the <b>Share</b> button (square with an up arrow).", "Tap <b>Add to Home Screen</b>."],
   app_pc: "Computer", app_desktop: ["In Chrome or Edge, click the install icon in the address bar.", "Or open the browser menu and choose <b>Install Auditoria BU 2026</b>."],
@@ -1043,8 +1043,8 @@ Object.assign(window.I18N.ES, {
   ax_open: "Accesibilidad", ax_title: "Accesibilidad", ax_size: "Tamaño del texto", ax_contrast: "Alto contraste", ax_theme: "Tema", ax_dark: "Oscuro", ax_light: "Claro",
   ax_libras: "Libras (VLibras)", ax_libras_note: "Lengua de señas brasileña; solo en portugués.", ax_voice: "Hablar y escuchar",
   ax_voice_note: "En Atlas: toque el micrófono para preguntar hablando y el altavoz para escuchar la respuesta.", ax_on: "Activado", ax_off: "Desactivado",
-  app_install: "Instalar app", app_btn: "Instalar", app_note: "Ícono en la pantalla del celular y páginas visitadas que abren sin internet.", app_title: "Instalar la app",
-  app_intro: "El sitio puede convertirse en una app en su celular o computadora: gana un ícono y las páginas que ya abrió funcionan incluso sin internet. Ocupa poco espacio y no pide registro.",
+  app_install: "Instalar app", app_btn: "Instalar", app_note: "Ícono en la pantalla del celular, páginas visitadas que abren sin internet y aviso cuando hay novedades.", app_title: "Instalar la app",
+  app_intro: "El sitio puede convertirse en una app en su celular o computadora: gana un ícono, las páginas que ya abrió funcionan incluso sin internet y avisa cuando hay novedades. Ocupa poco espacio y no pide registro.",
   app_android: ["Abra el sitio en Chrome.", "Toque el menú <b>⋮</b> (tres puntos, en la esquina de arriba).", "Toque <b>Instalar app</b> o <b>Agregar a la pantalla principal</b>."],
   app_ios: ["Abra el sitio en Safari.", "Toque el botón <b>Compartir</b> (cuadrado con flecha hacia arriba).", "Toque <b>Agregar a pantalla de inicio</b>."],
   app_pc: "Computadora", app_desktop: ["En Chrome o Edge, haga clic en el ícono de instalar en la barra de direcciones.", "O abra el menú del navegador y elija <b>Instalar Auditoria BU 2026</b>."],
@@ -1150,6 +1150,35 @@ Object.assign(window.I18N.ES, {
   fd_steps: ["Copie la dirección del feed.", "Péguela en su lector de RSS (por ejemplo Feedly o Inoreader), en la opción de seguir o agregar feed.", "Listo: cada actualización del sitio aparece allí."],
   fd_addr: "Dirección del feed", fd_copy: "Copiar dirección", fd_open: (app) => `Abrir en ${app}`,
   fd_tg: "¿No usa lector de RSS? Las novedades también se avisan en el", fd_tg_link: "grupo de Telegram",
+});
+
+// Avisos de novidades (notificação do app)
+Object.assign(window.I18N.PT, {
+  av_btn: "Ativar avisos", av_t: "Avisos de novidades", av_ja: "Os avisos já estão ligados neste aparelho.",
+  av_ok: "Pronto. Este aparelho vai receber um aviso quando sair novidade, mesmo com o app fechado.",
+  av_ok_abrir: "Pronto. Neste aparelho, o aviso aparece quando você abrir o site ou o app. Para receber com o app fechado, instale o app pelo Chrome ou pelo Edge (Android ou computador).",
+  av_negado: "Os avisos estão bloqueados neste navegador. Para liberar, toque no cadeado ao lado do endereço do site e permita Notificações.",
+  av_nao: "Este navegador não mostra avisos de sites. No iPhone, instale o app (Adicionar à Tela de Início), abra por ele e toque em Ativar avisos.",
+  av_teste_t: "Avisos ligados", av_teste_b: "Você vai saber quando sair teste novo ou dado novo da auditoria.",
+  app_av: "Depois de instalar, abra o app e toque em Ativar avisos para saber quando sair novidade.",
+});
+Object.assign(window.I18N.EN, {
+  av_btn: "Turn on notifications", av_t: "News notifications", av_ja: "Notifications are already on on this device.",
+  av_ok: "Done. This device will get a notice when there is news, even with the app closed.",
+  av_ok_abrir: "Done. On this device, the notice shows up when you open the site or the app. To get it with the app closed, install the app with Chrome or Edge (Android or computer).",
+  av_negado: "Notifications are blocked in this browser. To allow them, tap the lock next to the site address and allow Notifications.",
+  av_nao: "This browser does not show site notifications. On iPhone, install the app (Add to Home Screen), open it from there and tap Turn on notifications.",
+  av_teste_t: "Notifications on", av_teste_b: "You will know when a new test or new audit data comes out.",
+  app_av: "After installing, open the app and tap Turn on notifications to know when there is news.",
+});
+Object.assign(window.I18N.ES, {
+  av_btn: "Activar avisos", av_t: "Avisos de novedades", av_ja: "Los avisos ya están activados en este dispositivo.",
+  av_ok: "Listo. Este dispositivo recibirá un aviso cuando haya novedades, incluso con la app cerrada.",
+  av_ok_abrir: "Listo. En este dispositivo, el aviso aparece cuando usted abre el sitio o la app. Para recibirlo con la app cerrada, instale la app con Chrome o Edge (Android o computadora).",
+  av_negado: "Los avisos están bloqueados en este navegador. Para permitirlos, toque el candado junto a la dirección del sitio y permita Notificaciones.",
+  av_nao: "Este navegador no muestra avisos de sitios. En iPhone, instale la app (Agregar a pantalla de inicio), ábrala desde allí y toque Activar avisos.",
+  av_teste_t: "Avisos activados", av_teste_b: "Usted sabrá cuando salga una prueba nueva o datos nuevos de la auditoría.",
+  app_av: "Después de instalar, abra la app y toque Activar avisos para saber cuando haya novedades.",
 });
 
 // Compartilhar em mais redes; imagem e vídeo para Instagram, TikTok, YouTube, Kwai e Status

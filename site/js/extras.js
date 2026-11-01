@@ -2155,8 +2155,18 @@ curl -s ${base}SHA256SUMS.txt | head`;
   }
   function audJanela() {
     const E = X(), f = AUD.feitos.length, n = audN();
-    audDlg(E.aud_t, `${audBarra()}${audQuadros()}${E.aud_p(nf(f), nf(n), nf(n - f)).map((x) => `<p>${esc(x)}</p>`).join("")}${audListas()}
+    audDlg(E.aud_t, `${audBarra()}${audQuadros()}${E.aud_p(nf(f), nf(n), nf(n - f)).map((x) => `<p>${esc(x)}</p>`).join("")}${audListas()}${audSeguir()}
       <p class="btn-row aud-acoes"><button class="btn btn-primary" type="button" data-aud-ok>${esc(E.aud_ok)}</button></p>`);
+  }
+  // acompanhar: feed e app (no app já instalado, o botão liga os avisos)
+  function audSeguir() {
+    const E = X(), F = A.ferramentas || {};
+    const noApp = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+    const ligados = F.avisosLigados && F.avisosLigados();
+    const bApp = noApp ? (ligados ? "" : `<button class="btn" type="button" data-avisos>${icone("bell")} ${esc(E.aud_avisos)}</button>`)
+      : `<button class="btn" type="button" data-install>${icone("phone")} ${esc(E.aud_app)}</button>`;
+    return `<div class="aud-seguir"><h3>${icone("bell")} ${esc(E.aud_seg_t)}</h3><p>${esc(E.aud_seg_p)}</p>
+      <div class="btn-row"><button class="btn" type="button" data-feed>${icone("rss")} ${esc(E.aud_feed)}</button>${bApp}</div></div>`;
   }
   function dlBloqueado() {
     const E = X(), n = audN();

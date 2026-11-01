@@ -2336,6 +2336,14 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
 .aud-id { display: inline-block; min-width: 2.8em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--amber); }
 .aud-l.ok .aud-id { color: var(--green); }
 .aud-acoes { margin: 14px 0 0 !important; }
+.aud-seguir { margin: 14px 0 0; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--green) 45%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--green) 8%, var(--surface)); }
+.aud-seguir h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: .98rem; }
+.aud-seguir h3 svg { flex: none; width: 17px; height: 17px; color: var(--green); }
+.aud-seguir p { margin: 0 0 10px; font-size: .88rem; color: var(--ink-2); line-height: 1.45; }
+.aud-seguir .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.aud-seguir .btn { flex: 1 1 160px; justify-content: center; }
+.app-av { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 8px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--green) 8%, var(--surface)); font-size: .9rem; }
+.app-av svg { flex: none; width: 17px; height: 17px; margin-top: 2px; color: var(--green); }
 .aud-lock { margin: 0 0 4px !important; }
 .aud-lock svg { width: 36px; height: 36px; color: var(--amber); }
 .aud-foot { padding: 20px 16px 0; }

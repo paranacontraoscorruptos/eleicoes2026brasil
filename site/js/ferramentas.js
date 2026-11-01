@@ -19,7 +19,7 @@
     const fechar = () => d.close();
     d.querySelector(".dlg-x").addEventListener("click", fechar);
     d.addEventListener("click", (e) => { if (e.target === d) fechar(); });
-    d.addEventListener("close", () => { d.remove(); document.body.classList.remove("dlg-open"); });
+    d.addEventListener("close", () => { d.remove(); if (!document.querySelector("dialog[open]")) document.body.classList.remove("dlg-open"); });
     document.body.classList.add("dlg-open");
     d.showModal();
     return d;
@@ -1297,11 +1297,52 @@
     const L = t();
     if (pedidoInstalar) { pedidoInstalar.prompt(); try { await pedidoInstalar.userChoice; } catch (e) { /* cancelado */ } pedidoInstalar = null; return; }
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent), app = window.matchMedia("(display-mode: standalone)").matches;
-    janela(L.app_title, app ? `<p>${esc(L.app_already)}</p>` : `<p>${esc(L.app_intro)}</p>
+    const btAv = avisosSuporte() && !avisosLigados() ? `<p class="btn-row"><button class="btn btn-primary" type="button" data-avisos>${icone("bell")} ${esc(L.av_btn)}</button></p>` : "";
+    janela(L.app_title, app ? `<p>${esc(L.app_already)}</p>${btAv}` : `<p>${esc(L.app_intro)}</p>
       <h3>${icone("phone")} ${esc(ios ? "iPhone / iPad" : "Android")}</h3><ol>${(ios ? L.app_ios : L.app_android).map((x) => `<li>${x}</li>`).join("")}</ol>
       <h3>${esc(ios ? "Android" : "iPhone / iPad")}</h3><ol>${(ios ? L.app_android : L.app_ios).map((x) => `<li>${x}</li>`).join("")}</ol>
-      <h3>${esc(L.app_pc)}</h3><ol>${L.app_desktop.map((x) => `<li>${x}</li>`).join("")}</ol>`, "dlg-app");
+      <h3>${esc(L.app_pc)}</h3><ol>${L.app_desktop.map((x) => `<li>${x}</li>`).join("")}</ol>
+      <p class="app-av">${icone("bell")} ${esc(L.app_av)}</p>${btAv}`, "dlg-app");
   }
+
+  // --- avisos de novidades (notificação do app) ------------------------------------------------------------------------
+  // Sem servidor: o service worker lê site/data/atualizacoes.json e avisa quando aparece item novo.
+  // Com o app instalado (Chrome/Edge), confere sozinho de tempos em tempos (Periodic Background Sync); nos outros, ao abrir.
+  const avisosSuporte = () => "Notification" in window && "serviceWorker" in navigator;
+  const avisosLigados = () => { try { return avisosSuporte() && Notification.permission === "granted" && localStorage.getItem("avisos") === "1"; } catch (e) { return false; } };
+  async function swPronto() {
+    const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 4000))]);
+    return reg && reg.active ? reg : null;
+  }
+  async function avisosAtivar() {
+    const L = t();
+    if (!avisosSuporte()) { janela(L.av_t, `<p>${esc(L.av_nao)}</p>`); return; }
+    if (avisosLigados()) { janela(L.av_t, `<p>${esc(L.av_ja)}</p>`); return; }
+    let p = Notification.permission;
+    if (p === "default") { try { p = await Notification.requestPermission(); } catch (e) { p = "denied"; } }
+    if (p !== "granted") { janela(L.av_t, `<p>${esc(L.av_negado)}</p>`); return; }
+    const reg = await swPronto();
+    if (!reg) { janela(L.av_t, `<p>${esc(L.av_nao)}</p>`); return; }
+    try { localStorage.setItem("avisos", "1"); } catch (e) { /* sem armazenamento */ }
+    reg.active.postMessage({ tipo: "avisos", lg: A.state.lang });
+    let sozinho = false;
+    if (reg.periodicSync) {
+      try {
+        const st = await navigator.permissions.query({ name: "periodic-background-sync" });
+        if (st.state === "granted") { await reg.periodicSync.register("novidades", { minInterval: 6 * 3600e3 }); sozinho = true; }
+      } catch (e) { /* navegador sem verificação em segundo plano */ }
+    }
+    try { await reg.showNotification(L.av_teste_t, { body: L.av_teste_b, icon: "site/img/icon-192.png", badge: "site/img/icon-192.png", tag: "avisos-teste" }); } catch (e) { /* sem aviso de teste */ }
+    janela(L.av_t, `<p>${esc(sozinho ? L.av_ok : L.av_ok_abrir)}</p>`);
+    document.dispatchEvent(new CustomEvent("avisos"));
+  }
+  // ao abrir o site/app com avisos ligados: confere se saiu novidade desde a última vez
+  async function avisosConferir() {
+    if (!avisosLigados()) return;
+    const reg = await swPronto();
+    if (reg) reg.active.postMessage({ tipo: "checar", lg: A.state.lang });
+  }
+  window.addEventListener("load", () => setTimeout(avisosConferir, 3000));
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => { /* sem modo offline */ }); });
   }
@@ -1323,14 +1364,17 @@
   document.addEventListener("click", (e) => {
     const sh = e.target.closest("[data-share]"); if (sh) { compartilhar(sh.closest(".foot-tools") != null); return; }
     if (e.target.closest("[data-img]")) { gerarImagem(); return; }
-    if (e.target.closest("[data-feed]")) { e.preventDefault(); assinarFeed(); return; }
+    // botões que abrem outra janela: fecham a janela onde estão (aviso da auditoria, instalar app, acessibilidade)
+    const fecharDlg = (el) => { const d = el.closest("dialog"); if (d && d.open) d.close(); };
+    const fd = e.target.closest("[data-feed]"); if (fd) { e.preventDefault(); fecharDlg(fd); assinarFeed(); return; }
     if (e.target.closest("[data-print]")) { imprimirPagina(); return; }
     const rp = e.target.closest("[data-report]"); if (rp) { avisarErro(rp.dataset.report || ""); return; }
     const sv = e.target.closest("[data-save]");
     if (sv) { FERR.alternar(JSON.parse(sv.dataset.save)); botaoSalvar(sv); atalhosSecoes(); return; }
     if (e.target.closest("[data-search]")) { abrirBusca(); return; }
     if (e.target.closest("#a11y-btn, [data-a11y]")) { painelA11y(); return; }
-    if (e.target.closest("[data-install]")) { instalar(); }
+    const av = e.target.closest("[data-avisos]"); if (av) { fecharDlg(av); avisosAtivar(); return; }
+    const ins = e.target.closest("[data-install]"); if (ins) { fecharDlg(ins); instalar(); }
   });
   document.addEventListener("keydown", (e) => {
     const tag = (e.target.tagName || "").toLowerCase(), digitando = tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable;
@@ -1343,5 +1387,5 @@
     contar();
   });
 
-  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca, imprimirPagina, contarTexto };
+  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, avisosAtivar, avisosLigados, avisosSuporte, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca, imprimirPagina, contarTexto };
 })();
