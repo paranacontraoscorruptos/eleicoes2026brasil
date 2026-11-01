@@ -465,6 +465,7 @@
     <section class="card"><h2>${esc(L.r_pres_title)}</h2>${pres}</section>
     <section><h2>${esc(L.r_tests_title)}</h2>${testes}
       <p class="note t35-turno">${icone("flask")} <span>${esc((window.T35[state.lang] || window.T35.PT).turno_nota)} <a href="#/testes">${esc((window.T35[state.lang] || window.T35.PT).ver35)}</a></span></p></section>
+    ${window.APP.turnoHorario ? window.APP.turnoHorario(n) : ""}
     <section class="card"><div class="h-row"><h2>${esc(L.r_uf_title)}</h2><button class="btn btn-sm btn-ghost" type="button" data-toggle-view="uf">${esc(L.show_table)}</button></div>
       <p class="small muted">${esc(L.r_uf_sub)}</p><div data-view="uf-chart">${ufBar}</div><div data-view="uf-table" hidden>${ufTab}</div></section>
     ${conv}

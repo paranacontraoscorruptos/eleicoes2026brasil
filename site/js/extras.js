@@ -1693,6 +1693,24 @@
   }
   const SQL_ET = "SELECT s.uf, s.municipio, s.zona, s.secao, s.turno, s.abertura, s.encerramento\nFROM secoes s JOIN sinalizacoes g\n  ON g.uf = s.uf AND g.zona = s.zona AND g.secao = s.secao AND g.turno = s.turno\nWHERE g.categoria = 'encerramento_tardio'\nORDER BY s.encerramento DESC";
 
+  // página Resultados (1º/2º turno): resultado da análise de horário (urnas que fecharam tarde), logo abaixo dos testes T01–T15
+  A.turnoHorario = function (n) {
+    const E = X(), C = R().complementar || {}, ET = C.encerramento_tardio, VH = C.votos_apos_horario;
+    if (!ET || !ET.turnos[n]) return "";
+    const T = ET.turnos[n], V = VH && VH.turnos[n], h = ET.hora_fim_oficial[n], fx = T.faixas, mx = fx[">=60min"] || 1;
+    const casas = T.sinalizadas / T.analisadas < 0.001 ? 4 : 1;
+    return `<section class="card rt-hor" id="horario"><h2>${esc(E.rt_t)}</h2><p class="small muted">${esc(E.rt_d(h))}</p>
+      <div class="et-kpis">
+        <div class="et-dest"><span class="et-k-t">${esc(E.rt_urnas)}</span><b>${nA(T.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T.sinalizadas / T.analisadas, casas), nf(T.analisadas)))}</span></div>
+        ${V ? `<div><span class="et-k-t">${esc(E.rt_va(h))}</span><b>${nA(V.votos_apos)}</b><span>${esc(E.et_k_va_sub(pct(V.votos_apos / (V.votos_dia || 1), 1)))}</span></div>` : ""}</div>
+      <h3>${esc(E.rt_faixas)}</h3>
+      <ul class="et-faixas">${ET_MIN.map((m, i) => { const k = fx[`>=${m}min`] || 0;
+        return `<li><a href="#/encerramento-tardio?turno=${n}&min=${m}"><span>${esc(E.et_min_op(m / 60))}</span><span class="et-fb"><i style="--w:${k ? Math.max(0.6, (100 * k) / mx).toFixed(2) : 0}%;--i:${i}"></i></span><em>${nA(k)}</em></a></li>`; }).join("")}</ul>
+      <p class="btn-row"><a class="btn btn-sm" href="#/encerramento-tardio?turno=${n}">${icone("list")} ${esc(E.rt_lista)}</a><a class="btn btn-sm btn-ghost" href="#/testes/T11">${icone("flask")} ${esc(E.et_t11)}</a></p>
+      <p class="small muted">${esc(E.rt_nota)}</p></section>`;
+  };
+  document.addEventListener("pagina", (e) => { if ((e.detail.rota || [])[0] === "turno") { const b = $$(".rt-hor .et-kpis > div, .rt-hor .et-faixas"); if (b.length) etAnimarAoVer(b); } });
+
   const pgEncTardio = {
     ativo: "late",
     titulo: () => X().et_title,
