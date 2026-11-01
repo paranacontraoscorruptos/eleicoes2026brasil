@@ -825,7 +825,7 @@
         <button class="nav-a11y" type="button" data-a11y style="--i:${n++}">${icone("a11y")} ${esc(L.ax_title)}</button>`;
     $("#nav2").setAttribute("aria-label", L.nav.more_title);
     const it2 = (k) => `<a href="${M.href[k]}" data-nav="${k}"${M.largo[k] ? ' class="so-estreito"' : ""}>${esc(L.nav[k])}</a>`;
-    $("#nav2").innerHTML = `<div class="nav2-in">${M.grupos.map(([g, ks]) => [g, ks.filter((k) => M.largo[k] !== "so-pc")]).map(([g, ks]) => `<div class="mg" role="group" aria-label="${esc(L.nav[g])}"><span class="mg-c"><span class="mg-t">${esc(L.nav[g])}</span>${it2(ks[0])}</span>${ks.slice(1).map(it2).join("")}</div>`).join("")}</div>`;
+    $("#nav2").innerHTML = `<div class="nav2-in">${M.grupos.map(([g, ks]) => [g, ks.filter((k) => M.largo[k] !== "so-pc")]).map(([g, ks]) => `<div class="mg" role="group" aria-label="${esc(L.nav[g])}"><span class="mg-c">${it2(ks[0])}</span>${ks.slice(1).map(it2).join("")}</div>`).join("")}</div>`;
     $("#lang").innerHTML = LANGS.map((l) => `<button type="button" data-lang="${l}" aria-pressed="${l === state.lang}">${l}</button>`).join("");
     $("#lang").setAttribute("aria-label", L.lang);
     $("#theme-btn").setAttribute("aria-label", L.theme); $("#theme-btn").title = L.theme;
