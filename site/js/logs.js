@@ -1192,11 +1192,24 @@
     if (sem) h += `<p>${chip("amber", E.sec_sem)}</p>`;
     if (ls.length) {
       const ids = ls.map((r) => r[3]).filter((x, i, a) => a.indexOf(x) === i);
-      h += tabela([t().th_test, "", E.th_obs, E.th_ref, E.th_det], ls.map((r) => [`<a href="#/testes/${r[3]}">${r[3]}. ${esc((txtL(r[3]) || {}).nome || "")}</a><br><span class="small muted">${esc(catNome(r[5]))}</span>`,
-        chip(r[4] === "a" ? "red" : "amber", r[4] === "a" ? t().lv_a : t().lv_i), esc(A.dec(r[6] || "—")), esc(A.dec(r[7] || "—")), esc(A.dec(r[8] || "—"))]))
+      h += `<div class="tp-box" data-lg-sec>${tabela([t().th_test, "", E.th_obs, E.th_ref, E.th_det], ls.map((r) => [`<a href="#/testes/${r[3]}">${r[3]}. ${esc((txtL(r[3]) || {}).nome || "")}</a><br><span class="small muted">${esc(catNome(r[5]))}</span>`,
+        chip(r[4] === "a" ? "red" : "amber", r[4] === "a" ? t().lv_a : t().lv_i), esc(A.dec(r[6] || "—")), esc(A.dec(r[7] || "—")), esc(A.dec(r[8] || "—"))]))}</div>`
         + `<p class="small muted">${esc(E.sec_leg)}</p><p class="btn-row">${ids.map((id) => `<a class="btn btn-sm btn-ghost" href="#/logs?teste=${id}&uf=${d.uf}">${icone("list")} ${esc(E.nav)} · ${id}</a>`).join("")}</p>`;
     } else if (!sem) h += `<p>${chip("green", E.sec_ok)}</p>`;
     sl.innerHTML = h;
+    // tabela padrão: dica e painel com o teste L, a categoria e os números que ele anotou nesta urna
+    const bx = sl.querySelector("[data-lg-sec]");
+    if (bx && A.paginasExtra.tabelaHtml) {
+      const Lg = t(), nv = (x) => chip(x === "a" ? "red" : "amber", x === "a" ? Lg.lv_a : Lg.lv_i);
+      const pn = (r) => { const tx = txtL(r[3]) || {};
+        return Promise.resolve({ tipo: "info", e: {}, d: null, href: `#/logs?teste=${r[3]}&uf=${d.uf}`, kick: `${E.sec_t} · ${Lg.th_zone} ${z} · ${Lg.th_section} ${s}`, tit: `${r[3]}. ${tx.nome || ""}`, sub: catNome(r[5]),
+          corpo: `<section class="tp-ap"><h3>${esc(Lg.tp.ap_t)}</h3>${API().pnDl([[Lg.x_level, nv(r[4])], [Lg.li_cat, esc(catNome(r[5]))], [E.th_obs, esc(A.dec(r[6] || "—"))], [E.th_ref, esc(A.dec(r[7] || "—"))], [E.th_det, esc(A.dec(r[8] || "—"))]])}</section>
+            ${tx.objetivo ? `<h3>${esc(Lg.tp.tst_obj)}</h3><p>${esc(tx.objetivo)}</p>` : ""}`,
+          acoes: `<a class="btn btn-sm btn-primary" href="#/logs?teste=${r[3]}&uf=${d.uf}" data-ir>${icone("list")} ${esc(E.nav)} · ${r[3]}</a><a class="btn btn-sm btn-ghost" href="#/testes/${r[3]}" data-ir>${icone("flask")} ${esc(Lg.tp.ver_teste)}</a>`,
+          dica: `<div class="cq-d-t">${esc(catNome(r[5]))}</div><div class="cq-d-t">${esc(E.th_obs)}: ${esc(A.dec(r[6] || "—"))} · ${esc(E.th_ref)}: ${esc(A.dec(r[7] || "—"))}</div>` }); };
+      A.paginasExtra.tabelaHtml(bx, [t().th_test, Lg.x_level, E.th_obs, E.th_ref, E.th_det], ls.map((r) => [`<span class="lg-catc">${r[3]}. ${esc((txtL(r[3]) || {}).nome || "")}<br><span class="small muted">${esc(catNome(r[5]))}</span></span>`,
+        nv(r[4]), esc(A.dec(r[6] || "—")), esc(A.dec(r[7] || "—")), esc(A.dec(r[8] || "—"))]), { id: "lg-sec", memo: `${d.uf}|${z}|${s}`, cls: "lg-tab", titulo: (gi) => ls[gi][3], fonte: (gi) => pn(ls[gi]) });
+    }
   });
 
   // ------------------------------------------------------------------------------------------------ página Os 35 testes
@@ -1205,7 +1218,16 @@
     const E = L(), r = resL(id), tx = txtL(id);
     if (!r || !tx) return null;
     const Lg = t();
-    const cats = r.cats.length ? tabela([E.th_cat, E.th_nivel, E.th_qtd], r.cats.map(([c, nv, n]) => [esc(catNome(c)), chip(nv === "a" ? "red" : "amber", nv === "a" ? Lg.lv_a : Lg.lv_i), nf(n)]), "num-cols") : `<p>${chip("green", Lg.lk_noflags || "—")}</p>`;
+    const simples = r.cats.length ? tabela([E.th_cat, E.th_nivel, E.th_qtd], r.cats.map(([c, nv, n]) => [esc(catNome(c)), chip(nv === "a" ? "red" : "amber", nv === "a" ? Lg.lv_a : Lg.lv_i), nf(n)]), "num-cols") : "";
+    // tabela padrão (dica e painel com a categoria, o tipo, quantas seções e o atalho para a lista do teste)
+    const cats = r.cats.length && A.tabelaTP ? A.tabelaTP({ id: `cats-${id}`, colunas: ["cat", "nivel", "n"], rot: [E.th_cat, E.th_nivel, E.th_qtd], linhas: r.cats.map(([c, nv, n]) => [catNome(c), nv, n]),
+      fmt: [(v) => `<span class="lg-catc">${esc(v)}</span>`, (v) => chip(v === "a" ? "red" : "amber", v === "a" ? Lg.lv_a : Lg.lv_i), (v) => nf(v)], cls: "num-cols",
+      ler: () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }), chave: (l) => `cat|${id}|${l[0]}|${l[1]}`,
+      fonte: (e, d, l, gi) => { const [c, nv, n] = r.cats[gi];
+        return Promise.resolve({ tipo: "info", e: {}, d: null, href: `#/logs?teste=${id}`, kick: `${id}. ${tx.nome}`, tit: catNome(c), sub: Lg.round(1),
+          corpo: `<section class="tp-ap">${API().pnDl([[E.th_nivel, chip(nv === "a" ? "red" : "amber", nv === "a" ? Lg.lv_a : Lg.lv_i)], [E.th_qtd, `${nf(n)} <small>${esc(E.un)}</small>`]])}<p class="small muted">${esc(E.th_un)}: ${nf(r.unidades)} · ${esc(tx.leg || "")}</p></section>`,
+          acoes: `<a class="btn btn-sm btn-primary" href="#/logs?teste=${id}" data-ir>${icone("list")} ${esc(E.nav)} · ${id}</a>`, dica: `<div class="cq-d-t">${nf(n)} ${esc(E.un)}</div>` }); } }, simples)
+      : simples || `<p>${chip("green", Lg.lk_noflags || "—")}</p>`;
     return `<article class="test-card tc-l" id="${id}"><details${foco === id ? " open" : ""}>
       <summary><span class="tnum">${id}</span><span class="tmain"><span class="tname">${esc(tx.nome)}</span><span class="ttype">${esc(Z.tipo_l)}</span>
         <span class="tsimple">${esc(Z.L[id][0])}</span><span class="tres"><span class="res"><span class="muted">${esc(E.res_t1)}:</span> ${chip(cor(r), `${nf(r.a)} / ${nf(r.i)} ${E.un}`)}</span>

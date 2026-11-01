@@ -152,10 +152,16 @@
       filtradas = sinais.filter((s) => (!te || s[0] === te) && (!nv || s[1] === nv) && (!uf || s[2] === uf));
       $("[data-vr-res]", box).innerHTML = L.lista_res(nf(filtradas.length));
       if (!filtradas.length) { $("[data-vr-tab]", box).innerHTML = `<p>${chip("green", L.nenhum)}</p>`; return; }
-      X().paginar($("[data-vr-tab]", box), filtradas, 50, (ls) => tabela([L.th.teste, L.th.local, L.th.L, L.th.F, L.th.C, L.th.medida, L.th.q],
-        ls.map((s) => { const v = s[12]; return [`<div class="vr-te">${chipTeste(s[0], s[1])}<span class="small">${esc(L.nomes[s[0]])}</span></div>`, `<div class="vr-loc">${local(s)}</div>`,
+      // tabela padrão: dica e painel (seção, município ou estado do sinal, com o sinal no alto)
+      const fs = filtradas, CP = A.cqPagina;
+      X().tabelaHtml($("[data-vr-tab]", box), [L.th.teste, L.th.local, L.th.L, L.th.F, L.th.C, L.th.medida, L.th.q],
+        fs.map((s) => { const v = s[12]; return [`<div class="vr-te">${chipTeste(s[0], s[1])}<span class="small">${esc(L.nomes[s[0]])}</span></div>`, `<div class="vr-loc">${local(s)}</div>`,
           v12(v[0], v[6]), v12(v[1], v[7]), v12(v[4], v[9]), `<div class="vr-med small">${esc(medida(s))}</div>`,
-          `<span class="vr-n">${s[9] === "" || s[9] == null ? "—" : A.dec(Number(s[9]).toPrecision(3))}</span>`]; }), "vr-tab"));
+          `<span class="vr-n">${s[9] === "" || s[9] == null ? "—" : A.dec(Number(s[9]).toPrecision(3))}</span>`]; }),
+        { id: "vr-sinais", memo: `${te}|${nv}|${uf}|${fs.length}`, cls: "vr-tab", kick: L.title, titulo: (gi) => `${fs[gi][0]}. ${L.nomes[fs[gi][0]]}`,
+          ler: (gi) => (fs[gi][4] != null ? { uf: fs[gi][2], z: fs[gi][4], s: fs[gi][5], t: 2 } : {}),
+          fonte: (gi, e, d) => { const x = fs[gi]; return x[4] != null ? CP.fonteSecao(e, d) : x[3] ? CP.fonteMun(x[2], x[3]) : CP.fonteUf(x[2]); },
+          dica: (gi) => `<div class="cq-d-t"><b>${esc(fs[gi][0])}</b> · ${esc(medida(fs[gi]))}</div>` });
     };
     f.addEventListener("change", aplicar);
     $("[data-vr-csv]", box).addEventListener("click", () => {
@@ -242,9 +248,11 @@
     const tabUfs = () => {
       const o = $("[data-vr-ord]").elements.o.value;
       const ls = Object.keys(ufs).sort((a, b) => ordenar(o, ufs[a], ufs[b], A.ufNome(a), A.ufNome(b)));
-      $("#vr-ufs").innerHTML = tabela([L.th.uf, L.th.L, L.th.F, L.th.O, L.th.BN, L.th.C, L.th.saldo, `${L.th.res} V1`], ls.map((uf) => { const T = ufs[uf];
-        return [`<a href="#/variacao/${uf}"><b>${uf}</b></a> <span class="small muted">${esc(A.ufNome(uf))}</span>`, v12(T.L1, T.L2), v12(T.F1, T.F2), nf(T.O1), v12(T.BN1, T.BN2), v12(T.C1, T.C2),
-          `<span class="vr-n">${pp(T.saldo)}%</span>`, `<span data-tip="${esc(V().res_uf(pct(T.L2 / (T.L2 + T.F2)), pct(T.esp), pp(T.dif)))}">${chipTeste("V1", T.nivel ? T.nivel[0] : "", true)}</span>`]; }), "vr-tab");
+      X().tabelaHtml($("#vr-ufs"), [L.th.uf, L.th.L, L.th.F, L.th.O, L.th.BN, L.th.C, L.th.saldo, `${L.th.res} V1`], ls.map((uf) => { const T = ufs[uf];
+        return [`<b>${uf}</b> <span class="small muted">${esc(A.ufNome(uf))}</span>`, v12(T.L1, T.L2), v12(T.F1, T.F2), nf(T.O1), v12(T.BN1, T.BN2), v12(T.C1, T.C2),
+          `<span class="vr-n">${pp(T.saldo)}%</span>`, `<span title="${esc(V().res_uf(pct(T.L2 / (T.L2 + T.F2)), pct(T.esp), pp(T.dif)))}">${chipTeste("V1", T.nivel ? T.nivel[0] : "", true)}</span>`]; }),
+        { id: "vr-ufs", memo: o, cls: "vr-tab", kick: L.title, titulo: (gi) => `${A.ufNome(ls[gi])} (${ls[gi]})`, uf: (gi) => ls[gi],
+          dica: (gi) => `<div class="cq-d-t">${esc(V().res_uf(pct(ufs[ls[gi]].L2 / (ufs[ls[gi]].L2 + ufs[ls[gi]].F2)), pct(ufs[ls[gi]].esp), pp(ufs[ls[gi]].dif)))}</div>` });
     };
     $("[data-vr-ord]").addEventListener("change", tabUfs);
     tabUfs();
@@ -330,9 +338,13 @@
     const tab = () => {
       const q = nz($("#vr-q").value.trim()), o = $("[data-vr-ord]").elements.o.value;
       filtrados = lin.filter((m) => !q || nz(m.nome).includes(q)).sort((x, y) => ordenar(o, x, y, x.nome, y.nome));
-      X().paginar($("#vr-muns"), filtrados, 100, (ls) => tabela([L.th.mun, L.th.secoes, L.th.L, L.th.F, L.th.O, L.th.BN, L.th.C, L.th.saldo, `${L.th.res} V2`], ls.map((m) => [
-        `<a href="#/variacao/${uf}/${m.cod}">${esc(m.nome)}</a>`, nf(m.secoes), v12(m.L1, m.L2), v12(m.F1, m.F2), nf(m.O1), v12(m.BN1, m.BN2), v12(m.C1, m.C2),
-        m.saldo == null ? "—" : `<span class="vr-n">${pp(m.saldo)}%</span>`, m.nivel === "-" ? `<span class="small muted">—</span>` : `<span data-tip="${esc(m.esp == null ? L.res_na : L.res_mun(pct(m.L2 / (m.L2 + m.F2)), pct(m.esp), pp(m.dif)))}">${chipTeste("V2", m.nivel ? m.nivel[0] : "", true)}</span>`]), "vr-tab"));
+      const fm = filtrados;
+      X().tabelaHtml($("#vr-muns"), [L.th.mun, L.th.secoes, L.th.L, L.th.F, L.th.O, L.th.BN, L.th.C, L.th.saldo, `${L.th.res} V2`], fm.map((m) => [
+        `<span class="et-mun">${esc(m.nome)}</span>`, nf(m.secoes), v12(m.L1, m.L2), v12(m.F1, m.F2), nf(m.O1), v12(m.BN1, m.BN2), v12(m.C1, m.C2),
+        m.saldo == null ? "—" : `<span class="vr-n">${pp(m.saldo)}%</span>`, m.nivel === "-" ? `<span class="small muted">—</span>` : `<span title="${esc(m.esp == null ? L.res_na : L.res_mun(pct(m.L2 / (m.L2 + m.F2)), pct(m.esp), pp(m.dif)))}">${chipTeste("V2", m.nivel ? m.nivel[0] : "", true)}</span>`]),
+        { id: "vr-muns", memo: `${uf}|${q}|${o}`, cls: "vr-tab", kick: `${L.title} · ${A.ufNome(uf)}`, titulo: (gi) => fm[gi].nome, fonte: (gi) => A.cqPagina.fonteMun(uf, fm[gi].cod),
+          topo: (gi) => `<section class="tp-ap"><h3>${esc(L.title)}</h3>${A.cqPagina.pnDl([[L.th.L, v12(fm[gi].L1, fm[gi].L2)], [L.th.F, v12(fm[gi].F1, fm[gi].F2)], [L.th.C, v12(fm[gi].C1, fm[gi].C2)], [L.th.saldo, fm[gi].saldo == null ? "—" : `${pp(fm[gi].saldo)}%`]])}
+            <p class="btn-row"><a class="btn btn-sm btn-ghost" href="#/variacao/${uf}/${fm[gi].cod}">${icone("swap")} ${esc(L.title)}</a></p></section>` });
     };
     $("#vr-q").addEventListener("input", tab);
     $("[data-vr-ord]").addEventListener("change", tab);
@@ -395,9 +407,13 @@
         const o = f.elements.o.value;
         vis = linhas.filter((x) => !f.elements.so.checked || x.sin.length).sort((a, b) => (o === "zs" ? a.z - b.z || a.s - b.s : ordenar(o, a, b)));
         if (!vis.length) { $("#vr-stab").innerHTML = `<p>${chip("green", L.nenhum)}</p>`; return; }
-        X().paginar($("#vr-stab"), vis, 100, (ls) => tabela([L.th.zona, L.th.secao, L.th.L, L.th.F, L.th.O, L.th.BN, L.th.C, L.th.sinais], ls.map((x) => [x.z,
-          `<a href="#/secao/${uf}/${x.z}/${x.s}">${x.s}</a>`, x.ambos ? v12(x.L1, x.L2) : "—", x.ambos ? v12(x.F1, x.F2) : "—", nf(x.O1), x.ambos ? v12(x.BN1, x.BN2) : "—", x.ambos ? v12(x.C1, x.C2) : "—",
-          x.sin.length ? x.sin.map((s) => `<span data-tip="${esc(`${s[0]}. ${L.nomes[s[0]]}\n${medida(s)}`)}">${chipTeste(s[0], s[1])}</span>`).join(" ") : `<span class="small muted">—</span>`]), "vr-tab"));
+        const vs = vis;
+        X().tabelaHtml($("#vr-stab"), [L.th.zona, L.th.secao, L.th.L, L.th.F, L.th.O, L.th.BN, L.th.C, L.th.sinais], vs.map((x) => [x.z,
+          x.s, x.ambos ? v12(x.L1, x.L2) : "—", x.ambos ? v12(x.F1, x.F2) : "—", nf(x.O1), x.ambos ? v12(x.BN1, x.BN2) : "—", x.ambos ? v12(x.C1, x.C2) : "—",
+          x.sin.length ? x.sin.map((s) => `<span title="${esc(`${s[0]}. ${L.nomes[s[0]]} · ${medida(s)}`)}">${chipTeste(s[0], s[1])}</span>`).join(" ") : `<span class="small muted">—</span>`]),
+          { id: "vr-secs", memo: `${uf}|${cod}|${o}|${f.elements.so.checked}`, cls: "vr-tab", kick: L.title, ler: (gi) => ({ uf, z: vs[gi].z, s: vs[gi].s, t: 2 }),
+            topo: (gi) => { const x = vs[gi]; return `<section class="tp-ap"><h3>${esc(L.title)}</h3>${A.cqPagina.pnDl([[L.th.L, x.ambos ? v12(x.L1, x.L2) : "—"], [L.th.F, x.ambos ? v12(x.F1, x.F2) : "—"], [L.th.C, x.ambos ? v12(x.C1, x.C2) : "—"],
+              [L.th.sinais, x.sin.length ? x.sin.map((s) => `${chipTeste(s[0], s[1])} <small>${esc(medida(s))}</small>`).join("<br>") : "—"]])}</section>`; } });
       };
       f.addEventListener("change", tab);
       $("#vr-scsv").addEventListener("click", () => baixarCsv(`variacao_turnos_${uf}_${cod}_secoes.csv`,

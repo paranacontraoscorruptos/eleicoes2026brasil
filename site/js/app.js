@@ -215,6 +215,36 @@
   function tabela(cab, linhas, cls) {
     return `<div class="table-wrap"><table class="${cls || ""}"><thead><tr>${cab.map((c) => `<th scope="col">${c}</th>`).join("")}</tr></thead><tbody>${linhas.map((l) => `<tr>${l.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   }
+  // Tabela no padrão do site: a mesma tabela, dica ao passar o mouse e painel ao clicar da página Urnas que fecharam tarde.
+  // O HTML já traz a tabela simples (impressão, exportação, sem JavaScript); logo depois de a página aparecer ela é
+  // trocada pela tabela padrão (extras.js: APP.cqPagina.tabela). cfg: ver tabelaPadrao em extras.js.
+  let tpSeq = 0;
+  const tpFila = [];
+  function tabelaTP(cfg, simples) {
+    const id = `tp-${++tpSeq}`;
+    tpFila.push(() => { const box = document.getElementById(id); if (box && window.APP.cqPagina) { box.innerHTML = ""; window.APP.cqPagina.tabela(box, cfg); } });
+    return `<div class="tp-box" id="${id}">${simples || ""}</div>`;
+  }
+  function tpExecutar() { tpFila.splice(0).forEach((f) => { try { f(); } catch (e) { console.error(e); } }); }
+  // bloco de números (rótulo e valor) e botão dos painéis
+  const tpDl = (pares) => `<dl class="cq-p-dl tp-dl">${pares.filter(Boolean).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
+  const tpBtn = (href, ic, txt, prim) => `<a class="btn btn-sm${prim ? " btn-primary" : " btn-ghost"}" href="${href}" data-ir>${icone(ic)} ${esc(txt)}</a>`;
+  const tpVazio = () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null });
+  // painel de um teste num turno: o que ele conta (com a unidade), os números do Relatório Técnico e o que ele confere
+  function painelTesteTurno(n, tid) {
+    const L = t(), R = state.R, x = R.turnos[n].testes.find((y) => y.id === tid), tx = R.testes_txt[state.lang][tid] || {}, P = L.tp;
+    const ZT = window.T35[state.lang] || window.T35.PT, uk = UN_T[tid] || "s", un = ZT.un_t[uk];
+    const cp = tid === "T11" && R.complementar && R.complementar.encerramento_tardio;
+    const notaT11 = cp ? (() => { const a = R.turnos["1"].testes.find((y) => y.id === "T11"), b = R.turnos["2"].testes.find((y) => y.id === "T11");
+      return `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_resumo(nf(cp.turnos[1].sinalizadas), nf(cp.turnos[2].sinalizadas), nf(a.sinal + cp.turnos[1].sinalizadas), nf(b.sinal + cp.turnos[2].sinalizadas)))}</p>`; })() : "";
+    const corpo = `<section class="tp-ap"><h3>${esc(P.tst_res(L.round(+n)))}</h3>${tpDl([[L.th_units, `${nf(x.unidades || 0)} <small>${esc(un)}</small>`],
+      [L.th_anom, `${nf(x.sinal)} <small>${esc(un)}</small>`], [L.th_info, `${nf(x.info)} <small>${esc(un)}</small>`], [L.th_raw, x.brutos == null ? "—" : nf(x.brutos)],
+      [L.th_rate, x.unidades ? pct(x.sinal / x.unidades, 3) : "—"], [L.th_status, chipStatus(x)]])}${ZT.un_x[uk] ? `<p class="small muted">${esc(ZT.un_x[uk])}</p>` : ""}</section>${notaT11}
+      ${tx.objetivo ? `<h3>${esc(P.tst_obj)}</h3><p>${esc(tx.objetivo)}</p>` : ""}${tx.criterio ? `<h3>${esc(P.tst_crit)}</h3><p>${esc(tx.criterio)}</p>` : ""}`;
+    return { tipo: "info", e: {}, d: null, href: `#/testes/${tid}`, kick: `${L.round(+n)} · ${L.th_test} ${numTeste(tid)}`, tit: tx.nome || nomeTeste(tid), sub: tipoTeste(tid), corpo,
+      acoes: tpBtn(`#/testes/${tid}`, "flask", P.ver_teste, true) + tpBtn(`#/lista?t=${n}&teste=${tid}`, "list", P.ver_lista(numTeste(tid))) + tpBtn(`#/graficos/${tid}`, "chart", P.ver_graf),
+      dica: `<div class="cq-d-t">${esc(unTip(ZT, x.sinal, x.info, uk))}</div><div class="cq-d-t">${esc(L.th_status)}: ${esc({ red: L.st_red, amber: L.st_amber, green: L.st_green }[status(x)])}</div>` };
+  }
 
   // Ações da página: compartilhar, gerar imagem para redes (quando há cartão) e exportar (PDF, apresentação, Word, Excel…)
   function acoes(img, extra) {
@@ -429,20 +459,51 @@
     const pres = barras(cands.map((c) => ({ rotulo: `${titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: `${nf(c.votos)} · ${pct(c.votos / val)}`,
       dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}\n${titulo(c.nome)} (${c.nr})` })),
       { nota: `${esc(L.blank)}: ${nf(br.votos)} · ${esc(L.null_)}: ${nf(nu.votos)}. ${esc(L.r_pres_note(nf(P.comparecimento), nf(P.aptos), pct(P.comparecimento / P.aptos)))}` });
-    const testes = tabela([L.th_test, L.th_units, L.th_anom, L.th_info, L.th_raw, L.th_rate, L.th_status],
+    const ZT = window.T35[state.lang] || window.T35.PT, unT = (tid) => ZT.un_t[UN_T[tid] || "s"], CORES = ["red", "amber", "green"];
+    const testes = tabelaTP({ id: `turno${n}-testes`, colunas: ["teste", "unidades", "sinal", "info", "brutos", "taxa", "situacao"],
+      rot: [L.th_test, L.th_units, L.th_anom, L.th_info, L.th_raw, L.th_rate, L.th_status],
+      linhas: T.testes.map((x) => [x.id, x.unidades || 0, x.sinal, x.info, x.brutos, x.unidades ? x.sinal / x.unidades : null, CORES.indexOf(status(x))]),
+      fmt: [(id) => `<span class="lg-catc">${numTeste(id)}. ${esc(nomeTeste(id))}</span>`, (v) => nf(v), (v) => nf(v), (v) => nf(v), (v) => (v == null ? "—" : nf(v)),
+        (v) => (v == null ? "—" : pct(v, 3)), (v) => chip(CORES[v], [L.st_red, L.st_amber, L.st_green][v])],
+      cls: "num-cols", dicaLinha: true, ler: tpVazio, chave: (l) => `teste|${n}|${l[0]}`, fonte: (e, d, l) => Promise.resolve(painelTesteTurno(n, l[0])),
+      dicaExtra: (dd, r, gi) => `<div class="cq-d-t">${esc(L.th_units)}: ${nf(r.m.linhas[gi][1])} ${esc(unT(r.m.linhas[gi][0]))}</div>` },
+    tabela([L.th_test, L.th_units, L.th_anom, L.th_info, L.th_raw, L.th_rate, L.th_status],
       T.testes.map((x) => [`<a href="#/testes/${x.id}">${numTeste(x.id)}. ${esc(nomeTeste(x.id))}</a>`, nf(x.unidades || 0), nf(x.sinal), nf(x.info),
-        x.brutos == null ? "—" : nf(x.brutos), x.unidades ? pct(x.sinal / x.unidades, 3) : "—", chipStatus(x)]), "num-cols");
+        x.brutos == null ? "—" : nf(x.brutos), x.unidades ? pct(x.sinal / x.unidades, 3) : "—", chipStatus(x)]), "num-cols"));
     const ufs = T.uf.slice().sort((a, b) => b.sinal / b.secoes - a.sinal / a.secoes);
     const ufBar = barras(ufs.map((u) => ({ rotulo: u.uf, valor: u.sinal / u.secoes, texto: pct(u.sinal / u.secoes),
       dica: `${pct(u.sinal / u.secoes)}\n${ufNome(u.uf)}: ${nf(u.sinal)} / ${nf(u.secoes)} ${L.th_sections.toLowerCase()}` })));
-    const ufTab = tabela([L.th_uf, L.th_sections, L.th_flagged, L.th_pct], ufs.map((u) => [`${u.uf} – ${esc(ufNome(u.uf))}`, nf(u.secoes), nf(u.sinal), pct(u.sinal / u.secoes)]), "num-cols");
+    const ufBloco = (u) => `<section class="tp-ap"><h3>${esc(L.tp.uf_t(L.round(+n)))}</h3>${tpDl([[L.th_sections, nf(u.secoes)], [L.th_flagged, `${nf(u.sinal)} (${pct(u.sinal / u.secoes)})`]])}<p class="small muted">${esc(L.tp.uf_nota)}</p></section>`;
+    const ufTab = tabelaTP({ id: `turno${n}-ufs`, colunas: ["uf", "secoes", "sinal", "pct"], rot: [L.th_uf, L.th_sections, L.th_flagged, L.th_pct],
+      linhas: ufs.map((u) => [u.uf, u.secoes, u.sinal, u.sinal / u.secoes]), fmt: [(v) => `${v} – ${esc(ufNome(v))}`, (v) => nf(v), (v) => nf(v), (v) => pct(v)],
+      cls: "num-cols", turno: +n, ler: (l) => Object.assign(tpVazio(), { uf: l[0] }), chave: (l) => `uf|${n}|${l[0]}`,
+      fonte: (e, d, l) => window.APP.cqPagina.fonteUf(l[0]), painelTopo: (dd, r, gi) => ufBloco(ufs[gi]),
+      dicaExtra: (dd, r, gi) => `<div class="cq-d-t">${esc(L.th_flagged)}: ${nf(r.m.linhas[gi][2])} ${esc(L.th_sections.toLowerCase())} (${pct(r.m.linhas[gi][3])})</div>` },
+    tabela([L.th_uf, L.th_sections, L.th_flagged, L.th_pct], ufs.map((u) => [`${u.uf} – ${esc(ufNome(u.uf))}`, nf(u.secoes), nf(u.sinal), pct(u.sinal / u.secoes)]), "num-cols"));
     // Sem seções convergentes (2º turno), a seção não aparece
     const conv = T.convergentes.length
-      ? `<section><h2>${esc(L.r_conv_title)}</h2><p class="small muted">${esc(L.r_conv_sub)}</p>${tabela(["UF", L.th_mun, L.th_zone, L.th_section, L.th_tests], T.convergentes.map((c) => [c.uf, esc(titulo(c.mun)), c.zona,
-        `<a href="#/secao/${c.uf}/${c.zona}/${c.secao}">${c.secao}</a>`, c.testes.split(",").map((x) => `<a href="#/testes/${x}">${numTeste(x)}</a>`).join(", ")]))}</section>`
+      ? `<section><h2>${esc(L.r_conv_title)}</h2><p class="small muted">${esc(L.r_conv_sub)}</p>${tabelaTP({ id: `turno${n}-conv`, colunas: ["uf", "municipio", "zona", "secao", "testes"],
+        rot: ["UF", L.th_mun, L.th_zone, L.th_section, L.th_tests], linhas: T.convergentes.map((c) => [c.uf, titulo(c.mun), c.zona, c.secao, c.testes]),
+        fmt: [(v) => esc(v), (v) => `<span class="et-mun">${esc(v)}</span>`, (v) => String(v), (v) => String(v), (v) => esc(v.split(",").map(numTeste).join(", "))],
+        temSec: true, ler: (l) => Object.assign(tpVazio(), { uf: l[0], z: l[2], s: l[3], t: +n }),
+        painelTopo: (dd, r, gi) => `<section class="tp-ap"><h3>${esc(L.tp.conv_t)}</h3><ul class="plain">${r.m.linhas[gi][4].split(",").map((x) => `<li>${esc(L.th_test)} ${numTeste(x)}. ${esc(nomeTeste(x))}</li>`).join("")}</ul><p class="small muted">${esc(L.r_conv_sub)}</p></section>`,
+        dicaExtra: (dd, r, gi) => `<div class="cq-d-t">${esc(L.th_tests)}: ${esc(r.m.linhas[gi][4].split(",").map(numTeste).join(", "))}</div>` },
+        tabela(["UF", L.th_mun, L.th_zone, L.th_section, L.th_tests], T.convergentes.map((c) => [c.uf, esc(titulo(c.mun)), c.zona,
+        `<a href="#/secao/${c.uf}/${c.zona}/${c.secao}">${c.secao}</a>`, c.testes.split(",").map((x) => `<a href="#/testes/${x}">${numTeste(x)}</a>`).join(", ")])))}</section>`
       : "";
     const un = T.unanimidade.filter((u) => u.uf === "BR");
-    const unTab = tabela([L.th_cand, L.th_100, L.th_improv], un.map((u) => [`${esc(titulo(u.nome))} (${u.nr})`, nf(u.secoes), nf(u.improv)]), "num-cols");
+    const unPainel = (u) => {
+      const c = P.candidatos.find((y) => y.nr === u.nr);
+      return { tipo: "info", e: {}, d: null, href: `#/lista?t=${n}&teste=T03`, kick: `${L.round(+n)} · ${L.cd_pres}`, tit: `${titulo(u.nome)} (${u.nr})`, sub: L.r_un_title,
+        corpo: `<section class="tp-ap"><h3>${esc(L.tp.un_t)}</h3>${tpDl([[L.th_100, `${nf(u.secoes)} <small>${esc(L.tp.secoes)}</small>`], [L.th_improv, `${nf(u.improv)} <small>${esc(L.tp.secoes)}</small>`],
+          c ? [L.tp.votos_br, `${nf(c.votos)} (${pct(c.votos / val)} ${esc(L.valid)})`] : null])}<p class="small muted">${esc(L.tp.un_nota)}</p></section>`,
+        acoes: tpBtn(`#/lista?t=${n}&teste=T03`, "list", L.tp.ver_lista(3), true) + tpBtn("#/testes/T03", "flask", L.tp.ver_teste),
+        dica: `<div class="cq-d-t">${esc(L.th_100)}: ${nf(u.secoes)} · ${esc(L.th_improv)}: ${nf(u.improv)}</div>` };
+    };
+    const unTab = tabelaTP({ id: `turno${n}-un`, colunas: ["cand", "secoes", "improv"], rot: [L.th_cand, L.th_100, L.th_improv],
+      linhas: un.map((u) => [`${titulo(u.nome)} (${u.nr})`, u.secoes, u.improv]), fmt: [(v) => esc(v), (v) => nf(v), (v) => nf(v)], cls: "num-cols",
+      ler: tpVazio, chave: (l) => `un|${n}|${l[0]}`, fonte: (e, d, l, gi) => Promise.resolve(unPainel(un[gi])) },
+    tabela([L.th_cand, L.th_100, L.th_improv], un.map((u) => [`${esc(titulo(u.nome))} (${u.nr})`, nf(u.secoes), nf(u.improv)]), "num-cols"));
     const insp = T.klimek.filter((k) => k.insp).map((k) => `${esc(ufRotulo(k.uf))} (${esc(titulo(k.nome))})`).join(", ") || "—";
     const g = (nr, tipo) => `${PASTA}/resultados-${n}turno/graficos/klimek_${n}t_${nr}_${tipo}.png`;
     const fig = (nr, tipo, cap) => `<figure><a href="${g(nr, tipo)}" target="_blank" rel="noopener"><img src="${g(nr, tipo)}" alt="${esc(cap)}" loading="lazy"></a><figcaption>${esc(cap)}</figcaption></figure>`;
@@ -631,18 +692,54 @@
         const val = cands.reduce((a, nr) => a + v[nr], 0) || 1;
         const linhas = cands.map((nr) => [`${esc(titulo(nomes[nr]))} (${nr})`, nf(v[nr]), pct(v[nr] / val)]);
         linhas.push([esc(L.blank), nf(v["95"] || 0), ""], [esc(L.null_), nf(v["96"] || 0), ""]);
+        // tabela padrão: dica e painel com o candidato nesta seção, no Brasil todo e no outro turno
+        const nrs = cands.concat(["95", "96"]), outro = rec[3 - n] ? votosTurno(3 - n, rec[3 - n]) : null;
+        const candPainel = (nr) => {
+          const P = L.tp, bn = nr === "95" || nr === "96", pos = cands.indexOf(nr), vv = v[nr] || 0;
+          const brC = state.R.turnos[n].presidente.candidatos, brVal = brC.filter((c) => c.nr !== "95" && c.nr !== "96").reduce((a, c) => a + c.votos, 0) || 1, brX = brC.find((c) => c.nr === nr);
+          const ov = outro && outro.v[nr] != null ? outro.v[nr] : null, oVal = outro ? Object.keys(outro.v).filter((k) => k !== "95" && k !== "96").reduce((a, k) => a + outro.v[k], 0) || 1 : 1;
+          const nome = bn ? (nr === "95" ? L.blank : L.null_) : `${titulo(nomes[nr])} (${nr})`;
+          return { tipo: "info", e: {}, d: null, href: null, kick: `${L.round(n)} · ${L.th_zone} ${d.z} · ${L.th_section} ${d.s}`, tit: nome, sub: L.cd_pres,
+            corpo: `<section class="tp-ap"><h3>${esc(P.cand_secao)}</h3>${tpDl([[P.votos, nf(vv)], bn ? [P.pct_comp, pct(vv / (tv[1] || 1))] : [P.pct_val, pct(vv / val)],
+              bn ? null : [P.posicao, P.pos_de(pos + 1, cands.length)],
+              !bn && pos > 0 ? [P.atras(titulo(nomes[cands[pos - 1]])), nf(v[cands[pos - 1]] - vv)] : null,
+              !bn && pos === 0 && cands.length > 1 ? [P.frente(titulo(nomes[cands[1]])), nf(vv - v[cands[1]])] : null])}</section>
+              <h3>${esc(P.comparar)}</h3>${tpDl([brX ? [P.no_brasil(L.round(n)), `${nf(brX.votos)}${bn ? "" : ` (${pct(brX.votos / brVal)} ${esc(L.valid)})`}`] : null,
+                ov != null ? [P.outro_turno(L.round(3 - n)), `${nf(ov)}${bn ? "" : ` (${pct(ov / oVal)} ${esc(L.valid)})`}`] : null])}`,
+            acoes: "", dica: `<div class="cq-d-t">${esc(P.votos)}: ${nf(vv)}${bn ? "" : ` · ${pct(vv / val)} ${esc(L.valid)}`}</div>${brX && !bn ? `<div class="cq-d-t">${esc(P.no_brasil(L.round(n)))}: ${pct(brX.votos / brVal)}</div>` : ""}` };
+        };
+        const tabCand = tabelaTP({ id: `secao-cand-${n}`, memo: `${d.uf}|${d.z}|${d.s}`, colunas: ["cand", "votos", "pct"], rot: [L.th_cand, L.tp.votos, "%"],
+          linhas: nrs.map((nr) => [nr === "95" ? L.blank : nr === "96" ? L.null_ : `${titulo(nomes[nr])} (${nr})`, v[nr] || 0, nr === "95" || nr === "96" ? null : v[nr] / val]),
+          fmt: [(x) => esc(x), (x) => nf(x), (x) => (x == null ? "" : pct(x))], cls: "num-cols", ler: tpVazio,
+          chave: (l, gi) => `cand|${d.uf}|${d.z}|${d.s}|${n}|${nrs[gi]}`, fonte: (e, dd, l, gi) => Promise.resolve(candPainel(nrs[gi])) }, tabela([L.th_cand, L.lk_comp, "%"], linhas, "num-cols"));
         const kv = [[L.lk_aptos, nf(tv[0])], [L.lk_comp, `${nf(tv[1])} (${pct(tv[1] / tv[0], 1)})`], [L.lk_abst, nf(tv[0] - tv[1])],
           [L.lk_open, `${hora(tv[2])}`], [L.lk_close, `${hora(tv[3])}`]];
         if (tv[4]) kv.push([L.lk_agreg, esc(tv[4])]);
         corpo = `<dl class="kv">${kv.map(([k, x]) => `<div><dt>${esc(k)}</dt><dd>${x}</dd></div>`).join("")}</dl><p class="small muted">${esc(L.lk_open)}/${esc(L.lk_close)}: ${esc(L.lk_local)}.</p>`
-          + tabela([L.th_cand, L.lk_comp, "%"], linhas, "num-cols");
+          + tabCand;
       }
       let fl;
       if (f && f.o.length) {
-        fl = (f.u ? `<p class="small muted">${esc(L.lk_urna(f.u, f.c, f.l))}</p>` : "") + tabela([L.th_test, "", L.th_cargo, L.th_obs, L.th_ref, L.th_q],
+        const catN = (c) => (R.categorias[c] || {})[state.lang] || c;
+        const qTxt = (q) => (q == null ? "—" : dec(Number(q).toExponential(2)));
+        const ocPainel = (o) => {
+          const P = L.tp, tx = R.testes_txt[state.lang][o[0]] || {};
+          return { tipo: "info", e: {}, d: null, href: `#/testes/${o[0]}`, kick: `${L.round(n)} · ${L.th_zone} ${d.z} · ${L.th_section} ${d.s}`, tit: `${L.th_test} ${numTeste(o[0])}. ${nomeTeste(o[0])}`, sub: catN(o[2]),
+            corpo: `<section class="tp-ap"><h3>${esc(P.ap_t)}</h3>${tpDl([[L.x_level, chip(o[1] === "a" ? "red" : "amber", o[1] === "a" ? L.lv_a : L.lv_i)], [L.li_cat, esc(catN(o[2]))],
+              [L.th_cargo, esc(o[3] && o[3] !== "—" ? o[3] : "—")], [L.th_obs, esc(dec(o[4] || "—"))], [L.th_ref, esc(dec(o[5] || "—"))], [L.th_q, esc(qTxt(o[6]))]])}</section>
+              ${tx.objetivo ? `<h3>${esc(P.tst_obj)}</h3><p>${esc(tx.objetivo)}</p>` : ""}${tx.criterio ? `<h3>${esc(P.tst_crit)}</h3><p>${esc(tx.criterio)}</p>` : ""}`,
+            acoes: tpBtn(`#/testes/${o[0]}`, "flask", P.ver_teste, true) + tpBtn(`#/lista?t=${n}&teste=${o[0]}`, "list", P.ver_lista(numTeste(o[0]))),
+            dica: `<div class="cq-d-t">${esc(catN(o[2]))}</div><div class="cq-d-t">${esc(L.th_obs)}: ${esc(dec(o[4] || "—"))} · ${esc(L.th_ref)}: ${esc(dec(o[5] || "—"))}</div>` };
+        };
+        fl = (f.u ? `<p class="small muted">${esc(L.lk_urna(f.u, f.c, f.l))}</p>` : "") + tabelaTP({ id: `secao-oc-${n}`, memo: `${d.uf}|${d.z}|${d.s}`,
+          colunas: ["teste", "nivel", "cargo", "obs", "ref", "q"], rot: [L.th_test, L.x_level, L.th_cargo, L.th_obs, L.th_ref, L.th_q],
+          linhas: f.o.map((o) => [o[0], o[1], o[3] && o[3] !== "—" ? o[3] : "—", o[4] || "—", o[5] || "—", o[6] == null ? null : Number(o[6])]),
+          fmt: [(id) => `<span class="lg-catc">${numTeste(id)}. ${esc(nomeTeste(id))}</span>`, (x) => chip(x === "a" ? "red" : "amber", x === "a" ? L.lv_a : L.lv_i), (x) => esc(x), (x) => esc(dec(x)), (x) => esc(dec(x)), (x) => esc(qTxt(x))],
+          cls: "lg-tab", ler: tpVazio, chave: (l, gi) => `oc|${d.uf}|${d.z}|${d.s}|${n}|${gi}`, fonte: (e, dd, l, gi) => Promise.resolve(ocPainel(f.o[gi])) },
+        tabela([L.th_test, "", L.th_cargo, L.th_obs, L.th_ref, L.th_q],
           f.o.map((o) => [`<a href="#/testes/${o[0]}">${numTeste(o[0])}. ${esc(nomeTeste(o[0]))}</a><br><span class="small muted">${esc((R.categorias[o[2]] || {})[state.lang] || o[2])}</span>`,
             chip(o[1] === "a" ? "red" : "amber", o[1] === "a" ? L.lv_a : L.lv_i), esc(o[3] && o[3] !== "—" ? o[3] : "—"), esc(dec(o[4] || "—")), esc(dec(o[5] || "—")),
-            o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))]))
+            o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))])))
           + (f.o.some((o) => o[2] === "encerramento_tardio") ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_sec)} <a href="#/encerramento-tardio">${esc(L.ex.et_title)}</a> · <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(L.ex.enc_csv)}</a></p>` : "");
       } else fl = `<p>${chip("green", L.lk_noflags)}</p>`;
       return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}<div class="vh-slot" data-t="${n}"${f && f.o.some((o) => o[2] === "encerramento_tardio") ? " data-vh" : ""}></div>${n === 1 && R.logs && R.logs["1"] ? '<div class="lg-slot" data-t="1"></div>' : ""}</section>`;
@@ -678,9 +775,21 @@
       <section class="card"><h2>${esc(L.rp_links)}</h2><ul class="plain">
         <li><a href="${TSE_PORTAL}" target="_blank" rel="noopener">${esc(L.rp_portal)}</a></li>
         <li>${esc(L.rp_example)}${blocoCodigo(URL_BU_EX)}${blocoCodigo(URL_BU_EX + ".sha512")}</li></ul></section>
-      <section><h2>${esc(L.rp_opts_title)}</h2>${tabela(["", ""], L.rp_opts.map(([o, d]) => [`<code>${esc(o)}</code>`, esc(d)]))}</section>
+      <section><h2>${esc(L.rp_opts_title)}</h2>${tabelaTP({ id: "rp-opts", colunas: ["opcao", "desc"], rot: [L.tp.opcao, L.tp.desc], linhas: L.rp_opts.map(([o, d]) => [o, d]),
+        fmt: [(x) => `<code>${esc(x)}</code>`, (x) => `<span class="lg-catc">${esc(x)}</span>`], ler: tpVazio, chave: (l) => `rp|${l[0]}`,
+        fonte: (e, dd, l) => Promise.resolve({ tipo: "info", e: {}, d: null, href: null, kick: L.rp_opts_title, tit: l[0], sub: "",
+          corpo: `<p>${esc(l[1])}</p><h3>${esc(L.tp.exemplo)}</h3>${blocoCodigo(`python auditoria_eleicoes_2026.py ${l[0]}`)}`, acoes: "", dica: `<div class="cq-d-t">${esc(l[1])}</div>` }) },
+      tabela(["", ""], L.rp_opts.map(([o, d]) => [`<code>${esc(o)}</code>`, esc(d)])))}</section>
       <section><h2>${esc(L.rp_hash_title)}</h2>${hashes.map(([s, c]) => `<p class="small muted">${esc(s)}</p>${blocoCodigo(c)}`).join("")}</section>
-      <section><h2>${esc(L.rp_nucleo_title)}</h2>${tabela(["", { PT: "SHA-256 do núcleo analítico", EN: "Analytical core SHA-256", ES: "SHA-256 del núcleo analítico" }[state.lang], { PT: "SHA-512 do manifesto", EN: "Manifest SHA-512", ES: "SHA-512 del manifiesto" }[state.lang]], vals)}<p class="small muted">${esc(L.rp_env)}</p></section>
+      <section><h2>${esc(L.rp_nucleo_title)}</h2>${(() => {
+        const c1 = { PT: "SHA-256 do núcleo analítico", EN: "Analytical core SHA-256", ES: "SHA-256 del núcleo analítico" }[state.lang], c2 = { PT: "SHA-512 do manifesto", EN: "Manifest SHA-512", ES: "SHA-512 del manifiesto" }[state.lang];
+        return tabelaTP({ id: "rp-nucleo", colunas: ["turno", "nucleo", "manifesto"], rot: [L.x_round, c1, c2], linhas: [1, 2].map((n) => [n, R.turnos[n].cab.nucleo_sha256, R.turnos[n].cab.manifesto_sha512]),
+          fmt: [(x) => esc(L.round(x)), (x) => `<code>${esc(x.slice(0, 16))}…</code>`, (x) => `<code>${esc(x.slice(0, 16))}…</code>`], ler: tpVazio, chave: (l) => `nucleo|${l[0]}`,
+          fonte: (e, dd, l) => Promise.resolve({ tipo: "info", e: {}, d: null, href: null, kick: L.rp_nucleo_title, tit: L.round(l[0]), sub: `${L.tp.motor} ${R.turnos[l[0]].cab.motor || R.motor.versao}`,
+            corpo: tpDl([[c1, `<code class="wrap">${esc(l[1])}</code> ${copiar(l[1])}`], [c2, `<code class="wrap">${esc(l[2])}</code> ${copiar(l[2])}`], [L.tp.emissao, esc(R.turnos[l[0]].cab.emissao || "—")]]) + `<p class="small muted">${esc(L.rp_env)}</p>`,
+            acoes: "", dica: `<div class="cq-d-t">${esc(c1)}: ${esc(l[1].slice(0, 16))}…</div><div class="cq-d-t">${esc(c2)}: ${esc(l[2].slice(0, 16))}…</div>` }) },
+        tabela(["", c1, c2], vals));
+      })()}<p class="small muted">${esc(L.rp_env)}</p></section>
       <section class="card"><h2>${esc(L.vr.rp_t)}</h2><p>${esc(L.vr.rp_motor)}</p><p>${esc(L.vr.rp_txt)}</p>${blocoCodigo("python auditoria-eleicoes-2026-Brasil/variacao_entre_turnos.py --dados site/data --saida auditoria-eleicoes-2026-Brasil/resultados-2turno")}
         <p class="small muted">${esc(L.vr.rp_note)}</p><a class="btn btn-sm" href="#/variacao">${icone("swap")} ${esc(L.vr.title)}</a></section>
       ${botCta()}`;
@@ -695,7 +804,20 @@
         `<details class="sha"><summary><code>${esc(d.sha512.slice(0, 16))}…</code></summary><code class="wrap">${esc(d.sha512)}</code></details>${copiar(d.sha512)}`,
         DL_PAUSA ? `<button class="btn btn-sm" type="button" data-dl-bloq>${icone("download")} ${esc(L.dl_btn)}</button>` : `<a class="btn btn-sm" href="${esc(d.path)}" download>${icone("download")} ${esc(L.dl_btn)}</a>`];
     };
-    const grupo = (tit, itens) => `<section><h2>${esc(tit)}</h2>${tabela([L.th_file, L.th_size, L.th_sha, ""], itens.map(linha), "dl")}</section>`;
+    // tabela padrão: dica e painel com a descrição, o tamanho, o SHA-512 inteiro (copiar) e o botão de baixar
+    const descDe = (nomeArq) => L.dl_desc[nomeArq] || (nomeArq.startsWith("graficos/") ? `${L.dl_graph}: ${nomeArq.slice(9)}` : "");
+    const btnDl = (d, prim) => (DL_PAUSA ? `<button class="btn btn-sm${prim ? " btn-primary" : ""}" type="button" data-dl-bloq>${icone("download")} ${esc(L.dl_btn)}</button>` : `<a class="btn btn-sm${prim ? " btn-primary" : ""}" href="${esc(d.path)}" download>${icone("download")} ${esc(L.dl_btn)}</a>`);
+    const arqPainel = (d, tit) => ({ tipo: "info", e: {}, d: null, href: null, kick: tit, tit: d.nome, sub: descDe(d.nome),
+      corpo: `<section class="tp-ap"><h3>${esc(L.tp.arq_t)}</h3>${tpDl([[L.th_file, `<span class="fname">${esc(d.nome)}</span>`], [L.th_size, `${esc(tamanho(d.bytes))} <small>(${nf(d.bytes)} bytes)</small>`],
+        [L.th_sha, `<code class="wrap">${esc(d.sha512)}</code> ${copiar(d.sha512)}`]])}${DL_PAUSA ? `<p class="small muted">${esc(L.tp.dl_pausa)}</p>` : ""}</section>
+        <h3>${esc(L.rp_hash_title)}</h3>${blocoCodigo(`certutil -hashfile ${d.nome.split("/").pop()} SHA512`)}`,
+      acoes: btnDl(d, true), dica: `<div class="cq-d-t">${esc(descDe(d.nome) || d.nome)}</div><div class="cq-d-t">${esc(L.th_size)}: ${esc(tamanho(d.bytes))} · SHA-512 ${esc(d.sha512.slice(0, 16))}…</div>` });
+    const grupo = (tit, itens) => `<section><h2>${esc(tit)}</h2>${tabelaTP({ id: `dl-${tit}`, colunas: ["arquivo", "tamanho", "sha", "baixar"], rot: [L.th_file, L.th_size, L.th_sha, ""],
+      linhas: itens.map((d) => [d.nome, d.bytes, d.sha512, d.nome]),
+      fmt: [(x) => { const ds = descDe(x); return `<span class="fname">${esc(x)}</span>${ds ? `<br><span class="small muted lg-catc">${esc(ds)}</span>` : ""}`; }, (x) => esc(tamanho(x)), (x) => `<code>${esc(x.slice(0, 16))}…</code>`,
+        (x) => btnDl(itens.find((d) => d.nome === x))],
+      cls: "dl", ler: tpVazio, chave: (l) => `dl|${l[0]}`, fonte: (e, dd, l, gi) => Promise.resolve(arqPainel(itens[gi], tit)) },
+    tabela([L.th_file, L.th_size, L.th_sha, ""], itens.map(linha), "dl"))}</section>`;
     const ord = (a, b) => (a.nome.includes("/") - b.nome.includes("/")) || a.nome.localeCompare(b.nome);
     return `<header class="page-head"><h1>${esc(L.dl_title)}</h1><p class="lead">${esc(L.dl_sub)}</p>${acoes(false)}</header>
       ${DL_PAUSA && L.ex ? `<section class="card dl-pausa" role="note"><h2>${icone("lock")} ${esc(L.ex.dl_t)}</h2>${L.ex.dl_p(35).slice(0, 3).map((x) => `<p>${esc(x)}</p>`).join("")}<button class="btn btn-sm" type="button" data-aud>${icone("list")} ${esc(L.ex.dl_ver)}</button></section>` : ""}
@@ -731,6 +853,7 @@
     const L = t(), p = rota(), main = $("#main");
     let html, ativo = "home", tit = L.hero_title, pg = null;
     state.cartao = null;
+    tpFila.length = 0;
     if (p[0] === "turno") {   // um botão só no menu: abre o último turno visto (ou o 2º) e a página tem a escolha 1º/2º
       let n = p[1];
       if (n !== "1" && n !== "2") { n = ler("turno") === "1" ? "1" : "2"; history.replaceState(null, "", "#/turno/" + n); }
@@ -752,6 +875,7 @@
     if (p[0] === "testes" && p[1]) { const el = document.getElementById(p[1]); if (el) el.scrollIntoView({ block: "start" }); }
     else window.scrollTo({ top: 0, behavior: "instant" });
     efeitos(main);
+    tpExecutar();
     if (p[0] === "secao") await iniciarSecao(p[1], p[2], p[3]);
     if (pg && pg.iniciar) await pg.iniciar(p);
     document.dispatchEvent(new CustomEvent("pagina", { detail: { rota: p, titulo: tit, ativo } }));
@@ -784,6 +908,7 @@
       box.innerHTML = `<p class="muted">${esc(t().lk_loading)}</p>`;
       const d = await consultarSecao(uf, z, s);
       box.innerHTML = htmlSecao(d);
+      tpExecutar();
       if (d.rec) document.dispatchEvent(new CustomEvent("secao", { detail: { uf: d.uf, z: d.z, s: d.s, m: titulo(d.mun[1]) } }));
     }
   }
@@ -1287,6 +1412,6 @@
 
   const paginas = {};
   window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, nTestes, txtTestes, consultarSecao, votosTurno, icone, json, tabela, tile, barras, barrasCartao, barrasTurno, chip, chipStatus,
-    status, botCta, linkAtlas, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, DL_PAUSA, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
+    status, botCta, linkAtlas, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, DL_PAUSA, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, blocoCodigo, tabelaTP, tpExecutar, $, $$ };
   document.addEventListener("DOMContentLoaded", iniciar);
 })();

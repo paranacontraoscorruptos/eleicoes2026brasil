@@ -66,6 +66,88 @@
     return tabela(cab, ls.map((x) => (comTurno ? [x.n + "º"] : []).concat([x.uf === "BR" ? `<b>${esc(nomeUf("BR"))}</b>` : `<a href="#/uf/${x.uf}">${x.uf}</a>`, esc(analiseTxt(x))], analiseValores(x), [chipAnalise(x)])), "num-cols");
   }
 
+  // --- tabelas no padrão do site: a mesma tabela, dica ao passar o mouse e painel ao clicar da página Urnas que fecharam tarde
+  const TP = () => A.cqPagina;
+  const tpT = () => t().tp;
+  const zonaTxt = (v) => (v == null ? "—" : String(v));
+  const nivelChip = (v) => (v === "a" ? chip("red", t().lv_a) : v === "i" ? chip("amber", t().lv_i) : chip("green", t().est_ok));
+  // bloco do painel: o que o teste apontou nesta linha (turno, teste, nível, categoria) e os atalhos
+  function blocoOcorrencia(o) {
+    const L = t(), P = tpT();
+    return `<section class="tp-ap"><h3>${esc(P.ap_t)}</h3><p class="tp-ap-t"><b>${esc(L.round(o[4]))}</b> · ${esc(L.th_test)} ${A.numTeste(o[5])}. ${esc(A.nomeTeste(o[5]))} ${nivelChip(o[6])}</p>
+      <p class="small">${esc(nomeCat(o[7]))}${o[8] ? ` · ${esc(analiseTxt(o[8]))}` : ""}</p>
+      <p class="btn-row"><a class="btn btn-sm" href="#/testes/${o[5]}">${icone("flask")} ${esc(P.ver_teste)}</a><a class="btn btn-sm btn-ghost" href="#/lista?t=${o[4]}&teste=${o[5]}">${icone("list")} ${esc(P.ver_lista(A.numTeste(o[5])))}</a></p></section>`;
+  }
+  // painel de uma análise por estado (testes 13, 14 e 15): candidato, números da análise e resultado
+  const MED = (id) => { const L = t(); return id === "T15" ? [L.th_sections, L.est_th_corner, L.gr_kl_raz] : ["n", "χ²", "q"]; };
+  function painelAnalise(x) {
+    const L = t(), P = tpT(), id = x.id, med = MED(id), vals = analiseValores(x);
+    const corpo = `<section class="tp-ap"><h3>${esc(P.med_t)}</h3>${TP().pnDl([[P.cand, esc(analiseTxt(x))]].concat(med.map((m, i) => [m, esc(vals[i])]), [[L.est_th_res, nivelChip(x.nivel)]]))}
+      <p class="small muted">${esc(P.est_nota)}</p></section>`;
+    const acoes = `<a class="btn btn-sm btn-primary" href="#/graficos/${id}" data-ir>${icone("chart")} ${esc(P.ver_graf)}</a><a class="btn btn-sm btn-ghost" href="#/testes/${id}" data-ir>${icone("flask")} ${esc(P.ver_teste)}</a>`
+      + (x.uf !== "BR" ? `<a class="btn btn-sm btn-ghost" href="#/uf/${x.uf}" data-ir>${icone("map")} ${esc(P.ver_uf)}</a>` : "");
+    return { tipo: "info", e: { uf: x.uf }, d: null, href: x.uf !== "BR" ? `#/uf/${x.uf}` : `#/graficos/${id}`,
+      kick: `${L.round(x.n)} · ${L.th_test} ${A.numTeste(id)}. ${A.nomeTeste(id)}`, tit: nomeUf(x.uf), sub: analiseTxt(x), corpo, acoes,
+      dica: `<div class="cq-d-t">${esc(analiseTxt(x))}</div><div class="cq-d-t">${med.map((m, i) => `${esc(m)}: ${esc(vals[i])}`).join(" · ")}</div><div class="cq-d-t">${esc(L.est_th_res)}: ${esc(x.nivel === "a" ? L.lv_a : x.nivel === "i" ? L.lv_i : L.est_ok)}</div>` };
+  }
+  // ocorrências (uma linha por seção × teste; testes por estado com a UF): Seções marcadas e página do município
+  function tabelaOcorrencias(box, rows, o) {
+    const L = t(), nomeMun = o.nomeMun, comLocal = o.comLocal !== false;
+    const linhas = rows.map((r) => [r[4]].concat(comLocal ? [r[0], r[3] == null ? (r[0] === "BR" ? L.est_whole_br : L.est_whole) : nomeMun(r[0], r[1])] : [],
+      [r[2], r[3], r[5], r[6], nomeCat(r[7]) + (r[8] ? ` · ${analiseTxt(r[8])}` : "")]));
+    const ix = comLocal ? { uf: 1, z: 3, s: 4 } : { uf: -1, z: 1, s: 2 };
+    const fmt = [(v) => `${v}º`].concat(comLocal ? [(v) => esc(v), (v) => `<span class="et-mun">${esc(v)}</span>`] : [],
+      [zonaTxt, zonaTxt, (v) => `<span title="${esc(A.nomeTeste(v))}">${A.numTeste(v)}</span>`, nivelChip, (v) => `<span class="lg-catc">${esc(v)}</span>`]);
+    const ufDe = (l) => (comLocal ? l[1] : o.uf);
+    return TP().tabela(box, { id: o.id || "lista", memo: o.memo, colunas: ["turno"].concat(comLocal ? ["uf", "municipio"] : [], ["zona", "secao", "teste", "nivel", "cat"]),
+      rot: [L.x_round].concat(comLocal ? [L.th_uf, L.th_mun] : [], [L.th_zone, L.th_section, L.th_test, L.x_level, L.li_cat]), linhas, fmt,
+      cls: "lg-tab", temSec: true, dicaLinha: o.dicaLinha, vazio: o.vazio, infoEl: o.infoEl,
+      ler: (l) => ({ uf: l[ix.s] != null ? ufDe(l) : null, z: l[ix.z], s: l[ix.s], loc: null, t: l[0], cod: null, mun: null, teste: null, nivel: null, nr: null }),
+      chave: (l, gi) => (l[ix.s] != null ? `s|${ufDe(l)}|${l[ix.z]}|${l[ix.s]}|${l[0]}` : `e|${rows[gi].slice(0, 8).join("|")}|${rows[gi][8] ? rows[gi][8].nr + "|" + rows[gi][8].cargo : ""}`),
+      fonte: (e, d, l, gi) => (l[ix.s] != null ? TP().fonteSecao(e, d) : Promise.resolve(painelAnalise(rows[gi][8]))),
+      painelTopo: (dd, r, gi) => (dd.tipo === "secao" ? blocoOcorrencia(rows[gi]) : ""),
+      dicaExtra: (dd, r, gi) => { const x = rows[gi]; return dd.tipo === "secao" ? `<div class="cq-d-t lg-d-t"><b>${esc(L.th_test)} ${A.numTeste(x[5])}</b> · ${esc(nomeCat(x[7]))}</div>` : ""; } });
+  }
+  // número que aparece numa célula (para ordenar): "1.234" / "12,5" (PT, ES) ou "1,234" / "12.5" (EN); senão o texto
+  function cruDe(html) {
+    const tx = String(html == null ? "" : html).replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+    const en = A.state.lang === "EN", lim = en ? tx.replace(/,/g, "") : tx.replace(/\./g, "").replace(",", ".");
+    return /^-?\d+(\.\d+)?$/.test(lim) ? +lim : /^-?\d+(\.\d+)?\s*%$/.test(lim) ? +lim.replace("%", "") : tx;
+  }
+  // tabela padrão com as células prontas (HTML); o painel mostra a linha inteira com os nomes das colunas.
+  // o: { id, memo, titulo (gi) => título do painel, kick, cls, turno, temSec,
+  //      uf (gi) => UF da linha (painel do estado), ler (gi) => {uf, z, s, t} (seção: painel da seção), fonte (gi) => Promise do painel,
+  //      topo (gi) => HTML no alto do painel (padrão: a linha inteira), dica (gi) => HTML extra na dica }
+  const eVazio = () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null });
+  function tabelaHtml(box, cab, linhas, o) {
+    o = o || {};
+    const rot = cab.map((c) => String(c).replace(/<[^>]*>/g, "").trim());
+    const proprio = !!(o.uf || o.fonte || o.ler);
+    const topo = (gi) => (o.topo ? o.topo(gi) : `<section class="tp-ap"><h3>${esc(o.kick || "")}</h3>${TP().pnDl(rot.map((k, i) => [k || "—", linhas[gi][i]]))}</section>`);
+    const idx = new Map(); linhas.forEach((l, i) => idx.set(l, i));
+    const crus = linhas.map((l) => l.map(cruDe)); crus.forEach((l, i) => idx.set(l, i));
+    return TP().tabela(box, { id: o.id || "tab", memo: o.memo || "", colunas: cab.map((c, i) => "c" + i), rot, linhas: crus,
+      fmt: cab.map((c, i) => (v, l, gi) => linhas[gi][i]), cls: o.cls || "num-cols", turno: o.turno || 0, temSec: !!o.temSec, dicaLinha: !!o.dicaLinha,
+      ler: (l) => (o.ler ? Object.assign(eVazio(), o.ler(idx.get(l))) : eVazio()),
+      chave: (l, gi) => `${o.id || "tab"}|${o.memo || ""}|${gi}`, kickLinha: o.kick || "",
+      tituloLinha: (l, gi) => (o.titulo ? o.titulo(gi) : String(linhas[gi][0]).replace(/<[^>]*>/g, "")),
+      fonte: o.fonte ? (e, d, l, gi) => o.fonte(gi, e, d) : o.uf ? (e, d, l, gi) => TP().fonteUf(o.uf(gi)) : o.ler ? undefined : (e, d) => Promise.resolve({ tipo: "linha", e, d: null, href: null }),
+      painelTopo: proprio ? (dd, r, gi) => (dd.tipo === "linha" ? "" : topo(gi)) : null,
+      dicaExtra: o.dica ? (dd, r, gi) => o.dica(gi) : null });
+  }
+  // todas as análises de um teste por estado (com e sem sinal)
+  function tabelaAnalisesPadrao(box, ls, comTurno, memo) {
+    const L = t(), id = ls.length ? ls[0].id : "T13", med = MED(id);
+    const crus = (x) => (id === "T15" ? [x.r.secoes, `${nf(x.r.obs)} / ${A.dec(x.r.esp.toFixed(2))}`, x.r.razao] : [x.r.n, x.r.chi2, x.r.q]);
+    const fmtM = id === "T15" ? [(v) => nf(v), (v) => esc(v), (v) => (v == null ? "—" : A.dec(v.toFixed(2)))] : [(v) => nf(v), (v) => A.dec(v.toFixed(2)), (v) => A.dec(v.toPrecision(3))];
+    const linhas = ls.map((x) => (comTurno ? [x.n] : []).concat([x.uf === "BR" ? nomeUf("BR") : x.uf, analiseTxt(x)], crus(x), [x.nivel || "ok"]));
+    return TP().tabela(box, { id: "analises", memo: `${id}|${memo || ""}`, colunas: (comTurno ? ["turno"] : []).concat(["uf", "cand", "m1", "m2", "m3", "res"]),
+      rot: (comTurno ? [L.x_round] : []).concat([L.th_uf, L.th_cand + " · " + L.th_cargo], med, [L.est_th_res]), linhas,
+      fmt: (comTurno ? [(v) => `${v}º`] : []).concat([(v) => esc(v), (v) => `<span class="lg-catc">${esc(v)}</span>`], fmtM, [nivelChip]),
+      cls: "lg-tab", ler: () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }),
+      chave: (l, gi) => `a|${id}|${ls[gi].n}|${ls[gi].uf}|${ls[gi].nr}|${ls[gi].cargo}`, fonte: (e, d, l, gi) => Promise.resolve(painelAnalise(ls[gi])) });
+  }
+
   // --- cores sequenciais (5 classes: zero + 4 faixas por quantil dos valores positivos) ---------------------
   function classes(vals) {
     const pos = vals.filter((v) => v > 0).sort((a, b) => a - b);
@@ -269,8 +351,14 @@
           + (est ? `<p class="small est-br">${esc(L.est_br_tot(tip(med.BR)))}</p>` : "");
         $("#mapa-nota").innerHTML = est ? `${esc(L.est_note_map)} <a href="#/lista?t=${n}&teste=${teste}">${esc(L.est_see_all)}</a>` : `${esc(L.mp_note)} ${esc(L.mp_note_est)}`;
         const linhas = ufsLista().map((uf) => [uf, med[uf]]).sort((a, b) => b[1].v - a[1].v);
-        $("#mapa-tab").innerHTML = tabela([L.th_uf, est ? L.est_th_an : L.th_sections, est ? L.est_th_k : L.mp_th_k].concat(est ? [] : ["%"]),
-          linhas.map(([uf, m]) => [`<a href="#/uf/${uf}">${uf} – ${esc(A.ufNome(uf))}</a>`, nf(m.tot), nf(m.k)].concat(est ? [] : [fmt(m.v)])), "num-cols");
+        const rotM = [L.th_uf, est ? L.est_th_an : L.th_sections, est ? L.est_th_k : L.mp_th_k].concat(est ? [] : ["%"]);
+        TP().tabela($("#mapa-tab"), { id: "mapa", memo: `${n}|${teste}|${nivel}`, colunas: ["uf", "tot", "k"].concat(est ? [] : ["pct"]), rot: rotM,
+          linhas: linhas.map(([uf, m]) => [uf, m.tot, m.k].concat(est ? [] : [m.v])), fmt: [(uf) => `${uf} – ${esc(A.ufNome(uf))}`, (v) => nf(v), (v) => nf(v), (v) => fmt(v)],
+          cls: "num-cols", turno: +n, ler: () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }),
+          chave: (l) => `mapa|${l[0]}`, fonte: (e, d, l) => TP().fonteUf(l[0]),
+          painelTopo: (dd, r, gi) => { const [uf, m] = linhas[gi]; return `<section class="tp-ap"><h3>${esc(tpT().mapa_t)}</h3>${TP().pnDl([[L.x_round, esc(L.round(+n))], [L.x_test, esc(nomeT)], [L.x_level, esc(nomeN)],
+            [rotM[1], nf(m.tot)], [rotM[2], nf(m.k)], est ? null : ["%", esc(fmt(m.v))]])}<p class="small muted">${esc(est ? L.est_note_map : tpT().mapa_nota)}</p></section>`; },
+          dicaExtra: (dd, r, gi) => `<div class="cq-d-t">${esc(tip(linhas[gi][1]))}</div>` });
       };
       f.addEventListener("change", (e) => {
         // os testes por estado só geram um tipo (13 e 14: anomalia; 15: informativo): mostra os dois
@@ -316,7 +404,40 @@
   }
   // Tabela dos 15 testes de um estado ou município. Testes 1 a 12: ocorrências nas seções do local;
   // testes 13 a 15: resultado do estado inteiro (análises candidato × cargo com sinal / total de análises).
-  function testesLocal(oc, uf, noMun) {
+  // tabela padrão: um teste por linha, anomalia e informativo de cada turno; o painel explica o que é contado
+  let tlPend = null;
+  function testesLocal(oc, uf, noMun, cod, nomeLocal) {
+    tlPend = { oc, uf, noMun, cod, nomeLocal };
+    return `<div class="tp-box" id="tl-box">${testesLocalSimples(oc, uf, noMun)}</div><p class="small muted">${esc(noMun ? t().est_note_mun : t().est_note_uf)}</p>`;
+  }
+  function tlLigar() {
+    const box = $("#tl-box"), P = tlPend; tlPend = null;
+    if (!box || !P) return;
+    const L = t(), T = tpT(), cont = {};
+    P.oc.forEach((r) => { const k = r[5] + "/" + r[4]; cont[k] = cont[k] || [0, 0]; cont[k][r[6] === "a" ? 0 : 1]++; });
+    const linhas = testesTodos().map((id) => {
+      if (!estadual(id)) { const a = cont[id + "/1"] || [0, 0], b = cont[id + "/2"] || [0, 0]; return [id, a[0], a[1], b[0], b[1]]; }
+      const res = (n) => { const ls = analisesEstado(n, id).filter((x) => x.uf === P.uf); return [ls.filter((x) => x.nivel === "a").length, ls.filter((x) => x.nivel === "i").length, ls.length]; };
+      const a = res("1"), b = res("2");
+      return [id, a[0], a[1], b[0], b[1], a[2], b[2]];
+    });
+    const cA = (v) => (v ? chip("red", nf(v)) : "0"), cI = (v) => (v ? chip("amber", nf(v)) : "0");
+    const lista = (id) => `#/lista?uf=${P.uf}${P.cod && !estadual(id) ? `&mun=${P.cod}` : ""}&teste=${id}`;
+    const painel = (l) => {
+      const id = l[0], e = estadual(id), un = e ? T.analises : T.ocorr;
+      return { tipo: "info", e: {}, d: null, href: lista(id), kick: P.nomeLocal, tit: `${L.th_test} ${A.numTeste(id)}. ${A.nomeTeste(id)}`, sub: e ? (P.noMun ? L.est_tag_uf(P.uf) : L.est_tag) : "",
+        corpo: [1, 2].map((n) => `<section class="tp-ap"><h3>${esc(L.round(n))}</h3>${TP().pnDl([[L.lv_a, `${nf(l[n === 1 ? 1 : 3])} <small>${esc(un)}</small>`], [L.lv_i, `${nf(l[n === 1 ? 2 : 4])} <small>${esc(un)}</small>`],
+          e ? [T.analises_tot, nf(l[n === 1 ? 5 : 6])] : null])}</section>`).join("") + `<p class="small muted">${esc(e ? (P.noMun ? L.est_note_mun : L.est_note_uf) : T.ocorr_nota)}</p>`,
+        acoes: `<a class="btn btn-sm btn-primary" href="${lista(id)}" data-ir>${icone("list")} ${esc(T.ver_lista_local)}</a><a class="btn btn-sm btn-ghost" href="#/testes/${id}" data-ir>${icone("flask")} ${esc(T.ver_teste)}</a>`,
+        dica: `<div class="cq-d-t">${esc(L.round(1))}: ${nf(l[1])} ${esc(L.lv_a.toLowerCase())} · ${nf(l[2])} ${esc(L.lv_i.toLowerCase())}</div><div class="cq-d-t">${esc(L.round(2))}: ${nf(l[3])} ${esc(L.lv_a.toLowerCase())} · ${nf(l[4])} ${esc(L.lv_i.toLowerCase())}</div><div class="cq-d-t">${esc(un)}</div>` };
+    };
+    TP().tabela(box, { id: "testes-local", memo: `${P.uf}|${P.cod || ""}`, colunas: ["teste", "a1", "i1", "a2", "i2"],
+      rot: [L.th_test, `${L.round(1)} · ${L.th_anom}`, `${L.round(1)} · ${L.th_info}`, `${L.round(2)} · ${L.th_anom}`, `${L.round(2)} · ${L.th_info}`],
+      linhas: linhas.map((l) => l.slice(0, 5)), fmt: [(id) => `<span class="lg-catc">${A.numTeste(id)}. ${esc(A.nomeTeste(id))}${estadual(id) ? ` <small class="muted">(${esc(L.est_short)})</small>` : ""}</span>`, cA, cI, cA, cI],
+      cls: "num-cols", ler: () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }),
+      chave: (l) => `tl|${P.uf}|${P.cod || ""}|${l[0]}`, fonte: (e, d, l, gi) => Promise.resolve(painel(linhas[gi])) });
+  }
+  function testesLocalSimples(oc, uf, noMun) {
     const L = t(), cont = {};
     oc.forEach((r) => { const k = r[5] + "/" + r[4]; cont[k] = cont[k] || [0, 0]; cont[k][r[6] === "a" ? 0 : 1]++; });
     const c = (x, extra) => chip(x[0] ? "red" : x[1] ? "amber" : "green", `${nf(x[0])} / ${nf(x[1])}`) + (extra ? ` <span class="small muted">${esc(extra)}</span>` : "");
@@ -329,8 +450,7 @@
       };
       return [`${nome} <a class="tag" href="#/lista?uf=${uf}&teste=${id}" data-tip="${esc(L.est_tag_tip)}">${esc(noMun ? L.est_tag_uf(uf) : L.est_tag)}</a>`, res("1"), res("2")];
     });
-    return tabela([L.th_test, `${L.round(1)} (${L.th_anom} / ${L.th_info})`, `${L.round(2)} (${L.th_anom} / ${L.th_info})`], linhas)
-      + `<p class="small muted">${esc(noMun ? L.est_note_mun : L.est_note_uf)}</p>`;
+    return tabela([L.th_test, `${L.round(1)} (${L.th_anom} / ${L.th_info})`, `${L.round(2)} (${L.th_anom} / ${L.th_info})`], linhas);
   }
 
   function paginaUfIndice() {
@@ -374,15 +494,22 @@
       <section class="grid2"><div class="card"><h2>${esc(L.round(2))} · ${esc(L.cd_pres)}</h2>${blocoVotos(2, tot[2])}</div><div class="card"><h2>${esc(L.round(1))} · ${esc(L.cd_pres)}</h2>${blocoVotos(1, tot[1])}</div></section>
       ${uf === "ZZ" ? "" : `<section class="card"><div class="h-row"><h2>${esc(L.uf_map_title)}</h2><form class="filters inline" data-filtro="ufmapa">${seletor("t", L.x_round, opTurno(false), "2")}</form></div>
         <p class="small muted">${esc(L.uf_map_sub)}</p><div class="map-wrap"><div class="map map-uf" id="uf-mapa">${carregando()}</div><div class="map-side" id="uf-mapa-leg"></div></div></section>`}
-      <section><h2>${esc(L.uf_tests_title)}</h2><p class="small muted">${esc(L.uf_tests_sub)}</p>${testesLocal(ocUf, uf, false)}
+      <section><h2>${esc(L.uf_tests_title)}</h2><p class="small muted">${esc(L.uf_tests_sub)}</p>${testesLocal(ocUf, uf, false, null, `${A.ufNome(uf)} (${uf})`)}
         <p class="btn-row"><a class="btn btn-sm" href="#/lista?uf=${uf}">${icone("list")} ${esc(L.uf_see_list)}</a><a class="btn btn-sm btn-ghost" href="#/secao/${uf}">${icone("search")} ${esc(L.cta_lookup)}</a></p></section>
       <section><div class="h-row"><h2>${esc(L.uf_mun_title)}</h2><label class="mini-search">${icone("search")}<input type="search" id="mun-q" placeholder="${esc(L.uf_mun_ph)}" aria-label="${esc(L.uf_mun_ph)}"></label></div>
         <div id="mun-tab"></div></section>`;
+    tlLigar();
     const tab = (filtro) => {
       const nz = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
       const ls = linhasMun.filter((m) => !filtro || nz(m.nome).includes(nz(filtro))).sort((a, b) => a.nome.localeCompare(b.nome, "pt"));
-      $("#mun-tab").innerHTML = tabela([L.th_mun, L.th_sections, `${L.th_flagged} · ${L.round(1)}`, `${L.th_flagged} · ${L.round(2)}`, L.uf_th_oc],
-        ls.map((m) => [`<a href="#/uf/${uf}/${m.cod}">${esc(m.nome)}</a>`, nf(m.sec), nf(m.k1), nf(m.k2), nf(m.oc)]), "num-cols");
+      const rotM = [L.th_mun, L.th_sections, `${L.th_flagged} · ${L.round(1)}`, `${L.th_flagged} · ${L.round(2)}`, L.uf_th_oc];
+      TP().tabela($("#mun-tab"), { id: "uf-muns", memo: `${uf}|${filtro}`, colunas: ["municipio", "secoes", "k1", "k2", "oc"], rot: rotM,
+        linhas: ls.map((m) => [m.nome, m.sec, m.k1, m.k2, m.oc]), fmt: [(v) => `<span class="et-mun">${esc(v)}</span>`, (v) => nf(v), (v) => nf(v), (v) => nf(v), (v) => nf(v)], cls: "num-cols",
+        ler: () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }), chave: (l, gi) => `mun|${uf}|${ls[gi].cod}`,
+        fonte: (e, d, l, gi) => TP().fonteMun(uf, ls[gi].cod, { 1: { a: ls[gi].k1, i: 0 }, 2: { a: ls[gi].k2, i: 0 } }),
+        painelTopo: (dd, r, gi) => `<section class="tp-ap"><h3>${esc(tpT().lista_t)}</h3>${TP().pnDl([[L.th_sections, nf(ls[gi].sec)], [rotM[2], nf(ls[gi].k1)], [rotM[3], nf(ls[gi].k2)], [L.uf_th_oc, nf(ls[gi].oc)]])}
+          <p class="small muted">${esc(tpT().lista_nota)}</p><p class="btn-row"><a class="btn btn-sm btn-ghost" href="#/lista?uf=${uf}&mun=${ls[gi].cod}">${icone("list")} ${esc(L.uf_see_list)}</a></p></section>`,
+        dicaExtra: (dd, r, gi) => `<div class="cq-d-t">${esc(L.uf_th_oc)}: ${nf(ls[gi].oc)}</div>` });
     };
     tab("");
     $("#mun-q").addEventListener("input", (e) => tab(e.target.value.trim()));
@@ -429,10 +556,12 @@
       <div class="tiles">${A.tile(m[0], L.st_secoes, L.uf_tip_sec, "grid")}${A.tile(m[1].length, L.mu_zones, m[1].join(", "), "pin")}
         ${A.tile(k(1), `${L.r_flagged} · ${L.round(1)}`, L.tip_sinal, "flag")}${A.tile(k(2), `${L.r_flagged} · ${L.round(2)}`, L.tip_sinal, "flag")}</div>
       <section class="grid2"><div class="card"><h2>${esc(L.round(2))} · ${esc(L.cd_pres)}</h2>${blocoVotos(2, tot[2])}</div><div class="card"><h2>${esc(L.round(1))} · ${esc(L.cd_pres)}</h2>${blocoVotos(1, tot[1])}</div></section>
-      <section><h2>${esc(L.mu_tests_title)}</h2><p class="small muted">${esc(L.mu_tests_sub)}</p>${testesLocal(ocM, uf, true)}</section>
-      <section><h2>${esc(L.mu_oc_title)}</h2>${linhasOc.length ? tabela([L.x_round, L.th_zone, L.th_section, L.th_test, "", L.li_cat], linhasOc) : `<p>${chip("green", L.mu_oc_none)}</p>`}</section>
+      <section><h2>${esc(L.mu_tests_title)}</h2><p class="small muted">${esc(L.mu_tests_sub)}</p>${testesLocal(ocM, uf, true, cod, `${nome} (${uf})`)}</section>
+      <section><h2>${esc(L.mu_oc_title)}</h2>${linhasOc.length ? `<div class="tp-box" id="mu-oc">${tabela([L.x_round, L.th_zone, L.th_section, L.th_test, "", L.li_cat], linhasOc)}</div>` : `<p>${chip("green", L.mu_oc_none)}</p>`}</section>
       <section><div class="h-row"><h2>${esc(L.mu_sec_title)}</h2><button class="btn btn-sm" type="button" id="mu-load">${icone("list")} ${esc(L.mu_sec_btn(nf(m[0])))}</button></div><div id="mu-secs"></div></section>`;
     A.efeitos($("#mun-body"));
+    tlLigar();
+    if (linhasOc.length) tabelaOcorrencias($("#mu-oc"), ocM.slice().sort((a, b) => a[4] - b[4] || a[2] - b[2] || a[3] - b[3]), { id: "mun-oc", memo: `${uf}|${cod}`, comLocal: false, uf });
     $("#mu-load").addEventListener("click", async (e) => {
       e.currentTarget.disabled = true;
       $("#mu-secs").innerHTML = carregando();
@@ -448,8 +577,11 @@
         });
       });
       linhas.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-      paginar($("#mu-secs"), linhas, 100, (ls) => tabela([L.th_zone, L.th_section, L.lk_aptos, `${L.mu_th_oc} · ${L.round(1)}`, `${L.mu_th_oc} · ${L.round(2)}`],
-        ls.map((r) => [r[0], `<a href="#/secao/${uf}/${r[0]}/${r[1]}">${r[1]}</a>`, nf(r[2]), r[3] ? chip("amber", nf(r[3])) : "0", r[4] ? chip("amber", nf(r[4])) : "0"]), "num-cols"));
+      const cO = (v) => (v ? chip("amber", nf(v)) : "0");
+      TP().tabela($("#mu-secs"), { id: "mun-secs", memo: `${uf}|${cod}`, colunas: ["zona", "secao", "aptos", "o1", "o2"],
+        rot: [L.th_zone, L.th_section, L.lk_aptos, `${L.mu_th_oc} · ${L.round(1)}`, `${L.mu_th_oc} · ${L.round(2)}`], linhas,
+        fmt: [(v) => String(v), (v) => String(v), (v) => nf(v), cO, cO], cls: "num-cols", temSec: true,
+        ler: (l) => ({ uf, z: l[0], s: l[1], loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }) });
     });
   }
 
@@ -506,7 +638,7 @@
         </form></section>
         <div class="h-row li-head"><p id="li-res" class="li-res" aria-live="polite"></p><button class="btn btn-sm" type="button" id="li-csv">${icone("download")} ${esc(L.li_csv)}</button></div>
         ${R().complementar && R().complementar.encerramento_tardio ? `<p class="note small enc-nota">${icone("help")} ${esc(t().ex.enc_nota(nf(R().complementar.encerramento_tardio.turnos[1].sinalizadas), nf(R().complementar.encerramento_tardio.turnos[2].sinalizadas)))} <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(t().ex.enc_csv)}</a></p>` : ""}
-        <div id="li-tab">${carregando()}</div><div id="li-est"></div>
+        <section class="card cq-p li-c"><div id="li-tab">${carregando()}</div></section><div id="li-est"></div>
         <p class="small muted">${esc(L.li_note)}</p>${A.botCta()}`;
     },
     async iniciar() {
@@ -516,10 +648,8 @@
       // seções (testes 1 a 12) + resultados por estado com sinal (testes 13 a 15), como em secoes_sinalizadas.csv
       oc = oc.concat(ocorrenciasEstado());
       const f = $('form[data-filtro="lista"]');
-      let ord = { k: q.get("ord") || "", d: 1 }, filtradas = [];
+      let filtradas = [];
       const nomeMun = (uf, cod) => (cod == null ? "" : A.titulo(((muns[uf] || {})[cod] || [cod])[0]));
-      const cat = (r) => nomeCat(r[7]) + (r[8] ? ` · ${analiseTxt(r[8])}` : "");
-      const num = (x) => (x == null ? -1 : x);
       const encherMun = (sel) => {
         const m = muns[f.elements.uf.value] || {};
         f.elements.mun.innerHTML = `<option value="">${esc(L.lk_mun_all)}</option>` + Object.entries(m).sort((a, b) => a[1][0].localeCompare(b[1][0], "pt"))
@@ -527,8 +657,6 @@
         f.elements.mun.disabled = !f.elements.uf.value;
       };
       encherMun(q.get("mun") || "");
-      const COLS = [["t", L.x_round, (r) => r[4]], ["uf", L.th_uf, (r) => r[0]], ["mun", L.th_mun, (r) => nomeMun(r[0], r[1])], ["z", L.th_zone, (r) => num(r[2])], ["s", L.th_section, (r) => num(r[3])],
-        ["teste", L.th_test, (r) => r[5]], ["nivel", L.x_level, (r) => r[6]], ["cat", L.li_cat, cat]];
       const aplicar = () => {
         const v = Object.fromEntries(["t", "uf", "mun", "z", "teste", "nivel"].map((k) => [k, f.elements[k].value.trim()]));
         const qs = Object.entries(v).filter(([, x]) => x).map(([k, x]) => `${k}=${encodeURIComponent(x)}`).join("&");
@@ -537,35 +665,20 @@
           && (!v.teste || r[5] === v.teste) && (!v.nivel || r[6] === v.nivel));
         // teste por estado escolhido: todas as análises do teste (com e sem sinal), por turno e estado
         const ae = estadual(v.teste) ? ["1", "2"].filter((n) => !v.t || n === v.t).flatMap((n) => analisesEstado(n, v.teste)).filter((x) => !v.uf || x.uf === v.uf) : [];
-        $("#li-est").innerHTML = ae.length ? `<section class="card li-est"><h2>${esc(L.est_all_title(A.numTeste(v.teste), A.nomeTeste(v.teste)))}</h2>
-          <p class="small muted">${esc(L.est_all_sub)} <a href="#/graficos/${v.teste}">${esc(L.est_see_chart)}</a></p>${tabelaAnalises(ae, true)}</section>` : "";
-        if (ord.k) {
-          const get = COLS.find((c) => c[0] === ord.k)[2];
-          filtradas = filtradas.slice().sort((a, b) => { const x = get(a), y = get(b); return (typeof x === "number" ? x - y : String(x).localeCompare(String(y), "pt")) * ord.d; });
-        }
+        $("#li-est").innerHTML = ae.length ? `<section class="card cq-p li-est"><h2>${esc(L.est_all_title(A.numTeste(v.teste), A.nomeTeste(v.teste)))}</h2>
+          <p class="small muted">${esc(L.est_all_sub)} <a href="#/graficos/${v.teste}">${esc(L.est_see_chart)}</a></p><div id="li-est-tab"></div></section>` : "";
+        if (ae.length) tabelaAnalisesPadrao($("#li-est-tab"), ae, true, "lista-est|" + qs);
         const deSecao = filtradas.filter((r) => r[3] != null);
         const secs = new Set(deSecao.map((r) => r[4] + r[0] + r[2] + "/" + r[3])).size;
         const nEst = filtradas.length - deSecao.length;
         $("#li-res").innerHTML = !deSecao.length && nEst ? L.li_res_so_est(nf(nEst)) : L.li_res(nf(deSecao.length), nf(secs)) + (nEst ? L.li_res_est(nf(nEst)) : "");
         $("#li-csv").disabled = !filtradas.length;
-        paginar($("#li-tab"), filtradas, 50, (ls) => {
-          const cab = COLS.map(([k, nm]) => `<button type="button" class="th-sort" data-ord="${k}" aria-label="${esc(L.li_sort(nm))}">${esc(nm)}${ord.k === k ? (ord.d > 0 ? " ▲" : " ▼") : ""}</button>`);
-          return ls.length ? tabela(cab, ls.map((r) => [r[4] + "º", r[0]].concat(r[3] == null
-            ? [`<span class="muted">${esc(r[0] === "BR" ? L.est_whole_br : L.est_whole)}</span>`, "—", "—"]
-            : [`<a href="#/uf/${r[0]}/${r[1]}">${esc(nomeMun(r[0], r[1]))}</a>`, r[2], `<a href="#/secao/${r[0]}/${r[2]}/${r[3]}">${r[3]}</a>`],
-            [`<a href="#/testes/${r[5]}" data-tip="${esc(A.nomeTeste(r[5]))}">${A.numTeste(r[5])}</a>`, chip(r[6] === "a" ? "red" : "amber", r[6] === "a" ? L.lv_a : L.lv_i), esc(cat(r))])), "li-table")
-            : `<p class="alert">${esc(estadual(v.teste) ? L.est_none(A.numTeste(v.teste)) : L.li_none)}</p>`;
-        });
+        tabelaOcorrencias($("#li-tab"), filtradas, { memo: qs, dicaLinha: true, nomeMun, vazio: `<p class="alert">${esc(estadual(v.teste) ? L.est_none(A.numTeste(v.teste)) : L.li_none)}</p>` });
       };
       f.addEventListener("change", (e) => { if (e.target.name === "uf") encherMun(""); aplicar(); });
       f.addEventListener("input", (e) => { if (e.target.name === "z") aplicar(); });
       f.addEventListener("reset", () => setTimeout(() => { encherMun(""); aplicar(); }, 0));
       f.addEventListener("submit", (e) => e.preventDefault());
-      $("#li-tab").addEventListener("click", (e) => {
-        const b = e.target.closest("[data-ord]"); if (!b) return;
-        ord = ord.k === b.dataset.ord ? { k: ord.k, d: -ord.d } : { k: b.dataset.ord, d: 1 };
-        aplicar();
-      });
       $("#li-csv").addEventListener("click", () => {
         const cab = ["turno", "uf", "municipio", "codigo_municipio_tse", "zona", "secao", "teste", "nome_teste", "nivel", "categoria", "detalhe"];
         const q2 = (x) => `"${String(x).replace(/"/g, '""')}"`;
@@ -612,7 +725,12 @@
       let G, oc;
       try { [G, oc] = await Promise.all([dado("site/data/graficos.json"), ocorrencias()]); } catch (e) { $("#ch-oc").innerHTML = erroDados(e); return; }
       const val = (nome, campo) => $(`form[data-g="${nome}"]`).elements[campo].value;
-      const tabelaEm = (id, cab, linhas) => { $("#tab-" + id).innerHTML = tabela(cab, linhas, "num-cols"); };
+      // tabela de cada gráfico, no padrão do site (dica e painel com a linha inteira; na de estados, o painel do estado)
+      const tabelaEm = (id, cab, linhas, o) => {
+        const box = $("#tab-" + id); if (!box) return;
+        const tit = ($(`#g-${id} h2`) || {}).textContent || "";
+        tabelaHtml(box, cab, linhas, Object.assign({ id: "gr-" + id, memo: JSON.stringify(cab) + linhas.length, kick: tit }, o || {}));
+      };
 
       const ocEst = ocorrenciasEstado();
       desenhos.set("oc", (w) => {
@@ -635,9 +753,9 @@
           return { rot: uf, a: c.a * k, i: c.i * k, txt: fmt(c.a + c.i), n: (c.a + c.i) * k, d: porMil ? 2 : 0, dica, c, sec };
         }).sort((x, y) => y.a + y.i - (x.a + x.i) || x.rot.localeCompare(y.rot));
         if (est) {
-          tabelaEm("oc", [L.th_uf, L.est_th_an, L.lv_a, L.lv_i], linhas.map((l) => [`${l.rot} – ${esc(A.ufNome(l.rot))}`, nf(an[l.rot] || 0), nf(l.c.a), nf(l.c.i)]));
+          tabelaEm("oc", [L.th_uf, L.est_th_an, L.lv_a, L.lv_i], linhas.map((l) => [`${l.rot} – ${esc(A.ufNome(l.rot))}`, nf(an[l.rot] || 0), nf(l.c.a), nf(l.c.i)]), { uf: (gi) => linhas[gi].rot, turno: +n });
         } else {
-          tabelaEm("oc", [L.th_uf, L.th_sections, L.lv_a, L.lv_i, L.gr_per1000], linhas.map((l) => [`${l.rot} – ${esc(A.ufNome(l.rot))}`, nf(l.sec), nf(l.c.a), nf(l.c.i), A.dec(((l.c.a + l.c.i) * 1000 / l.sec).toFixed(2))]));
+          tabelaEm("oc", [L.th_uf, L.th_sections, L.lv_a, L.lv_i, L.gr_per1000], linhas.map((l) => [`${l.rot} – ${esc(A.ufNome(l.rot))}`, nf(l.sec), nf(l.c.a), nf(l.c.i), A.dec(((l.c.a + l.c.i) * 1000 / l.sec).toFixed(2))]), { uf: (gi) => linhas[gi].rot, turno: +n });
         }
         const br = ocEst.filter((r) => String(r[4]) === n && (!teste || r[5] === teste) && r[0] === "BR").length;
         const nota = est ? L.est_note_chart(nf(br), nf(an.BR || 0)) : !teste && br ? L.est_note_all(nf(br)) : "";
@@ -963,9 +1081,11 @@
         });
         const res = difs ? chip("red", L.bu_res_diff(difs)) : iguais ? chip("green", L.bu_res_ok(iguais)) : chip("amber", L.bu_res_none);
         box.innerHTML = `<section class="card"><h2>${esc(`${uf} · ${A.titulo(d.mun[1])} · ${L.th_zone} ${z} · ${L.th_section} ${s} · ${L.round(+n)}`)}</h2>
-          <p>${res} <span class="small muted">${esc(origem)}</span></p>${tabela([L.bu_th_field, L.bu_th_paper, L.bu_th_file, ""], corpo, "num-cols")}
+          <p>${res} <span class="small muted">${esc(origem)}</span></p><div class="tp-box" id="bu-cmp">${tabela([L.bu_th_field, L.bu_th_paper, L.bu_th_file, ""], corpo, "num-cols")}</div>
           <p class="small muted">${esc(L.bu_res_note)}</p><p class="btn-row"><a class="btn btn-sm" href="#/secao/${uf}/${z}/${s}">${icone("search")} ${esc(L.bot_sec_details)}</a>
           ${difs ? `<button class="btn btn-sm btn-ghost" type="button" data-report="${esc(`${L.bu_title}: ${uf} · ${L.th_zone} ${z} · ${L.th_section} ${s} · ${L.round(+n)}`)}">${icone("alert")} ${esc(L.rep_btn)}</button>` : ""}</p></section>`;
+        // tabela padrão: o painel mostra o campo, o número do papel, o do arquivo do TSE e se são iguais
+        tabelaHtml($("#bu-cmp"), [L.bu_th_field, L.bu_th_paper, L.bu_th_file, L.tp.situacao], corpo, { id: "bu-cmp", memo: `${uf}|${z}|${s}|${n}|${Date.now()}`, kick: `${uf} · ${L.th_zone} ${z} · ${L.th_section} ${s} · ${L.round(+n)}` });
         box.scrollIntoView({ block: "start", behavior: "smooth" });
       };
 
@@ -1101,5 +1221,5 @@
   };
 
   Object.assign(A.paginas, { mapa: pgMapa, uf: pgUf, lista: pgLista, graficos: pgGraficos, glossario: pgGlossario, conferir: pgConferir, boletim: pgBoletim, salvas: pgSalvas, atualizacoes: pgAtualizacoes });
-  A.paginasExtra = { ocorrencias, dado, lerQR, juntarQR, normHash, hashesDoTexto, paginar };
+  A.paginasExtra = { ocorrencias, dado, lerQR, juntarQR, normHash, hashesDoTexto, paginar, tabelaHtml, tabelaOcorrencias };
 })();

@@ -263,11 +263,15 @@
               <div><dt>${esc(E.lc_th_comp)}</dt><dd>${nf(tot.comp)} <small>${tot.aptos ? pct(tot.comp / tot.aptos, 1) : ""}</small></dd></div>
               <div><dt>${esc(E.lc_th_sin)}</dt><dd>${nf(sinN)}</dd></div></dl></section>
             <section class="card"><h2>${esc(E.lc_barras_t)}</h2>${leg}<div class="lc-bars">${barras}</div></section>
-            <section><h2>${esc(E.lc_secoes_t)}</h2>${tabela(cab, corpo, "num-cols lc-tab")}
+            <section><h2>${esc(E.lc_secoes_t)}</h2><div class="tp-box" id="lc-tab">${tabela(cab, corpo, "num-cols lc-tab")}</div>
+              <p class="small lc-media">${corpo[corpo.length - 1].filter((c, i) => c && i > 0).length ? `${esc(E.lc_media)}: ${cab.slice(1).map((c, i) => [c, corpo[corpo.length - 1][i + 1]]).filter(([, v]) => v).map(([c, v]) => `${c} ${v.replace(/<\/?b>/g, "")}`).join(" · ")}` : ""}</p>
               ${comVal.length > 1 ? `<p class="small muted">${esc(E.lc_dif_note(nomeC(lider)))}</p>` : ""}${ag ? `<p class="small"><b>${esc(E.lc_agreg)}:</b> ${esc(ag)}</p>` : ""}
               <p class="note small">${esc(E.lc_nota)}</p></section>
             <div class="btn-row"><a class="btn btn-sm" href="#/uf/${uf}/${cod}">${icone("pin")} ${esc(E.lc_all_mun)}</a><a class="btn btn-sm btn-ghost" href="#/locais/${uf}/${cod}">${icone("building")} ${esc(E.lc_title)} · ${esc(nome)}</a></div>
             <p class="small muted">${esc(E.lc_fonte)} ${esc(LL.lk_open)}/${esc(LL.lk_close)}: ${esc(LL.lk_local)}.</p>`;
+          // tabela padrão: dica e painel da seção (a linha da média do local fica no texto abaixo da tabela)
+          A.paginasExtra.tabelaHtml($("#lc-tab"), cab, corpo.slice(0, -1), { id: "lc-secs", memo: `${uf}|${z}|${nr}|${n}`, cls: "num-cols lc-tab", turno: n, temSec: true, dicaLinha: true,
+            ler: (gi) => ({ uf, z, s: linhas[gi].s, t: n }) });
           $("#lc-turno").addEventListener("change", (e) => { n = +e.target.value; history.replaceState(null, "", `#/locais/${uf}/${cod}/${id}${n === 1 ? "?t=1" : ""}`); desenhar(); A.efeitos($("#lc-det")); });
         };
         desenhar();
@@ -604,7 +608,7 @@
   }
   function linhaHtml(r, gi, k, ident) {
     const E = X(), l = r.m.linhas[gi];
-    const cel = l.map((v, i) => `<td>${r.fmt && r.fmt[i] ? r.fmt[i](v) : fmtCel(v, ident[i])}</td>`).join("");
+    const cel = l.map((v, i) => `<td>${r.fmt && r.fmt[i] ? r.fmt[i](v, l, gi) : fmtCel(v, ident[i])}</td>`).join("");
     const sel = r.sel === gi ? " cq-sel" : "";
     return `<tr class="cq-lin${sel}" tabindex="0" data-i="${gi}">${r.semNum ? "" : `<td class="cq-n">${nf(k + 1)}</td>`}${r.temSec ? `<td class="cq-sin">${chipsSinal(r, r.ler(l))}</td>` : ""}${cel}${r.G ? `<td class="cq-acao"><button class="icon-btn" type="button" data-grupo="${gi}" aria-label="${esc(E.cq_ver_linhas)}" title="${esc(E.cq_ver_linhas)}">${icone("list")}</button></td>` : ""}</tr>`;
   }
@@ -612,14 +616,17 @@
     const ant = cq.res && cq.res.fonte ? null : cq.hist[cq.hist.length - 1];
     return ant ? `<p class="cq-voltar"><button class="btn btn-sm" type="button" data-voltar>‹ ${esc(X().cq_voltar(nf(ant.m.linhas.length)))}</button></p>` : "";
   }
-  function mostrarRes() {
-    const E = X(), r = cq.res, box = $("#cq-res");
+  // caixa da tabela: a da consulta (#cq-res) ou a de uma tabela de outra página (r.box)
+  const caixa = (r) => (r && r.box) || $("#cq-res");
+  function mostrarRes(rr) {
+    const E = X(), r = rr || cq.res, box = caixa(r);
     if (!box || !r) return;
     dicaEsconder();
     const m = r.m, n = m.linhas.length;
-    $("#cq-info").textContent = r.info ? r.info(n) : `${E.cq_turno_info(E.cq_turno_ops[r.turno || 0])} · ${E.cq_linhas(nf(n), nf(r.ms))}` + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
-    $("#cq-dl").hidden = !n;
-    if (!n) { box.innerHTML = `${voltarHtml()}<p class="muted">${esc(E.cq_g ? E.cq_g.vazio : E.cq_vazio)}</p>`; return; }
+    const inf = r.box ? r.infoEl : $("#cq-info"), dlx = r.box ? r.dlEl : $("#cq-dl");
+    if (inf) inf.textContent = r.info ? r.info(n) : `${E.cq_turno_info(E.cq_turno_ops[r.turno || 0])} · ${E.cq_linhas(nf(n), nf(r.ms))}` + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
+    if (dlx) dlx.hidden = !n;
+    if (!n) { box.innerHTML = r.vazio ? r.vazio : `${r.box ? "" : voltarHtml()}<p class="muted">${esc(E.cq_g ? E.cq_g.vazio : E.cq_vazio)}</p>`; return; }
     const np = Math.ceil(n / r.pp);
     r.pag = Math.min(Math.max(0, r.pag), np - 1);
     const ident = m.colunas.map(identCol), ini = r.pag * r.pp, fim = Math.min(n, ini + r.pp);
@@ -638,8 +645,10 @@
     const toque = matchMedia("(hover: none)").matches;
     const dl = r.dicaLinha && !dlinFechada() ? `<div class="cq-dlin" role="note" hidden><p>${esc(toque ? E.cq_dlin_toque : E.cq_dlin_clique)}</p>
       <button class="cq-dlin-x" type="button" data-dlin-x aria-label="${esc(E.cq_dlin_x)}" title="${esc(E.cq_dlin_x)}">${icone("close")}</button></div>` : "";
-    box.innerHTML = `${voltarHtml()}${paginador(r, "topo")}${rolx}${r.barraTopo || dl ? `<div class="cq-rolw">${tab}${dl}</div>` : tab}${paginador(r, "base")}
-      <p class="small muted cq-uso">${icone("help")} ${esc(E.cq_uso)}</p>`;
+    // tabela curta de outra página: sem paginação (cabe numa página só)
+    const pg = (pos) => (r.box && n <= Math.min(r.pp, CQ_PP[0]) ? "" : paginador(r, pos));
+    box.innerHTML = `${r.box ? "" : voltarHtml()}${pg("topo")}${rolx}${r.barraTopo || dl ? `<div class="cq-rolw">${tab}${dl}</div>` : tab}${pg("base")}
+      <p class="small muted cq-uso">${icone("help")} ${esc(r.uso || (r.box && !pg("topo") && (t().tp || {}).uso_curto) || E.cq_uso)}</p>`;
     if (r.barraTopo) ligarRolx(box);
     if (dl) ligarDlin(box);
   }
@@ -688,8 +697,8 @@
     w.addEventListener("scroll", atual, { passive: true });
     // presa logo abaixo do cabeçalho do site (que muda de altura ao rolar)
     const hd = $("#site-head"), topo = () => { if (hd) bar.style.top = `${Math.max(0, Math.round(hd.getBoundingClientRect().height) - 1)}px`; };
-    if (rolxRO) rolxRO.disconnect();
-    if ("ResizeObserver" in window) { rolxRO = new ResizeObserver(() => { topo(); atual(); }); rolxRO.observe(w); if (hd) rolxRO.observe(hd); }
+    if (box.cqRolxRO) box.cqRolxRO.disconnect(); else if (!box.cqRes && rolxRO) rolxRO.disconnect();
+    if ("ResizeObserver" in window) { const ro = new ResizeObserver(() => { topo(); atual(); }); ro.observe(w); if (hd) ro.observe(hd); if (box.cqRes) box.cqRolxRO = ro; else rolxRO = ro; }
     topo();
     [be, bd].forEach((b) => b.addEventListener("click", () => w.scrollBy({ left: +b.dataset.rolx * Math.max(120, w.clientWidth * 0.75), behavior: suave() })));
     // arrastar a parte clara do trilho move a tabela; tocar fora dela anda uma tela para aquele lado
@@ -711,7 +720,8 @@
     const np = Math.max(1, Math.ceil(r.m.linhas.length / r.pp));
     r.pag = Math.min(Math.max(0, p), np - 1);
     mostrarRes();
-    if (rolar) $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });
+    const alvo = r.box ? r.box.closest("section") || r.box : $("#cq-res-c");
+    if (rolar && alvo) alvo.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
   // --- votos depois do horário oficial: lidos do log da urna (seções sinalizadas por encerramento tardio) ------------
@@ -892,10 +902,10 @@
   }
   function dadosLinha(r, gi) {
     const l = r.m.linhas[gi], e = r.ler(l), d = destino(e);
-    const k = (r.fonte ? `${r.fonteId || "arq"}|` : "") + (d ? `${d.tipo}|${JSON.stringify(e)}` : `linha|${r.id}|${gi}`);
+    const k = r.chave ? `${r.fonteId || "tab"}|${A.state.lang}|${r.chave(l, gi)}` : (r.fonte ? `${r.fonteId || "arq"}|` : "") + (d ? `${d.tipo}|${JSON.stringify(e)}` : `linha|${r.id}|${gi}`);
     if (!cacheInfo.has(k)) {
       if (cacheInfo.size > 400) cacheInfo.clear();
-      cacheInfo.set(k, (r.fonte ? r.fonte(e, d) : carregarDados(e, d)).catch(() => ({ tipo: "linha", e, d: null, href: null })));
+      cacheInfo.set(k, (r.fonte ? r.fonte(e, d, l, gi) : carregarDados(e, d)).catch(() => ({ tipo: "linha", e, d: null, href: null })));
     }
     return cacheInfo.get(k);
   }
@@ -1068,9 +1078,11 @@
         linha(E.cq_tempo, (x) => duracao(x.abertura, x.encerramento)));
       if (ns.some((n) => by[n].agregadas)) linhas.push(linha(L.lk_agreg, (x) => esc(x.agregadas || "—")));
     } else {
-      linhas.push(linha(E.cq_primeira, (x) => esc(x.abertura || "—")), linha(E.cq_ultima, (x) => esc(x.encerramento || "—")),
-        linha(E.cq_tarde, (x) => `${nA(x.tarde)} <small>(${pA((x.tarde || 0) / (x.secoes || 1), 1)})</small>`, num("tarde")),
-        linha(E.cq_anom, (x) => `${nA(x.sinalizadas)} <small>(${pA((x.sinalizadas || 0) / (x.secoes || 1), 1)})</small>`, num("sinalizadas")));
+      // linhas que os dados publicados não trazem (tabelas de outras páginas) ficam de fora
+      const tem = (k) => ns.some((n) => by[n][k] !== undefined);
+      if (tem("abertura")) linhas.push(linha(E.cq_primeira, (x) => esc(x.abertura || "—")), linha(E.cq_ultima, (x) => esc(x.encerramento || "—")));
+      if (tem("tarde")) linhas.push(linha(E.cq_tarde, (x) => `${nA(x.tarde)} <small>(${pA((x.tarde || 0) / (x.secoes || 1), 1)})</small>`, num("tarde")));
+      if (tem("sinalizadas")) linhas.push(linha(E.cq_anom, (x) => `${nA(x.sinalizadas)} <small>(${pA((x.sinalizadas || 0) / (x.secoes || 1), 1)})</small>`, num("sinalizadas")));
     }
     return `<section class="cq-p-res"><h3>${esc(ns.length === 2 ? E.cq_t_resumo2 : E.cq_t_resumo)}</h3><div class="cq-p-tw"><table class="cq-p-t"><thead><tr><th></th>${th}</tr></thead><tbody>${linhas.join("")}</tbody></table></div></section>`;
   }
@@ -1093,12 +1105,15 @@
   }
   function htmlColunas(r, gi) {
     const E = X(), l = r.m.linhas[gi], ident = r.m.colunas.map(identCol);
+    // tabela de outra página: os nomes e o formato das colunas da própria tabela
+    if (r.box && r.rot) return `<dl class="cq-p-dl">${r.m.colunas.map((c, i) => `<div><dt>${esc(String(r.rot[i]).replace(/\n/g, " "))}</dt><dd>${r.fmt && r.fmt[i] ? r.fmt[i](l[i], l, gi) : fmtCel(l[i], ident[i])}</dd></div>`).join("")}</dl>`;
     return `<dl class="cq-p-dl">${r.m.colunas.map((c, i) => `<div><dt><code>${esc(c)}</code>${E.cq_col[/^v\d+$/.test(nomeCol(c)) ? "vNN" : nomeCol(c)] ? ` <small>${esc(E.cq_col[/^v\d+$/.test(nomeCol(c)) ? "vNN" : nomeCol(c)])}</small>` : ""}</dt><dd>${fmtCel(l[i], ident[i])}</dd></div>`).join("")}</dl>`;
   }
   // título, corpo e botões do painel
   function conteudo(dd, r, gi) {
     const E = X(), L = t(), e = dd.e, tf = r.turno || 0;
     let kick = "", tit = "", sub = "", corpo = "";
+    if (dd.tipo === "info") return { kick: dd.kick || "", tit: dd.tit || "", sub: dd.sub || "", corpo: dd.corpo || "", acoes: dd.acoes || "" };
     if (dd.tipo === "secao") {
       kick = `${e.uf} · ${dd.munNome}`; tit = `${L.th_zone} ${e.z} · ${L.th_section} ${e.s}`;
       sub = dd.loc ? [A.titulo(dd.loc[0]), dd.loc[2] && A.titulo(dd.loc[2])].filter(Boolean).join(" · ") : "";
@@ -1134,9 +1149,10 @@
       kick = L.roundDate[e.t]; tit = L.round(e.t);
       corpo = `<dl class="cq-p-dl"><div><dt>${esc(E.cq_secoes)}</dt><dd>${nf(T.entrada.secoes)}</dd></div><div><dt>${esc(E.cq_anom)}</dt><dd>${nf(T.secoes_sinalizadas)}</dd></div>
         <div><dt>${esc(L.lk_aptos)}</dt><dd>${nf(P.aptos)}</dd></div><div><dt>${esc(L.lk_comp)}</dt><dd>${nf(P.comparecimento)} (${pct(P.comparecimento / P.aptos, 1)})</dd></div></dl>`;
-    } else { kick = r.G ? E.cq_grupo : ""; tit = E.cq_t_dados; }
-    if (dd.tipo !== "linha" && dd.tipo !== "secao") corpo += `<h3>${esc(E.cq_t_dados)}</h3>${htmlColunas(r, gi)}`;
+    } else { kick = r.kickLinha || (r.G ? E.cq_grupo : ""); tit = r.tituloLinha ? r.tituloLinha(r.m.linhas[gi], gi) : E.cq_t_dados; }
+    if (dd.tipo !== "linha" && dd.tipo !== "secao" && !r.box) corpo += `<h3>${esc(E.cq_t_dados)}</h3>${htmlColunas(r, gi)}`;
     else if (dd.tipo === "linha") corpo = htmlColunas(r, gi);
+    if (r.painelTopo && dd.tipo !== "secao") corpo = r.painelTopo(dd, r, gi) + corpo;
     const acoes = [];
     if (dd.href) acoes.push(`<a class="btn btn-sm btn-primary" href="${dd.href}" data-ir>${icone("arrow")} ${esc(E.cq_abrir[dd.tipo] || E.cq_abrir.secao)}</a>`);
     if (dd.tipo === "secao") {
@@ -1150,6 +1166,7 @@
   // resumo curto (dica ao passar o mouse)
   function resumo(dd, r, gi) {
     const E = X(), L = t(), e = dd.e, by = porTurno(dd.ts);
+    if (dd.tipo === "info") return `<strong>${esc(dd.tit || "")}</strong>${dd.kick ? `<div class="cq-d-k">${esc(dd.kick)}</div>` : ""}${dd.dica || ""}${r.dicaExtra ? r.dicaExtra(dd, r, gi) : ""}<div class="cq-d-ir">${esc(E.cq_dica_clique)}</div>`;
     const c = conteudo(dd, r, gi);
     let h = `<strong>${esc(c.tit)}</strong>${c.kick ? `<div class="cq-d-k">${esc(c.kick)}</div>` : ""}`;
     const tf = r.turno || 0;
@@ -1168,7 +1185,7 @@
       }
     } else if (dd.tipo === "linha" || !dd.ts) {
       const ident = r.m.colunas.map(identCol), l = r.m.linhas[gi];
-      h += r.m.colunas.slice(0, 8).map((col, i) => `<div class="cq-d-t"><b>${esc(col)}</b>: ${fmtCel(l[i], ident[i])}</div>`).join("");
+      h += r.m.colunas.slice(0, 8).map((col, i) => `<div class="cq-d-t"><b>${esc(r.box && r.rot ? String(r.rot[i]).replace(/\n/g, " ") : col)}</b>: ${r.box && r.fmt && r.fmt[i] ? r.fmt[i](l[i], l, gi) : fmtCel(l[i], ident[i])}</div>`).join("");
     }
     if (r.dicaExtra) h += r.dicaExtra(dd, r, gi);
     return h + `<div class="cq-d-ir">${esc(E.cq_dica_clique)}</div>`;
@@ -1200,7 +1217,7 @@
       if (b) { if (b.dataset.p === "x") fecharPainel(true); else passoPainel(b.dataset.p === "prox" ? 1 : -1); return; }
       const g = ev.target.closest("[data-grupo]");
       if (g) { fecharPainel(); abrirGrupo(+g.dataset.grupo); return; }
-      if (ev.target.closest("a[href^='#']") && cq.res) cq.res.volta = { i: painel.gi, painel: true };
+      if (ev.target.closest("a[href^='#']") && (painel.r || cq.res)) (painel.r || cq.res).volta = { i: painel.gi, painel: true };
     });
     el.addEventListener("keydown", (ev) => {
       if (ev.key === "Escape") { ev.preventDefault(); fecharPainel(true); }
@@ -1209,14 +1226,15 @@
     painel.el = el;
     return el;
   }
-  async function abrirPainel(gi) {
-    const r = cq.res; if (!r) return;
+  async function abrirPainel(gi, rr) {
+    const r = rr || cq.res; if (!r) return;
+    cq.res = r;
     const E = X(), el = painelEl(), seq = ++painel.seq;
-    painel.gi = gi; r.sel = gi;
+    painel.gi = gi; painel.r = r; r.sel = gi;
     if (r.dicaLinha && $(".cq-dlin")) fecharDlin();
     dicaEsconder();
-    $$("#cq-res tr.cq-sel").forEach((tr) => tr.classList.remove("cq-sel"));
-    const tr = $(`#cq-res tr[data-i="${gi}"]`); if (tr) tr.classList.add("cq-sel");
+    $$("tr.cq-sel").forEach((tr) => tr.classList.remove("cq-sel"));
+    const tr = caixa(r) && $(`tr[data-i="${gi}"]`, caixa(r)); if (tr) tr.classList.add("cq-sel");
     const k = r.idx.indexOf(gi), n = r.m.linhas.length;
     el.querySelector(".cq-p-nav span").textContent = E.cq_p_linha(nf(k + 1), nf(n));
     el.querySelector('[data-p="ant"]').disabled = k <= 0;
@@ -1227,7 +1245,7 @@
     if (!aberto) { el.hidden = false; document.documentElement.classList.add("cq-p-on"); }
     el.querySelector(".cq-p-body").innerHTML = carregando();
     const dd = await dadosLinha(r, gi);
-    if (seq !== painel.seq || cq.res !== r) return;
+    if (seq !== painel.seq || painel.r !== r) return;
     const c = conteudo(dd, r, gi);
     el.querySelector(".cq-p-kick").textContent = c.kick;
     el.querySelector("#cq-p-tit").textContent = c.tit;
@@ -1295,16 +1313,16 @@
     if (pnObs) { pnObs.disconnect(); pnObs = null; }
     vhbFechar(); rolarEsconder();
     document.documentElement.classList.remove("cq-p-on");
-    const r = cq.res;
-    if (r) { r.sel = null; const tr = $(`#cq-res tr[data-i="${painel.gi}"]`); if (tr) { tr.classList.remove("cq-sel"); if (foco) tr.focus({ preventScroll: true }); } }
+    const r = painel.r || cq.res;
+    if (r) { r.sel = null; const tr = caixa(r) && $(`tr[data-i="${painel.gi}"]`, caixa(r)); if (tr) { tr.classList.remove("cq-sel"); if (foco) tr.focus({ preventScroll: true }); } }
   }
   function passoPainel(dir) {
-    const r = cq.res; if (!r || painel.gi == null) return;
+    const r = painel.r || cq.res; if (!r || painel.gi == null) return;
     const k = r.idx.indexOf(painel.gi) + dir;
     if (k < 0 || k >= r.idx.length) return;
     const gi = r.idx[k], pag = Math.floor(k / r.pp);
-    if (pag !== r.pag) { r.pag = pag; r.sel = gi; mostrarRes(); }
-    const tr = $(`#cq-res tr[data-i="${gi}"]`);
+    if (pag !== r.pag) { r.pag = pag; r.sel = gi; mostrarRes(r); }
+    const tr = caixa(r) && $(`tr[data-i="${gi}"]`, caixa(r));
     if (tr) tr.scrollIntoView({ block: "nearest" });
     abrirPainel(gi);
   }
@@ -1325,16 +1343,16 @@
     el.style.left = x + "px"; el.style.top = y + "px";
   }
   function dicaEsconder() { clearTimeout(dica.tm); dica.tr = null; if (dica.el) dica.el.hidden = true; }
-  function dicaMostrar(tr) {
+  function dicaMostrar(tr, rr) {
     if (dica.tr === tr) return;
     dica.tr = tr; clearTimeout(dica.tm);
     if (dica.el) dica.el.hidden = true;
     dica.tm = setTimeout(async () => {
-      const r = cq.res, gi = +tr.dataset.i;
+      const r = rr || cq.res, gi = +tr.dataset.i;
       if (!r || dica.tr !== tr) return;
       if (!dica.el || !dica.el.isConnected) { dica.el = document.createElement("div"); dica.el.className = "tip cq-dica"; dica.el.setAttribute("role", "tooltip"); dica.el.hidden = true; document.body.append(dica.el); }
       const dd = await dadosLinha(r, gi);
-      if (dica.tr !== tr || cq.res !== r) return;
+      if (dica.tr !== tr || (!rr && cq.res !== r)) return;
       dica.el.innerHTML = resumo(dd, r, gi); dica.el.hidden = false; dicaPos();
     }, 220);
   }
@@ -1344,9 +1362,11 @@
 
   // Liga os eventos da área de resultado (uma vez por página aberta)
   function ligarRes(box) {
-    const abrirLinha = (gi) => abrirPainel(gi);
+    // tabela desta caixa (outras páginas) ou a atual da consulta; ao mexer nela, ela passa a ser a atual
+    const daCaixa = () => { if (box.cqRes) cq.res = box.cqRes; return cq.res; };
+    const abrirLinha = (gi) => abrirPainel(gi, daCaixa());
     box.addEventListener("click", async (ev) => {
-      const r = cq.res; if (!r) return;
+      const r = daCaixa(); if (!r) return;
       const sn = ev.target.closest(".cq-sn");
       if (sn) { ev.stopPropagation(); if (snPop.b === sn && snPop.fixo) snEsconder(); else snMostrar(sn, true); return; }
       const pg = ev.target.closest("[data-pg]");
@@ -1357,7 +1377,7 @@
       const o = ev.target.closest("[data-ord]");
       if (o) {
         const i = +o.dataset.ord, d = r.ord && r.ord.i === i ? (r.ord.d === 1 ? -1 : 0) : 1;
-        r.ord = d ? { i, d } : null; ordenar(r); r.pag = 0; mostrarRes(); return;
+        r.ord = d ? { i, d } : null; ordenar(r); r.pag = 0; mostrarRes(r); return;
       }
       if (ev.target.closest("[data-voltar]")) {
         const ant = cq.hist.pop(); if (!ant) return;
@@ -1366,11 +1386,16 @@
       const g = ev.target.closest("[data-grupo]");
       if (g) { abrirGrupo(+g.dataset.grupo); return; }
       const tr = ev.target.closest("tr.cq-lin");
-      if (!tr || ev.target.closest("button,input,select")) return;
+      const ctl = ev.target.closest("button,input,select,a[href],details,summary");
+      if (!tr || (ctl && tr.contains(ctl))) return;
       if (ev.ctrlKey || ev.metaKey || ev.shiftKey) novaAba(+tr.dataset.i); else abrirLinha(+tr.dataset.i);
     });
     // Ctrl+clique ou botão do meio: abre a página da linha em outra aba
-    const novaAba = async (gi) => { const r = cq.res, e = r.ler(r.m.linhas[gi]), h = await resolver(e, destino(e)); if (h) window.open(new URL(h, location.href).href, "_blank", "noopener"); };
+    const novaAba = async (gi) => {
+      const r = daCaixa(), e = r.ler(r.m.linhas[gi]);
+      const h = r.box ? (await dadosLinha(r, gi)).href : await resolver(e, destino(e));
+      if (h) window.open(new URL(h, location.href).href, "_blank", "noopener");
+    };
     box.addEventListener("auxclick", (ev) => { const tr = ev.button === 1 && ev.target.closest("tr.cq-lin"); if (tr) { ev.preventDefault(); novaAba(+tr.dataset.i); } });
     box.addEventListener("keydown", (ev) => {
       const tr = ev.target.closest && ev.target.closest("tr.cq-lin");
@@ -1378,12 +1403,12 @@
       else if (tr && (ev.key === "ArrowDown" || ev.key === "ArrowUp")) { ev.preventDefault(); const o = ev.key === "ArrowDown" ? tr.nextElementSibling : tr.previousElementSibling; if (o) o.focus(); }
     });
     box.addEventListener("change", (ev) => {
-      const r = cq.res; if (!r) return;
+      const r = daCaixa(); if (!r) return;
       if (ev.target.matches(".cq-pag-n input")) irPagina((parseInt(ev.target.value, 10) || 1) - 1, ev.target.closest(".cq-pag").dataset.pos === "base");
       else if (ev.target.matches(".cq-pag-pp select")) {
         const prim = r.pag * r.pp; r.pp = +ev.target.value; r.pag = Math.floor(prim / r.pp);
         try { localStorage.setItem("cq_pp", String(r.pp)); } catch (e) { /* sem armazenamento */ }
-        mostrarRes();
+        mostrarRes(r);
       }
     });
     box.addEventListener("pointerover", (ev) => {
@@ -1392,7 +1417,7 @@
       if (sn) { if (!(snPop.fixo && snPop.b === sn)) snMostrar(sn, false); return; }
       if (snPop.b && !snPop.fixo) snEsconder();
       const tr = ev.target.closest("tr.cq-lin");
-      if (tr) { dica.x = ev.clientX; dica.y = ev.clientY; dicaMostrar(tr); } else dicaEsconder();
+      if (tr) { dica.x = ev.clientX; dica.y = ev.clientY; dicaMostrar(tr, box.cqRes || null); } else dicaEsconder();
     });
     box.addEventListener("pointermove", (ev) => { if (ev.pointerType === "mouse") { dica.x = ev.clientX; dica.y = ev.clientY; dicaPos(); } });
     box.addEventListener("pointerleave", () => { dicaEsconder(); if (snPop.b && !snPop.fixo) snEsconder(); });
@@ -1400,7 +1425,7 @@
       const sn = ev.target.closest(".cq-sn");
       if (sn) { if (sn.matches(":focus-visible") && !snPop.fixo) snMostrar(sn, false); return; }
       const tr = ev.target.closest("tr.cq-lin"); if (!tr || !tr.matches(":focus-visible")) return;
-      const rc = tr.getBoundingClientRect(); dica.x = rc.left + 40; dica.y = rc.bottom - 4; dicaMostrar(tr);
+      const rc = tr.getBoundingClientRect(); dica.x = rc.left + 40; dica.y = rc.bottom - 4; dicaMostrar(tr, box.cqRes || null);
     });
     box.addEventListener("focusout", (ev) => { dicaEsconder(); if (ev.target.closest(".cq-sn") && !snPop.fixo) snEsconder(); });
   }
@@ -1921,7 +1946,11 @@
         <section><h2>${esc(E.im_textos_t)}</h2>${texto(E.im_curto, E.im_txt_curto(v))}${texto(E.im_medio, E.im_txt_medio(v))}${texto(E.im_longo, E.im_txt_longo(v))}</section>
         <section class="grid2">
           <div class="card"><h2>${esc(E.im_citar_t)}</h2>${[[E.im_simples, E.im_cit_simples(v)], [E.im_abnt, E.im_cit_abnt(v)], [E.im_apa, E.im_cit_apa(v)]].map(([r, x]) => `<div class="im-cit"><h3 class="small">${esc(r)}</h3><p>${esc(x)}</p>${copiar(x)}</div>`).join("")}</div>
-          <div class="card"><h2>${esc(E.im_palavras_t)}</h2>${tabela([`${icone("check")} ${esc(E.im_usar)}`, `${icone("close")} ${esc(E.im_evitar)}`], E.im_palavras.map(([u, ev]) => [`<b class="im-ok">${esc(u)}</b>`, `<s class="im-no">${esc(ev)}</s>`]), "im-pal")}</div>
+          <div class="card"><h2>${esc(E.im_palavras_t)}</h2>${A.tabelaTP({ id: "im-pal", colunas: ["usar", "evitar"], rot: [E.im_usar, E.im_evitar], linhas: E.im_palavras.map(([u, ev]) => [u, ev]),
+            fmt: [(v) => `<b class="im-ok">${esc(v)}</b>`, (v) => `<s class="im-no">${esc(v)}</s>`], cls: "im-pal", ler: () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }),
+            chave: (l) => `im|${l[0]}`, fonte: (e, d, l) => Promise.resolve({ tipo: "info", e: {}, d: null, href: null, kick: E.im_palavras_t, tit: l[0], sub: "",
+              corpo: pnDl([[E.im_usar, `<b class="im-ok">${esc(l[0])}</b>`], [E.im_evitar, `<s class="im-no">${esc(l[1])}</s>`]]), acoes: "", dica: `<div class="cq-d-t">${esc(E.im_evitar)}: ${esc(l[1])}</div>` }) },
+            tabela([`${icone("check")} ${esc(E.im_usar)}`, `${icone("close")} ${esc(E.im_evitar)}`], E.im_palavras.map(([u, ev]) => [`<b class="im-ok">${esc(u)}</b>`, `<s class="im-no">${esc(ev)}</s>`]), "im-pal"))}</div>
         </section>
         <section class="grid2">
           <div class="card"><h2>${esc(E.im_imgs_t)}</h2><figure class="im-og"><img src="site/img/og.jpg" alt="${esc(L.hero_title)}" width="1200" height="630" loading="lazy"><figcaption class="small muted">${esc(E.im_og)}</figcaption></figure>
@@ -1930,6 +1959,7 @@
             <h2>${esc(E.im_contato_t)}</h2><p>${esc(E.im_contato)}</p><div class="btn-row"><a class="btn btn-sm" href="${A.TELEGRAM}" target="_blank" rel="noopener">${icone("tg")} Telegram</a>
             ${A_ ? `<a class="btn btn-sm btn-ghost" href="https://www.instagram.com/${A_.instagram.replace("@", "")}/" target="_blank" rel="noopener">${icone("insta")} ${esc(A_.instagram)}</a>` : ""}</div></div>
         </section>`;
+      A.tpExecutar();
       A.efeitos($("#im-corpo"));
     },
   };
@@ -2084,9 +2114,13 @@ curl -s ${base}SHA256SUMS.txt | head`;
         const tam = c.length ? c.map((x) => (x.n > 1 ? E.dv_n_arq(nf(x.n), tamanho(x.bytes)) : tamanho(x.bytes))).join(" + ") : "";
         const url = SITE + "site/data/" + p.split(", ")[0].replace("{UF}", "PR").replace("{zona}", "177").replace("{Lxx}", "L02").replace("{pt,en,es}", "pt");
         return `<details class="dv-arq"><summary><code>${esc(p)}</code><span>${esc(desc)}</span><small class="muted">${esc(tam)}</small></summary>
-          <div class="dv-corpo">${tabela([esc(E.dv_campos), ""], campos.map(([k, x]) => [`<code>${esc(k)}</code>`, esc(x)]), "dv-tab")}
+          <div class="dv-corpo">${A.tabelaTP({ id: `dv-${campos.length}-${campos[0] ? campos[0][0] : ""}`, colunas: ["campo", "desc"], rot: [E.dv_campos, ""], linhas: campos.map(([k, x]) => [k, x]),
+            fmt: [(v) => `<code>${esc(v)}</code>`, (v) => `<span class="lg-catc">${esc(v)}</span>`], cls: "dv-tab", ler: () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null }),
+            chave: (l) => `dv|${l[0]}`, fonte: (e, d, l) => Promise.resolve({ tipo: "info", e: {}, d: null, href: null, kick: E.dv_campos, tit: l[0], sub: "", corpo: `<p>${esc(l[1])}</p>`, acoes: "", dica: `<div class="cq-d-t">${esc(l[1])}</div>` }) },
+            tabela([esc(E.dv_campos), ""], campos.map(([k, x]) => [`<code>${esc(k)}</code>`, esc(x)]), "dv-tab"))}
           <p class="small"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p></div></details>`;
       }).join("");
+      A.tpExecutar();
     },
   };
 
@@ -2119,13 +2153,28 @@ curl -s ${base}SHA256SUMS.txt | head`;
           `<a class="btn btn-sm" href="${esc(x.ots)}" download>${icone("download")} .ots</a>`, estado(x)];
         const cab = [E.pv_th_arq, E.pv_th_sha, E.pv_th_prova, E.pv_th_estado].map(esc);
         ($("#pv-ots") || {}).innerHTML = `<p class="small muted">${esc(E.pv_registrado(dataHora(P.data)))}${P.arquivos.some((x) => !x.bloco) ? ` · ${esc(E.pv_pendente_note)}` : ""}</p>
-          <h3>${esc(E.pv_manif_t)}</h3><p class="small">${esc(E.pv_manif_txt)}</p>${tabela(cab, P.manifestos.map(linha), "pv-tab")}
-          <h3>${esc(t().nav.downloads)}</h3>${tabela(cab, P.arquivos.map(linha), "pv-tab")}`;
+          <h3>${esc(E.pv_manif_t)}</h3><p class="small">${esc(E.pv_manif_txt)}</p><div class="tp-box" id="pv-man">${tabela(cab, P.manifestos.map(linha), "pv-tab")}</div>
+          <h3>${esc(t().nav.downloads)}</h3><div class="tp-box" id="pv-arq">${tabela(cab, P.arquivos.map(linha), "pv-tab")}</div>`;
+        // tabela padrão: o painel traz o arquivo, o SHA-256 inteiro (copiar), o estado da prova e os botões
+        const linhaPv = (x) => [`<span class="fname">${esc(x.p.split("/").slice(-2).join("/"))}</span>`, `<code>${esc(x.sha256.slice(0, 16))}…</code>`, `<a class="btn btn-sm" href="${esc(x.ots)}" download>${icone("download")} .ots</a>`, estado(x)];
+        const pvPainel = (x) => Promise.resolve({ tipo: "info", e: {}, d: null, href: null, kick: E.pv_manif_t, tit: x.p.split("/").pop(), sub: x.p,
+          corpo: pnDl([[E.pv_th_arq, `<span class="fname">${esc(x.p)}</span>`], [E.pv_th_sha, `<code class="wrap">${esc(x.sha256)}</code> <button class="btn-copy" type="button" data-copy="${esc(x.sha256)}">${icone("copy")}<span>${esc(t().copy)}</span></button>`], [E.pv_th_estado, estado(x)]])
+            + `<p class="small">${esc(E.pv_ots_cli)}</p>${A.blocoCodigo ? A.blocoCodigo(`ots verify ${x.p.split("/").pop()}.ots`) : ""}`,
+          acoes: `<a class="btn btn-sm btn-primary" href="${esc(x.ots)}" download>${icone("download")} .ots</a><a class="btn btn-sm btn-ghost" href="${esc(x.p)}" download>${icone("download")} ${esc(t().dl_btn)}</a>`,
+          dica: `<div class="cq-d-t">SHA-256 ${esc(x.sha256.slice(0, 16))}…</div>` });
+        [["pv-man", P.manifestos], ["pv-arq", P.arquivos]].forEach(([id, ls]) => A.paginasExtra.tabelaHtml($("#" + id), cab, ls.map(linhaPv), { id, cls: "pv-tab", titulo: (gi) => ls[gi].p.split("/").pop(), fonte: (gi) => pvPainel(ls[gi]) }));
       } catch (e) { ($("#pv-ots") || {}).innerHTML = `<p class="muted">${esc(E.pv_pendente)}</p>`; }
       try {
         const C = await dado("site/data/arquivo.json");
-        ($("#pv-copias") || {}).innerHTML = C.copias && C.copias.length ? tabela([E.pv_th_end, E.pv_th_data, ""].map(esc), C.copias.map((c) => [`<code class="wrap">${esc(c.url.replace(SITE, "/"))}</code>`, esc(dataHora(c.quando)), `<a class="btn btn-sm" href="${esc(c.copia)}" target="_blank" rel="noopener">${icone("archive")} ${esc(E.pv_ver)}</a>`]), "pv-tab")
+        ($("#pv-copias") || {}).innerHTML = C.copias && C.copias.length ? `<div class="tp-box" id="pv-cop"></div>`
           : `<p class="muted">${esc(E.pv_sem_copias)}</p>`;
+        // cópias no Internet Archive: tabela padrão; o painel traz o endereço inteiro, a data e o botão da cópia
+        if (C.copias && C.copias.length) A.paginasExtra.tabelaHtml($("#pv-cop"), [E.pv_th_end, E.pv_th_data, ""].map(esc),
+          C.copias.map((c) => [`<code class="wrap">${esc(c.url.replace(SITE, "/"))}</code>`, esc(dataHora(c.quando)), `<a class="btn btn-sm" href="${esc(c.copia)}" target="_blank" rel="noopener">${icone("archive")} ${esc(E.pv_ver)}</a>`]),
+          { id: "pv-cop", cls: "pv-tab", titulo: (gi) => C.copias[gi].url.replace(SITE, "/"),
+            fonte: (gi) => Promise.resolve({ tipo: "info", e: {}, d: null, href: null, kick: E.pv_arq_t, tit: C.copias[gi].url.replace(SITE, "/"), sub: dataHora(C.copias[gi].quando),
+              corpo: pnDl([[E.pv_th_end, `<code class="wrap">${esc(C.copias[gi].url)}</code>`], [E.pv_th_data, esc(dataHora(C.copias[gi].quando))], [E.pv_ver, `<code class="wrap">${esc(C.copias[gi].copia)}</code>`]]),
+              acoes: `<a class="btn btn-sm btn-primary" href="${esc(C.copias[gi].copia)}" target="_blank" rel="noopener">${icone("archive")} ${esc(E.pv_ver)}</a>`, dica: `<div class="cq-d-t">${esc(dataHora(C.copias[gi].quando))}</div>` }) });
       } catch (e) { ($("#pv-copias") || {}).innerHTML = `<p class="muted">${esc(E.pv_sem_copias)}</p>`; }
     },
   };
@@ -2328,8 +2377,77 @@ curl -s ${base}SHA256SUMS.txt | head`;
   let audIni = false;
   document.addEventListener("pagina", () => { audMontar(); if (!audIni) { audIni = true; audAgendar(5000); } });
 
+  // --- Tabela padrão de qualquer página: a mesma tabela, dica e painel da página Urnas que fecharam tarde -----------------
+  // cfg: id (nome da tabela), memo (filtros; mesma chave = volta à mesma página/ordem/linha), colunas, rot, linhas, fmt,
+  //      ler (linha -> {uf, z, s, t, ...}), fonte(e, d, linha) -> dados do painel ({tipo: "secao"|"uf"|"mun"|"info", ...}),
+  //      chave(linha) (cache do painel), temSec (coluna Sinais), dicaLinha (balão "clique na linha"), infoEl, dlEl, info(n),
+  //      painelTopo, dicaExtra, uso (texto de ajuda abaixo), vazio (HTML quando não há linhas), cls
+  const tabMemo = new Map();
+  function tabelaPadrao(box, cfg) {
+    if (!box) return null;
+    const k = `${cfg.id || "tab"}|${cfg.memo || ""}`, ant = tabMemo.get(k);
+    const r = { id: ++cqResSeq, m: { colunas: cfg.colunas, linhas: cfg.linhas }, sql: null, turno: cfg.turno || 0, ms: 0,
+      pag: ant ? ant.pag : 0, pp: cfg.pp || ppSalvo(), ord: ant ? ant.ord : cfg.ord || null, sel: null, G: null,
+      ler: cfg.ler || leitor(cfg.colunas), temSec: !!cfg.temSec, fonte: cfg.fonte || dadosSecaoArq, fonteId: cfg.id || "tab", chave: cfg.chave || null,
+      rot: cfg.rot || cfg.colunas, fmt: cfg.fmt || null, semNum: true, tabCls: `et-tab tp-tab${cfg.cls ? " " + cfg.cls : ""}`, barraTopo: true, animRolar: true,
+      dicaLinha: !!cfg.dicaLinha, guiaPainel: true, info: cfg.info || null, uso: cfg.uso || null, vazio: cfg.vazio || null,
+      box, infoEl: cfg.infoEl || null, dlEl: cfg.dlEl || null, painelTopo: cfg.painelTopo || null, dicaExtra: cfg.dicaExtra || null,
+      tituloLinha: cfg.tituloLinha || null, kickLinha: cfg.kickLinha || "",
+      volta: ant ? ant.volta : null };
+    tabMemo.set(k, r);
+    if (tabMemo.size > 60) tabMemo.delete(tabMemo.keys().next().value);
+    ordenar(r);
+    box.cqRes = r;
+    if (!box.cqLigado) { ligarRes(box); box.cqLigado = true; }
+    const pronto = () => {
+      if (!box.isConnected || box.cqRes !== r) return;
+      mostrarRes(r);
+      // volta de uma página aberta pelo painel: a página da tabela e a linha continuam onde estavam
+      const v = r.volta; r.volta = null;
+      if (v && v.i != null) {
+        const tr = $(`tr[data-i="${v.i}"]`, box);
+        if (tr) { tr.scrollIntoView({ block: "center" }); tr.classList.add("cq-volta"); setTimeout(() => tr.classList.remove("cq-volta"), 2600); }
+        if (v.painel) setTimeout(() => abrirPainel(v.i, r), 0);
+      }
+    };
+    // coluna Sinais: precisa da lista de sinais das seções
+    if (r.temSec && !cq.sin) { box.innerHTML = carregando(); sinaisSecoes().then((m) => { cq.sin = m; }).catch(() => { cq.sin = null; }).then(pronto); }
+    else pronto();
+    return r;
+  }
+  // painel de estado e de município com os dados publicados (sem o banco da consulta): votos de cada turno, comparação,
+  // resumo e seções com anomalia (testes 1 a 12)
+  const votosT = (n, arr) => { const o = {}; R().ordem_votos[n].forEach((nr, i) => { o["v" + nr] = (arr && arr[i]) || 0; }); return o; };
+  function tsDe(t, sec, sn) {
+    return [1, 2].filter((n) => t[n]).map((n) => {
+      const x = t[n], v = votosT(n, x.arr), val = Object.keys(v).reduce((a, c) => a + (c === "v95" || c === "v96" ? 0 : v[c]), 0);
+      return Object.assign({ turno: n, secoes: sec, aptos: x.aptos, comparecimento: x.comp, faltosos: x.aptos - x.comp, validos: val, brancos: v.v95 || 0, nulos: v.v96 || 0,
+        sinalizadas: sn ? sn[n].a : undefined }, v);
+    });
+  }
+  // sn (opcional): seções com anomalia por turno {1: {a, i}, 2: {a, i}}, as mesmas da tabela que abriu o painel;
+  // sem ele, o painel não mostra essa linha (cada tabela conta do seu jeito: Relatório Técnico ou lista com a prévia)
+  async function fonteMun(uf, cod, sn) {
+    const [U, muns] = await Promise.all([A.paginasExtra.dado(`site/data/ufs/${uf}.json`), A.municipios()]);
+    const m = U.m[cod]; if (!m) throw new Error("municipio");
+    const t = {}; [1, 2].forEach((n) => { const x = m[n + 1]; if (x) t[n] = { aptos: x[0], comp: x[1], arr: x[2] }; });
+    return { tipo: "mun", e: { uf, cod }, d: null, href: `#/uf/${uf}/${cod}`, ts: tsDe(t, m[0], sn), munNome: A.titulo(((muns[uf] || {})[cod] || [cod])[0]) };
+  }
+  async function fonteUf(uf, sn) {
+    const [U] = await Promise.all([A.paginasExtra.dado(`site/data/ufs/${uf}.json`)]);
+    const t = {}; let sec = 0;
+    Object.values(U.m).forEach((m) => {
+      sec += m[0];
+      [1, 2].forEach((n) => { const x = m[n + 1]; if (!x) return; const a = t[n] || (t[n] = { aptos: 0, comp: 0, arr: [] }); a.aptos += x[0]; a.comp += x[1]; (x[2] || []).forEach((v, i) => { a.arr[i] = (a.arr[i] || 0) + (v || 0); }); });
+    });
+    return { tipo: "uf", e: { uf }, d: null, href: `#/uf/${uf}`, ts: tsDe(t, sec, sn) };
+  }
+  // bloco de números do painel (rótulo e valor)
+  const pnDl = (pares) => `<dl class="cq-p-dl tp-dl">${pares.filter(Boolean).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
+
   // Mesma tabela, dica e painel para outras páginas com seções (Logs das urnas: logs.js)
   A.cqPagina = {
+    tabela: tabelaPadrao, fonteUf, fonteMun, pnDl, chipsSinal,
     mostrar(r) { cq.res = r; mostrarRes(); }, ligar: ligarRes, fechar: fecharPainel, abrir: abrirPainel, ordenar, ppSalvo, novoId: () => ++cqResSeq,
     sinais: () => sinaisSecoes().then((m) => { cq.sin = m; }).catch(() => { cq.sin = null; }), fonteSecao: dadosSecaoArq, usado: vhUsado,
     nA, pA, animarAoVer: etAnimarAoVer, zerar: etZerar, contar: contarBloco, baixar, csvCampo, nz, carregando, erroDados,
