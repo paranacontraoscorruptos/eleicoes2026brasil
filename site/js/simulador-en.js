@@ -95,8 +95,8 @@
 
   const faqGeral = [
     ["Are the simulator's numbers real?", "No. All numbers are made up and generated on your device. No real section, city or candidate data appears here. The candidates are called A and B on purpose."],
-    ["Why can't I share or take a screenshot?", "Because a screenshot of a fictitious case could be spread as if it were real. To prevent false news, the page has no share, copy, image or print buttons, shows the “SIMULATION · FICTITIOUS DATA” watermark over the whole screen and hides the content when it detects a capture."],
-    ["Does the screenshot block always work?", "No. A website cannot stop a phone screenshot or a photo of the screen taken with another device. On computers, the page detects some captures and hides the content. That is why the watermark and the red bar are always visible."],
+    ["Why can't I share or take a screenshot?", "Because a screenshot of a fictitious case could be spread as if it were real. To prevent false news, the page has no share, copy, image or print buttons, shows a red bar saying the data is fictitious and hides the content when it detects a capture."],
+    ["Does the screenshot block always work?", "No. A website cannot stop a phone screenshot or a photo of the screen taken with another device. On computers, the page detects some captures and hides the content. That is why the red bar is always visible."],
     ["Does the simulator use the same rules as the audit?", "Yes. The limits, minimums and calculations are the same as the audit engine (same parameters as the Technical Report). The difference is that the data is made up and the comparison region is fictitious."],
     ["What is a statistical anomaly?", "A result very different from what is expected in that situation. It is a prompt to check the printed tally sheet, the minutes and the machine files. It proves nothing: there are legitimate causes, as the false-alarm missions show."],
     ["Why doesn't the site point to culprits or irregularities?", "Because a statistical test cannot know the cause. It only shows what departs from the pattern. Any conclusion depends on people checking the official documents."],

@@ -613,21 +613,17 @@
   }
 
   // ===================================================================================================
-  // Proteção: sem compartilhar, copiar, imprimir, salvar ou incorporar. Marca d'água em toda a tela.
+  // Proteção: sem compartilhar, copiar, imprimir, salvar ou incorporar. Faixa vermelha no rodapé.
   // ===================================================================================================
   const ativo = () => document.documentElement.classList.contains("sim-on");
   const emQuadro = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
-  function marcaDagua() {
-    let m = $("#sim-marca");
-    const u = U(), txt = u.marca;
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='420' height='240'><text x='0' y='140' transform='rotate(-24 210 120)' font-family='Arial,sans-serif' font-size='22' font-weight='700' fill='%23888' fill-opacity='.30'>${txt.replace(/&/g, "&amp;").replace(/</g, "")}</text></svg>`;
-    if (!m) {
-      m = document.createElement("div"); m.id = "sim-marca"; m.setAttribute("aria-hidden", "true");
+  function marcaDagua() {   // só a faixa vermelha e a tela de bloqueio (a marca d'água foi retirada)
+    const u = U();
+    if (!$("#sim-faixa")) {
       const b = document.createElement("div"); b.id = "sim-faixa"; b.setAttribute("role", "note");
       const o = document.createElement("div"); o.id = "sim-bloqueio"; o.hidden = true; o.setAttribute("role", "alertdialog");
-      document.body.append(m, b, o);
+      document.body.append(b, o);
     }
-    m.style.backgroundImage = `url("data:image/svg+xml;utf8,${svg.replace(/#/g, "%23").replace(/"/g, "'")}")`;
     $("#sim-faixa").innerHTML = `${icone("shield")}<span>${esc(u.faixa)}</span>`;
   }
   function bloquear(motivo) {
