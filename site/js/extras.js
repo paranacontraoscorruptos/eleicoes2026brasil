@@ -892,7 +892,7 @@
   }
   function dadosLinha(r, gi) {
     const l = r.m.linhas[gi], e = r.ler(l), d = destino(e);
-    const k = (r.fonte ? "arq|" : "") + (d ? `${d.tipo}|${JSON.stringify(e)}` : `linha|${r.id}|${gi}`);
+    const k = (r.fonte ? `${r.fonteId || "arq"}|` : "") + (d ? `${d.tipo}|${JSON.stringify(e)}` : `linha|${r.id}|${gi}`);
     if (!cacheInfo.has(k)) {
       if (cacheInfo.size > 400) cacheInfo.clear();
       cacheInfo.set(k, (r.fonte ? r.fonte(e, d) : carregarDados(e, d)).catch(() => ({ tipo: "linha", e, d: null, href: null })));
@@ -1102,7 +1102,7 @@
     if (dd.tipo === "secao") {
       kick = `${e.uf} · ${dd.munNome}`; tit = `${L.th_zone} ${e.z} · ${L.th_section} ${e.s}`;
       sub = dd.loc ? [A.titulo(dd.loc[0]), dd.loc[2] && A.titulo(dd.loc[2])].filter(Boolean).join(" · ") : "";
-      corpo = htmlVotacao(dd, tf) + htmlSinais(dd, tf) + htmlResumo(dd, tf) + htmlVHPainel(dd, tf);
+      corpo = (r.painelTopo ? r.painelTopo(dd, r, gi) : "") + htmlVotacao(dd, tf) + htmlSinais(dd, tf) + htmlResumo(dd, tf) + (r.semVH && r.semVH(dd, r, gi) ? "" : htmlVHPainel(dd, tf));
       if ((dd.ts || []).some((x) => (!tf || x.turno === tf) && seg(x.encerramento) >= tardeH(x.turno) * 3600)) corpo += `<p class="cq-p-nota">${icone("help")} ${esc(E.cq_nota_tarde)}</p>`;
       corpo += `<p class="small muted">${esc(E.cq_hora_local)}</p>`;
     } else if (dd.tipo === "local") {
@@ -1170,6 +1170,7 @@
       const ident = r.m.colunas.map(identCol), l = r.m.linhas[gi];
       h += r.m.colunas.slice(0, 8).map((col, i) => `<div class="cq-d-t"><b>${esc(col)}</b>: ${fmtCel(l[i], ident[i])}</div>`).join("");
     }
+    if (r.dicaExtra) h += r.dicaExtra(dd, r, gi);
     return h + `<div class="cq-d-ir">${esc(E.cq_dica_clique)}</div>`;
   }
 
@@ -1235,8 +1236,9 @@
     corpo.innerHTML = c.corpo; corpo.scrollTop = 0;
     if (r.animRolar) animarAoRolar(corpo); else animarPainel(corpo);
     // botão "Ver horário de cada voto" também no rodapé (primeiro, pulsando), quando a urna tem votos depois do horário
-    const vb = r.guiaPainel && corpo.querySelector("[data-vh-ver]"), ac = el.querySelector(".cq-p-acoes");
-    ac.innerHTML = (vb ? `<button class="btn btn-sm btn-primary cq-p-vh pulsa" type="button" data-vh-ir>${icone("clock")} <span>${esc(E.vh_ir)}</span></button>` : "") + c.acoes;
+    const vb = r.guiaPainel && (r.botaoPainel ? r.botaoPainel(corpo) : corpo.querySelector("[data-vh-ver]")), ac = el.querySelector(".cq-p-acoes");
+    painel.vb = vb || null;
+    ac.innerHTML = (vb ? `<button class="btn btn-sm btn-primary cq-p-vh pulsa" type="button" data-vh-ir>${icone(vb.dataset.lgIco || "clock")} <span>${esc(vb.dataset.lgIr || E.vh_ir)}</span></button>` : "") + c.acoes;
     ac.classList.toggle("cq-p-acoes-g", !!vb);
     if (!aberto) el.focus({ preventScroll: true });
     if (r.guiaPainel) guiaLigar(el, corpo, vb);
@@ -1265,12 +1267,12 @@
     if (!g.hidden) g.style.bottom = `${el.querySelector(".cq-p-foot").offsetHeight + 12}px`;
     // 2) balão em cima do botão de dentro, quando ele aparece ao rolar
     if (!vb || guardado("cq_dica_vh")) return;
-    const E = X(), rec = vh.recs.get(vb.dataset.vhVer), alvo = vb.closest(".vh-acoes");
-    if (!rec || !alvo) return;
-    const toque = matchMedia("(hover: none)").matches, q = rec.apos;
+    const E = X(), rec = vb.dataset.vhVer ? vh.recs.get(vb.dataset.vhVer) : null, alvo = vb.closest(".vh-acoes, .lg-acoes");
+    if (!(rec || vb.dataset.lgDica) || !alvo) return;
+    const toque = matchMedia("(hover: none)").matches, q = rec ? rec.apos : 0;
     const bl = document.createElement("div");
     bl.className = "cq-vhb"; bl.setAttribute("role", "note"); bl.hidden = true;
-    bl.innerHTML = `<p>${esc(E.vh_dica_b(q, nf(q), vhHM(rec.fim), toque))}</p><button class="cq-dlin-x" type="button" data-vhb-x aria-label="${esc(E.cq_dlin_x)}" title="${esc(E.cq_dlin_x)}">${icone("close")}</button>`;
+    bl.innerHTML = `<p>${esc(rec ? E.vh_dica_b(q, nf(q), vhHM(rec.fim), toque) : vb.dataset.lgDica)}</p><button class="cq-dlin-x" type="button" data-vhb-x aria-label="${esc(E.cq_dlin_x)}" title="${esc(E.cq_dlin_x)}">${icone("close")}</button>`;
     alvo.append(bl);
     const mostrar = () => { bl.hidden = false; vb.classList.add("cq-vhb-alvo"); };
     if (!("IntersectionObserver" in window)) { mostrar(); return; }
@@ -1280,11 +1282,11 @@
   }
   // rodapé: abre a lista voto a voto e leva o painel até ela
   function irVH() {
-    const corpo = painel.el && painel.el.querySelector(".cq-p-body"), b = corpo && corpo.querySelector("[data-vh-ver]");
+    const corpo = painel.el && painel.el.querySelector(".cq-p-body"), b = painel.vb && painel.vb.isConnected ? painel.vb : corpo && corpo.querySelector("[data-vh-ver]");
     if (!b) return;
-    if (b.getAttribute("aria-expanded") !== "true") vhAlternar(b, false);
+    if (b.getAttribute("aria-expanded") !== "true") { if (b.dataset.vhVer) vhAlternar(b, false); else b.click(); }
     vhUsado(); rolarEsconder(); guia.rolou = true;
-    const alvo = b.closest(".vh-acoes") || b;
+    const alvo = b.closest(".vh-acoes, .lg-acoes") || b;
     corpo.scrollTo({ top: corpo.scrollTop + alvo.getBoundingClientRect().top - corpo.getBoundingClientRect().top - 8, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }
   function fecharPainel(foco) {
@@ -2080,7 +2082,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
       $("#dv-arqs").innerHTML = Object.entries(E.dv_desc).map(([p, [desc, campos]]) => {
         const c = p.split(", ").map((x) => por[x]).filter(Boolean);
         const tam = c.length ? c.map((x) => (x.n > 1 ? E.dv_n_arq(nf(x.n), tamanho(x.bytes)) : tamanho(x.bytes))).join(" + ") : "";
-        const url = SITE + "site/data/" + p.split(", ")[0].replace("{UF}", "PR").replace("{zona}", "177").replace("{pt,en,es}", "pt");
+        const url = SITE + "site/data/" + p.split(", ")[0].replace("{UF}", "PR").replace("{zona}", "177").replace("{Lxx}", "L02").replace("{pt,en,es}", "pt");
         return `<details class="dv-arq"><summary><code>${esc(p)}</code><span>${esc(desc)}</span><small class="muted">${esc(tam)}</small></summary>
           <div class="dv-corpo">${tabela([esc(E.dv_campos), ""], campos.map(([k, x]) => [`<code>${esc(k)}</code>`, esc(x)]), "dv-tab")}
           <p class="small"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p></div></details>`;
@@ -2255,7 +2257,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
   // Kit de imprensa, Provas e cópias, Atlas): relatórios, dados e motor publicados pelo site e o .zip do repositório.
   // Ficam livres: carimbos .ots, manifestos SHA256SUMS, imagens, links para ver o código no GitHub e os arquivos que a
   // própria pessoa gera no navegador (CSV de consulta, imagem, PDF). O link perde o endereço (nem o botão direito baixa).
-  const RE_PAUSA = /^(\.?\/)?(auditoria-eleicoes-2026-Brasil|site\/data\/(complementar|anomalias))\//;
+  const RE_PAUSA = /^(\.?\/)?(auditoria-eleicoes-2026-Brasil|site\/data\/(complementar|anomalias|logs))\//;
   const RE_ZIP = /^https:\/\/github\.com\/[^?#]+\/archive\/refs\/heads\/[^/?#]+\.zip$/;
   function dlPausado(h) {
     if (!h || /\.ots$|SHA256SUMS\.txt$/.test(h)) return false;
@@ -2326,6 +2328,13 @@ curl -s ${base}SHA256SUMS.txt | head`;
   let audIni = false;
   document.addEventListener("pagina", () => { audMontar(); if (!audIni) { audIni = true; audAgendar(5000); } });
 
+  // Mesma tabela, dica e painel para outras páginas com seções (Logs das urnas: logs.js)
+  A.cqPagina = {
+    mostrar(r) { cq.res = r; mostrarRes(); }, ligar: ligarRes, fechar: fecharPainel, abrir: abrirPainel, ordenar, ppSalvo, novoId: () => ++cqResSeq,
+    sinais: () => sinaisSecoes().then((m) => { cq.sin = m; }).catch(() => { cq.sin = null; }), fonteSecao: dadosSecaoArq, usado: vhUsado,
+    nA, pA, animarAoVer: etAnimarAoVer, zerar: etZerar, contar: contarBloco, baixar, csvCampo, nz, carregando, erroDados,
+    vh: { secao: vhSecao, html: vhHtml, H: vhH, HM: vhHM, dur: vhDur, lib: vhLib, marcas: vhMarcas },
+  };
   Object.assign(A.paginas, { "encerramento-tardio": pgEncTardio, simulador: pgSimulador, locais: pgLocais, perguntas: pgPerguntas, anatomia: pgAnatomia, consulta: pgConsulta, imprensa: pgImprensa, incorporar: pgIncorporar, widget: pgWidget, dados: pgDados, provas: pgProvas });
   A.extras = { locais, sinalizacoes, md };
 })();
