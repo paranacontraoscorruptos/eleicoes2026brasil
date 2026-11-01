@@ -449,11 +449,12 @@
       emissao: esc(T.cab.emissao), versao: esc(R.motor.versao), dur: esc(T.cab.duracao) });
     const rel = ["PT", "EN", "ES"].map((lg) => { const p = `${PASTA}/resultados-${n}turno/Relatorio_Tecnico_Auditoria_Eleicoes_2026_${lg}.md`;
       return `<a class="btn" href="${p}" download>${icone("download")} ${esc(L.report_lang[lg])}</a>`; }).join("");
-    state.cartao = { kicker: L.roundDate[n], titulo: `${L.round(n)} · ${L.cd_pres}`, itens: barrasTurno(n, +n === 1 ? 6 : 2).itens.map((x) => ["b"].concat(x))
+    state.cartao = { kicker: L.roundDate[n], titulo: `${L.round(+n)} · ${L.cd_pres}`, itens: barrasTurno(n, +n === 1 ? 6 : 2).itens.map((x) => ["b"].concat(x))
       .concat([[L.st_comp, `${nf(P.comparecimento)} (${pct(P.comparecimento / P.aptos)})`], [L.blank, nf(br.votos)], [L.null_, nf(nu.votos)],
         [L.r_flagged, `${nf(T.secoes_sinalizadas)} (${pct(T.secoes_sinalizadas / T.entrada.secoes)})`]].map((x) => ["l"].concat(x))) };
     return `
-    <header class="page-head"><p class="kicker">${esc(L.roundDate[n])}</p><h1>${esc(L.round(n))}</h1>
+    <header class="page-head"><nav class="turno-sel" aria-label="${esc(L.nav.turno_sel)}">${[1, 2].map((k) => `<a href="#/turno/${k}"${+n === k ? ' aria-current="page"' : ""}>${esc(L.round(k))}</a>`).join("")}</nav>
+      <p class="kicker">${esc(L.roundDate[n])}</p><h1>${esc(L.round(+n))}</h1>
       <p class="muted">${esc(L.r_processed(nf(T.entrada.linhas), nf(T.entrada.secoes), nf(T.entrada.boletins)))}</p>${acoes(true)}</header>
     <div class="tiles">
       ${tile(T.secoes_sinalizadas, L.r_flagged, L.tip_sinal, "flag", `(${pct(T.secoes_sinalizadas / T.entrada.secoes)})`)}
@@ -720,7 +721,11 @@
     const L = t(), p = rota(), main = $("#main");
     let html, ativo = "home", tit = L.hero_title, pg = null;
     state.cartao = null;
-    if (p[0] === "turno" && (p[1] === "1" || p[1] === "2")) { html = paginaTurno(p[1]); ativo = "r" + p[1]; tit = L.round(+p[1]); }
+    if (p[0] === "turno") {   // um botão só no menu: abre o último turno visto (ou o 2º) e a página tem a escolha 1º/2º
+      let n = p[1];
+      if (n !== "1" && n !== "2") { n = ler("turno") === "1" ? "1" : "2"; history.replaceState(null, "", "#/turno/" + n); }
+      guardar("turno", n); html = paginaTurno(n); ativo = "res"; tit = L.round(+n);
+    }
     else if (p[0] === "testes") { html = paginaTestes(p[1]); ativo = "tests"; tit = L.tests_title; }
     else if (p[0] === "secao") { html = paginaSecao(p[1], p[2], p[3]); ativo = "lookup"; tit = L.lk_title; }
     else if (p[0] === "replicar") { html = paginaReplicar(); ativo = "replicate"; tit = L.rp_title; }
@@ -799,14 +804,14 @@
   document.addEventListener("avisos", () => faixaTopo());
 
   // Menu do alto. Página nova que não estiver em nenhum grupo entra sozinha no último.
-  const MENU1 = ["home", "r1", "r2", "tests", "lookup", "atlas", "sim", "map", "faq", "downloads"];
+  const MENU1 = ["home", "res", "tests", "lookup", "atlas", "sim", "map", "faq", "downloads"];
   // em cima no computador; Perguntas só a partir de 1270 px (abaixo disso fica no grupo de baixo); no celular, só nos grupos
   const MENU1_LARGO = { map: "so-pc", faq: "so-largo" };
   const MENU2 = [["g_res", ["vary", "late", "map", "states", "list", "charts"]], ["g_con", ["query", "places", "verify", "ballot", "saved"]],
     ["g_ent", ["faq", "glossary", "anatomy", "replicate", "limits"]], ["g_mais", ["updates", "proofs", "press", "embed", "devs"]]];
   function menuItens() {
-    const href = Object.fromEntries(PAGINAS.concat(MAIS));
-    const usados = new Set(MENU1.concat(...MENU2.map((g) => g[1])));
+    const href = Object.assign(Object.fromEntries(PAGINAS.concat(MAIS)), { res: "#/turno" });
+    const usados = new Set(MENU1.concat(...MENU2.map((g) => g[1]), ["r1", "r2"]));   // 1º e 2º turno: dentro de Resultados
     const sobra = Object.keys(href).filter((k) => !usados.has(k));
     const grupos = MENU2.map(([g, ks], i) => [g, (i === MENU2.length - 1 ? ks.concat(sobra) : ks).filter((k) => href[k])]);
     return { href, um: MENU1.filter((k) => href[k]), grupos, largo: MENU1_LARGO };

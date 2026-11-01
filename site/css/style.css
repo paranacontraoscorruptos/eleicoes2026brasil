@@ -2466,3 +2466,9 @@ html.embed .aud-tarja, html.embed .aud-foot { display: none !important; }
   .nav2 a { padding: 3px 6px; font-size: .75rem; }
   .mg + .mg .mg-c::before { margin: 0 4px 0 3px; }
 }
+
+/* --- Resultados: escolha do turno dentro da página --- */
+.turno-sel { display: flex; width: fit-content; gap: 4px; padding: 4px; margin: 0 0 14px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--surface-2); }
+.turno-sel a { padding: 7px 18px; border-radius: 9px; color: var(--ink-2); font: 700 .92rem var(--font); text-decoration: none; transition: background .2s, color .2s; }
+.turno-sel a:hover { background: var(--surface-3); color: var(--ink); }
+.turno-sel a[aria-current="page"] { background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, var(--yellow))); color: var(--accent-ink); }
