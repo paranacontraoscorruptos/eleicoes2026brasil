@@ -361,24 +361,24 @@
   };
   ["PT", "EN", "ES"].forEach((lg) => { if (I[lg] && I[lg].ex && I[lg].ex.dv_desc) Object.assign(I[lg].ex.dv_desc, DV[lg]); });
   const L = () => TXT[A.state.lang] || TXT.PT;
-  // subpágina Achados em destaque (#/logs/destaques): textos de cada achado; números vêm de t1/destaques.json (destaques.py)
+  // subpágina Apontamentos em destaque (#/logs/destaques): textos de cada apontamento; números vêm de t1/destaques.json (destaques.py)
   const TXT_DZ = {
     PT: {
-      titulo: "Achados em destaque · Logs das urnas",
-      sub: "Os achados dos testes do log que mais merecem atenção no 1º turno. Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em uma seção da lista e veja o que o teste encontrou naquela urna.",
-      cta_k: "Merecem atenção", cta_t: "Achados em destaque",
+      titulo: "Apontamentos em destaque · Logs das urnas",
+      sub: "Os apontamentos dos testes do log que mais merecem atenção no 1º turno. Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em uma seção da lista e veja o que o teste encontrou naquela urna.",
+      cta_k: "Merecem atenção", cta_t: "Apontamentos em destaque",
       cta_p: "O log que não bate com o boletim de urna, a carga da urna diferente, o relógio ajustado durante a votação, tentativas fora do padrão e votos com a urna marcada como desligada.",
-      cta_b: "Ver os achados", cta_n: (a, m) => [`${a} seções · prioridade alta`, `${m} seções · prioridade média`],
+      cta_b: "Ver os apontamentos", cta_n: (a, m) => [`${a} seções · prioridade alta`, `${m} seções · prioridade média`],
       oque_t: "O que esta página mostra",
-      oque: ["Dos 14 testes do log, esta página separa os achados que mais merecem conferência, cada um com a lista das suas seções.",
+      oque: ["Dos 14 testes do log, esta página separa os apontamentos que mais merecem conferência, cada um com a lista das suas seções.",
         "Prioridade alta (vermelho): o log da urna não bate com o boletim de urna. Prioridade média (amarelo): eventos raros, que pedem conferência com a ata da mesa.",
         "Cada linha abre o mesmo painel da página Logs das urnas: o que o teste apurou na urna, a linha do dia, as urnas usadas e os registros do log.",
         "Anomalia estatística não é prova de fraude, erro ou irregularidade: indica prioridade de verificação documental (ata da mesa, boletim impresso e registros da urna)."],
       voltar: "Logs das urnas", p: { a: "Prioridade alta", m: "Prioridade média" },
       kt: { log_bu: "Log × boletim de urna", carga: "Carga diferente do boletim", relogio: "Relógio ajustado na votação", tentativas: "Tentativas fora do padrão", desligada: "Votos com a urna desligada" },
-      k_tot: "Seções em destaque", k_tot_sub: (n) => `em ${n} achados`, k_sub: { a: "seções · prioridade alta", m: "seções · prioridade média" },
-      faixas_t: "Os achados", faixas_n: "Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em um achado para ver a lista das seções.",
-      lista_t: "Seções do achado", f_grupo: "Achado", h_dest: "Casos que chamam atenção", h_porque: "Por que merece atenção", h_conferir: "O que conferir",
+      k_tot: "Seções em destaque", k_tot_sub: (n) => `em ${n} apontamentos`, k_sub: { a: "seções · prioridade alta", m: "seções · prioridade média" },
+      faixas_t: "Os apontamentos", faixas_n: "Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em um apontamento para ver a lista das seções.",
+      lista_t: "Seções do apontamento", f_grupo: "Apontamento", h_dest: "Casos que chamam atenção", h_porque: "Por que merece atenção", h_conferir: "O que conferir",
       abrir: "Abrir o painel desta seção", ver_teste: (id) => `Todas as seções do teste ${id}`,
       g: {
         log_bu: { t: "Menos votos no log do que no boletim de urna",
@@ -417,21 +417,21 @@
       },
     },
     EN: {
-      titulo: "Key findings · Voting machine logs",
-      sub: "The log test findings that most deserve attention in round 1. In red, high priority; in yellow, medium priority. Click a section on the list to see what the test found on that machine.",
-      cta_k: "Deserve attention", cta_t: "Key findings",
+      titulo: "Key audit points · Voting machine logs",
+      sub: "The points raised by the log tests that most deserve attention in round 1. In red, high priority; in yellow, medium priority. Click a section on the list to see what the test found on that machine.",
+      cta_k: "Deserve attention", cta_t: "Key audit points",
       cta_p: "The log that does not match the tally sheet, a different machine load, the clock adjusted during voting, attempts outside the pattern and votes with the machine marked as off.",
-      cta_b: "See the findings", cta_n: (a, m) => [`${a} sections · high priority`, `${m} sections · medium priority`],
+      cta_b: "See the audit points", cta_n: (a, m) => [`${a} sections · high priority`, `${m} sections · medium priority`],
       oque_t: "What this page shows",
-      oque: ["Out of the 14 log tests, this page separates the findings that most deserve checking, each with the list of its sections.",
+      oque: ["Out of the 14 log tests, this page separates the audit points that most deserve checking, each with the list of its sections.",
         "High priority (red): the machine log does not match the tally sheet. Medium priority (yellow): rare events that call for checking against the polling station minutes.",
         "Each row opens the same panel as the Voting machine logs page: what the test found on the machine, the timeline of the day, the machines used and the log records.",
         "A statistical anomaly is not proof of fraud, error or irregularity: it sets a priority for documentary checking (polling station minutes, printed tally sheet and machine records)."],
       voltar: "Voting machine logs", p: { a: "High priority", m: "Medium priority" },
       kt: { log_bu: "Log × tally sheet", carga: "Load differs from the tally sheet", relogio: "Clock adjusted during voting", tentativas: "Attempts outside the pattern", desligada: "Votes with the machine off" },
-      k_tot: "Sections in the findings", k_tot_sub: (n) => `in ${n} findings`, k_sub: { a: "sections · high priority", m: "sections · medium priority" },
-      faixas_t: "The findings", faixas_n: "In red, high priority; in yellow, medium priority. Click a finding to see its list of sections.",
-      lista_t: "Sections in the finding", f_grupo: "Finding", h_dest: "Cases that stand out", h_porque: "Why it deserves attention", h_conferir: "What to check",
+      k_tot: "Highlighted sections", k_tot_sub: (n) => `in ${n} audit points`, k_sub: { a: "sections · high priority", m: "sections · medium priority" },
+      faixas_t: "The audit points", faixas_n: "In red, high priority; in yellow, medium priority. Click an audit point to see its list of sections.",
+      lista_t: "Sections in this audit point", f_grupo: "Audit point", h_dest: "Cases that stand out", h_porque: "Why it deserves attention", h_conferir: "What to check",
       abrir: "Open this section's panel", ver_teste: (id) => `All sections in test ${id}`,
       g: {
         log_bu: { t: "Fewer votes in the log than on the tally sheet",
@@ -470,21 +470,21 @@
       },
     },
     ES: {
-      titulo: "Hallazgos destacados · Logs de las urnas",
-      sub: "Los hallazgos de las pruebas del log que más merecen atención en la 1.ª vuelta. En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en una sección de la lista y vea qué encontró la prueba en esa urna.",
-      cta_k: "Merecen atención", cta_t: "Hallazgos destacados",
+      titulo: "Señalamientos destacados · Logs de las urnas",
+      sub: "Los señalamientos de las pruebas del log que más merecen atención en la 1.ª vuelta. En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en una sección de la lista y vea qué encontró la prueba en esa urna.",
+      cta_k: "Merecen atención", cta_t: "Señalamientos destacados",
       cta_p: "El log que no coincide con el boletín de urna, la carga de la urna distinta, el reloj ajustado durante la votación, intentos fuera del patrón y votos con la urna marcada como apagada.",
-      cta_b: "Ver los hallazgos", cta_n: (a, m) => [`${a} secciones · prioridad alta`, `${m} secciones · prioridad media`],
+      cta_b: "Ver los señalamientos", cta_n: (a, m) => [`${a} secciones · prioridad alta`, `${m} secciones · prioridad media`],
       oque_t: "Qué muestra esta página",
-      oque: ["De las 14 pruebas del log, esta página separa los hallazgos que más merecen verificación, cada uno con la lista de sus secciones.",
+      oque: ["De las 14 pruebas del log, esta página separa los señalamientos que más merecen verificación, cada uno con la lista de sus secciones.",
         "Prioridad alta (rojo): el log de la urna no coincide con el boletín de urna. Prioridad media (amarillo): eventos raros, que piden verificación con el acta de la mesa.",
         "Cada fila abre el mismo panel de la página Logs de las urnas: qué encontró la prueba en la urna, la línea del día, las urnas usadas y los registros del log.",
         "Una anomalía estadística no es prueba de fraude, error o irregularidad: indica prioridad de verificación documental (acta de la mesa, boletín impreso y registros de la urna)."],
       voltar: "Logs de las urnas", p: { a: "Prioridad alta", m: "Prioridad media" },
       kt: { log_bu: "Log × boletín de urna", carga: "Carga distinta del boletín", relogio: "Reloj ajustado en la votación", tentativas: "Intentos fuera del patrón", desligada: "Votos con la urna apagada" },
-      k_tot: "Secciones destacadas", k_tot_sub: (n) => `en ${n} hallazgos`, k_sub: { a: "secciones · prioridad alta", m: "secciones · prioridad media" },
-      faixas_t: "Los hallazgos", faixas_n: "En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en un hallazgo para ver la lista de secciones.",
-      lista_t: "Secciones del hallazgo", f_grupo: "Hallazgo", h_dest: "Casos que llaman la atención", h_porque: "Por qué merece atención", h_conferir: "Qué verificar",
+      k_tot: "Secciones destacadas", k_tot_sub: (n) => `en ${n} señalamientos`, k_sub: { a: "secciones · prioridad alta", m: "secciones · prioridad media" },
+      faixas_t: "Los señalamientos", faixas_n: "En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en un señalamiento para ver la lista de secciones.",
+      lista_t: "Secciones del señalamiento", f_grupo: "Señalamiento", h_dest: "Casos que llaman la atención", h_porque: "Por qué merece atención", h_conferir: "Qué verificar",
       abrir: "Abrir el panel de esta sección", ver_teste: (id) => `Todas las secciones de la prueba ${id}`,
       g: {
         log_bu: { t: "Menos votos en el log que en el boletín de urna",
@@ -815,8 +815,8 @@
     return r;
   }
 
-  // ------------------------------------------------------------------------------------------------ subpágina Achados em destaque
-  // #/logs/destaques?achado=log_bu&uf=BA&mun=...: os achados em vermelho (prioridade alta) e amarelo (prioridade média),
+  // ------------------------------------------------------------------------------------------------ subpágina Apontamentos em destaque
+  // #/logs/destaques?apontamento=log_bu&uf=BA&mun=...: os apontamentos em vermelho (prioridade alta) e amarelo (prioridade média),
   // cada um com a explicação e a mesma tabela e painel da página Logs das urnas
   const dz = { res: null, chave: null, f: { g: "", uf: "", mun: "" } };
   const dadosDest = () => buscar(cache.teste, "_dest", "site/data/logs/t1/destaques.json", { g: [] });
@@ -824,12 +824,12 @@
   const corP = (p) => (p === "a" ? "red" : "amber");
   function dzLerFiltros(q) {
     const f = { g: "", uf: "", mun: "" };
-    const g = q.get("achado"); if (g && LD().g[g]) f.g = g;
+    const g = q.get("apontamento") || q.get("achado"); if (g && LD().g[g]) f.g = g;
     const uf = (q.get("uf") || "").toUpperCase(); if (window.UF_NOMES[uf]) f.uf = uf;
     f.mun = (q.get("mun") || "").slice(0, 60);
     return f;
   }
-  // cartões com números e a lista dos achados (barras em vermelho ou amarelo)
+  // cartões com números e a lista dos apontamentos (barras em vermelho ou amarelo)
   function dzTopo(D, f) {
     const E = LD(), gs = D.g, tot = gs.reduce((a, x) => a + x.n, 0), nA = API().nA;
     const kpis = `<div class="et-kpis lg-kpis dz-kpis">${gs.map((x) => `<div class="${x.p === "a" ? "et-dest" : "dz-m"}"><span class="et-k-t">${esc(x.teste)} · ${esc(E.kt[x.k] || x.k)}</span><b>${nA(x.n)}</b><span>${esc(E.k_sub[x.p])}</span></div>`).join("")}
@@ -839,7 +839,7 @@
       `<li><button type="button" data-dz-g="${x.k}" aria-pressed="${f.g === x.k}"><span><b>${esc(x.teste)}</b> ${esc(E.g[x.k].t)}</span>${barra(x.p === "a" ? x.n : 0, x.p === "a" ? 0 : x.n, mx, k)}<em><span class="${x.p === "a" ? "lg-na" : "lg-ni"}">${nA(x.n)}</span></em></button></li>`).join("")}</ul></section>`;
     return kpis + faixas;
   }
-  // explicação do achado: o que foi encontrado, casos (clique abre o painel da seção), por que merece atenção e o que conferir
+  // explicação do apontamento: o que foi encontrado, casos (clique abre o painel da seção), por que merece atenção e o que conferir
   function dzGrupo(x) {
     const E = LD(), G = E.g[x.k], tx = txtL(x.teste) || {}, xf = {};
     Object.keys(x.x || {}).forEach((k) => { xf[k] = nf(x.x[k]); });
@@ -926,7 +926,7 @@
       };
       const endereco = () => {
         const q = new URLSearchParams();
-        q.set("achado", dz.f.g);
+        q.set("apontamento", dz.f.g);
         if (dz.f.uf) q.set("uf", dz.f.uf);
         if (dz.f.mun.trim()) q.set("mun", dz.f.mun.trim());
         const h = `#/logs/destaques?${q}`;
@@ -958,7 +958,7 @@
       });
       $("#dz-csv").addEventListener("click", () => {
         const r = dz.res; if (!r) return;
-        const c = COLS[r.teste], cab = ["achado", "teste", "nivel", "categoria", "uf", "cod_mun", "municipio", "zona", "secao"].concat(c.map((x) => x[0]));
+        const c = COLS[r.teste], cab = ["apontamento", "teste", "nivel", "categoria", "uf", "cod_mun", "municipio", "zona", "secao"].concat(c.map((x) => x[0]));
         const ls = r.idx.map((i) => { const l = r.linhasLg[i]; return [r.k, r.teste, l[4] === "a" ? "anomalia" : "informativo", l[5], l[0], l[1], nomeMun(l[0], l[1]), l[2], l[3]].concat(c.map(([k]) => l[r.colsLg.indexOf(k)])); });
         api.baixar(`logs_urnas_destaques_${r.k}_${new Date().toISOString().slice(0, 10)}.csv`, "﻿" + [cab].concat(ls).map((l) => l.map(api.csvCampo).join(",")).join("\r\n"), "text/csv;charset=utf-8");
       });
@@ -972,7 +972,7 @@
         const tr = $(`#cq-res tr[data-i="${v.i}"]`);
         if (tr) { tr.scrollIntoView({ block: "center" }); tr.classList.add("cq-volta"); setTimeout(() => tr.classList.remove("cq-volta"), 2600); }
         if (v.painel) setTimeout(() => api.abrir(v.i), 0);
-      } else if (A.state.query.get("achado") || A.state.query.get("uf")) { const c = $("#cq-res-c"); if (c) c.scrollIntoView({ block: "start" }); }
+      } else if (A.state.query.get("apontamento") || A.state.query.get("achado") || A.state.query.get("uf")) { const c = $("#cq-res-c"); if (c) c.scrollIntoView({ block: "start" }); }
     },
   };
 
@@ -1049,7 +1049,7 @@
       if (p && p[1] === "destaques") return pgDest.iniciar(p);
       const E = L(), api = API(), box = $("#cq-res"), form = $("#lg-f");
       if (!box || !form || !api) return;
-      // números da chamada para os achados em destaque
+      // números da chamada para os apontamentos em destaque
       dadosDest().then((D) => {
         const el = $("#lg-cta-n"); if (!el || !D.g.length) return;
         const [a, m] = LD().cta_n(nf(somaP(D, "a")), nf(somaP(D, "m")));

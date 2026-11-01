@@ -2414,7 +2414,7 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
   .lg-ufs { grid-template-columns: 1fr; }
   .lg-hs { columns: 1; }
 }
-/* Logs das urnas: chamada para os Achados em destaque e a subpágina (#/logs/destaques) */
+/* Logs das urnas: chamada para os Apontamentos em destaque e a subpágina (#/logs/destaques) */
 .lg-cta { display: grid; grid-template-columns: auto 1fr auto; gap: 12px 16px; align-items: center; margin: 0 0 18px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--red) 55%, var(--line)); border-radius: 16px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--red) 13%, var(--surface)), color-mix(in srgb, var(--amber) 9%, var(--surface))); color: var(--ink); text-decoration: none;
   box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--red) 60%, transparent); transition: transform .15s, box-shadow .15s; }
