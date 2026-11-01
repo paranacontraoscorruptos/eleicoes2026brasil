@@ -1929,6 +1929,21 @@ html.sim-fora.sim-on::after { content: ""; position: fixed; inset: 0; z-index: 5
 .sim-aviso p { margin: 0; font-weight: 600; }
 .sim-aviso svg { flex: none; color: var(--red); }
 .sim-intro { margin-bottom: 22px; }
+.sim-tem { margin: 6px 0 18px; }
+.sim-tem h2, .sim-cont h2 { margin: 0 0 14px; }
+.sim-cont { margin-bottom: 18px; border-top: 3px solid var(--accent); }
+.sim-cont-g { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.sim-cont h2 { display: flex; gap: 8px; align-items: center; }
+.sim-cont .checks { margin: 0; }
+.sim-cont .checks li:last-child { margin-bottom: 0; }
+.sim-cont-acao { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.sim-cont-acao p { margin: 0 0 8px; }
+.sim-cont-onde { font-size: 1rem; }
+.sim-cont-ex { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 6px; }
+.sim-cont-ex .chip { display: inline-flex; gap: 6px; align-items: center; white-space: normal; text-align: left; }
+.sim-cont-ex .chip svg { width: 15px; height: 15px; }
+.sim-retoma { border-top: 3px solid var(--yellow); }
+@media (max-width: 760px) { .sim-cont-g { grid-template-columns: 1fr; gap: 16px; } .sim-cont-acao { order: -1; } }
 .sim-passos { margin: 0; padding-left: 1.3em; } .sim-passos li { margin-bottom: .55em; }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .sim-tipos { margin-bottom: 22px; }

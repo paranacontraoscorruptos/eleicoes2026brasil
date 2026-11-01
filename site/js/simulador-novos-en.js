@@ -45,6 +45,36 @@
     ["Does the machine log show who someone voted for?", "No. The log records the time of each vote and of the machine's events (switching on, releasing the voter, fingerprint, closing), but not who the vote went to nor the voter's name."],
   );
 
+  // --- top of the home page: what the simulator has and how to stop and continue later ---
+  Object.assign(S.ui, {
+    t_titulo: "What the simulator has",
+    t_testes: "tests to simulate", t_testes_d: "15 tally-sheet tests (T01 to T15), 6 on the change between rounds (V1 to V6) and 14 on the machine logs (L01 to L14).",
+    t_missoes: "missions", t_missoes_d: "12 in each tally-sheet test and 6 in each new test. Three kinds: make it flag, false alarm and slipped through.",
+    t_livre: "free simulations", t_livre_d: "In each test's free mode you change the numbers as you like or ask for a new case, with no limit.",
+    t_provas: "graded exams", t_provas_d: "A 10-question exam for each test (15 minutes) and the final exam, with 30 questions on all tests (45 minutes).",
+    t_banco: "questions in the exam bank", t_banco_d: "Concept and “which test is this?” questions. Case questions are created on the spot, so every exam is different.",
+    t_faq: "questions and answers", t_faq_d: "Doubts answered in plain language: general ones and for each test.",
+    ct_t: "Start whenever you want, stop and continue later",
+    ct_l: ["Start with any test, mission, free simulation or exam. You do not need to follow the order.",
+      "You can stop at any time: close the page, go to work, go to sleep. When you come back, continue where you left off.",
+      "Everything is saved in this browser: completed missions, grades, the last case you changed in each test and unfinished exams.",
+      "In an exam, the clock stops when you leave and only starts again when you continue.",
+      "To continue, open the simulator on the same device and in the same browser.",
+      "Nothing is sent to a server. In a private window, on another device or if you clear the browser data, your progress will not show."],
+    ct_parou: "You stopped at", ct_quando: (d) => (d ? `(${d})` : ""), ct_btn: "Continue where I left off", ct_comecar: "Start with Test 1", ct_escolher: "Choose a test",
+    ct_novo: "You have not started yet. Start with Test 1 or choose any test in the list.", ct_provas: "Unfinished exams",
+    ret_t: "Unfinished exam", ret_d: (r, n, t) => `You answered ${r} of ${n} questions. Time left: ${t}.`,
+    ret_nota: "The clock stopped while you were away. It starts again when you continue.",
+    ret_btn: "Continue the exam", ret_nova: "Discard and start another",
+    apagar_conf: "Erase all missions, grades and unfinished exams on this device?",
+  });
+  S.faqGeral.forEach((q) => {
+    if (/^Where is my progress/.test(q[0])) q[1] = "Only in this browser, on this device: completed missions, grades, the last case you changed in each test and unfinished exams. Nothing is sent anywhere. You can erase everything in your report card.";
+  });
+  S.faqGeral.push(
+    ["Can I stop and continue later?", "Yes. Close the page whenever you want. When you come back, on the same device and in the same browser, the simulator shows where you stopped and the “Continue where I left off” button. In an unfinished exam, the clock stays stopped while you are away."],
+  );
+
   const T = {};
   const UN = {
     V1: { o: "the state", d: "of the state", g: "in the other states", G: "States", f: "Fictitious state", s: "state" },

@@ -2108,6 +2108,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
       $("#main").innerHTML = A.simulador.html(p);
       A.simulador.ligar(true);
       A.simulador.iniciar(p);
+      A.efeitos($("#main"));   // blocos surgindo ao rolar e números contando, como nas outras páginas
     },
   };
   document.addEventListener("pagina", (e) => { if (e.detail.ativo !== "sim") document.documentElement.classList.remove("sim-on"); });

@@ -47,6 +47,36 @@
     ["O log da urna mostra em quem a pessoa votou?", "Não. O log registra a hora de cada voto e dos eventos da urna (ligar, liberar o eleitor, digital, encerrar), mas não registra em quem foi o voto nem o nome do eleitor."],
   );
 
+  // --- topo da página inicial: o que tem no simulador e como parar e continuar depois ---
+  Object.assign(S.ui, {
+    t_titulo: "O que tem no simulador",
+    t_testes: "testes para simular", t_testes_d: "15 testes dos boletins (T01 a T15), 6 da variação entre os turnos (V1 a V6) e 14 dos logs das urnas (L01 a L14).",
+    t_missoes: "missões", t_missoes_d: "12 em cada teste dos boletins e 6 em cada teste novo. São de três tipos: faça sinalizar, alarme falso e passou despercebido.",
+    t_livre: "simulações livres", t_livre_d: "No modo livre de cada teste você muda os números como quiser ou pede um caso novo, sem limite.",
+    t_provas: "provas com nota", t_provas_d: "Uma prova de 10 questões para cada teste (15 minutos) e a prova final, com 30 questões sobre todos os testes (45 minutos).",
+    t_banco: "perguntas no banco das provas", t_banco_d: "Questões de conceito e de “qual teste é este?”. As questões com casos são criadas na hora, então cada prova sai diferente.",
+    t_faq: "perguntas e respostas", t_faq_d: "Dúvidas respondidas em linguagem simples: gerais e de cada teste.",
+    ct_t: "Comece quando quiser, pare e continue depois",
+    ct_l: ["Comece por qualquer teste, missão, simulação livre ou prova. Não precisa seguir a ordem.",
+      "Pode parar a qualquer hora: fechar a página, ir trabalhar, dormir. Na volta, continue de onde parou.",
+      "Tudo fica salvo neste navegador: missões cumpridas, notas, o último caso que você mexeu em cada teste e as provas pela metade.",
+      "Na prova, o relógio para quando você sai e só volta a contar quando você continua.",
+      "Para continuar, abra o simulador no mesmo aparelho e no mesmo navegador.",
+      "Nada é enviado para servidor. Em janela anônima, em outro aparelho ou se você limpar os dados do navegador, o progresso não aparece."],
+    ct_parou: "Você parou em", ct_quando: (d) => (d ? `(${d})` : ""), ct_btn: "Continuar de onde parei", ct_comecar: "Começar pelo Teste 1", ct_escolher: "Escolher um teste",
+    ct_novo: "Você ainda não começou. Comece pelo Teste 1 ou escolha qualquer teste na lista.", ct_provas: "Provas pela metade",
+    ret_t: "Prova pela metade", ret_d: (r, n, t) => `Você respondeu ${r} de ${n} questões. Tempo restante: ${t}.`,
+    ret_nota: "O relógio ficou parado enquanto você estava fora. Ele volta a contar quando você continuar.",
+    ret_btn: "Continuar a prova", ret_nova: "Descartar e começar outra",
+    apagar_conf: "Apagar todas as missões, notas e provas pela metade deste aparelho?",
+  });
+  S.faqGeral.forEach((q) => {
+    if (/^Meu progresso fica salvo onde/.test(q[0])) q[1] = "Só neste navegador, neste aparelho: missões cumpridas, notas, o último caso que você mexeu em cada teste e as provas pela metade. Nada é enviado para lugar nenhum. Você pode apagar tudo no seu boletim.";
+  });
+  S.faqGeral.push(
+    ["Posso parar e continuar depois?", "Pode. Feche a página quando quiser. Quando voltar, no mesmo aparelho e no mesmo navegador, o simulador mostra onde você parou e o botão “Continuar de onde parei”. Numa prova pela metade, o relógio fica parado enquanto você está fora."],
+  );
+
   const T = {};
   // ============================== V1, V2, V3 ==============================
   const UN = {

@@ -25,6 +25,17 @@
   function prog() { try { return JSON.parse(localStorage.getItem(CH)) || {}; } catch (e) { return {}; } }
   function salvar(p) { try { localStorage.setItem(CH, JSON.stringify(p)); } catch (e) { /* sem armazenamento */ } }
   const feitas = (id) => ((prog().m || {})[id] || []);
+  // provas em andamento (uma por teste), guardadas à parte; o relógio fica parado enquanto a pessoa está fora
+  const CH_EX = "sim_ex_v1";
+  function exTodos() { try { return JSON.parse(localStorage.getItem(CH_EX)) || {}; } catch (e) { return {}; } }
+  function exGravar(t) { try { if (Object.keys(t).length) localStorage.setItem(CH_EX, JSON.stringify(t)); else localStorage.removeItem(CH_EX); } catch (e) { /* sem armazenamento */ } }
+  function exGuardar() { if (!EX) return; const t = exTodos(); if (EX.entregue) delete t[EX.id]; else t[EX.id] = Object.assign({}, EX, { gasto: usado(), desde: null, pausa: false }); exGravar(t); }
+  function exApagar(id) { const t = exTodos(); delete t[id]; exGravar(t); }
+  const exSalvo = (id) => { const x = exTodos()[id]; return x && !x.entregue && x.lang === A.state.lang && Array.isArray(x.qs) && x.qs.length ? x : null; };
+  const exAndamento = () => Object.values(exTodos()).filter((x) => x && !x.entregue && x.lang === A.state.lang && (x.id === "final" || L()[x.id]));
+  function lugar(o) { const p = prog(); p.u = Object.assign({ quando: Date.now() }, o); salvar(p); }
+  function guardarCaso() { if (!ST || !ST.id || !ST.s) return; const p = prog(); p.c = p.c || {}; p.c[ST.id] = { modo: ST.modo, i: ST.i, s: ST.s, s0: ST.s0 }; salvar(p); }
+  const casoSalvo = () => { const c = ((prog().c || {})[ST.id]) || null; return c && c.s && c.modo === ST.modo && (ST.modo !== "missao" || c.i === ST.i) ? c : null; };
   function marcar(id, i) { const p = prog(); p.m = p.m || {}; const l = new Set(p.m[id] || []); l.add(i); p.m[id] = [...l].sort((a, b) => a - b); salvar(p); }
   const notaDe = (id) => ((prog().n || {})[id] || null);
   function registrarNota(id, nota, extra) {
@@ -396,6 +407,7 @@
     $("#sim-ex-s").innerHTML = simples(id, s, r);
     $("#sim-ex-t").innerHTML = tecnica(id, s, r);
     if (ST.modo === "missao") conferirMissao(r);
+    clearTimeout(atualizar.g); atualizar.g = setTimeout(guardarCaso, 400);
   }
   function conferirMissao(r) {
     const m = M.T[ST.id].missoes[ST.i], ok = m.ok(ST.s, r, ST.s0), box = $("#sim-feito");
@@ -428,7 +440,7 @@
     const cartao = (id) => { const n = feitas(id).length, nt = notaDe(id); return `<a class="sim-card" href="#/simulador/${id}"><span class="sim-card-n">${num(id)}</span><b>${esc(L()[id].nome)}</b><span class="small muted">${esc(L()[id].curto)}</span>
       <span class="sim-card-p">${progressoTeste(id)}</span>${nt ? `<span class="sim-nota ${nt.melhor >= NOTA_MIN ? "sim-nota-ok" : "sim-nota-x"}">${esc(u.nota)} ${fn(nt.melhor, 1)}</span>` : ""}</a>`; };
     return `<header class="page-head sim-hero"><span class="sim-tag">${icone("lab")} ${esc(u.tag)}</span><h1>${esc(u.titulo)}</h1><p class="lead">${esc(u.sub)}</p></header>
-      ${aviso()}
+      ${oQueTem()}${continuar()}${aviso()}
       <section class="sim-intro grid2"><div class="card"><h2>${esc(u.para_que)}</h2><ul class="checks">${u.para_que_l.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>
         <div class="card"><h2>${esc(u.como)}</h2><ol class="sim-passos">${u.como_l.map((x) => `<li>${esc(x)}</li>`).join("")}</ol></div></section>
       <section class="sim-tipos"><h2>${esc(u.tipos_t)}</h2><div class="grid3">${["s", "a", "d"].map((k) => `<div class="card sim-tipo sim-tipo-${k}"><b>${esc(u.tipos[k])}</b><p>${esc(u.tipos_d[k])}</p></div>`).join("")}</div></section>
@@ -436,7 +448,37 @@
         ${nf.total != null ? `<p><b>${esc(u.nota_final)}: ${fn(nf.total, 1)}</b></p>` : ""}</div>
         <div class="sim-acoes"><a class="btn btn-sm" href="#/simulador/boletim">${esc(u.ver_boletim)}</a><a class="btn btn-sm" href="#/simulador/perguntas">${icone("help")} ${esc(u.perguntas)}</a>
         <a class="btn btn-sm ${pf >= FINAL_MIN ? "btn-primary" : ""}" href="#/simulador/final">${pf >= FINAL_MIN ? icone("timer") : icone("lock")} ${esc(u.prova_final)}</a></div></section>
-      ${GRUPOS.map(([g, ids]) => `<section class="sim-grupo"><h2>${esc(u.niveis[g])}</h2><p class="muted">${esc(u.niveis_d[g])}</p><div class="sim-cards">${ids.map(cartao).join("")}</div></section>`).join("")}`;
+      ${GRUPOS.map(([g, ids]) => `<section class="sim-grupo" data-g="${g}"><h2>${esc(u.niveis[g])}</h2><p class="muted">${esc(u.niveis_d[g])}</p><div class="sim-cards">${ids.map(cartao).join("")}</div></section>`).join("")}`;
+  }
+
+  function oQueTem() {
+    const u = U(), soma = (f) => ORDEM.reduce((t, id) => t + f(id), 0);
+    const nMis = soma(nM), banco = soma((id) => (L()[id].prova || []).length + (L()[id].situ || []).length), faq = L().faqGeral.length + soma((id) => (L()[id].faq || []).length);
+    const tiles = [[ORDEM.length, u.t_testes, u.t_testes_d, "flask"], [nMis, u.t_missoes, u.t_missoes_d, "list"], [ORDEM.length, u.t_livre, u.t_livre_d, "lab"],
+      [ORDEM.length + 1, u.t_provas, u.t_provas_d, "timer"], [banco, u.t_banco, u.t_banco_d, "help"], [faq, u.t_faq, u.t_faq_d, "chat"]];
+    return `<section class="sim-tem"><h2>${esc(u.t_titulo)}</h2><div class="tiles tiles-3">${tiles.map(([v, r, d, ic]) => A.tile(v, r, d, ic)).join("")}</div></section>`;
+  }
+  function ondeParou() {   // texto do último lugar em que a pessoa estava
+    const u = U(), o = prog().u;
+    if (!o || !o.h) return null;
+    if (o.id === "final") return { h: o.h, t: u.prova_final, q: o.quando };
+    if (!L()[o.id] || !M.T[o.id]) return null;
+    const t = o.tipo === "prova" ? u.prova_de(L()[o.id].nome) : o.tipo === "livre" ? `${nomeT(o.id)} · ${u.aba_livre}` : `${nomeT(o.id)} · ${u.missao_n((o.i || 0) + 1, nM(o.id))}`;
+    return { h: o.h, t, q: o.quando };
+  }
+  function continuar() {
+    const u = U(), o = ondeParou(), ex = exAndamento(), feitasT = ORDEM.reduce((t, id) => t + feitas(id).length, 0), pf = provasFeitas();
+    const quando = (q) => { try { return new Date(q).toLocaleString(loc(), { dateStyle: "short", timeStyle: "short" }); } catch (e) { return ""; } };
+    const nomeEx = (x) => (x.id === "final" ? u.prova_final : u.prova_de(L()[x.id].nome));
+    const acao = o || feitasT || pf || ex.length
+      ? `<p class="sim-cont-onde">${o ? `${esc(u.ct_parou)}: <b>${esc(o.t)}</b> <span class="small muted">${esc(u.ct_quando(quando(o.q)))}</span>` : ""}</p>
+        <p class="small">${esc(u.boletim_resumo(feitasT, ORDEM.reduce((t, id) => t + nM(id), 0), pf, ORDEM.length))}</p>
+        ${ex.length ? `<div class="sim-cont-ex"><span class="small muted">${esc(u.ct_provas)}:</span>${ex.map((x) => `<a class="chip" href="#/simulador/${x.id === "final" ? "final" : x.id + "/prova"}">${icone("timer")} ${esc(nomeEx(x))}</a>`).join("")}</div>` : ""}
+        <div class="sim-acoes">${o ? `<a class="btn btn-primary" href="${esc(o.h)}">${icone("play")} ${esc(u.ct_btn)}</a>` : `<a class="btn btn-primary" href="#/simulador/T01">${icone("play")} ${esc(u.ct_comecar)}</a>`}
+          <button type="button" class="btn btn-sm" data-sim-escolher>${esc(u.ct_escolher)}</button></div>`
+      : `<p class="sim-cont-onde">${esc(u.ct_novo)}</p><div class="sim-acoes"><a class="btn btn-primary" href="#/simulador/T01">${icone("play")} ${esc(u.ct_comecar)}</a><button type="button" class="btn btn-sm" data-sim-escolher>${esc(u.ct_escolher)}</button></div>`;
+    return `<section class="card sim-cont"><h2>${icone("timer")} ${esc(u.ct_t)}</h2><div class="sim-cont-g"><ul class="checks">${u.ct_l.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      <div class="sim-cont-acao" aria-live="polite">${acao}</div></div></section>`;
   }
 
   function cabecalhoTeste(id, aba) {
@@ -517,9 +559,19 @@
       qs = embaralhar(B.concat(C), r);
     }
     qs = qs.filter((q) => q.certa >= 0);
-    EX = { id, qs, resp: qs.map(() => null), marc: qs.map(() => false), i: 0, ini: Date.now(), lim: id === "final" ? TEMPO_FINAL : TEMPO_PROVA, entregue: false, lang: A.state.lang };
+    EX = { id, qs, resp: qs.map(() => null), marc: qs.map(() => false), i: 0, ini: Date.now(), gasto: 0, desde: null, lim: id === "final" ? TEMPO_FINAL : TEMPO_PROVA, entregue: false, lang: A.state.lang };
   }
-  const restante = () => Math.max(0, EX.lim - Math.floor((Date.now() - EX.ini) / 1000));
+  // tempo usado = tempo já guardado + o trecho que está correndo agora (o relógio só corre com a prova na tela)
+  const usado = () => (EX ? (EX.gasto || 0) + (EX.desde ? (Date.now() - EX.desde) / 1000 : 0) : 0);
+  const restante = () => Math.max(0, EX.lim - Math.floor(usado()));
+  function pausar(tela) {
+    clearInterval(relogio);
+    if (!EX || EX.entregue) return;
+    if (EX.desde) { EX.gasto = usado(); EX.desde = null; }
+    if (tela) EX.pausa = true;
+    exGuardar();
+  }
+  function retomar() { if (EX && !EX.entregue && !EX.desde) EX.desde = Date.now(); }
   const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
   function cabProva(id) {
     if (id === "final") return `${migalha([[U().prova_final]])}<header class="page-head"><h1>${esc(U().prova_final)}</h1><p class="lead">${esc(U().final_sub)}</p></header>${aviso()}`;
@@ -558,15 +610,17 @@
   }
   function entregar() {
     if (!EX || EX.entregue) return;
+    EX.seg = Math.round(usado()); EX.gasto = EX.seg; EX.desde = null;
     EX.entregue = true; EX.fim = Date.now();
     clearInterval(relogio);
+    exApagar(EX.id);
     const ac = EX.qs.reduce((t, q, k) => t + (EX.resp[k] === q.certa ? 1 : 0), 0), nota = Math.round((100 * ac) / EX.qs.length) / 10;
     EX.nota = nota; EX.ac = ac;
-    registrarNota(EX.id, nota, { ac, total: EX.qs.length, seg: Math.round((EX.fim - EX.ini) / 1000) });
+    registrarNota(EX.id, nota, { ac, total: EX.qs.length, seg: EX.seg });
     mostrarProva();
   }
   function telaResultado() {
-    const u = U(), n = EX.qs.length, ok = EX.nota >= NOTA_MIN, seg = Math.round((EX.fim - EX.ini) / 1000);
+    const u = U(), n = EX.qs.length, ok = EX.nota >= NOTA_MIN, seg = EX.seg != null ? EX.seg : Math.round((EX.fim - EX.ini) / 1000);
     const porTipo = {};
     EX.qs.forEach((q, k) => { const t = (porTipo[q.tipo] = porTipo[q.tipo] || [0, 0]); t[1]++; if (EX.resp[k] === q.certa) t[0]++; });
     const erradosT = [...new Set(EX.qs.filter((q, k) => EX.resp[k] !== q.certa).map((q) => q.id))];
@@ -579,14 +633,27 @@
       <h2>${esc(u.correcao)}</h2>${EX.qs.map((q, k) => { const c = EX.resp[k] === q.certa; return `<details class="sim-corr ${c ? "sim-corr-ok" : "sim-corr-x"}"${c ? "" : " open"}><summary>${c ? icone("check") : icone("x")} ${esc(u.questao_n(k + 1, n))} — ${esc(q.texto)}</summary>
         ${q.ficha ? `<div class="sim-ficha">${q.ficha}</div>` : ""}<p><b>${esc(u.sua)}:</b> ${EX.resp[k] == null ? esc(u.sem_resp) : esc(q.opcoes[EX.resp[k]])}</p><p><b>${esc(u.certa)}:</b> ${esc(q.opcoes[q.certa])}</p><p>${q.explic}</p></details>`; }).join("")}`;
   }
+  function telaRetomar() {
+    const u = U(), n = EX.qs.length, r = EX.resp.filter((x) => x != null).length;
+    return `<div class="card sim-regras sim-retoma"><h2>${icone("timer")} ${esc(u.ret_t)}</h2><p>${esc(u.ret_d(r, n, mmss(restante())))}</p><p class="small muted">${esc(u.ret_nota)}</p>
+      <div class="sim-acoes"><button type="button" class="btn btn-primary" data-sim-continuar>${icone("play")} ${esc(u.ret_btn)}</button><button type="button" class="btn btn-sm btn-ghost" data-sim-descartar>${esc(u.ret_nova)}</button></div></div>`;
+  }
   function mostrarProva() {
     const box = $("#sim-prova");
     if (!box) return;
-    if (!EX || EX.id !== ST.prova || (EX.entregue && EX.mostrado) || EX.lang !== A.state.lang) { box.innerHTML = telaRegras(ST.prova); return; }
-    if (EX.entregue) { EX.mostrado = true; box.innerHTML = telaResultado(); window.scrollTo({ top: box.offsetTop - 80, behavior: "smooth" }); return; }
+    if (EX && EX.id === ST.prova && EX.entregue && !EX.mostrado && EX.lang === A.state.lang) { EX.mostrado = true; box.innerHTML = telaResultado(); window.scrollTo({ top: box.offsetTop - 80, behavior: "smooth" }); return; }
+    if (!EX || EX.id !== ST.prova || EX.entregue || EX.lang !== A.state.lang) {
+      const sv = exSalvo(ST.prova);   // prova deixada pela metade (outra visita, outro dia)
+      if (!sv) { box.innerHTML = telaRegras(ST.prova); return; }
+      clearInterval(relogio); EX = sv; EX.desde = null; EX.pausa = true;
+    }
+    if (EX.pausa) { box.innerHTML = telaRetomar(); return; }
+    retomar(); exGuardar();
     box.innerHTML = EX.i >= EX.qs.length ? telaRevisao() : telaQuestao();
     clearInterval(relogio);
+    let tique = 0;
     relogio = setInterval(() => {
+      if (EX && !EX.entregue && ++tique % 15 === 0) exGuardar();
       if (!EX || EX.entregue) { clearInterval(relogio); return; }
       const t = restante(), el = $("#sim-tempo");
       if (el) { el.innerHTML = `${icone("timer")} ${mmss(t)}`; el.classList.toggle("sim-tempo-fim", t < 60); }
@@ -678,24 +745,28 @@
   function html(p) {
     const u = U(), sub = p[1], id = sub && /^(T\d\d|V\d|L\d\d)$/.test(sub) && L()[sub] ? sub : null;
     if (emQuadro || new URLSearchParams(location.search).get("embed") === "1") return `<section class="card sim-bloq">${icone("shield")}<h2>${esc(u.bloq_t)}</h2><p>${esc(u.so_no_site)}</p><a class="btn btn-primary" href="${esc(location.origin + location.pathname + "#/simulador")}" target="_top" rel="noopener">${esc(u.abrir_site)}</a></section>`;
+    pausar(true);
     ST = null;
     if (sub === "perguntas") return paginaFaq();
     if (sub === "boletim") return paginaBoletim();
-    if (sub === "final") { ST = { prova: "final" }; return paginaProva("final"); }
+    if (sub === "final") { ST = { prova: "final" }; lugar({ h: "#/simulador/final", id: "final", tipo: "prova" }); return paginaProva("final"); }
     if (!id || !M.T[id]) return paginaInicio();
-    if (p[2] === "livre") { ST = { id, modo: "livre" }; return paginaLivre(id); }
-    if (p[2] === "prova") { ST = { prova: id }; return paginaProva(id); }
+    if (p[2] === "livre") { ST = { id, modo: "livre" }; lugar({ h: `#/simulador/${id}/livre`, id, tipo: "livre" }); return paginaLivre(id); }
+    if (p[2] === "prova") { ST = { prova: id }; lugar({ h: `#/simulador/${id}/prova`, id, tipo: "prova" }); return paginaProva(id); }
     if (p[2] === "perguntas") return paginaFaqTeste(id);
     let i = p[2] === "m" ? +p[3] : null;
     if (i == null || !(i >= 0 && i < nM(id))) { const f = new Set(feitas(id)); i = [...Array(nM(id)).keys()].find((k) => !f.has(k)); if (i == null) i = 0; }
     ST = { id, modo: "missao", i };
+    lugar({ h: `#/simulador/${id}/m/${i}`, id, tipo: "missao", i });
     return paginaMissao(id, i);
   }
   function iniciar() {
     marcaDagua();
     if (ST && ST.id) {
-      ST.s = ST.modo === "missao" ? M.estadoMissao(ST.id, ST.i) : M.T[ST.id].base();
-      ST.s0 = M.clone(ST.s);
+      const c = casoSalvo();   // volta ao caso em que a pessoa estava mexendo
+      let ok = false;
+      if (c) { try { ST.s = M.clone(c.s); ST.s0 = M.clone(c.s0 || c.s); M.T[ST.id].avaliar(ST.s); ok = true; } catch (e) { ok = false; } }
+      if (!ok) { ST.s = ST.modo === "missao" ? M.estadoMissao(ST.id, ST.i) : M.T[ST.id].base(); ST.s0 = M.clone(ST.s); }
       desenharCaso();
     }
     if (ST && ST.prova) mostrarProva();
@@ -739,6 +810,9 @@
       if (alvo) { const el = alvo.closest(".sim-c, td, tr, button, label") || alvo; el.classList.remove("sim-dica"); void el.offsetWidth; el.classList.add("sim-dica"); el.scrollIntoView({ block: "center", behavior: "smooth" }); }
       return;
     }
+    if (e.target.closest("[data-sim-continuar]") && EX) { EX.pausa = false; mostrarProva(); return; }
+    if (e.target.closest("[data-sim-descartar]") && EX) { exApagar(EX.id); EX = null; montarProva(ST.prova); mostrarProva(); return; }
+    if (e.target.closest("[data-sim-escolher]")) { const g = $(".sim-grupo"); if (g) g.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (e.target.closest("[data-sim-comecar]")) { montarProva(ST.prova); mostrarProva(); window.scrollTo({ top: $("#sim-prova").offsetTop - 90 }); return; }
     const ir = e.target.closest("[data-sim-ir]"); if (ir && EX && !EX.entregue) { EX.i = +ir.dataset.simIr; mostrarProva(); return; }
     if (e.target.closest("[data-sim-ant]") && EX) { EX.i = Math.max(0, EX.i - 1); mostrarProva(); return; }
@@ -746,12 +820,12 @@
     if (e.target.closest("[data-sim-entregar]") && EX) { EX.i = EX.qs.length; mostrarProva(); return; }
     if (e.target.closest("[data-sim-entregar-ja]") && EX) { entregar(); return; }
     if (e.target.closest("[data-sim-refazer-prova]")) { EX = null; montarProva(ST.prova); mostrarProva(); return; }
-    if (e.target.closest("[data-sim-apagar]")) { if (window.confirm(U().apagar_conf)) { salvar({}); A.render(); } return; }
+    if (e.target.closest("[data-sim-apagar]")) { if (window.confirm(U().apagar_conf)) { salvar({}); exGravar({}); EX = null; A.render(); } return; }
   });
   document.addEventListener("change", (e) => {
     if (!EX || EX.entregue) return;
-    if (e.target.name === "sim-op") { EX.resp[EX.i] = +e.target.value; $$(".sim-op").forEach((l) => l.classList.toggle("on", l.contains(e.target))); const b = $(`[data-sim-ir="${EX.i}"]`); if (b) b.classList.add("resp"); return; }
-    if (e.target.matches("[data-sim-marcar]")) { EX.marc[EX.i] = e.target.checked; const b = $(`[data-sim-ir="${EX.i}"]`); if (b) b.classList.toggle("marc", e.target.checked); }
+    if (e.target.name === "sim-op") { EX.resp[EX.i] = +e.target.value; $$(".sim-op").forEach((l) => l.classList.toggle("on", l.contains(e.target))); const b = $(`[data-sim-ir="${EX.i}"]`); if (b) b.classList.add("resp"); exGuardar(); return; }
+    if (e.target.matches("[data-sim-marcar]")) { EX.marc[EX.i] = e.target.checked; const b = $(`[data-sim-ir="${EX.i}"]`); if (b) b.classList.toggle("marc", e.target.checked); exGuardar(); }
   });
   document.addEventListener("input", (e) => {
     if (e.target.id !== "sim-busca") return;
@@ -764,7 +838,12 @@
     });
     $("#sim-busca-nada").hidden = algum;
   });
-  document.addEventListener("pagina", (e) => { ligar(e.detail.ativo === "sim"); if (e.detail.ativo !== "sim") clearInterval(relogio); });
+  document.addEventListener("pagina", (e) => { ligar(e.detail.ativo === "sim"); if (e.detail.ativo !== "sim") pausar(true); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { pausar(false); guardarCaso(); return; }
+    if (EX && !EX.entregue && !EX.pausa && ST && ST.prova === EX.id && $("#sim-prova")) mostrarProva();
+  });
+  window.addEventListener("pagehide", () => { pausar(false); guardarCaso(); });
 
   protecao();
   A.simulador = { html, iniciar, ligar, bloquear, ORDEM };

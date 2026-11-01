@@ -45,6 +45,36 @@
     ["¿El log de la urna muestra por quién votó la persona?", "No. El log registra la hora de cada voto y de los eventos de la urna (encender, habilitar al elector, huella, cerrar), pero no a quién fue el voto ni el nombre del elector."],
   );
 
+  // --- parte superior de la página inicial: qué tiene el simulador y cómo parar y seguir después ---
+  Object.assign(S.ui, {
+    t_titulo: "Qué tiene el simulador",
+    t_testes: "pruebas para simular", t_testes_d: "15 pruebas de los boletines (T01 a T15), 6 de la variación entre vueltas (V1 a V6) y 14 de los logs de las urnas (L01 a L14).",
+    t_missoes: "misiones", t_missoes_d: "12 en cada prueba de los boletines y 6 en cada prueba nueva. Son de tres tipos: haga que señale, falsa alarma y pasó inadvertido.",
+    t_livre: "simulaciones libres", t_livre_d: "En el modo libre de cada prueba usted cambia los números como quiera o pide un caso nuevo, sin límite.",
+    t_provas: "exámenes con nota", t_provas_d: "Un examen de 10 preguntas para cada prueba (15 minutos) y el examen final, con 30 preguntas sobre todas las pruebas (45 minutos).",
+    t_banco: "preguntas en el banco de exámenes", t_banco_d: "Preguntas de concepto y de “¿qué prueba es esta?”. Las preguntas con casos se crean en el momento, así que cada examen es distinto.",
+    t_faq: "preguntas y respuestas", t_faq_d: "Dudas respondidas en lenguaje sencillo: generales y de cada prueba.",
+    ct_t: "Empiece cuando quiera, pare y siga después",
+    ct_l: ["Empiece por cualquier prueba, misión, simulación libre o examen. No hace falta seguir el orden.",
+      "Puede parar en cualquier momento: cerrar la página, ir a trabajar, dormir. Al volver, siga desde donde se quedó.",
+      "Todo queda guardado en este navegador: misiones cumplidas, notas, el último caso que cambió en cada prueba y los exámenes a medias.",
+      "En el examen, el reloj se detiene cuando usted sale y solo vuelve a contar cuando sigue.",
+      "Para seguir, abra el simulador en el mismo dispositivo y en el mismo navegador.",
+      "No se envía nada a ningún servidor. En ventana privada, en otro dispositivo o si borra los datos del navegador, el progreso no aparece."],
+    ct_parou: "Se quedó en", ct_quando: (d) => (d ? `(${d})` : ""), ct_btn: "Seguir desde donde me quedé", ct_comecar: "Empezar por la Prueba 1", ct_escolher: "Elegir una prueba",
+    ct_novo: "Todavía no empezó. Empiece por la Prueba 1 o elija cualquier prueba de la lista.", ct_provas: "Exámenes a medias",
+    ret_t: "Examen a medias", ret_d: (r, n, t) => `Respondió ${r} de ${n} preguntas. Tiempo restante: ${t}.`,
+    ret_nota: "El reloj quedó detenido mientras usted estaba fuera. Vuelve a contar cuando siga.",
+    ret_btn: "Seguir el examen", ret_nova: "Descartar y empezar otro",
+    apagar_conf: "¿Borrar todas las misiones, notas y exámenes a medias de este dispositivo?",
+  });
+  S.faqGeral.forEach((q) => {
+    if (/^¿Dónde se guarda mi progreso/.test(q[0])) q[1] = "Solo en este navegador, en este dispositivo: misiones cumplidas, notas, el último caso que cambió en cada prueba y los exámenes a medias. No se envía nada a ningún lugar. Puede borrar todo en su boletín de notas.";
+  });
+  S.faqGeral.push(
+    ["¿Puedo parar y seguir después?", "Sí. Cierre la página cuando quiera. Al volver, en el mismo dispositivo y en el mismo navegador, el simulador muestra dónde se quedó y el botón “Seguir desde donde me quedé”. En un examen a medias, el reloj queda detenido mientras usted está fuera."],
+  );
+
   const T = {};
   const UN = {
     V1: { o: "el estado", d: "del estado", g: "en los demás estados", G: "Estados", f: "Estado ficticio", s: "estado" },

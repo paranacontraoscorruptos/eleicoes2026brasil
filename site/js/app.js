@@ -916,7 +916,7 @@
   }
 
   // --- efeitos --------------------------------------------------------------------
-  const SEL_RV = ".card, .tile, .page-card, .test-card, figure, .table-wrap, .bot-band, .tg-cta, .steps > li, .legend > li, main section > h2, main section > .sec-sub, .h-row, main > section > p, .btn-row, .page-head > p, .page-head > ul";
+  const SEL_RV = ".card, .tile, .page-card, .test-card, .sim-card, .sim-aviso, figure, .table-wrap, .bot-band, .tg-cta, .steps > li, .legend > li, main section > h2, main section > .sec-sub, .h-row, main > section > p, .btn-row, .page-head > p, .page-head > ul";
   let obs = null;
 
   function revelar(el) {
