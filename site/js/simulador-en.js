@@ -7,9 +7,9 @@
   const ui = {
     titulo: "Anomaly simulator", tag: "Educational page · fictitious data",
     sub: "Change made-up numbers and see, right away, how each of the 15 audit tests reacts, why it reacts and what that means.",
-    aviso: "Educational simulation with fictitious data. Sharing these results is strictly prohibited, to prevent the spread of false news.",
+    aviso: "Educational simulation with fictitious data. Candidates A and B do not exist and the results do not represent any real election.",
     marca: "SIMULATION · FICTITIOUS DATA",
-    faixa: "SIMULATION · FICTITIOUS DATA · sharing, copying or printing is prohibited",
+    faixa: "SIMULATION · FICTITIOUS DATA · copying or printing is prohibited",
     para_que: "What it is for",
     para_que_l: ["Understand, without formulas, what each audit test checks and how it decides.",
       "See why a test turns its light on and what the normal result would look like.",
@@ -87,7 +87,7 @@
     melhor: "Best grade", ultima: "Last", tent: "Attempts", situacao: "Status", nao_feita: "not taken", aprovado: "Passed", refazer_t: "Redo",
     so_aqui: "The report card stays only on this device and cannot be shared.", apagar: "Erase my progress", apagar_conf: "Erase all missions and grades on this device?",
     bloq_t: "Action blocked on this page",
-    bloq: "This page is an educational simulation with fictitious data. Sharing, copying, printing or capturing these results is strictly prohibited, to prevent the spread of false news.",
+    bloq: "This page is an educational simulation with fictitious data. Copying, printing or capturing these results is prohibited, to prevent the spread of false news.",
     bloq_m: { ferr: "Share, create image, export and print are turned off in the simulator.", menu: "The right-click menu is turned off on this page.", copia: "Copying is turned off on this page.",
       print: "Screen capture detected. The screen was hidden.", imprimir: "Printing and saving as PDF are turned off on this page.", salvar: "Saving the page is turned off." },
     bloq_voltar: "Back to the simulator", so_no_site: "The simulator only works inside the site itself. It cannot be embedded in other pages.", abrir_site: "Open on the site",
@@ -95,7 +95,7 @@
 
   const faqGeral = [
     ["Are the simulator's numbers real?", "No. All numbers are made up and generated on your device. No real section, city or candidate data appears here. The candidates are called A and B on purpose."],
-    ["Why can't I share or take a screenshot?", "Because a screenshot of a fictitious case could be spread as if it were real. To prevent false news, the page has no share, copy, image or print buttons, shows a red bar saying the data is fictitious and hides the content when it detects a capture."],
+    ["Can I share the simulator?", "Yes. The data is fictitious and the candidates are called A and B, with no politician's name. Copying and printing remain blocked: the page has no copy, image or print buttons, shows a red bar saying the data is fictitious and hides the content when it detects a capture."],
     ["Does the screenshot block always work?", "No. A website cannot stop a phone screenshot or a photo of the screen taken with another device. On computers, the page detects some captures and hides the content. That is why the red bar is always visible."],
     ["Does the simulator use the same rules as the audit?", "Yes. The limits, minimums and calculations are the same as the audit engine (same parameters as the Technical Report). The difference is that the data is made up and the comparison region is fictitious."],
     ["What is a statistical anomaly?", "A result very different from what is expected in that situation. It is a prompt to check the printed tally sheet, the minutes and the machine files. It proves nothing: there are legitimate causes, as the false-alarm missions show."],

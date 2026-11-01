@@ -8,9 +8,9 @@
   const ui = {
     titulo: "Simulador de anomalías", tag: "Página educativa · datos ficticios",
     sub: "Cambie números inventados y vea, al instante, cómo reacciona cada una de las 15 pruebas de la auditoría, por qué reacciona y qué significa.",
-    aviso: "Simulación educativa con datos ficticios. Está estrictamente prohibido compartir estos resultados, para evitar la difusión de noticias falsas.",
+    aviso: "Simulación educativa con datos ficticios. Los candidatos A y B no existen y los resultados no representan ninguna elección real.",
     marca: "SIMULACIÓN · DATOS FICTICIOS",
-    faixa: "SIMULACIÓN · DATOS FICTICIOS · prohibido compartir, copiar o imprimir",
+    faixa: "SIMULACIÓN · DATOS FICTICIOS · prohibido copiar o imprimir",
     para_que: "Para qué sirve",
     para_que_l: ["Entender, sin fórmulas, qué comprueba cada prueba de la auditoría y cómo decide.",
       "Ver por qué una prueba enciende la luz y cómo sería el resultado normal.",
@@ -88,7 +88,7 @@
     melhor: "Mejor nota", ultima: "Última", tent: "Intentos", situacao: "Situación", nao_feita: "no hecho", aprovado: "Aprobado", refazer_t: "Rehacer",
     so_aqui: "El boletín de notas queda solo en este dispositivo y no se puede compartir.", apagar: "Borrar mi progreso", apagar_conf: "¿Borrar todas las misiones y notas de este dispositivo?",
     bloq_t: "Acción bloqueada en esta página",
-    bloq: "Esta página es una simulación educativa con datos ficticios. Está estrictamente prohibido compartir, copiar, imprimir o capturar estos resultados, para evitar la difusión de noticias falsas.",
+    bloq: "Esta página es una simulación educativa con datos ficticios. Está prohibido copiar, imprimir o capturar estos resultados, para evitar la difusión de noticias falsas.",
     bloq_m: { ferr: "Compartir, crear imagen, exportar e imprimir están desactivados en el simulador.", menu: "El menú del botón derecho está desactivado en esta página.", copia: "Copiar está desactivado en esta página.",
       print: "Captura de pantalla detectada. La pantalla se ocultó.", imprimir: "Imprimir y guardar en PDF están desactivados en esta página.", salvar: "Guardar la página está desactivado." },
     bloq_voltar: "Volver al simulador", so_no_site: "El simulador solo funciona dentro del propio sitio. No se puede incorporar en otras páginas.", abrir_site: "Abrir en el sitio",
@@ -96,7 +96,7 @@
 
   const faqGeral = [
     ["¿Los números del simulador son reales?", "No. Todos los números son inventados y se generan en su dispositivo. Aquí no aparece ningún dato real de sección, ciudad o candidato. Los candidatos se llaman A y B a propósito."],
-    ["¿Por qué no puedo compartir ni hacer captura?", "Porque una captura de un caso ficticio podría difundirse como si fuera verdadera. Para evitar noticias falsas, la página no tiene botones de compartir, copiar, crear imagen ni imprimir, muestra una franja roja que avisa que los datos son ficticios y oculta el contenido cuando detecta una captura."],
+    ["¿Puedo compartir el simulador?", "Sí. Los datos son ficticios y los candidatos se llaman A y B, sin nombre de ningún político. Copiar e imprimir siguen bloqueados: la página no tiene botones de copiar, crear imagen ni imprimir, muestra una franja roja que avisa que los datos son ficticios y oculta el contenido cuando detecta una captura."],
     ["¿El bloqueo de captura funciona siempre?", "No. Un sitio no puede impedir la captura del celular ni la foto de la pantalla con otro aparato. En la computadora, la página detecta parte de las capturas y oculta el contenido. Por eso la franja roja siempre está visible."],
     ["¿El simulador usa las mismas reglas que la auditoría?", "Sí. Los límites, los mínimos y los cálculos son los mismos del motor de la auditoría (mismos parámetros del Informe Técnico). La diferencia es que los datos son inventados y la región de comparación es ficticia."],
     ["¿Qué es una anomalía estadística?", "Un resultado muy distinto de lo esperado para esa situación. Es un aviso para revisar el boletín impreso, el acta y los archivos de la urna. No prueba nada: hay causas legítimas, como muestran las misiones de falsa alarma."],

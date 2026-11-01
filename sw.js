@@ -1,6 +1,6 @@
 /* Modo offline do app: guarda o essencial do site e as páginas e dados que o visitante já abriu.
    Código, estilos e dados resumidos vêm primeiro da rede (sempre a versão nova); sem internet, usa a cópia guardada. */
-const VERSAO = "bu2026-v53";
+const VERSAO = "bu2026-v54";
 const AVISOS = "bu2026-avisos";   // guarda a última novidade avisada e o idioma (não é apagado ao trocar de versão)
 const ESSENCIAL = ["./", "index.html", "manifest.webmanifest", "site/css/style.css", "site/js/i18n.js", "site/js/i18n-extras.js", "site/js/i18n-testes.js", "site/js/app.js", "site/js/paginas.js", "site/js/variacao.js", "site/js/ferramentas.js",
   "site/js/exportar.js", "site/js/consulta.js", "site/js/motor.js", "site/js/motor-worker.js", "site/js/bot.js", "site/js/atlas.js", "site/js/sites.js", "site/js/extras.js", "site/js/consulta-worker.js", "site/js/simulador-motor.js", "site/js/simulador-motor2.js", "site/js/simulador-novos-pt.js", "site/js/simulador-novos-en.js", "site/js/simulador-novos-es.js", "site/js/simulador.js", "site/js/simulador-pt.js", "site/js/simulador-en.js", "site/js/simulador-es.js", "site/data/resumo.json", "site/data/testes_extra.json", "site/fonts/space-grotesk-latin-wght-normal.woff2", "site/img/favicon.svg",

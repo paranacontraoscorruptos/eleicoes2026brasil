@@ -1,6 +1,6 @@
 /* Simulador de anomalias — interface. Página educativa: o visitante altera dados FICTÍCIOS e vê como cada um dos
    35 testes reage (T01–T15 dos boletins, V1–V6 da variação entre turnos e L01–L14 dos logs, estes com critérios preliminares), com explicação simples e técnica, missões, modo livre, provas com nota, prova final, boletim e
-   perguntas e respostas. Nada desta página pode ser compartilhado, copiado, impresso ou exportado. */
+   perguntas e respostas. Nada desta página pode ser copiado, impresso ou exportado (compartilhar o link é permitido). */
 (function () {
   "use strict";
   const A = window.APP, M = window.SIMM;
@@ -680,7 +680,7 @@
   }
 
   // ===================================================================================================
-  // Proteção: sem compartilhar, copiar, imprimir, salvar ou incorporar. Faixa vermelha no rodapé.
+  // Proteção: sem copiar, imprimir, salvar ou incorporar. Faixa vermelha no rodapé.
   // ===================================================================================================
   const ativo = () => document.documentElement.classList.contains("sim-on");
   const emQuadro = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();

@@ -7,9 +7,9 @@
   const ui = {
     titulo: "Simulador de anomalias", tag: "Página educativa · dados fictícios",
     sub: "Mude números inventados e veja, na hora, como cada um dos 15 testes da auditoria reage, por que reage e o que isso significa.",
-    aviso: "Simulação educativa com dados fictícios. É estritamente proibido compartilhar estes resultados, para evitar a divulgação de notícias falsas.",
+    aviso: "Simulação educativa com dados fictícios. Os candidatos A e B não existem e os resultados não representam nenhuma eleição real.",
     marca: "SIMULAÇÃO · DADOS FICTÍCIOS",
-    faixa: "SIMULAÇÃO · DADOS FICTÍCIOS · proibido compartilhar, copiar ou imprimir",
+    faixa: "SIMULAÇÃO · DADOS FICTÍCIOS · proibido copiar ou imprimir",
     para_que: "Para que serve",
     para_que_l: ["Entender, sem fórmulas, o que cada teste da auditoria confere e como ele decide.",
       "Ver por que um teste acende a luz e como seria o resultado normal.",
@@ -89,7 +89,7 @@
     so_aqui: "O boletim fica só neste aparelho e não pode ser compartilhado.", apagar: "Apagar meu progresso", apagar_conf: "Apagar todas as missões e notas deste aparelho?",
     // proteção
     bloq_t: "Ação bloqueada nesta página",
-    bloq: "Esta página é uma simulação educativa com dados fictícios. É estritamente proibido compartilhar, copiar, imprimir ou capturar estes resultados, para evitar a divulgação de notícias falsas.",
+    bloq: "Esta página é uma simulação educativa com dados fictícios. É proibido copiar, imprimir ou capturar estes resultados, para evitar a divulgação de notícias falsas.",
     bloq_m: { ferr: "Compartilhar, gerar imagem, exportar e imprimir estão desligados no simulador.", menu: "O menu do botão direito está desligado nesta página.", copia: "Copiar está desligado nesta página.",
       print: "Captura de tela detectada. A tela foi escondida.", imprimir: "Imprimir e salvar em PDF estão desligados nesta página.", salvar: "Salvar a página está desligado." },
     bloq_voltar: "Voltar ao simulador", so_no_site: "O simulador só funciona dentro do próprio site. Ele não pode ser incorporado em outras páginas.", abrir_site: "Abrir no site",
@@ -98,7 +98,7 @@
   // Perguntas gerais
   const faqGeral = [
     ["Os números do simulador são reais?", "Não. Todos os números são inventados e gerados no seu aparelho. Nenhum dado real de seção, cidade ou candidato aparece aqui. Os candidatos se chamam A e B de propósito."],
-    ["Por que não posso compartilhar nem tirar print?", "Porque um print de um caso fictício pode ser divulgado como se fosse verdadeiro. Para evitar notícias falsas, a página não tem botões de compartilhar, copiar, gerar imagem ou imprimir, mostra uma faixa vermelha avisando que os dados são fictícios e esconde o conteúdo quando detecta uma captura."],
+    ["Posso compartilhar o simulador?", "Pode. Os dados são fictícios e os candidatos se chamam A e B, sem nome de nenhum político. Copiar e imprimir continuam bloqueados: a página não tem botões de copiar, gerar imagem ou imprimir, mostra uma faixa vermelha avisando que os dados são fictícios e esconde o conteúdo quando detecta uma captura."],
     ["O bloqueio de print funciona sempre?", "Não. Um site não consegue impedir o print do celular nem a foto da tela com outro aparelho. No computador, a página detecta parte das capturas e esconde o conteúdo. Por isso a faixa vermelha fica sempre visível."],
     ["O simulador usa as mesmas regras da auditoria?", "Sim. Os limites, os mínimos e as contas são os mesmos do motor da auditoria (mesmos parâmetros do Relatório Técnico). A diferença é que os dados são inventados e a região de comparação é fictícia."],
     ["O que é anomalia estatística?", "É um resultado muito diferente do esperado para aquela situação. É um alerta para conferir o boletim impresso, a ata e os arquivos da urna. Não é prova de nada: há causas legítimas, como mostram as missões de alarme falso."],
