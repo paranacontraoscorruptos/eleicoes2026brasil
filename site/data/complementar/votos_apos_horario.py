@@ -16,6 +16,8 @@ horário oficial local), em cada turno em que foram sinalizadas. Para cada uma:
 5. "depois do horário" = voto gravado a partir do horário oficial local (fim_oficial_local do encerramento_tardio.csv:
    17h de Brasília no 1º turno e 19h no 2º turno, encerramento estendido, convertidos para a hora local; no Exterior,
    as mesmas horas locais). Os horários são os do relógio da urna.
+   "1 h ou mais depois" (votos_1h, secoes_1h, sem_digital_1h no resumo) = voto gravado a partir de 1 hora depois do
+   horário oficial local; é o número que o site destaca.
 
 Quando o .logjez traz duas cópias do log da mesma urna, cada linha (urna, data e hora, assinatura da linha) conta uma
 vez só. O log não informa em quem o eleitor votou nem quem é o eleitor. Os números de título de mesários que aparecem no log
@@ -348,6 +350,7 @@ def processar(arg):
         "ev": ev, "ur": len(urnas), "v": lista,
         "sha": shas, "url": aux_url,
         "cpf": sum(1 for v in apos if v[4] == "C"),
+        "h1": [sum(1 for v in apos if v[0] - fim >= 3600), sum(1 for v in apos if v[0] - fim >= 3600 and v[3] in ("N", "S"))],
         "jv": sum(1 for e in eventos if e[1] == "ja_votou" and e[0] >= fim),
     }
     return item, rec, apos
@@ -460,6 +463,9 @@ def main():
             T["sd_antes"] += rec["sd"][0]
             T["votos_antes"] += rec["sd"][1]
             T["sd_apos"] += rec["sd"][2]
+            T["votos_1h"] += rec["h1"][0]
+            T["secoes_1h"] += rec["h1"][0] > 0
+            T["sd_1h"] += rec["h1"][1]
             T["ja_votou_apos"] += rec["jv"]
             T["cpf_apos"] += rec["cpf"]
             if rec["bu"] is not None and rec["tot"] != rec["bu"]:
@@ -498,6 +504,8 @@ def main():
         res["turnos"][str(t)] = {
             "secoes": T["secoes"], "votos_dia": T["votos_dia"], "votos_apos": T["votos_apos"],
             "pct_apos": round(T["votos_apos"] / T["votos_dia"], 6) if T["votos_dia"] else 0,
+            "votos_1h": T["votos_1h"], "secoes_1h": T["secoes_1h"], "sem_digital_1h": T["sd_1h"],
+            "pct_1h": round(T["votos_1h"] / T["votos_dia"], 6) if T["votos_dia"] else 0,
             "faixas_votos_apos": dict(faixas[t]),
             "ultimo_voto_horas_apos_fim": dict(sorted(hora_ult[t].items(), key=lambda x: int(x[0]))),
             "sem_digital_antes_pct": round(T["sd_antes"] / T["votos_antes"], 6) if T["votos_antes"] else 0,

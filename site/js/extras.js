@@ -1762,7 +1762,7 @@
     return `<section class="card rt-hor" id="horario"><h2>${esc(E.rt_t)}</h2><p class="small muted">${esc(E.rt_d(h))}</p>
       <div class="et-kpis">
         <div class="et-dest"><span class="et-k-t">${esc(E.rt_urnas)}</span><b>${nA(T.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T.sinalizadas / T.analisadas, casas), nf(T.analisadas)))}</span></div>
-        ${V ? `<div><span class="et-k-t">${esc(E.rt_va(h))}</span><b>${nA(V.votos_apos)}</b><span>${esc(E.et_k_va_sub(pct(V.votos_apos / (V.votos_dia || 1), 1)))}</span></div>` : ""}</div>
+        ${V && V.votos_1h != null ? `<div><span class="et-k-t">${esc(E.rt_va(h))}</span><b>${nA(V.votos_1h)}</b><span>${esc(E.et_k_va_sub(pct(V.votos_1h / (V.votos_dia || 1), 1), nf(V.secoes_1h)))}</span></div>` : ""}</div>
       <h3>${esc(E.rt_faixas)}</h3>
       <ul class="et-faixas">${ET_MIN.map((m, i) => { const k = fx[`>=${m}min`] || 0;
         return `<li><a href="#/encerramento-tardio?turno=${n}&min=${m}"><span>${esc(E.et_min_op(m / 60))}</span><span class="et-fb"><i style="--w:${k ? Math.max(0.6, (100 * k) / mx).toFixed(2) : 0}%;--i:${i}"></i></span><em>${nA(k)}</em></a></li>`; }).join("")}</ul>
@@ -1785,7 +1785,7 @@
           <div class="et-dest"><span class="et-k-t">${esc(L.round(1))}</span><b>${nA(T1.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T1.sinalizadas / T1.analisadas, 1), nf(T1.analisadas)))}</span></div>
           <div><span class="et-k-t">${esc(L.round(2))}</span><b>${nA(T2.sinalizadas)}</b><span>${esc(E.et_k_urnas(pct(T2.sinalizadas / T2.analisadas, 4), nf(T2.analisadas)))}</span></div>
           <div id="et-tot"><span class="et-k-t">${esc(E.et_k_tot)}</span><b>—</b><span></span></div>
-          ${vh1 ? `<div class="et-dest"><span class="et-k-t">${esc(E.et_k_va)}</span><b>${nA(vh1.votos_apos)}</b><span>${esc(E.et_k_va_sub(pct(vh1.votos_apos / (vh1.votos_dia || 1), 1)))}</span></div>` : ""}
+          ${vh1 && vh1.votos_1h != null ? `<div class="et-dest"><span class="et-k-t">${esc(E.et_k_va)}</span><b>${nA(vh1.votos_1h)}</b><span>${esc(E.et_k_va_sub(pct(vh1.votos_1h / (vh1.votos_dia || 1), 1), nf(vh1.secoes_1h)))}</span></div>` : ""}
           <div id="et-max"><span class="et-k-t">${esc(E.et_k_max)}</span><b>—</b><span></span></div>
           <div class="et-cand" id="et-cand" hidden></div></div>`;
         const fx = T1.faixas, mx = fx[">=60min"] || 1;

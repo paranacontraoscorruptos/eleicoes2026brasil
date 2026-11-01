@@ -32,6 +32,10 @@
    "votos_dia": 12719038,
    "votos_apos": 2174517,
    "pct_apos": 0.170966,
+   "votos_1h": 779934,
+   "secoes_1h": 38160,
+   "sem_digital_1h": 92030,
+   "pct_1h": 0.06132,
    "faixas_votos_apos": {
     "101-200": 680,
     "11-50": 24813,
@@ -65,6 +69,10 @@
    "votos_dia": 317,
    "votos_apos": 0,
    "pct_apos": 0.0,
+   "votos_1h": 0,
+   "secoes_1h": 0,
+   "sem_digital_1h": 0,
+   "pct_1h": 0.0,
    "faixas_votos_apos": {
     "0": 2
    },

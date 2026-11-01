@@ -51,8 +51,8 @@
         "Escolha um teste e clique em uma seção da lista: o painel mostra o que o teste apurou naquela urna, os dados da seção e um botão com a hora de cada voto (nos testes em que ela importa) ou com os registros do log que o teste usou.",
         "Anomalia estatística (vermelho) é prioridade de verificação, não prova de fraude, erro ou irregularidade: aponta a seção para conferência com a ata da mesa, o boletim impresso e os registros da urna. Informativo (amarelo) é um evento registrado para conferência, abaixo do critério de anomalia."],
       k_com: "Seções com log lido", k_com_sub: (n) => `${n} sem log legível`, k_votos: "Votos no log", k_votos_sub: (n) => `em ${n} seções`,
-      k_apos: "Votos depois do horário oficial", k_apos_sub: (p, s) => `${p} dos votos do log · em ${s} seções`,
-      k_1h: "Votos 1 h ou mais depois do horário", k_1h_sub: (s) => `em ${s} seções`, k_sd: "Liberados sem digital depois do horário", k_sd_sub: "eleitores, pelo log",
+      k_1h: "Votos 1 h ou mais depois do horário oficial", k_1h_sub: (p, s) => `${p} dos votos do log · em ${s} seções`,
+      k_sd: "Liberados sem digital 1 h ou mais depois do horário", k_sd_sub: "eleitores, pelo log",
       k_a: "Anomalias estatísticas", k_a_sub: "somando os 14 testes", k_i: "Informativos", k_i_sub: "somando os 14 testes",
       k_sin: "Seções com alguma sinalização", k_sin_sub: "em pelo menos um teste L",
       faixas_t: "Os 14 testes no 1º turno", faixas_n: "Seções sinalizadas em cada teste: em vermelho, as anomalias; em amarelo, os informativos. Clique em um teste para ver a lista.",
@@ -147,8 +147,8 @@
         "Choose a test and click a section on the list: the panel shows what the test found on that machine, the section's data and a button with the time of each vote (in the tests where it matters) or with the log records the test used.",
         "A statistical anomaly (red) is a priority for checking, not proof of fraud, error or irregularity: it points the section out for checking against the polling station minutes, the printed tally sheet and the machine records. Informational (yellow) is an event recorded for checking, below the anomaly criterion."],
       k_com: "Sections with a readable log", k_com_sub: (n) => `${n} with no readable log`, k_votos: "Votes in the log", k_votos_sub: (n) => `in ${n} sections`,
-      k_apos: "Votes after the official time", k_apos_sub: (p, s) => `${p} of the votes in the log · in ${s} sections`,
-      k_1h: "Votes 1 h or more after the official time", k_1h_sub: (s) => `in ${s} sections`, k_sd: "Released without fingerprint after the official time", k_sd_sub: "voters, from the log",
+      k_1h: "Votes 1 h or more after the official time", k_1h_sub: (p, s) => `${p} of the votes in the log · in ${s} sections`,
+      k_sd: "Released without fingerprint 1 h or more after the official time", k_sd_sub: "voters, from the log",
       k_a: "Statistical anomalies", k_a_sub: "adding up the 14 tests", k_i: "Informational", k_i_sub: "adding up the 14 tests",
       k_sin: "Sections with any flag", k_sin_sub: "in at least one L test",
       faixas_t: "The 14 tests in round 1", faixas_n: "Sections flagged in each test: anomalies in red, informational in yellow. Click a test to see the list.",
@@ -241,8 +241,8 @@
         "Elija una prueba y haga clic en una sección de la lista: el panel muestra qué encontró la prueba en esa urna, los datos de la sección y un botón con la hora de cada voto (en las pruebas en que importa) o con los registros del log que usó la prueba.",
         "La anomalía estadística (rojo) es prioridad de verificación, no prueba de fraude, error o irregularidad: señala la sección para verificarla con el acta de la mesa, el boletín impreso y los registros de la urna. Informativo (amarillo) es un evento registrado para verificación, por debajo del criterio de anomalía."],
       k_com: "Secciones con log leído", k_com_sub: (n) => `${n} sin log legible`, k_votos: "Votos en el log", k_votos_sub: (n) => `en ${n} secciones`,
-      k_apos: "Votos después del horario oficial", k_apos_sub: (p, s) => `${p} de los votos del log · en ${s} secciones`,
-      k_1h: "Votos 1 h o más después del horario", k_1h_sub: (s) => `en ${s} secciones`, k_sd: "Habilitados sin huella después del horario", k_sd_sub: "electores, según el log",
+      k_1h: "Votos 1 h o más después del horario oficial", k_1h_sub: (p, s) => `${p} de los votos del log · en ${s} secciones`,
+      k_sd: "Habilitados sin huella 1 h o más después del horario", k_sd_sub: "electores, según el log",
       k_a: "Anomalías estadísticas", k_a_sub: "sumando las 14 pruebas", k_i: "Informativos", k_i_sub: "sumando las 14 pruebas",
       k_sin: "Secciones con alguna señal", k_sin_sub: "en al menos una prueba L",
       faixas_t: "Las 14 pruebas en la 1.ª vuelta", faixas_n: "Secciones señaladas en cada prueba: en rojo, las anomalías; en amarillo, los informativos. Haga clic en una prueba para ver la lista.",
@@ -999,10 +999,11 @@
       if (!g || !API()) return `<header class="page-head"><h1>${esc(E.titulo)}</h1><p class="lead">${esc(E.sub)}</p></header><p class="alert">${esc(E.erro)}</p>`;
       const f = (lg.f = lerFiltros(A.state.query));
       const G = g.geral, sinSec = Object.values(g.ufs).reduce((a, u) => a + u.secoes, 0);
+      // liberados sem digital 1 h ou mais depois do horário oficial (complementar/votos_apos_horario.json, mesmo critério de votos_1h)
+      const VH = (R().complementar || {}).votos_apos_horario, sd1h = VH && VH.turnos && VH.turnos["1"] ? VH.turnos["1"].sem_digital_1h : null;
       const sa = TESTES_L.reduce((a, id) => a + (g.testes[id].a || 0), 0), si = TESTES_L.reduce((a, id) => a + (g.testes[id].i || 0), 0);
       const kpis = `<div class="et-kpis lg-kpis">${kpi(E.k_com, g.cobertura.com_log, E.k_com_sub(nf(g.cobertura.sem_log)))}${kpi(E.k_votos, G.votos, E.k_votos_sub(nf(G.secoes)))}
-        ${kpi(E.k_apos, G.votos_apos, E.k_apos_sub(pct(G.votos_apos / (G.votos || 1), 2), nf(G.secoes_apos)), true)}${kpi(E.k_1h, G.votos_1h, E.k_1h_sub(nf(G.secoes_1h)))}
-        ${kpi(E.k_sd, G.sem_digital_apos, E.k_sd_sub)}${kpi(E.k_a, sa, E.k_a_sub, true)}${kpi(E.k_i, si, E.k_i_sub)}${kpi(E.k_sin, sinSec, E.k_sin_sub)}</div>`;
+        ${kpi(E.k_1h, G.votos_1h, E.k_1h_sub(pct(G.votos_1h / (G.votos || 1), 2), nf(G.secoes_1h)), true)}${sd1h != null ? kpi(E.k_sd, sd1h, E.k_sd_sub) : ""}${kpi(E.k_a, sa, E.k_a_sub, true)}${kpi(E.k_i, si, E.k_i_sub)}${kpi(E.k_sin, sinSec, E.k_sin_sub)}</div>`;
       const mx = Math.max(1, ...TESTES_L.map((id) => g.testes[id].a + g.testes[id].i));
       const faixas = `<section class="card"><h2>${esc(E.faixas_t)}</h2><p class="small muted">${esc(E.faixas_n)}</p><ul class="et-faixas lg-faixas">${TESTES_L.map((id, k) => {
         const r = g.testes[id];

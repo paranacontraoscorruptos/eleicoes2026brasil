@@ -1642,17 +1642,17 @@ Object.assign(window.I18N.ES, { un_kicker: "Presidente · 2.ª vuelta", un_title
 Object.assign(window.I18N.PT, { ef_kicker: "Logs das urnas · 1º e 2º turno", ef_title: "Urnas que fecharam tarde",
   ef_txt: "Urnas que encerraram 1 hora ou mais depois do horário oficial e os votos gravados depois disso, pela hora de cada voto no log da urna.",
   ef_nota: "Votar depois do horário é permitido para quem já estava na fila. O log mostra a hora de cada voto, não em quem foi o voto.",
-  ef_n1: (p) => `urnas fecharam 1 h ou mais depois das 17h no 1º turno (${p} das seções)`, ef_n2: (p) => `votos gravados depois das 17h nessas urnas (${p} dos votos delas no dia)`,
+  ef_n1: (p) => `urnas fecharam 1 h ou mais depois das 17h no 1º turno (${p} das seções)`, ef_n2: (p) => `votos gravados 1 h ou mais depois do horário oficial nessas urnas (${p} dos votos delas no dia)`,
   ef_n3: "urnas fecharam 1 h ou mais depois das 19h no 2º turno", ef_btn: "Ver as urnas que fecharam tarde", ef_btn2: "Ver o teste 11 (Horários Atípicos)" });
 Object.assign(window.I18N.EN, { ef_kicker: "Voting machine logs · rounds 1 and 2", ef_title: "Machines that closed late",
   ef_txt: "Voting machines that closed 1 hour or more after the official time, and the votes recorded after it, from the time of each vote in the machine log.",
   ef_nota: "Voting after the official time is allowed for people already in line. The log shows the time of each vote, not who the vote went to.",
-  ef_n1: (p) => `machines closed 1 h or more after 17h in round 1 (${p} of the sections)`, ef_n2: (p) => `votes recorded after 17h in these machines (${p} of their votes that day)`,
+  ef_n1: (p) => `machines closed 1 h or more after 17h in round 1 (${p} of the sections)`, ef_n2: (p) => `votes recorded 1 h or more after the official time in these machines (${p} of their votes that day)`,
   ef_n3: "machines closed 1 h or more after 19h in round 2", ef_btn: "See the machines that closed late", ef_btn2: "See test 11 (Atypical Timestamps)" });
 Object.assign(window.I18N.ES, { ef_kicker: "Logs de las urnas · 1.ª y 2.ª vuelta", ef_title: "Urnas que cerraron tarde",
   ef_txt: "Urnas que cerraron 1 hora o más después del horario oficial y los votos registrados después, según la hora de cada voto en el log de la urna.",
   ef_nota: "Votar después del horario está permitido para quien ya estaba en la fila. El log muestra la hora de cada voto, no a quién fue el voto.",
-  ef_n1: (p) => `urnas cerraron 1 h o más después de las 17h en la 1.ª vuelta (${p} de las secciones)`, ef_n2: (p) => `votos registrados después de las 17h en estas urnas (${p} de sus votos del día)`,
+  ef_n1: (p) => `urnas cerraron 1 h o más después de las 17h en la 1.ª vuelta (${p} de las secciones)`, ef_n2: (p) => `votos registrados 1 h o más después del horario oficial en estas urnas (${p} de sus votos del día)`,
   ef_n3: "urnas cerraron 1 h o más después de las 19h en la 2.ª vuelta", ef_btn: "Ver las urnas que cerraron tarde", ef_btn2: "Ver la prueba 11 (Horarios Atípicos)" });
 
 // Atlas: página de consultas e conferências (#/atlas)

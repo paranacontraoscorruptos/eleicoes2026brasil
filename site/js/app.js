@@ -361,7 +361,7 @@
     return `<section class="vr-dest un-dest ef-dest" aria-labelledby="ef-h">
       <div class="vr-dest-txt"><p class="kicker">${esc(L.ef_kicker)}</p><h2 id="ef-h">${esc(L.ef_title)}</h2><p>${esc(L.ef_txt)}</p><p class="small muted">${esc(L.ef_nota)}</p>
         <div class="btn-row"><a class="btn btn-primary" href="#/encerramento-tardio">${icone("clock")} ${esc(L.ef_btn)}</a><a class="btn btn-ghost" href="#/testes/T11">${icone("flask")} ${esc(L.ef_btn2)}</a></div></div>
-      <div class="vr-dest-nums">${num("a", T1.sinalizadas, L.ef_n1(pct(T1.sinalizadas / T1.analisadas)))}${v1 ? num("r", v1.votos_apos, L.ef_n2(pct(v1.votos_apos / (v1.votos_dia || 1)))) : ""}${num("b", T2.sinalizadas, L.ef_n3)}</div>
+      <div class="vr-dest-nums">${num("a", T1.sinalizadas, L.ef_n1(pct(T1.sinalizadas / T1.analisadas)))}${v1 && v1.votos_1h != null ? num("r", v1.votos_1h, L.ef_n2(pct(v1.votos_1h / (v1.votos_dia || 1)))) : ""}${num("b", T2.sinalizadas, L.ef_n3)}</div>
     </section>`;
   }
 
@@ -488,7 +488,7 @@
       const prev = cp ? `<div class="note enc-nota"><h3>${icone("help")} ${esc(L.ex.enc_t)}</h3><p>${esc(L.ex.enc_nota(cpn(1), cpn(2)))}</p>
         <p class="btn-row"><a class="btn btn-sm btn-primary" href="#/encerramento-tardio">${icone("clock")} ${esc(L.ex.et_title)}</a><a class="btn btn-sm" href="#/lista?teste=T11&nivel=a">${icone("list")} ${esc(L.f_list)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.csv" download>${icone("download")} ${esc(L.ex.enc_csv)}</a><a class="btn btn-sm btn-ghost" href="site/data/complementar/encerramento_tardio.py" download>${icone("code")} ${esc(L.ex.enc_py)}</a></p></div>` : "";
       const vhr = tid === "T11" && R.complementar && R.complementar.votos_apos_horario;
-      const prevVh = vhr ? `<div class="note enc-nota"><h3>${icone("clock")} ${esc(L.ex.vh_t)}</h3><p>${esc(L.ex.vh_info(nf(vhr.turnos[1].secoes), nf(vhr.turnos[1].votos_apos), nf(vhr.turnos[2].secoes), nf(vhr.turnos[2].votos_apos)))}</p>
+      const prevVh = vhr ? `<div class="note enc-nota"><h3>${icone("clock")} ${esc(L.ex.vh_t)}</h3><p>${esc(L.ex.vh_info(nf(vhr.turnos[1].secoes), nf(vhr.turnos[1].votos_1h), nf(vhr.turnos[1].secoes_1h), nf(vhr.turnos[2].secoes), nf(vhr.turnos[2].votos_1h)))}</p>
         <p class="btn-row"><a class="btn btn-sm btn-ghost" href="${vhr.csv_secoes}" download>${icone("download")} ${esc(L.ex.vh_csv_secoes)}</a><a class="btn btn-sm btn-ghost" href="${vhr.script}" download>${icone("code")} ${esc(L.ex.vh_py)}</a></p>
         <p class="small">${esc(L.ex.vh_csv_todos)}: ${vhr.ufs.map((u) => `<a href="site/data/complementar/votos_apos_horario/${u}.csv.gz" download>${u}</a>`).join(" · ")}</p></div>` : "";
       return `<article class="test-card" id="${tid}">

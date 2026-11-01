@@ -2260,7 +2260,7 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
 .et-arq { margin: 0; padding-left: 1.15em; }
 .et-arq li + li { margin-top: 6px; }
 @media (max-width: 700px) { .et-cb li { grid-template-columns: 1fr auto; gap: 4px 10px; } .et-cb .et-fb { grid-column: 1 / -1; order: 3; } .et-cb em { grid-column: 1 / -1; order: 4; text-align: left; } .et-kpis .et-cb b { font-size: 1.15rem; } }
-@media (max-width: 700px) { .et-kpis > #et-max { grid-column: 1 / -1; } .et-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .et-kpis b { font-size: 1.3rem; } .et-faixas button { grid-template-columns: 7em 1fr auto; gap: 8px; } }
+@media (max-width: 700px) { .et-kpis > #et-max, .lg-kpis > div:last-child:nth-child(odd) { grid-column: 1 / -1; } .et-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .et-kpis b { font-size: 1.3rem; } .et-faixas button { grid-template-columns: 7em 1fr auto; gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { .et-fb i { transition: none; transform: none; } }
 
 /* tabela larga: barra no alto (setas + trilho arrastável) e sombra no lado com colunas escondidas */

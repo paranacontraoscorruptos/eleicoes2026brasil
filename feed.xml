@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sun, 01 Nov 2026 13:00:00 -0300</lastBuildDate>
+  <lastBuildDate>Sun, 01 Nov 2026 15:45:00 -0300</lastBuildDate>
+  <item>
+    <title>Votos depois do horário: o site passa a mostrar só os votos 1 hora ou mais depois do horário oficial</title>
+    <link>https://paranacontraoscorruptos.org/#/encerramento-tardio</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-01-20</guid>
+    <pubDate>Sun, 01 Nov 2026 15:45:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>Os cartões da página inicial, da página Urnas que fecharam tarde, da página do 1º turno, da página Logs das urnas e do teste T11 mostravam todos os votos gravados a partir do horário oficial (2.174.517 nas 43.605 urnas que fecharam tarde; 3.727.772 em todas as seções). Votar logo depois do horário é normal para quem já estava na fila, então esses totais não separavam o que chama atenção. Agora o número em destaque é o de votos gravados 1 hora ou mais depois do horário oficial local: 779.934 votos em 38.160 seções no 1º turno (6,1% dos votos dessas urnas no dia), com 92.030 eleitores liberados sem digital nesse período. É o mesmo número do teste L01 e da análise voto a voto. No 2º turno, 0. A lista de cada seção continua mostrando todos os votos depois do horário, voto a voto.</description>
+  </item>
   <item>
     <title>Relatório do 1º turno refeito com os 35 testes e resultados dos logs das urnas</title>
     <link>https://paranacontraoscorruptos.org/#/logs</link>
