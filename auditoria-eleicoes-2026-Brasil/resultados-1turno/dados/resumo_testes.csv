@@ -9,8 +9,28 @@ T07,Paradoxo de Legenda,995429,9,0,,
 T08,Contraste de Vizinhança,902557,24,0,,
 T09,Seções com Resultados Idênticos,1990390,2,0,386.0,
 T10,Baixa Validação Biométrica,499060,212,0,,
-T11,Horários Atípicos,499176,53,214,,
+T11,Horários Atípicos,499176,43128,214,,
 T12,Troca de Urna e Votação em Cédula,499206,21,3042,,
 T13,Teste do 2º Dígito (Mebane),120,0,0,,
 T14,Teste do Último Dígito (Beber-Scacco),248,0,0,,
 T15,Impressão Digital Eleitoral (Klimek),58,0,8,,
+V1,Transferência atípica no estado,,,,,não aplicável
+V2,Transferência atípica no município,,,,,não aplicável
+V3,Transferência atípica na seção,,,,,não aplicável
+V4,Variação atípica do comparecimento,,,,,não aplicável
+V5,Ganho acima do teto de votos disponíveis,,,,,não aplicável
+V6,Cadastro alterado entre os turnos,,,,,não aplicável
+L01,Votos depois do horário oficial,499176,15269,22920,,
+L02,Tempo de cada voto (votos rápidos e em rajada),499176,3,44,,
+L03,Liberações sem digital em sequência,499176,320,2799,,
+L04,Votos depois do “todos já votaram? SIM”,499176,0,1505,,
+L05,Falta de energia e interrupções,499176,2397,80036,,
+L06,Troca de urna,499176,55,2046,,
+L07,"Tentativas repetidas (já votou, não encontrado, impedido)",499176,138,37785,,
+L08,Votos não concluídos,499176,96,0,,
+L09,Tentativas de encerramento,499176,14865,20451,,
+L10,Hora da zerésima e da ligação da urna,499176,54,2833,,
+L11,Relógio da urna,499176,99,237,,
+L12,"Modelo, versão do software e código de carga",499176,5,10,,
+L13,Biometria detalhada,499176,727,12993,,
+L14,Votos do log × boletim de urna,499176,10,0,,

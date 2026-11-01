@@ -4,14 +4,14 @@
 
 |  |  |
 |---|---|
-| Identificador del documento | `9165933898a60a122ef611afe0d7d955` |
-| Fecha de emisión | 24/10/2026 |
-| Versión del motor de análisis | 2.1.0 |
-| SHA-256 del núcleo analítico | `6585b4ef6297b5217e2a821fe3fc80ed0f7fb0f78348b6997164d21c72ba5412` |
+| Identificador del documento | `0c116341d59b07729062529a4cafa35e` |
+| Fecha de emisión | 01/11/2026 |
+| Versión del motor de análisis | 3.1.0 |
+| SHA-256 del núcleo analítico | `d2dfca3edae23bb85dab8b2e8b89ac8ea1a70186e1eee91410ef18622500c819` |
 
-> 🧾 **Estado de Integridad (Determinismo Técnico):** Primera ejecución con estos archivos de entrada. El núcleo analítico (15 metodologías, sin fecha, hora ni duración) se registró como **informe de homologación**, con SHA-256 `6585b4ef6297b5217e2a821fe3fc80ed0f7fb0f78348b6997164d21c72ba5412`. Toda nueva ejecución con los mismos archivos se comparará con este registro.
+> 🧾 **Estado de Integridad (Determinismo Técnico):** Primera ejecución con estos archivos de entrada. El núcleo analítico (15 metodologías, sin fecha, hora ni duración) se registró como **informe de homologación**, con SHA-256 `d2dfca3edae23bb85dab8b2e8b89ac8ea1a70186e1eee91410ef18622500c819`. Toda nueva ejecución con los mismos archivos se comparará con este registro.
 
-**Leyenda de colores:** 🔴 Anomalía estadística (urna listada para verificación) · 🟡 Evento informativo (registrado para verificación, sin alcanzar el criterio de anomalía) · 🟢 Ninguna ocurrencia · ⚠️ Fallo en la ejecución de la prueba
+**Leyenda de colores:** 🔴 Anomalía estadística (urna listada para verificación) · 🟡 Evento informativo (registrado para verificación, sin alcanzar el criterio de anomalía) · 🟢 Ninguna ocurrencia · ⚠️ Fallo en la ejecución de la prueba · ⚪ No aplicable en esta ejecución
 
 ## 1. Naturaleza del documento y salvedades
 
@@ -34,11 +34,11 @@ En análisis de cientos de miles de unidades se espera, incluso en un proceso el
 
 ## 3. Resumen ejecutivo
 
-Se procesaron 67.858.974 registros de 28 archivos oficiales (28 unidades federativas), correspondientes a 499.206 boletines de sección (499.206 secciones electorales distintas; 1.ª vuelta) y 2.490.804 boletines sección–cargo. Se aplicaron 15 pruebas estadísticas y de consistencia.
+Se procesaron 67.858.974 registros de 28 archivos oficiales (28 unidades federativas), correspondientes a 499.206 boletines de sección (499.206 secciones electorales distintas; 1.ª vuelta) y 2.490.804 boletines sección–cargo. Se aplicaron 29 pruebas estadísticas y de consistencia.
 
-Integridad de los archivos: 28 de 56 archivos con hash SHA-512 coincidente con el hash oficial publicado por el TSE; 0 divergente(s); 28 sin verificación oficial posible.
+Integridad de los archivos: 56 de 56 archivos con hash SHA-512 coincidente con el hash oficial publicado por el TSE; 0 divergente(s); 0 sin verificación oficial posible.
 
-Secciones con al menos una señalización de anomalía: 1.491 (0,30% de las secciones analizadas). Secciones con señalizaciones convergentes (dos o más pruebas distintas): 8.
+Secciones con al menos una señalización de anomalía: 44.170 (8,85% de las secciones analizadas). Secciones con señalizaciones convergentes (dos o más pruebas distintas): 350.
 
 **Resultados consolidados**
 
@@ -54,11 +54,57 @@ Secciones con al menos una señalización de anomalía: 1.491 (0,30% de las secc
 | 🔴 8. Contraste de Vecindad | 902.557 | 24 | 0 | — | 0,003% |
 | 🔴 9. Secciones con Resultados Idénticos | 1.990.390 | 2 | 0 | 386 | 0,000% |
 | 🔴 10. Baja Validación Biométrica | 499.060 | 212 | 0 | — | 0,042% |
-| 🔴 11. Horarios Atípicos | 499.176 | 53 | 214 | — | 0,011% |
+| 🔴 11. Horarios Atípicos | 499.176 | 43.128 | 214 | — | 8,640% |
 | 🔴 12. Sustitución de Urna y Votación con Papeleta | 499.206 | 21 | 3.042 | — | 0,004% |
 | 🟢 13. Prueba del 2.º Dígito (Mebane) | 120 | 0 | 0 | — | 0,000% |
 | 🟢 14. Prueba del Último Dígito (Beber-Scacco) | 248 | 0 | 0 | — | 0,000% |
 | 🟡 15. Huella Digital Electoral (Klimek) | 58 | 0 | 8 | — | 0,000% |
+
+Las seis pruebas de variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta (V1 a V6, Anexo A) requieren los Boletines de Urna de las dos vueltas en la misma carpeta de datos y no se aplicaron en esta ejecución.
+
+### Las 35 pruebas del motor en esta ejecución
+
+El motor tiene 35 pruebas: 15 en los Boletines de Urna (pruebas 1 a 15), 6 de variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta (V1 a V6, Anexo A) y 14 en los logs de las urnas (L01 a L14, Anexo B). En esta ejecución se aplicaron 29. La tabla muestra el resultado de cada una.
+
+| Prueba | Datos | Anomalías (🔴) | Eventos informativos (🟡) | Unidades analizadas |
+|---|---|---:|---:|---:|
+| 🟢 1. Cierre Aritmético del Boletín de Urna | Boletines de Urna | 0 | 0 | 2.490.804 |
+| 🟢 2. Inconsistencia de Totales | Boletines de Urna | 0 | 0 | 2.490.804 |
+| 🔴 3. Unanimidad en la Sección | Boletines de Urna | 20 | 39 | 1.992.870 |
+| 🔴 4. Abstención Cero | Boletines de Urna | 2 | 0 | 499.206 |
+| 🔴 5. Exceso de Votos en Blanco y Nulos | Boletines de Urna | 105 | 0 | 2.490.244 |
+| 🔴 6. Voto Cruzado Extremo | Boletines de Urna | 1.166 | 0 | 994.167 |
+| 🔴 7. Paradoja del Voto de Lista | Boletines de Urna | 9 | 0 | 995.429 |
+| 🔴 8. Contraste de Vecindad | Boletines de Urna | 24 | 0 | 902.557 |
+| 🔴 9. Secciones con Resultados Idénticos | Boletines de Urna | 2 | 0 | 1.990.390 |
+| 🔴 10. Baja Validación Biométrica | Boletines de Urna | 212 | 0 | 499.060 |
+| 🔴 11. Horarios Atípicos | Boletines de Urna | 43.128 | 214 | 499.176 |
+| 🔴 12. Sustitución de Urna y Votación con Papeleta | Boletines de Urna | 21 | 3.042 | 499.206 |
+| 🟢 13. Prueba del 2.º Dígito (Mebane) | Boletines de Urna | 0 | 0 | 120 |
+| 🟢 14. Prueba del Último Dígito (Beber-Scacco) | Boletines de Urna | 0 | 0 | 248 |
+| 🟡 15. Huella Digital Electoral (Klimek) | Boletines de Urna | 0 | 8 | 58 |
+| ⚪ V1. Transferencia atípica en el estado | 1.ª × 2.ª vuelta | no aplicable | — | — |
+| ⚪ V2. Transferencia atípica en el municipio | 1.ª × 2.ª vuelta | no aplicable | — | — |
+| ⚪ V3. Transferencia atípica en la sección | 1.ª × 2.ª vuelta | no aplicable | — | — |
+| ⚪ V4. Variación atípica de la participación | 1.ª × 2.ª vuelta | no aplicable | — | — |
+| ⚪ V5. Ganancia por encima del techo de votos disponibles | 1.ª × 2.ª vuelta | no aplicable | — | — |
+| ⚪ V6. Padrón alterado entre las vueltas | 1.ª × 2.ª vuelta | no aplicable | — | — |
+| 🔴 L01. Votos después del horario oficial | Logs de las urnas | 15.269 | 22.920 | 499.176 |
+| 🔴 L02. Tiempo de cada voto (votos rápidos y en ráfaga) | Logs de las urnas | 3 | 44 | 499.176 |
+| 🔴 L03. Liberaciones sin huella seguidas | Logs de las urnas | 320 | 2.799 | 499.176 |
+| 🟡 L04. Votos después del “¿todos ya votaron? SÍ” | Logs de las urnas | 0 | 1.505 | 499.176 |
+| 🔴 L05. Cortes de energía e interrupciones | Logs de las urnas | 2.397 | 80.036 | 499.176 |
+| 🔴 L06. Cambio de urna | Logs de las urnas | 55 | 2.046 | 499.176 |
+| 🔴 L07. Intentos repetidos (ya votó, no encontrado, impedido) | Logs de las urnas | 138 | 37.785 | 499.176 |
+| 🔴 L08. Votos no concluidos | Logs de las urnas | 96 | 0 | 499.176 |
+| 🔴 L09. Intentos de cierre | Logs de las urnas | 14.865 | 20.451 | 499.176 |
+| 🔴 L10. Hora de la zerésima y del encendido de la urna | Logs de las urnas | 54 | 2.833 | 499.176 |
+| 🔴 L11. Reloj de la urna | Logs de las urnas | 99 | 237 | 499.176 |
+| 🔴 L12. Modelo, versión del software y código de carga | Logs de las urnas | 5 | 10 | 499.176 |
+| 🔴 L13. Biometría detallada | Logs de las urnas | 727 | 12.993 | 499.176 |
+| 🔴 L14. Votos del log × boletín de urna | Logs de las urnas | 10 | 0 | 499.176 |
+
+⚪ V1 a V6: comparan los votos de la 1.ª y la 2.ª vuelta y exigen los Boletines de Urna de las dos vueltas en la misma carpeta de datos; esta ejecución tiene una sola vuelta.
 
 ### 🔎 Cómo verificar su urna
 
@@ -80,34 +126,34 @@ Fuente primaria: Portal de Datos Abiertos del TSE, conjunto "Resultados – 2026
 
 | UF | Vuelta | Archivo | Registros | Secciones |
 |---|---|---|---:|---:|
-| AC | 1 | bweb_1t_AC_051020261403.csv | 258.052 | 2.270 |
-| AL | 1 | bweb_1t_AL_051020261403.csv | 685.455 | 7.101 |
-| AM | 1 | bweb_1t_AM_051020261403.csv | 1.073.532 | 8.157 |
-| AP | 1 | bweb_1t_AP_051020261403.csv | 267.474 | 1.914 |
-| BA | 1 | bweb_1t_BA_051020261403.csv | 4.225.183 | 35.476 |
-| CE | 1 | bweb_1t_CE_051020261403.csv | 2.751.489 | 23.765 |
-| DF | 1 | bweb_1t_DF_051020261403.csv | 1.188.269 | 6.969 |
-| ES | 1 | bweb_1t_ES_051020261403.csv | 1.179.742 | 9.844 |
-| GO | 1 | bweb_1t_GO_051020261403.csv | 2.133.284 | 15.686 |
-| MA | 1 | bweb_1t_MA_051020261403.csv | 1.924.028 | 18.093 |
-| MG | 1 | bweb_1t_MG_051020261403.csv | 6.339.455 | 52.062 |
-| MS | 1 | bweb_1t_MS_051020261403.csv | 749.206 | 7.106 |
-| MT | 1 | bweb_1t_MT_051020261403.csv | 891.997 | 8.287 |
-| PA | 1 | bweb_1t_PA_051020261403.csv | 2.385.016 | 20.827 |
-| PB | 1 | bweb_1t_PB_051020261403.csv | 1.075.721 | 10.712 |
-| PE | 1 | bweb_1t_PE_051020261403.csv | 2.808.375 | 21.418 |
-| PI | 1 | bweb_1t_PI_051020261403.csv | 922.913 | 10.225 |
-| PR | 1 | bweb_1t_PR_051020261403.csv | 3.640.079 | 27.142 |
-| RJ | 1 | bweb_1t_RJ_051020261403.csv | 7.122.339 | 37.675 |
-| RN | 1 | bweb_1t_RN_051020261403.csv | 747.317 | 8.115 |
-| RO | 1 | bweb_1t_RO_051020261403.csv | 537.631 | 4.698 |
-| RR | 1 | bweb_1t_RR_051020261403.csv | 192.871 | 1.519 |
-| RS | 1 | bweb_1t_RS_051020261403.csv | 3.649.489 | 27.547 |
-| SC | 1 | bweb_1t_SC_051020261403.csv | 2.118.318 | 17.326 |
-| SE | 1 | bweb_1t_SE_051020261403.csv | 661.549 | 5.923 |
-| SP | 1 | bweb_1t_SP_051020261403.csv | 17.891.697 | 103.656 |
-| TO | 1 | bweb_1t_TO_051020261403.csv | 426.458 | 4.384 |
-| ZZ | 1 | bweb_1t_ZZ_051020261403.csv | 12.035 | 1.309 |
+| AC | 1 | bweb_1t_AC_051020261403.zip | 258.052 | 2.270 |
+| AL | 1 | bweb_1t_AL_051020261403.zip | 685.455 | 7.101 |
+| AM | 1 | bweb_1t_AM_051020261403.zip | 1.073.532 | 8.157 |
+| AP | 1 | bweb_1t_AP_051020261403.zip | 267.474 | 1.914 |
+| BA | 1 | bweb_1t_BA_051020261403.zip | 4.225.183 | 35.476 |
+| CE | 1 | bweb_1t_CE_051020261403.zip | 2.751.489 | 23.765 |
+| DF | 1 | bweb_1t_DF_051020261403.zip | 1.188.269 | 6.969 |
+| ES | 1 | bweb_1t_ES_051020261403.zip | 1.179.742 | 9.844 |
+| GO | 1 | bweb_1t_GO_051020261403.zip | 2.133.284 | 15.686 |
+| MA | 1 | bweb_1t_MA_051020261403.zip | 1.924.028 | 18.093 |
+| MG | 1 | bweb_1t_MG_051020261403.zip | 6.339.455 | 52.062 |
+| MS | 1 | bweb_1t_MS_051020261403.zip | 749.206 | 7.106 |
+| MT | 1 | bweb_1t_MT_051020261403.zip | 891.997 | 8.287 |
+| PA | 1 | bweb_1t_PA_051020261403.zip | 2.385.016 | 20.827 |
+| PB | 1 | bweb_1t_PB_051020261403.zip | 1.075.721 | 10.712 |
+| PE | 1 | bweb_1t_PE_051020261403.zip | 2.808.375 | 21.418 |
+| PI | 1 | bweb_1t_PI_051020261403.zip | 922.913 | 10.225 |
+| PR | 1 | bweb_1t_PR_051020261403.zip | 3.640.079 | 27.142 |
+| RJ | 1 | bweb_1t_RJ_051020261403.zip | 7.122.339 | 37.675 |
+| RN | 1 | bweb_1t_RN_051020261403.zip | 747.317 | 8.115 |
+| RO | 1 | bweb_1t_RO_051020261403.zip | 537.631 | 4.698 |
+| RR | 1 | bweb_1t_RR_051020261403.zip | 192.871 | 1.519 |
+| RS | 1 | bweb_1t_RS_051020261403.zip | 3.649.489 | 27.547 |
+| SC | 1 | bweb_1t_SC_051020261403.zip | 2.118.318 | 17.326 |
+| SE | 1 | bweb_1t_SE_051020261403.zip | 661.549 | 5.923 |
+| SP | 1 | bweb_1t_SP_051020261403.zip | 17.891.697 | 103.656 |
+| TO | 1 | bweb_1t_TO_051020261403.zip | 426.458 | 4.384 |
+| ZZ | 1 | bweb_1t_ZZ_051020261403.zip | 12.035 | 1.309 |
 
 Las 27 UF y el Exterior (ZZ) están presentes en el conjunto analizado.
 
@@ -121,34 +167,34 @@ El **hash del manifiesto** es el SHA-512 de la lista ordenada "nombre;tamaño;sh
 
 | Archivo | Tamaño (bytes) | SHA-512 (calculado) | Verificación oficial |
 |---|---:|---|---|
-| bweb_1t_AC_051020261403.csv | 119.176.183 | `95a3c358d88476b651c0de59cb913cf7a8c1590a1cfed446b9446bcd550d94e8596c6fbd754211937d8294e78bd9f47419a090fe224fd5c0db8cb277c07180d9` | no verificable (.csv) |
-| bweb_1t_AL_051020261403.csv | 319.368.579 | `65a5e0a5cb8efbe05471d7f81d9b43e3e473d5742969e0ad4eac053c880d67e53a3d0e620def9f95ede34ba933a46855cfd943d4c63376b65c5679efcbd3f7b7` | no verificable (.csv) |
-| bweb_1t_AM_051020261403.csv | 491.982.201 | `b98f79ac4553a4aee1f18cea1a28a993ccf161f48ed4914426ac381f34fe751e3ecae979cd15af9944d2e3068aa905a3ceb14a03e848a9846d4a08bf60d774c5` | no verificable (.csv) |
-| bweb_1t_AP_051020261403.csv | 122.469.881 | `423c402428223c6d32f4eb2f1a08f9b50f006031a68e602166fc4ac1ebbec56226babbf3ea168e1f674e66bd22b7c2f3472ed56ac2f4f677635cd669180e0e61` | no verificable (.csv) |
-| bweb_1t_BA_051020261403.csv | 1.960.709.937 | `0028e4b7f0b34e931b97fc22070cf1ea5d2045915cfe8021fb422549240f684a2edb228ce60ea592215594a7208d8ce922635b520182e3ab300a5d22596c72a2` | no verificable (.csv) |
-| bweb_1t_CE_051020261403.csv | 1.277.225.233 | `670ae2da28287fbd2afb0e1f0f8e2d50b7c4a2baee4900e497bc075268aff54af10cdcd3ef5b159ab5967e4eebd5ae1b303d4599b103e5a60e9562cb0b825ed0` | no verificable (.csv) |
-| bweb_1t_DF_051020261403.csv | 549.839.174 | `fce4111e82e5159db28a1c486bdd779e59d77eea686b78cdbd8bd7c66cc679565a187a1524c7a9471fe36951eac2441a9017264c6ba320a9bfd0b373f9db5dac` | no verificable (.csv) |
-| bweb_1t_ES_051020261403.csv | 545.366.396 | `d55a40bde37b4f4f2a32a8654845e08c50f09e15f40d6d140348556cd394bfe3cfd03c4b3e838398b1de465e804e71001a9b6d4a350a59ad0df1461687db3d79` | no verificable (.csv) |
-| bweb_1t_GO_051020261403.csv | 991.254.462 | `e9e98565f1724ce4e8704482fd1ff66b8d605173e374d7bf244765d53b7f9cecf1723ee2d95cf2a59ea89a005530e3f038f3738a90a216bd7ab7767e8bfd96e0` | no verificable (.csv) |
-| bweb_1t_MA_051020261403.csv | 892.916.466 | `89844263044c98a5b7518ed066d51c3cb8685571985cd5afdf4b2fedd13586d19fffbd84594ef699008e1516aa7e81954bd7ac3d8468359d74f09f492747ba5e` | no verificable (.csv) |
-| bweb_1t_MG_051020261403.csv | 2.942.696.720 | `64cc1a9675b8f7f7ce5da828c8b7aea154e35b7a2bc45a96e1708400d70a80f3ef7e6ea2228bb2e4288ec61b0ae8eb23dbefe026e5cb5b9eeb0117850f315f90` | no verificable (.csv) |
-| bweb_1t_MS_051020261403.csv | 346.403.603 | `2e8acf6df9e9f8ecf7a8394e82f768e92da6d7a5445203b4be84e07554889379e55c9397bb3e917022823a3585baf4460550246f2baf0f09d288e68432bee8e0` | no verificable (.csv) |
-| bweb_1t_MT_051020261403.csv | 411.757.026 | `ff0b68d43e79ba2369c8195de8e6090e51328b082a95c8f3328e50aa55ba7b032319481b28597f0ba3cfca8b851005791b978ecad6867a875406cf039ccc38a5` | no verificable (.csv) |
-| bweb_1t_PA_051020261403.csv | 1.099.380.670 | `7399e1453107d44ccb10b1a07248a9292daace765d0d17de44380c4d730bd54217f2e6a92bbfbb11a7b2e1abb6933cd878c500361d6f4c4c0b5dd00584094f00` | no verificable (.csv) |
-| bweb_1t_PB_051020261403.csv | 495.715.924 | `d2a48af3fb8937a1bb7aaa4f36cd76c1c8a05674e7382de86d59bae852847737b674c2962d01fef817cccbf5de012f56524620e49c44f828557b08b49330975f` | no verificable (.csv) |
-| bweb_1t_PE_051020261403.csv | 1.300.845.659 | `ba90e92d98cbe7c11c95c3162a8cc7ea943d67ae67897d2727b5aaea2dfe79c63fbbdb5552a950467c63b594fb7f49f9d311a8c495c1612d2bb37dcf0869f0d1` | no verificable (.csv) |
-| bweb_1t_PI_051020261403.csv | 427.291.621 | `60464ab847c8557085860eed90ef6838bbbeab48c610009e1dc5b5d86a5546e123eb1a803d8fc1de9390e4d1cffe652c58d7d45b3d56dac27f491a7e4f0a3b65` | no verificable (.csv) |
-| bweb_1t_PR_051020261403.csv | 1.685.389.425 | `341823fcd7757466fc3ab2fab2db684d78b938f36b4aff8bfd77f24fcb34d4ed380cb55e3a503eedcc8af4c9db0c667929c408495c58fa49a46a4002a362f10f` | no verificable (.csv) |
-| bweb_1t_RJ_051020261403.csv | 3.334.488.820 | `d2a52d5a45905b0e965f5df5ac62dfd2f6e3eb91ed7ac3157dd14a7c6c1868663bd58cde34662b2b65bd52b0d92e1aa1ee361ab06d044451a17afbb44f0c82c9` | no verificable (.csv) |
-| bweb_1t_RN_051020261403.csv | 343.463.370 | `4743848cf64178b670710f96fafc92348d571f2f619b8b3b507d1cd3c85386a1101eb7d585693b79f3bac2e0ded8219b4367140d1c585d4165bf4287263fce6f` | no verificable (.csv) |
-| bweb_1t_RO_051020261403.csv | 247.649.862 | `d3dec90d75747d18edbf11cda4c55ee865af384e769ca8e745d849b68186511f49d4d2446d03a85b00a812b242e0c113f26b0120592a70a5fea9391490bdd427` | no verificable (.csv) |
-| bweb_1t_RR_051020261403.csv | 88.371.550 | `8bdada4a8a3e384ddfeb3c88283eb73f4a811f6236ca8ab79d9b8323243b9f4520cc16583ca14b3e9ae4e6161afe0408c473ef9a3751f3e6a6794489e6a4f2f8` | no verificable (.csv) |
-| bweb_1t_RS_051020261403.csv | 1.695.797.525 | `d79cc067c88c5523251c3666f56c784327e4df0b6217e358b4f353265fa807350425070972709a2a5938c639b4df53e3846277c36a43145baed98ea7bdfbe925` | no verificable (.csv) |
-| bweb_1t_SC_051020261403.csv | 978.668.939 | `8160bee3e5ec56772d95e1d068acdc75a79ef1c23458f5d399933e9a3ff336802e12e4245bc75584ed65e5b03c9342b7e9df9e2b16d4ee7d02ad29933429b245` | no verificable (.csv) |
-| bweb_1t_SE_051020261403.csv | 306.882.478 | `79f63b161b51911322680624e563d4c92ef8ec7f931f0cefd97113a51ca4653165b27466d74c0a21f04e6ec9a455b70b7d407d38d49a913ca4ed7c62eeb04b60` | no verificable (.csv) |
-| bweb_1t_SP_051020261403.csv | 8.316.061.252 | `c63fdcf623e0ee0d4bc398246ca891bdea6a90f229be512f4a7938f29a250897b6993a5fe4ed5251b4713cfeff700e6c1307718ec7bdd99ccf1fb17b28b48ae4` | no verificable (.csv) |
-| bweb_1t_TO_051020261403.csv | 197.178.750 | `552c2412684bbf63a1ef244a96f6889e621e9ca9c77ff7c2559dab32c9606951f68b4c7402cca5c7e5c8249f3b4d4a41906d18be2ad659bca9764d6e2ae8d0fe` | no verificable (.csv) |
-| bweb_1t_ZZ_051020261403.csv | 5.340.144 | `8d9c579e4c8fee5f9e0ba9ba9691a1a009c882929823329c659180c1ef18d357a546cb96d5e2a7ca0b73e0c773143b0eb8e547e5e304feb4c98d03b13984a68f` | no verificable (.csv) |
+| bweb_1t_AC_051020261403.zip | 16.959.055 | `c095164588a0ad4f46717e081f51eab226f78365325629124672ba8ea044c8e2266028e8456a9e5188ab763c1556160cc8d175b2aab361c5f81544e393c99ab1` | COINCIDE |
+| bweb_1t_AL_051020261403.zip | 48.253.491 | `dc4340c5d6ff227b6398bd0ed5416a42fac6f182f5775b236e4e5be6358d9eab82ded3ecfe33c8326f0a4caee38bd048635e8f14aff8893fe498de6c641e2b7f` | COINCIDE |
+| bweb_1t_AM_051020261403.zip | 77.017.934 | `143619aaf27787f27435bc6b78961d289ac0bc9ec6683a678cc319fa1d68eef0611aad9e608d7493a100bafe83f46516e3155dc4b3e62717c5870fb992239f5d` | COINCIDE |
+| bweb_1t_AP_051020261403.zip | 16.659.046 | `bd40faf189a3ba0462d8efc73216bf60480fda36b3e7d6e144b49d05e54e0415494d06a7858ccf4926cd2570059cdf6518b976e6129c243f44cb9708107b0769` | COINCIDE |
+| bweb_1t_BA_051020261403.zip | 324.997.821 | `8fc0b0c6e926af2c9554de33d5ed1f7c4d376cc2e1655970e78aa8498c71c7caef3d4a4adfcc2f3c4989c9783d2917f8478404a9789bcccbb9bdc366a8024e5e` | COINCIDE |
+| bweb_1t_CE_051020261403.zip | 203.005.857 | `0ac4f8dbcd6eb06ed3e67b71d64fdb36909a885da32e765c9ae966c02ed48dcee57f82b3a95dfa3b1dd586e7f057ed556a991fe9e2dc4ae117e72caa2359fabf` | COINCIDE |
+| bweb_1t_DF_051020261403.zip | 77.026.962 | `10916bdfc73018dab34d21dbb1f7fa49d33921a6d8de9e283a2b4b6d8d7ce6c02af4e5cff948f17cab726195b372ee84f2177ab5756dff04e0f2d71c759d4572` | COINCIDE |
+| bweb_1t_ES_051020261403.zip | 81.978.606 | `fb3dc71fccd1528f091ead2caa11a6182e25d581aaaf565519bcd6884e5827d868a60dad74a77df51593a2bcba692a0bc4dc777e6fa6782a27cf19782d8c7f31` | COINCIDE |
+| bweb_1t_GO_051020261403.zip | 157.210.218 | `995aa51719659a4f22f4e9a9a904f545be3e57112fd204ca35dc697a76950222c244477284b28fb74bde65d45df3f20855f2c40fe436f33afc885917fc73c394` | COINCIDE |
+| bweb_1t_MA_051020261403.zip | 142.453.462 | `28eda5cc72f2d7f29b32282e72461fd93baa7f4da430e1f624128aeb3d83326f25b26efda431c2669e9a23d9d9b76a8f62e27f7a616b54ae5f8e1630a1775134` | COINCIDE |
+| bweb_1t_MG_051020261403.zip | 489.306.781 | `c0d4a82adb1fa1c89447c8a19448c588bad2597d4509c04a1b1671b835b9160e9c835091b1000180d1ad3a329dd36ce3bee1d57f4589a4e96d8c2601a99a80c6` | COINCIDE |
+| bweb_1t_MS_051020261403.zip | 51.978.602 | `e62c150f16fff1a4e6a08ba36e3f7d5b3820a01bb2cf5131df8426c462bb8edac5cb01584770271e356a9e56a8f2d59edf7516f795ce955928b53e3a853361a4` | COINCIDE |
+| bweb_1t_MT_051020261403.zip | 63.492.478 | `0b97fc665251f8a82d5b43938245bbc2b39b680c6053626abf5d94cc67b0105aed3d3c9bc97a6366507e7e409d81b8d5c1f5c15b2f95542e8d6e3e788818ab1d` | COINCIDE |
+| bweb_1t_PA_051020261403.zip | 172.050.487 | `7ec84395ef9ce10fcfeedc9236b9fb93de80d7d278b56b074d0538009ed53e4fff695a627dd848028e91ef8cd1a5a36a1e6fe2318b0adac909c741739371d788` | COINCIDE |
+| bweb_1t_PB_051020261403.zip | 77.916.707 | `22784224b1e752b10371a22cc5cdb381b78c9a3b694da02a71867db116adf39d6b08e52f9cd69888fa708c2be12a3a35d24acf78a3b2f601e2c98561ae496812` | COINCIDE |
+| bweb_1t_PE_051020261403.zip | 204.972.135 | `8d01dd88ba42adf623d3ec23a934691b3cd9ae4e90a7093877592d425d5f79aafc20f1cc419e9de73265116f1c908555c7c8b42015b1f72dadb4a09378da7cfa` | COINCIDE |
+| bweb_1t_PI_051020261403.zip | 66.216.824 | `c77cafd73117432124f789dc75fcb2401338a82dfae707ea4626639c980c318c25555b53fd5a2ad3604aec8bce76012de3ef7102c0cd9e1460b1d7f8f05f8c8a` | COINCIDE |
+| bweb_1t_PR_051020261403.zip | 270.246.858 | `762372bbafff59673da579e81a31536fe990b90e81dd92277af12e395dcb23784e7b6eccdb8826b214c9772edf997bd6747ff8ab87bd40b17049bafca1c5b10b` | COINCIDE |
+| bweb_1t_RJ_051020261403.zip | 536.375.038 | `15fec8c7104496cb39379030cf3fc732801e80405fe0efac7985164bdf72a5decdac3a34ae3fcd7d39e44a9be12674bc5961685a67a9d1c0c38c0c7e1d45719d` | COINCIDE |
+| bweb_1t_RN_051020261403.zip | 54.412.606 | `8c306c4501a9c5f9bdaa17f416c07280a24563f68f65d64e51843bc0b5377bacd534417396200772c471e412f9e4981273432f104ee1e2f7f3681399fd95b820` | COINCIDE |
+| bweb_1t_RO_051020261403.zip | 36.216.443 | `883b0c3cdf8047d9776b2409abecc0ed287a8a6a7f3657a860701a2b9999664a8a6c8012db96238ed1476899120dd2dc62167a3e8924e9d4b1db686c2302fcaf` | COINCIDE |
+| bweb_1t_RR_051020261403.zip | 11.931.936 | `4cde1919c20ba0940a9b5fc83422e93248b28fb494510205ae3862b61340a9e8d5d297444af84618c84ec7bb7f1dbc7c487b51e22377c3cde3f71bc39a8dc5c6` | COINCIDE |
+| bweb_1t_RS_051020261403.zip | 270.859.776 | `b6dd056af20ce8768b2a439b1929102a077f0931f966c5314f706b4c98eb6e39549f8b143aee3808c22490a9d9e3f7dc24af925ea421fa1ae2d896283ff45732` | COINCIDE |
+| bweb_1t_SC_051020261403.zip | 153.178.332 | `618c1cacf80bc2964d3bb5e6274ba3e2adeed853077083bc01004e5110e79615868cf3c39b490e283c181c716275d4473da35d11f407111f4170fc91a8a93db7` | COINCIDE |
+| bweb_1t_SE_051020261403.zip | 46.931.962 | `dd1afedc6867ca7828becbe52178cda4e9104d2966fd3cad8c28d4f4ff7c86270dcc5c24cb3904b02a0f0f5a4f7308bb2b7d9f9d60775092f55de136204b9d40` | COINCIDE |
+| bweb_1t_SP_051020261403.zip | 1.395.007.777 | `00c8b12de9077c8263c87ba91d1300e230719bd1ad27e7f37131478d8e3b4bc9c66b727b3e30c73c89799e136c329db45b85e6d037874ea8fa166d74f26ca403` | COINCIDE |
+| bweb_1t_TO_051020261403.zip | 29.667.347 | `b936b450693c00741226bd1b6c09843c6671e41abafa393ef31606a7038272011b9030ec8d62a8f61d7ff31f532b7979321cac456bef3b44925e0b00026bc614` | COINCIDE |
+| bweb_1t_ZZ_051020261403.zip | 1.039.125 | `001ae12d79a7d5f9471c0a8bb3e09b5cb6633be598683db74b0ab08c0002f2c764cb9fde9c0470c6414985ce47cd01b00c343438d9c914f3f792a1975b400a55` | COINCIDE |
 | CESP_1t_AC_041020261259.zip | 442.637 | `30f12f23bd856704f71d70412e5425e7b33a44a2fc5a3dde900f8f5ea9a56179b713088dd8d0563e4523893c24411ee3519ba6b6d62c1614b28b9476541ddff9` | COINCIDE |
 | CESP_1t_AL_041020261259.zip | 646.136 | `5253894e260e3b38d2b0506be76ae46d5e387391feabee3070bf5aeace14a46489606ff1fde12ac07a90b93acd6c6d8dfb6208db0b1a81c88e39a55c4161d824` | COINCIDE |
 | CESP_1t_AM_041020261259.zip | 734.596 | `bc4c2cea6e4e8076a22d2a74882bca99075e130270722c3fb2620115ad2691ec455d5b9611f87b9f9924f302b7c3242e6d75bb10e118d9c3707d500e3f6c43ed` | COINCIDE |
@@ -178,23 +224,23 @@ El **hash del manifiesto** es el SHA-512 de la lista ordenada "nombre;tamaño;sh
 | CESP_1t_TO_041020261259.zip | 544.341 | `fa7f50dde4db5d84a785204b8c82b97b09c9d3b85c759747ea312aab4911102724166766e6202d68ee3aaff3c67b2abb41bfb3053ff23bac405dd82c43b71f62` | COINCIDE |
 | CESP_1t_ZZ_041020261259.zip | 396.973 | `7d51dc17603a3964e58493cc70f805d5c9a92b4e6f1d1ad5297640e5fc04785b7d5845a3312fd8a0ca762b2fbfe76959b50eb734d2ff9c9ef63b5b9d85e1aa3f` | COINCIDE |
 
-**Hash del manifiesto (SHA-512):** `9165933898a60a122ef611afe0d7d955266220b08990002a4138c63025214f64dbe41aac68d4966f6aea10dd5654d5d3bed69122debe2509ad3993b6aba2ac22`
+**Hash del manifiesto (SHA-512):** `0c116341d59b07729062529a4cafa35eb79955ea712d3d4bda654bc8bab1da1eaa623b1975b8f6bb96cab93f61416ff3e579285a7d07110fa10add7e66dc31f3`
 
 ## 6. Entorno computacional y cronología de la ejecución
 
 |  |  |
 |---|---|
-| Inicio del procesamiento | 24/10/2026 12:13:41 |
-| Conclusión del procesamiento | 24/10/2026 12:46:32 |
-| Duración total | 0h 32min 50s |
+| Inicio del procesamiento | 01/11/2026 12:13:16 |
+| Conclusión del procesamiento | 01/11/2026 12:37:39 |
+| Duración total | 0h 24min 23s |
 | Huso horario de referencia | America/Sao_Paulo (UTC−03:00) |
-| Sistema operativo | Windows 11 (AMD64) |
-| Python | 3.14.7 |
-| Bibliotecas | DuckDB 2.0.0; pandas 3.0.6; NumPy 2.5.3; SciPy 1.18.1; Matplotlib 3.11.2 |
+| Sistema operativo | Linux 6.18.44-fc-v185 (x86_64) |
+| Python | 3.13.16 |
+| Bibliotecas | DuckDB 2.0.0; pandas 3.0.5; NumPy 2.5.3; SciPy 1.18.1; Matplotlib 3.11.2 |
 | Núcleos de procesamiento | 4 |
-| Memoria física | 7,9 GB |
-| Límite de memoria de DuckDB | 3,6 GB |
-| Volumen comprimido leído | 0,00 GB |
+| Memoria física | 15,7 GB |
+| Límite de memoria de DuckDB | 7,1 GB |
+| Volumen comprimido leído | 4,73 GB |
 | Volumen descomprimido procesado | 29,33 GB |
 
 ## 7. Preprocesamiento y control de calidad
@@ -494,7 +540,7 @@ Las pruebas 1, 2, 11 y 12 verifican identidades aritméticas, cronológicas o do
 | 18 | AL | GIRAU DO PONCIANO (27570) | 44 | 176 | — | 1287 | 2455685 | 595631838064182468129072 | Diputado Estatal | 55,0% (22/40) | 7,49% | 1,78e-07 | z=24,8 |
 | 19 | MA | PINHEIRO (8699) | 37 | 445 | — | 1910 | 2027937 | 474145660998525832618049 | Senador | 46,09% (59/128) | 14,72% | 2,16e-07 | z=12,8 |
 | 20 | SC | LAGES (81833) | 104 | 232 | — | 1376 | 2462889 | 930646544835526282890665 | Diputado Estatal | 63,33% (19/30) | 8,3% | 2,25e-07 | z=24,7 |
-| 21 | MA | TIMON (9377) | 19 | 570 | — | 1945 | 2307432 | 600266544175856492340204 | Senador | 59,38% (57/96) | 18,9% | 2,88e-07 | z=12,5 |
+| 21 | MA | TIMON (9377) | 19 | 570 | — | 1945 | 2307432 | 600266544175856492340204 | Senador | 59,38% (57/96) | 18,9% | 2,89e-07 | z=12,5 |
 | 22 | MG | ANTÔNIO CARLOS (40576) | 24 | 18 | — | 1104 | 2297575 | 51563005610440119644444 | Diputado Estatal | 31,72% (59/186) | 12,49% | 3,17e-06 | z=8,7 |
 | 23 | CE | JUAZEIRO DO NORTE (14478) | 119 | 267 | — | 1228 | 2243491 | 325647697187811542193874 | Diputado Federal | 46,51% (20/43) | 7,56% | 3,51e-06 | z=23,3 |
 | 24 | MG | RIO PARDO DE MINAS (51110) | 237 | 211 | — | 1686 | 2061628 | 493165857868917830302978 | Senador | 46,04% (128/278) | 15,57% | 3,95e-06 | z=7,9 |
@@ -2103,13 +2149,13 @@ Las pruebas 1, 2, 11 y 12 verifican identidades aritméticas, cronológicas o do
 
 **Objetivo.** Verificar la conformidad cronológica de los eventos registrados en el BU.
 
-**Método.** Para urnas electrónicas escrutadas, el huso horario local de cada municipio se infiere, entre los husos posibles de la UF, por el percentil 10 de los horarios de apertura (una apertura regular nunca precede el horario oficial y los retrasos no desplazan la referencia) (apertura, cierre y emisión del BU se registran en hora local; la recepción, en hora de Brasilia). Horario oficial: 8h–17h (hora de Brasilia), convertido a la hora local; en el Exterior, 8h–17h en hora local. Tolerancia: 2 min. Verificaciones: apertura anterior al horario oficial; cierre anterior al horario oficial; cierre anterior a la apertura; emisión del BU anterior al cierre; recepción del BU anterior a la emisión (excepto Exterior); fecha de apertura o cierre distinta del día de la elección; ausencia de horarios en urna electrónica escrutada. Los retrasos de apertura ≥ 60 min se informan como eventos informativos.
+**Método.** Para urnas electrónicas escrutadas, el huso horario local de cada municipio se infiere, entre los husos posibles de la UF, por el percentil 10 de los horarios de apertura (una apertura regular nunca precede el horario oficial y los retrasos no desplazan la referencia) (apertura, cierre y emisión del BU se registran en hora local; la recepción, en hora de Brasilia). Horario oficial: 8h–17h (hora de Brasilia), convertido a la hora local; en el Exterior, 8h–17h en hora local. Tolerancia: 2 min. Verificaciones: apertura anterior al horario oficial; cierre anterior al horario oficial; cierre anterior a la apertura; emisión del BU anterior al cierre; recepción del BU anterior a la emisión (excepto Exterior); fecha de apertura o cierre distinta del día de la elección; ausencia de horarios en urna electrónica escrutada. Los retrasos de apertura ≥ 60 min se informan como eventos informativos. Cierre tardío: cierre 1 hora o más después del fin oficial de la vuelta (17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª, cuando se extendió el cierre), en hora local; el cierre anticipado sigue referido a las 17 h de Brasilia en las dos vueltas, hora a partir de la cual la urna libera el cierre.
 
 **Criterio de señalización.** Prueba determinística. Cualquier violación se señala como anomalía; los retrasos son informativos.
 
-**Limitaciones y explicaciones alternativas.** Desvíos del reloj de la urna, sustitución de la urna durante la votación y municipios con huso horario distinto de la mayoría pueden generar señalizaciones explicables.
+**Limitaciones y explicaciones alternativas.** Desvíos del reloj de la urna, sustitución de la urna durante la votación y municipios con huso horario distinto de la mayoría pueden generar señalizaciones explicables. Cerrar después del horario está permitido cuando hay electores en la fila; el acta de la mesa lo registra.
 
-> 📊 **Resultado:** 🔴 **53 anomalía(s)** en 499.176 unidades analizadas (0,011%) · 🟡 214 evento(s) informativo(s).
+> 📊 **Resultado:** 🔴 **43.128 anomalía(s)** en 499.176 unidades analizadas (8,640%) · 🟡 214 evento(s) informativo(s).
 >
 > **Qué significa:** cada urna de la lista 🔴 de abajo presentó un resultado que, según el criterio anterior, es aritméticamente imposible (pruebas 1 y 2) o estadísticamente improbable en su contexto. Es una anomalía estadística: indica prioridad de verificación documental (boletín impreso, acta de la mesa, registros de la urna), pero no es, por sí sola, prueba de fraude.
 >
@@ -2119,8 +2165,52 @@ Las pruebas 1, 2, 11 y 12 verifican identidades aritméticas, cronológicas o do
 
 | Categoría | Cantidad |
 |---|---:|
+| 🔴 Cierre 1 h o más después del horario oficial | 43.075 |
 | 🟡 Apertura con retraso (informativo) | 214 |
 | 🔴 Recepción del BU anterior a la emisión | 53 |
+
+#### 🔴 Cierre tardío: urnas que cerraron 1 hora o más después del horario oficial
+
+Fin oficial: 17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª (cierre extendido), en hora local. Son 43.075 secciones señaladas. Por el número de secciones, la lista no entra en este informe: está en `dados/secoes_sinalizadas.csv` (categoría `encerramento_tardio`) y, urna por urna, con la hora de cada voto, en la página **Urnas que cerraron tarde**: https://paranacontraoscorruptos.org/#/encerramento-tardio
+
+| Vuelta | Secciones analizadas | Secciones señaladas | % | 2 h o más después | 3 h o más después | 4 h o más después | Cierre más tardío |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 1 | 499.176 | 43.075 | 8,63% | 8.366 | 1.342 | 196 | 23:55:06 (+415 min) |
+
+**Secciones señaladas por UF**
+
+| UF | 1.ª vuelta |
+|---|---:|
+| AC | 74 |
+| AL | 2.341 |
+| AM | 1.933 |
+| AP | 294 |
+| BA | 8.766 |
+| CE | 4.392 |
+| DF | 134 |
+| ES | 193 |
+| GO | 575 |
+| MA | 3.232 |
+| MG | 2.333 |
+| MS | 99 |
+| MT | 543 |
+| PA | 3.658 |
+| PB | 1.088 |
+| PE | 6.204 |
+| PI | 924 |
+| PR | 243 |
+| RJ | 2.999 |
+| RN | 1.757 |
+| RO | 12 |
+| RR | 19 |
+| RS | 142 |
+| SC | 177 |
+| SE | 466 |
+| SP | 300 |
+| TO | 107 |
+| ZZ | 70 |
+
+En las secciones señaladas con log leído (43.075): 2.157.678 votos después del horario oficial (17,17% de los votos del día en esas secciones).
 
 #### 🔴 Urnas con anomalía — lista completa (53)
 
@@ -6005,51 +6095,393 @@ Las pruebas 1, 2, 11 y 12 verifican identidades aritméticas, cronológicas o do
 
 Secciones señaladas por dos o más familias de pruebas, excluidos los eventos informativos y las pruebas agregadas. Las pruebas mecánicamente acopladas cuentan como una única evidencia: Cierre Aritmético del Boletín e Inconsistencia de Totales (familia aritmética); Unanimidad en la Sección, Voto Cruzado Extremo y Contraste de Vecindad (familia de concentración de votos). La convergencia de señalizaciones de familias distintas aumenta la prioridad de verificación documental.
 
-**🔴 Lista completa (8)**
+**🔴 Lista completa (350)**
 
 | # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Pruebas | Familias de pruebas |
 |---:|---|---|---|---|---|---|---|---|---|---:|
-| 1 | AM | BARCELOS (2097) | 18 | 38 | — | 1171 | 2356996 | 391934480369767913495569 | 5, 7 | 2 |
-| 2 | AM | JURUÁ (2470) | 50 | 19 | 26 / 27 / 36 / 40 / 44 | 1180 | 2316234 | 931628998051954512448123 | 5, 6 | 2 |
-| 3 | BA | SANTO ESTEVÃO (38750) | 143 | 230 | — | 1406 | 1766728 | 101980493186797726454635 | 4, 6 | 2 |
-| 4 | BA | TANQUE NOVO (39918) | 168 | 178 | 194 | 1198 | 1675729 | 844423300923011987627865 | 6, 10 | 2 |
-| 5 | MT | QUERÊNCIA (90069) | 53 | 163 | — | 1180 | 2270916 | 489416328594095550626819 | 6, 11 | 2 |
-| 6 | MT | QUERÊNCIA (90069) | 53 | 170 | — | 1198 | 2444731 | 933961511039822967077506 | 6, 11 | 2 |
-| 7 | MT | BOM JESUS DO ARAGUAIA (90905) | 53 | 112 | — | 1066 | 2447957 | 919859292574425385152229 | 5, 11 | 2 |
-| 8 | RR | ALTO ALEGRE (3050) | 3 | 226 | 253 | 1198 | 2288890 | 715304691814844794540734 | 5, 6 | 2 |
+| 1 | BA | TANQUE NOVO (39918) | 168 | 178 | 194 | 1198 | 1675729 | 844423300923011987627865 | 6, 10, 11 | 3 |
+| 2 | RR | ALTO ALEGRE (3050) | 3 | 226 | 253 | 1198 | 2288890 | 715304691814844794540734 | 5, 6, 11 | 3 |
+| 3 | AL | ARAPIRACA (27057) | 22 | 492 | — | 1660 | 2071252 | 404376613188822122976722 | 6, 11 | 2 |
+| 4 | AL | CAMPO ALEGRE (27278) | 47 | 71 | — | 1171 | 2472383 | 14906617897960548825499 | 6, 11 | 2 |
+| 5 | AL | CORURIPE (27456) | 7 | 76 | — | 1244 | 2435994 | 749651899674847315444845 | 6, 11 | 2 |
+| 6 | AL | DOIS RIACHOS (27499) | 46 | 142 | — | 1015 | 1670703 | 908384499489028269248942 | 10, 11 | 2 |
+| 7 | AL | JOAQUIM GOMES (27758) | 53 | 166 | — | 1210 | 2473980 | 187986351908089947743104 | 6, 11 | 2 |
+| 8 | AL | LIMOEIRO DE ANADIA (27839) | 47 | 145 | — | 1392 | 2438947 | 86313002994560881735134 | 10, 11 | 2 |
+| 9 | AL | MARIBONDO (27952) | 48 | 195 | — | 1040 | 2030810 | 931409201152979970135817 | 6, 11 | 2 |
+| 10 | AL | MARIBONDO (27952) | 48 | 196 | — | 1040 | 2072200 | 2116382759390595099631 | 6, 11 | 2 |
+| 11 | AL | OLHO D'ÁGUA DAS FLORES (28134) | 11 | 119 | — | 1058 | 1675105 | 431361586879789458766861 | 10, 11 | 2 |
+| 12 | AL | OLHO D'ÁGUA GRANDE (28177) | 37 | 84 | — | 1058 | 2432760 | 448542445649168871979927 | 6, 11 | 2 |
+| 13 | AL | OLHO D'ÁGUA GRANDE (28177) | 37 | 104 | — | 1104 | 2440040 | 569754099061624297501750 | 6, 11 | 2 |
+| 14 | AL | PALESTINA (28231) | 11 | 36 | — | 1074 | 1773657 | 702088579257931042478408 | 6, 11 | 2 |
+| 15 | AL | SÃO JOSÉ DA TAPERA (28673) | 51 | 22 | — | 1090 | 1773234 | 711117071604753781003632 | 6, 11 | 2 |
+| 16 | AL | SÃO JOSÉ DA TAPERA (28673) | 51 | 24 | — | 1090 | 1768747 | 226268807455167380697628 | 6, 11 | 2 |
+| 17 | AL | SÃO JOSÉ DA TAPERA (28673) | 51 | 50 | — | 1090 | 1655353 | 781824133255604065807911 | 6, 11 | 2 |
+| 18 | AL | TAQUARANA (28819) | 45 | 174 | 172 | 1066 | 1675293 | 556538556820368598646968 | 10, 11 | 2 |
+| 19 | AL | TEOTÔNIO VILELA (28932) | 34 | 169 | — | 1201 | 2443385 | 152380658636708704145886 | 6, 11 | 2 |
+| 20 | AM | BARCELOS (2097) | 18 | 38 | — | 1171 | 2356996 | 391934480369767913495569 | 5, 7 | 2 |
+| 21 | AM | CARAUARI (2216) | 21 | 70 | — | 1236 | 2351741 | 555280046094595189868315 | 6, 11 | 2 |
+| 22 | AM | SANTA ISABEL DO RIO NEGRO (2372) | 30 | 31 | 33 | 1236 | 2340819 | 447865767512248116764215 | 6, 11 | 2 |
+| 23 | AM | IPIXUNA (2399) | 45 | 52 | — | 1139 | 2040399 | 648347212761742348705298 | 6, 11 | 2 |
+| 24 | AM | JAPURÁ (2453) | 48 | 12 | — | 1074 | 2357890 | 204836493261232786697780 | 6, 11 | 2 |
+| 25 | AM | JURUÁ (2470) | 50 | 19 | 26 / 27 / 36 / 40 / 44 | 1180 | 2316234 | 931628998051954512448123 | 5, 6 | 2 |
+| 26 | AM | JUTAÍ (2496) | 41 | 6 | — | 1147 | 2040697 | 100949767616020098351829 | 6, 11 | 2 |
+| 27 | AM | JUTAÍ (2496) | 41 | 12 | — | 1155 | 2040540 | 939232223430197244062353 | 6, 11 | 2 |
+| 28 | AM | NHAMUNDÁ (2631) | 43 | 41 | — | 1422 | 2342641 | 464807854257421221564618 | 6, 11 | 2 |
+| 29 | AM | NHAMUNDÁ (2631) | 43 | 47 | — | 1430 | 2341275 | 171978224528142552892404 | 6, 11 | 2 |
+| 30 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 9 | — | 1040 | 2340906 | 523357515265534932881504 | 6, 11 | 2 |
+| 31 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 10 | — | 1040 | 2359902 | 533458600966965451038857 | 6, 11 | 2 |
+| 32 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 26 | — | 1040 | 2355722 | 190024994732844243636346 | 6, 11 | 2 |
+| 33 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 46 | — | 1040 | 2337899 | 987903926999690105124270 | 6, 11 | 2 |
+| 34 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 57 | — | 1180 | 2358646 | 109115221611599083613885 | 6, 11 | 2 |
+| 35 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 63 | — | 1139 | 2350314 | 866791614887724789265103 | 6, 11 | 2 |
+| 36 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 71 | — | 1180 | 2251565 | 58610654706109684273510 | 6, 11 | 2 |
+| 37 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 74 | — | 1139 | 2354948 | 169721092517360092774632 | 6, 11 | 2 |
+| 38 | AM | SANTO ANTÔNIO DO IÇÁ (2739) | 47 | 87 | — | 1180 | 2356185 | 109115439811593660372388 | 6, 11 | 2 |
+| 39 | AM | ALVARÃES (2895) | 60 | 7 | — | 1031 | 2355741 | 708812471101998248022779 | 6, 11 | 2 |
+| 40 | AM | AMATURÁ (2917) | 22 | 64 | — | 1058 | 2340752 | 136849131844816691193027 | 6, 11 | 2 |
+| 41 | AM | AMATURÁ (2917) | 22 | 72 | 124 | 1058 | 2352437 | 803516511661487126452038 | 6, 11 | 2 |
+| 42 | AM | AMATURÁ (2917) | 22 | 85 | — | 1058 | 2349127 | 480384590479213542759969 | 6, 11 | 2 |
+| 43 | AM | AMATURÁ (2917) | 22 | 107 | — | 1058 | 2355917 | 803516665611502857027385 | 6, 11 | 2 |
+| 44 | AM | BERURI (2950) | 54 | 43 | 46 | 1210 | 2345029 | 912770522273308540916376 | 6, 11 | 2 |
+| 45 | AM | BOA VISTA DO RAMOS (2976) | 5 | 173 | — | 1082 | 2350771 | 71962983622628221848917 | 6, 11 | 2 |
+| 46 | AM | TABATINGA (98477) | 36 | 19 | — | 1309 | 2351967 | 731260796854962864601883 | 6, 11 | 2 |
+| 47 | AM | TABATINGA (98477) | 36 | 20 | — | 1309 | 2350991 | 680755823349516839431066 | 6, 11 | 2 |
+| 48 | AM | TABATINGA (98477) | 36 | 21 | — | 1309 | 2350337 | 175604422898357343637001 | 6, 11 | 2 |
+| 49 | AM | TABATINGA (98477) | 36 | 22 | — | 1309 | 2356094 | 145301509795535094776284 | 6, 11 | 2 |
+| 50 | AM | TABATINGA (98477) | 36 | 30 | 115 | 1309 | 2351929 | 579644782638522752818332 | 6, 11 | 2 |
+| 51 | AM | TABATINGA (98477) | 36 | 56 | — | 1287 | 2345537 | 842371854361992737763097 | 6, 11 | 2 |
+| 52 | AM | TABATINGA (98477) | 36 | 57 | — | 1287 | 2334044 | 34290159180464781961928 | 6, 11 | 2 |
+| 53 | AM | TABATINGA (98477) | 36 | 77 | — | 1287 | 2351962 | 711058972175317231148784 | 6, 11 | 2 |
+| 54 | AM | TABATINGA (98477) | 36 | 95 | — | 1287 | 2357176 | 943381128907911678497118 | 6, 11 | 2 |
+| 55 | AM | TABATINGA (98477) | 36 | 100 | — | 1287 | 2340903 | 3987097313874963406759 | 6, 11 | 2 |
+| 56 | BA | EUNÁPOLIS (30058) | 203 | 289 | — | 1430 | 2052982 | 470798200759863586585745 | 8, 11 | 2 |
+| 57 | BA | BURITIRAMA (30791) | 77 | 107 | 108 | 1082 | 2313218 | 453571311981018800244924 | 6, 11 | 2 |
+| 58 | BA | BURITIRAMA (30791) | 77 | 178 | 245 | 1287 | 2290716 | 221248686749323771320219 | 6, 11 | 2 |
+| 59 | BA | DIAS D'ÁVILA (30872) | 186 | 114 | — | 1244 | 1674361 | 725603323201286951099695 | 6, 11 | 2 |
+| 60 | BA | FILADÉLFIA (30910) | 149 | 128 | — | 1112 | 2400842 | 273463389179996768206732 | 6, 11 | 2 |
+| 61 | BA | FILADÉLFIA (30910) | 149 | 132 | — | 1163 | 2427075 | 182554707170015329867220 | 6, 11 | 2 |
+| 62 | BA | JOÃO DOURADO (30996) | 199 | 86 | 103 | 1198 | 2264685 | 914062130012000023655849 | 6, 11 | 2 |
+| 63 | BA | JOÃO DOURADO (30996) | 199 | 88 | — | 1210 | 2290746 | 358406791356582102180692 | 6, 11 | 2 |
+| 64 | BA | JOÃO DOURADO (30996) | 199 | 90 | — | 1210 | 2301818 | 782749416599377637060017 | 6, 11 | 2 |
+| 65 | BA | JOÃO DOURADO (30996) | 199 | 91 | 109 | 1198 | 2305814 | 176688910438049013726899 | 6, 11 | 2 |
+| 66 | BA | JOÃO DOURADO (30996) | 199 | 105 | — | 1210 | 2297538 | 116082754532233843156059 | 6, 11 | 2 |
+| 67 | BA | ALAGOINHAS (33138) | 163 | 197 | — | 1988 | 2225544 | 37587521785167188716986 | 6, 11 | 2 |
+| 68 | BA | ALAGOINHAS (33138) | 163 | 241 | — | 1988 | 2231374 | 77991641557701983574914 | 6, 11 | 2 |
+| 69 | BA | AMÉLIA RODRIGUES (33219) | 192 | 200 | — | 1163 | 1764885 | 501644689908059024827131 | 6, 11 | 2 |
+| 70 | BA | ANDORINHA (33260) | 45 | 253 | — | 1163 | 2424783 | 903073765812063177109866 | 6, 11 | 2 |
+| 71 | BA | APORÁ (33375) | 44 | 151 | — | 1171 | 2225697 | 717443267426461692673471 | 6, 11 | 2 |
+| 72 | BA | BAIXA GRANDE (33510) | 86 | 145 | — | 1244 | 2223459 | 818703732601533573283865 | 6, 11 | 2 |
+| 73 | BA | BARREIRAS (33634) | 70 | 315 | 376 | 1635 | 2222654 | 98058981441991276676660 | 6, 11 | 2 |
+| 74 | BA | BOM JESUS DA LAPA (33774) | 71 | 73 | 74 / 75 | 1260 | 1838508 | 305290120756014921355709 | 6, 11 | 2 |
+| 75 | BA | BOM JESUS DA LAPA (33774) | 71 | 76 | 77 / 78 | 1260 | 1796363 | 305290455556031665361912 | 6, 11 | 2 |
+| 76 | BA | BOM JESUS DA LAPA (33774) | 71 | 79 | 80 / 240 | 1260 | 1835646 | 921452407518679402000899 | 6, 11 | 2 |
+| 77 | BA | BOM JESUS DA LAPA (33774) | 71 | 150 | — | 1589 | 1780000 | 618321050787448869442289 | 6, 11 | 2 |
+| 78 | BA | BOM JESUS DA LAPA (33774) | 71 | 151 | 205 | 1597 | 1798114 | 901250457316755768054092 | 6, 11 | 2 |
+| 79 | BA | BOM JESUS DA LAPA (33774) | 71 | 213 | — | 1333 | 1807964 | 386098963163181713701425 | 6, 11 | 2 |
+| 80 | BA | BOM JESUS DA LAPA (33774) | 71 | 218 | 319 | 1724 | 1842253 | 547614677779635702772551 | 6, 11 | 2 |
+| 81 | BA | BOM JESUS DA LAPA (33774) | 71 | 223 | — | 1589 | 1824088 | 860846516911698363822911 | 6, 11 | 2 |
+| 82 | BA | BOM JESUS DA LAPA (33774) | 71 | 241 | — | 1562 | 1757555 | 911351480297512571017554 | 6, 11 | 2 |
+| 83 | BA | BOM JESUS DA SERRA (33782) | 59 | 352 | — | 1120 | 2015636 | 991433830274279982142643 | 10, 11 | 2 |
+| 84 | BA | CAETANOS (34029) | 58 | 218 | — | 1031 | 2280655 | 300253439267118617381689 | 6, 11 | 2 |
+| 85 | BA | CAETANOS (34029) | 58 | 221 | — | 1066 | 2309587 | 7223430637346076888676 | 6, 11 | 2 |
+| 86 | BA | CAETITÉ (34037) | 63 | 148 | — | 1414 | 2209160 | 208595450672221094903916 | 6, 11 | 2 |
+| 87 | BA | CAMAMU (34150) | 78 | 36 | 204 | 1490 | 1832855 | 376874240946617337873290 | 6, 11 | 2 |
+| 88 | BA | CAMAMU (34150) | 78 | 38 | — | 1503 | 1771972 | 215258302330899469205194 | 6, 11 | 2 |
+| 89 | BA | CAMAMU (34150) | 78 | 80 | 203 | 1503 | 1791672 | 33440590688050764408976 | 6, 11 | 2 |
+| 90 | BA | CANÁPOLIS (34215) | 99 | 164 | 189 | 1147 | 1781461 | 185780137681237797359729 | 6, 11 | 2 |
+| 91 | BA | CANDEIAS (34290) | 127 | 97 | — | 1457 | 1666821 | 402240809802338838587836 | 6, 11 | 2 |
+| 92 | BA | CANDEIAS (34290) | 127 | 313 | — | 1465 | 1655319 | 674967343187831436087009 | 6, 11 | 2 |
+| 93 | BA | CANDEIAS (34290) | 127 | 326 | — | 1040 | 1680929 | 755775828016481019853204 | 10, 11 | 2 |
+| 94 | BA | CANDIBA (34312) | 64 | 19 | — | 1058 | 2073487 | 850471918631907063266019 | 6, 11 | 2 |
+| 95 | BA | CANSANÇÃO (34355) | 50 | 199 | — | 1104 | 2305802 | 796914503715492161033324 | 6, 11 | 2 |
+| 96 | BA | CARAÍBAS (34363) | 161 | 311 | — | 1112 | 2039857 | 584120036461318120278489 | 6, 11 | 2 |
+| 97 | BA | CATU (34495) | 129 | 238 | — | 1350 | 2400713 | 640586919737154780826076 | 6, 11 | 2 |
+| 98 | BA | CENTRAL (34517) | 159 | 15 | — | 1090 | 2306009 | 533196152701997245066273 | 6, 11 | 2 |
+| 99 | BA | CHORROCHÓ (34533) | 158 | 35 | — | 1147 | 1775666 | 713503471349785144226987 | 6, 11 | 2 |
+| 100 | BA | CIPÓ (34576) | 79 | 194 | — | 1090 | 2286565 | 811629970104966676343175 | 6, 11 | 2 |
+| 101 | BA | CONCEIÇÃO DO COITÉ (34673) | 132 | 161 | — | 1767 | 2221200 | 506502122714152232313846 | 6, 11 | 2 |
+| 102 | BA | CONDEÚBA (34738) | 60 | 145 | — | 1295 | 2047501 | 547796462301889870487186 | 6, 11 | 2 |
+| 103 | BA | CONDEÚBA (34738) | 60 | 174 | — | 1406 | 2048905 | 618403630318202572303093 | 6, 11 | 2 |
+| 104 | BA | EUCLIDES DA CUNHA (35130) | 102 | 166 | 283 | 1422 | 2288787 | 446275613611781542431718 | 6, 11 | 2 |
+| 105 | BA | FEIRA DE SANTANA (35157) | 157 | 294 | — | 1350 | 1769007 | 464967711449421766002069 | 6, 11 | 2 |
+| 106 | BA | GANDU (35238) | 151 | 44 | 45 | 1112 | 1781235 | 312886037890467540313023 | 6, 11 | 2 |
+| 107 | BA | GUARATINGA (35351) | 189 | 24 | 25 | 1112 | 2232785 | 198283778448067775447310 | 6, 11 | 2 |
+| 108 | BA | GUARATINGA (35351) | 189 | 28 | 113 | 1112 | 2155308 | 733637759102293091983664 | 6, 11 | 2 |
+| 109 | BA | IAÇU (35378) | 193 | 119 | — | 1201 | 2195995 | 550360703138592756332497 | 6, 11 | 2 |
+| 110 | BA | IGAPORÃ (35696) | 168 | 136 | — | 1090 | 1765993 | 57844016332014640862415 | 6, 11 | 2 |
+| 111 | BA | IGRAPIÚNA (35700) | 32 | 178 | 204 | 1040 | 1825737 | 942137407190323522535526 | 6, 11 | 2 |
+| 112 | BA | IGRAPIÚNA (35700) | 32 | 207 | — | 1163 | 1761952 | 134056088289727934300091 | 6, 11 | 2 |
+| 113 | BA | IPIAÚ (35793) | 24 | 104 | 105 | 1244 | 2235631 | 35661569739637720867176 | 6, 11 | 2 |
+| 114 | BA | IPIRÁ (35815) | 62 | 51 | 52 | 1090 | 2198280 | 928256389086616216296916 | 10, 11 | 2 |
+| 115 | BA | IPUPIARA (35831) | 94 | 49 | 52 | 1139 | 2293650 | 138920406850599425672730 | 6, 11 | 2 |
+| 116 | BA | ITABERABA (35955) | 42 | 95 | — | 1074 | 2198228 | 337483513795272149339041 | 6, 11 | 2 |
+| 117 | BA | ITABERABA (35955) | 42 | 153 | — | 1309 | 2198950 | 155665922966375434173621 | 6, 11 | 2 |
+| 118 | BA | ITABERABA (35955) | 42 | 159 | — | 1333 | 2222925 | 600110036258628620089077 | 6, 11 | 2 |
+| 119 | BA | ITABERABA (35955) | 42 | 193 | — | 1392 | 2225906 | 105160152608397447955870 | 6, 11 | 2 |
+| 120 | BA | ITABERABA (35955) | 42 | 199 | — | 1333 | 2195841 | 549504253252557452657208 | 6, 11 | 2 |
+| 121 | BA | ITABERABA (35955) | 42 | 286 | — | 1554 | 2195839 | 761726161513276074886121 | 6, 11 | 2 |
+| 122 | BA | ITABUNA (35971) | 27 | 115 | 199 | 1198 | 2168466 | 810872529231637666910600 | 6, 11 | 2 |
+| 123 | BA | ITAGIBÁ (36056) | 147 | 62 | — | 1104 | 2247588 | 979311613136465691383756 | 6, 11 | 2 |
+| 124 | BA | ITUBERÁ (36471) | 32 | 34 | 219 | 1171 | 1760380 | 818224461423099352401160 | 6, 11 | 2 |
+| 125 | BA | JUAZEIRO (36692) | 47 | 343 | — | 1678 | 2254677 | 479352355230271683432027 | 5, 11 | 2 |
+| 126 | BA | LAURO DE FREITAS (36854) | 180 | 202 | — | 1430 | 1671252 | 872152271184117131062764 | 10, 11 | 2 |
+| 127 | BA | LAURO DE FREITAS (36854) | 180 | 232 | — | 1449 | 1667744 | 660031277563815998118634 | 10, 11 | 2 |
+| 128 | BA | LAURO DE FREITAS (36854) | 180 | 331 | — | 1597 | 1679832 | 811546409782994999556331 | 10, 11 | 2 |
+| 129 | BA | LAURO DE FREITAS (36854) | 180 | 386 | — | 1660 | 1655626 | 74172567616091508023958 | 10, 11 | 2 |
+| 130 | BA | MARACÁS (37117) | 37 | 32 | — | 1112 | 2245945 | 634061063645589002481230 | 6, 11 | 2 |
+| 131 | BA | MARCIONÍLIO SOUZA (37176) | 193 | 20 | — | 1112 | 2198785 | 639768774159798367970495 | 6, 11 | 2 |
+| 132 | BA | NOVA FÁTIMA (37567) | 196 | 213 | — | 1082 | 2221020 | 389876962372804567107994 | 6, 11 | 2 |
+| 133 | BA | PARATINGA (37753) | 173 | 150 | 239 | 1260 | 1825716 | 83599525404536669638736 | 6, 11 | 2 |
+| 134 | BA | PARATINGA (37753) | 173 | 159 | — | 1317 | 1758378 | 719862142650830058227235 | 6, 11 | 2 |
+| 135 | BA | PONTO NOVO (38067) | 149 | 193 | — | 1210 | 2424203 | 64042115178841355136643 | 6, 11 | 2 |
+| 136 | BA | PONTO NOVO (38067) | 149 | 202 | — | 1210 | 2427078 | 437779832315379460006848 | 6, 11 | 2 |
+| 137 | BA | QUIJINGUE (38199) | 102 | 123 | 138 | 1171 | 2341978 | 534584095748239652906660 | 6, 11 | 2 |
+| 138 | BA | RETIROLÂNDIA (38237) | 196 | 192 | — | 1155 | 2247116 | 769114708769348685121652 | 6, 11 | 2 |
+| 139 | BA | RIACHÃO DO JACUÍPE (38270) | 114 | 188 | — | 1163 | 2215968 | 949054478364260743917769 | 6, 11 | 2 |
+| 140 | BA | RIACHO DE SANTANA (38296) | 113 | 126 | — | 1333 | 1819511 | 795128689193722502222403 | 6, 11 | 2 |
+| 141 | BA | SALVADOR (38490) | 4 | 234 | — | 1465 | 2428190 | 245668077074055272157525 | 6, 11 | 2 |
+| 142 | BA | SANTANÓPOLIS (38679) | 74 | 95 | — | 1082 | 1756377 | 737866910160924504546582 | 6, 11 | 2 |
+| 143 | BA | SANTANÓPOLIS (38679) | 74 | 123 | — | 1082 | 1795990 | 838876394770657077643189 | 6, 11 | 2 |
+| 144 | BA | SANTO ANTÔNIO DE JESUS (38733) | 202 | 200 | — | 1260 | 2006332 | 991339174326916043983939 | 6, 11 | 2 |
+| 145 | BA | SANTO ESTEVÃO (38750) | 143 | 94 | 189 | 1333 | 1765257 | 51475120691978287495771 | 6, 11 | 2 |
+| 146 | BA | SANTO ESTEVÃO (38750) | 143 | 95 | — | 1120 | 1769971 | 415011599527429537009846 | 6, 11 | 2 |
+| 147 | BA | SANTO ESTEVÃO (38750) | 143 | 134 | — | 1120 | 1761935 | 293899030308092741854600 | 6, 11 | 2 |
+| 148 | BA | SANTO ESTEVÃO (38750) | 143 | 230 | — | 1406 | 1766728 | 101980493186797726454635 | 4, 6 | 2 |
+| 149 | BA | SÃO FRANCISCO DO CONDE (38830) | 162 | 96 | — | 1406 | 1657792 | 969069253158731955263873 | 10, 11 | 2 |
+| 150 | BA | SÃO FRANCISCO DO CONDE (38830) | 162 | 103 | — | 1279 | 1657736 | 110584531673604985226723 | 6, 11 | 2 |
+| 151 | BA | SÃO SEBASTIÃO DO PASSÉ (38890) | 128 | 54 | — | 1147 | 1651356 | 288839077311155999661122 | 10, 11 | 2 |
+| 152 | BA | SÁTIRO DIAS (38938) | 44 | 182 | — | 1325 | 2244495 | 7372878491279595654765 | 6, 11 | 2 |
+| 153 | BA | SAUBARA (38946) | 178 | 179 | — | 1104 | 1656755 | 562202136507836395099389 | 10, 11 | 2 |
+| 154 | BA | SENHOR DO BONFIM (39012) | 45 | 288 | — | 1724 | 2343862 | 408323029089909449261018 | 10, 11 | 2 |
+| 155 | BA | SIMÕES FILHO (39136) | 33 | 68 | — | 1090 | 1673838 | 344288645001045117339234 | 10, 11 | 2 |
+| 156 | BA | SIMÕES FILHO (39136) | 33 | 222 | — | 1155 | 1675915 | 778531316959890096729192 | 10, 11 | 2 |
+| 157 | BA | SIMÕES FILHO (39136) | 33 | 228 | — | 1368 | 1658327 | 586612784240231924395090 | 10, 11 | 2 |
+| 158 | BA | SIMÕES FILHO (39136) | 33 | 241 | — | 1066 | 1669681 | 980652553580684784847865 | 10, 11 | 2 |
+| 159 | BA | TANHAÇU (39195) | 58 | 338 | — | 1198 | 2306051 | 976220335424688503570149 | 6, 11 | 2 |
+| 160 | BA | TANHAÇU (39195) | 58 | 339 | — | 1198 | 2306173 | 87331551235141466541369 | 6, 11 | 2 |
+| 161 | BA | UBAITABA (39438) | 73 | 73 | — | 1139 | 2179319 | 146196961080352228191653 | 6, 11 | 2 |
+| 162 | BA | UBAITABA (39438) | 73 | 74 | — | 1139 | 2171401 | 348116278200900895378551 | 6, 11 | 2 |
+| 163 | BA | TANQUE NOVO (39918) | 168 | 171 | — | 1066 | 1769834 | 440483137483822597400584 | 6, 11 | 2 |
+| 164 | BA | TEIXEIRA DE FREITAS (39934) | 183 | 126 | 127 | 1260 | 2309472 | 418739308448724203116442 | 6, 11 | 2 |
+| 165 | CE | ACARAPE (13145) | 52 | 91 | — | 1570 | 1819522 | 23659763423544147645855 | 6, 11 | 2 |
+| 166 | CE | APUIARÉS (13170) | 50 | 220 | — | 1074 | 1816055 | 103245424084497942443763 | 10, 11 | 2 |
+| 167 | CE | ERERÉ (13200) | 10 | 121 | — | 1066 | 1773326 | 550762891407994401836764 | 6, 11 | 2 |
+| 168 | CE | ARARENDÁ (13420) | 48 | 120 | 209 | 1317 | 1784680 | 160432392823636143569576 | 6, 11 | 2 |
+| 169 | CE | CHAVAL (13773) | 108 | 1 | — | 1023 | 1657035 | 49501155152692513271788 | 10, 11 | 2 |
+| 170 | CE | FARIAS BRITO (13870) | 62 | 226 | — | 1180 | 2241717 | 643528627237110197972700 | 10, 11 | 2 |
+| 171 | CE | FORTALEZA (13897) | 93 | 285 | — | 1430 | 2276548 | 904686190496588604839770 | 10, 11 | 2 |
+| 172 | CE | GRANJA (13951) | 25 | 117 | — | 1368 | 1659994 | 774246706271347532844623 | 10, 11 | 2 |
+| 173 | CE | IBARETAMA (14060) | 6 | 83 | — | 1520 | 2203795 | 11467905365253230303366 | 6, 11 | 2 |
+| 174 | CE | JAGUARIBARA (14370) | 72 | 63 | — | 1112 | 1771037 | 832854582337829674796506 | 6, 11 | 2 |
+| 175 | CE | JAGUARIBE (14397) | 10 | 7 | 60 | 1040 | 1674619 | 265633032485888345997856 | 10, 11 | 2 |
+| 176 | CE | LAVRAS DA MANGABEIRA (14516) | 14 | 42 | — | 1775 | 2185831 | 863337364208814505067964 | 6, 11 | 2 |
+| 177 | CE | MARTINÓPOLE (14591) | 25 | 158 | — | 1090 | 1753303 | 453514773317810814135983 | 6, 11 | 2 |
+| 178 | CE | MASSAPÊ (14613) | 45 | 89 | — | 1104 | 1650268 | 134096687113315298444293 | 10, 11 | 2 |
+| 179 | CE | MISSÃO VELHA (14699) | 16 | 90 | — | 1147 | 2186846 | 582731217936662705419379 | 10, 11 | 2 |
+| 180 | CE | MORADA NOVA (14753) | 47 | 36 | — | 1104 | 1659484 | 270532146687994098427761 | 10, 11 | 2 |
+| 181 | CE | MORADA NOVA (14753) | 47 | 213 | — | 1813 | 1750739 | 230128819966654155673154 | 6, 11 | 2 |
+| 182 | CE | MORADA NOVA (14753) | 47 | 233 | — | 1724 | 1752830 | 129017843255797298850520 | 6, 11 | 2 |
+| 183 | CE | NOVA RUSSAS (14877) | 48 | 41 | — | 1856 | 1659495 | 196235197884062290658234 | 10, 11 | 2 |
+| 184 | CE | PENTECOSTE (15156) | 50 | 72 | — | 1104 | 1680188 | 785013498481867605860462 | 10, 11 | 2 |
+| 185 | CE | REDENÇÃO (15334) | 52 | 17 | — | 1090 | 1773707 | 115768958592414572070930 | 6, 11 | 2 |
+| 186 | CE | SOBRAL (15598) | 24 | 330 | — | 1236 | 1652409 | 854743331877326159503756 | 10, 11 | 2 |
+| 187 | CE | SOBRAL (15598) | 24 | 505 | — | 2860 | 1790458 | 854743859789952395685252 | 6, 11 | 2 |
+| 188 | CE | URUOCA (15792) | 25 | 80 | — | 1171 | 1773435 | 577926132518803096435389 | 10, 11 | 2 |
+| 189 | CE | VIÇOSA DO CEARÁ (15830) | 35 | 98 | — | 1465 | 2043245 | 640940155661132893945689 | 6, 11 | 2 |
+| 190 | CE | FORQUILHA (15911) | 121 | 223 | — | 1201 | 1784512 | 64540715247108700866632 | 6, 11 | 2 |
+| 191 | CE | FORQUILHA (15911) | 121 | 226 | — | 1236 | 1765543 | 367570341119545594996780 | 6, 11 | 2 |
+| 192 | CE | FORQUILHA (15911) | 121 | 229 | — | 1252 | 1753383 | 741308055057566891281724 | 6, 11 | 2 |
+| 193 | CE | FORQUILHA (15911) | 121 | 232 | 218 | 1287 | 1818438 | 104944719193785499342557 | 6, 11 | 2 |
+| 194 | DF | BRASÍLIA (97012) | 10 | 115 | — | 1210 | 1808612 | 696076407743155195092931 | 10, 11 | 2 |
+| 195 | ES | CONCEIÇÃO DO CASTELO (56332) | 40 | 97 | — | 1015 | 2337710 | 775805177297079022528924 | 10, 11 | 2 |
+| 196 | ES | SERRA (56995) | 26 | 651 | — | 2020 | 1672015 | 31983030529805115638863 | 10, 11 | 2 |
+| 197 | ES | PEDRO CANÁRIO (57150) | 27 | 153 | — | 1104 | 2383203 | 321223092723529329258519 | 6, 11 | 2 |
+| 198 | GO | TRINDADE (96253) | 49 | 175 | — | 1325 | 1658697 | 671694804908895283640964 | 10, 11 | 2 |
+| 199 | MA | ALDEIAS ALTAS (7056) | 5 | 99 | 114 | 1295 | 2311774 | 896144511076671592195879 | 6, 11 | 2 |
+| 200 | MA | BELA VISTA DO MARANHÃO (7188) | 77 | 330 | — | 1023 | 2099555 | 780804261107980318160763 | 7, 11 | 2 |
+| 201 | MA | ARARI (7196) | 27 | 57 | 95 | 1309 | 2250905 | 315422432614170688876248 | 6, 11 | 2 |
+| 202 | MA | BALSAS (7277) | 22 | 66 | — | 1228 | 2102222 | 516887594804495002353817 | 6, 11 | 2 |
+| 203 | MA | BARREIRINHAS (7331) | 56 | 60 | — | 1309 | 2297158 | 447045867214572918467749 | 5, 11 | 2 |
+| 204 | MA | CARUTAPERA (7552) | 55 | 17 | — | 1139 | 2286602 | 734463570706790474766540 | 6, 11 | 2 |
+| 205 | MA | CAXIAS (7579) | 4 | 283 | — | 1899 | 2082095 | 975341046599095950093139 | 10, 11 | 2 |
+| 206 | MA | CAXIAS (7579) | 4 | 378 | — | 2127 | 2098733 | 763220407473432297789469 | 5, 11 | 2 |
+| 207 | MA | GOVERNADOR EDISON LOBÃO (7609) | 103 | 83 | — | 1104 | 2023876 | 473389360131329046061580 | 6, 11 | 2 |
+| 208 | MA | CODÓ (7633) | 7 | 239 | — | 1520 | 2310296 | 925769300918564169040712 | 6, 11 | 2 |
+| 209 | MA | IGARAPÉ DO MEIO (7684) | 77 | 424 | 441 | 1139 | 2075066 | 164542107613226312688665 | 6, 11 | 2 |
+| 210 | MA | FORTALEZA DOS NOGUEIRAS (7790) | 105 | 25 | 154 | 1147 | 2098245 | 657629345714957473870071 | 6, 11 | 2 |
+| 211 | MA | MONTES ALTOS (8397) | 103 | 28 | — | 1090 | 2130489 | 288370308322445035404691 | 3, 11 | 2 |
+| 212 | MA | PAÇO DO LUMIAR (8494) | 93 | 104 | — | 1163 | 1668027 | 882384886267778916656740 | 10, 11 | 2 |
+| 213 | MA | SÃO JOSÉ DE RIBAMAR (8893) | 47 | 477 | — | 1899 | 1663346 | 96314097238612472350207 | 10, 11 | 2 |
+| 214 | MA | SÃO LUÍS (9210) | 10 | 845 | — | 2291 | 1813392 | 647071190577920315447319 | 5, 11 | 2 |
+| 215 | MA | TUNTUM (9393) | 79 | 70 | — | 1260 | 2126992 | 255373740668718193719091 | 6, 11 | 2 |
+| 216 | MA | SANTA INÊS (9571) | 57 | 265 | 266 | 1783 | 2138750 | 980010133235575495101366 | 6, 11 | 2 |
+| 217 | MA | ARAME (9679) | 104 | 28 | — | 1090 | 2393893 | 715224731824860969478379 | 6, 11 | 2 |
+| 218 | MA | ARAME (9679) | 104 | 58 | — | 1210 | 2400227 | 472800709242378477854247 | 6, 11 | 2 |
+| 219 | MA | ZÉ DOCA (9717) | 96 | 120 | — | 1422 | 2092985 | 909419132101623796498461 | 6, 11 | 2 |
+| 220 | MG | ALMENARA (40339) | 9 | 133 | 250 | 1147 | 2097985 | 361535991214651282645487 | 6, 11 | 2 |
+| 221 | MG | ALMENARA (40339) | 9 | 152 | — | 1147 | 2069430 | 937292591971683858386115 | 6, 11 | 2 |
+| 222 | MG | LUISLÂNDIA (41009) | 50 | 176 | — | 1090 | 2130938 | 660001909292993867849411 | 6, 11 | 2 |
+| 223 | MG | BANDEIRA (41033) | 9 | 171 | — | 1074 | 2076992 | 375036066601178040853904 | 6, 11 | 2 |
+| 224 | MG | BELO HORIZONTE (41238) | 334 | 253 | — | 1244 | 2401507 | 199111057207366688045802 | 10, 11 | 2 |
+| 225 | MG | BIAS FORTES (41351) | 24 | 139 | — | 1082 | 2407083 | 357393645996658523596906 | 6, 11 | 2 |
+| 226 | MG | GOUVEIA (45519) | 101 | 129 | — | 1112 | 2097519 | 900610129797765468457039 | 6, 11 | 2 |
+| 227 | MG | GOVERNADOR VALADARES (45535) | 318 | 1 | — | 1015 | 2448826 | 485070594292881756243570 | 10, 11 | 2 |
+| 228 | MG | PORTEIRINHA (50431) | 226 | 64 | 150 | 1295 | 2052851 | 749972608582817344783244 | 6, 11 | 2 |
+| 229 | MG | PORTO FIRME (50458) | 217 | 46 | — | 1031 | 1672891 | 223024223241609430072922 | 10, 11 | 2 |
+| 230 | MG | SERRO (53414) | 262 | 87 | — | 1112 | 1826604 | 147196473317446204601033 | 6, 11 | 2 |
+| 231 | MS | JAPORÃ (55034) | 33 | 31 | — | 1040 | 2023532 | 835237153667205996161081 | 6, 11 | 2 |
+| 232 | MS | JAPORÃ (55034) | 33 | 66 | — | 1040 | 2008171 | 602914684381099952828075 | 6, 11 | 2 |
+| 233 | MS | JAPORÃ (55034) | 33 | 67 | — | 1040 | 2002374 | 107964298031802278844654 | 6, 11 | 2 |
+| 234 | MS | JAPORÃ (55034) | 33 | 68 | — | 1040 | 2002419 | 693823992590500570610865 | 6, 11 | 2 |
+| 235 | MS | JAPORÃ (55034) | 33 | 71 | — | 1040 | 2151699 | 572611176860527940653072 | 6, 11 | 2 |
+| 236 | MS | JAPORÃ (55034) | 33 | 118 | — | 1040 | 2023835 | 552409595658199484719161 | 6, 11 | 2 |
+| 237 | MS | JAPORÃ (55034) | 33 | 131 | — | 1040 | 2009480 | 249378653927368303258053 | 6, 11 | 2 |
+| 238 | MS | JAPORÃ (55034) | 33 | 191 | — | 1040 | 2007885 | 542308372457270132859661 | 6, 11 | 2 |
+| 239 | MS | ANTÔNIO JOÃO (90174) | 52 | 208 | — | 1082 | 2024076 | 607917666741617012906852 | 6, 11 | 2 |
+| 240 | MS | AQUIDAUANA (90212) | 10 | 210 | — | 1260 | 1827662 | 145621399065875225216293 | 6, 11 | 2 |
+| 241 | MS | ELDORADO (91731) | 25 | 191 | 192 | 1082 | 2009416 | 504919334201913824249066 | 6, 11 | 2 |
+| 242 | MT | QUERÊNCIA (90069) | 53 | 163 | — | 1180 | 2270916 | 489416328594095550626819 | 6, 11 | 2 |
+| 243 | MT | QUERÊNCIA (90069) | 53 | 170 | — | 1198 | 2444731 | 933961511039822967077506 | 6, 11 | 2 |
+| 244 | MT | CUIABÁ (90670) | 1 | 879 | — | 2488 | 1651808 | 153326355863169990950087 | 10, 11 | 2 |
+| 245 | MT | GENERAL CARNEIRO (90778) | 9 | 481 | — | 1058 | 2005852 | 444143473661153323145508 | 6, 11 | 2 |
+| 246 | MT | GAÚCHA DO NORTE (90824) | 57 | 43 | — | 1058 | 2134283 | 910403521430001115087375 | 6, 11 | 2 |
+| 247 | MT | BOM JESUS DO ARAGUAIA (90905) | 53 | 112 | — | 1066 | 2447957 | 919859292574425385152229 | 5, 11 | 2 |
+| 248 | MT | ROSÁRIO OESTE (91537) | 3 | 105 | 132 | 1317 | 2313786 | 721105364044964415584475 | 6, 11 | 2 |
+| 249 | MT | JUÍNA (98310) | 35 | 321 | — | 1350 | 2448514 | 495225019343750570725129 | 6, 11 | 2 |
+| 250 | MT | CAMPINÁPOLIS (98655) | 26 | 197 | 213 | 1120 | 2040988 | 536633023819293861500421 | 6, 11 | 2 |
+| 251 | MT | CAMPINÁPOLIS (98655) | 26 | 203 | — | 1104 | 2001098 | 728552237038942764960465 | 6, 11 | 2 |
+| 252 | MT | COMODORO (99015) | 61 | 56 | — | 1139 | 2006973 | 690522700897925347049344 | 6, 11 | 2 |
+| 253 | PA | BREVES (4359) | 15 | 349 | — | 1910 | 2392267 | 433605974249023504578235 | 6, 11 | 2 |
+| 254 | PA | NOVO REPARTIMENTO (4421) | 101 | 163 | — | 1538 | 1797579 | 454065295877676964678872 | 3, 11 | 2 |
+| 255 | PA | MOJU (4936) | 37 | 283 | — | 1945 | 2183496 | 584456657991674447670711 | 5, 11 | 2 |
+| 256 | PB | ÁGUA BRANCA (19011) | 74 | 100 | 134 | 1023 | 2381429 | 617354702823125779014992 | 6, 11 | 2 |
+| 257 | PB | CACHOEIRA DOS ÍNDIOS (19674) | 68 | 23 | — | 1147 | 2364979 | 237053708598127455076762 | 6, 11 | 2 |
+| 258 | PB | JOÃO PESSOA (20516) | 70 | 545 | — | 1953 | 1800008 | 678916950484206294575306 | 10, 11 | 2 |
+| 259 | PB | MONTEIRO (20958) | 29 | 212 | — | 1554 | 2452757 | 536566003945248171905263 | 6, 11 | 2 |
+| 260 | PB | PILAR (21318) | 44 | 111 | — | 1074 | 2211603 | 165188433773437579604332 | 6, 11 | 2 |
+| 261 | PB | POCINHOS (21415) | 50 | 84 | — | 1180 | 2227363 | 678202679810702097925347 | 6, 11 | 2 |
+| 262 | PB | POCINHOS (21415) | 50 | 88 | — | 1163 | 2209691 | 577292012013413870489777 | 6, 11 | 2 |
+| 263 | PB | SOLEDADE (22233) | 23 | 89 | — | 1180 | 2166112 | 476194022867133971374253 | 6, 11 | 2 |
+| 264 | PB | SOLEDADE (22233) | 23 | 90 | — | 1180 | 2209718 | 718518341691584029496074 | 6, 11 | 2 |
+| 265 | PE | AMARAJI (23175) | 31 | 73 | — | 1082 | 2193377 | 48236861638636111685246 | 6, 11 | 2 |
+| 266 | PE | TAMANDARÉ (23280) | 26 | 38 | — | 1031 | 1772906 | 65786157665479339943203 | 6, 11 | 2 |
+| 267 | PE | TAMANDARÉ (23280) | 26 | 40 | — | 1031 | 1773709 | 772857056936527608115565 | 6, 11 | 2 |
+| 268 | PE | TAMANDARÉ (23280) | 26 | 66 | — | 1031 | 1814237 | 954675031716960975455739 | 6, 11 | 2 |
+| 269 | PE | TAMANDARÉ (23280) | 26 | 78 | — | 1031 | 1815488 | 904170279916660185902270 | 6, 11 | 2 |
+| 270 | PE | CABO DE SANTO AGOSTINHO (23574) | 121 | 145 | — | 1295 | 2044023 | 999633914629988416765063 | 6, 11 | 2 |
+| 271 | PE | CABO DE SANTO AGOSTINHO (23574) | 121 | 201 | — | 1295 | 2044136 | 363370652809164682882688 | 6, 11 | 2 |
+| 272 | PE | CABROBÓ (23590) | 77 | 98 | — | 1236 | 2355715 | 776003282100020984033062 | 6, 11 | 2 |
+| 273 | PE | CABROBÓ (23590) | 77 | 108 | — | 1309 | 2368138 | 200346170986353409292077 | 6, 11 | 2 |
+| 274 | PE | CABROBÓ (23590) | 77 | 117 | — | 1236 | 2360720 | 978023907363302144142897 | 6, 11 | 2 |
+| 275 | PE | CAPOEIRAS (23752) | 130 | 73 | — | 1074 | 1666283 | 562786385690489125238512 | 6, 11 | 2 |
+| 276 | PE | CARPINA (23795) | 20 | 126 | — | 1350 | 2221920 | 317345207987542168359100 | 6, 11 | 2 |
+| 277 | PE | CARPINA (23795) | 20 | 127 | — | 1392 | 2194243 | 681082681324195968293915 | 6, 11 | 2 |
+| 278 | PE | CARUARU (23817) | 105 | 324 | — | 1520 | 1676468 | 58469055324277595191648 | 10, 11 | 2 |
+| 279 | PE | CARUARU (23817) | 106 | 290 | 291 | 1511 | 1809595 | 381713196387257806178723 | 6, 11 | 2 |
+| 280 | PE | CONDADO (23914) | 125 | 93 | — | 1066 | 2172654 | 612039571429694324517670 | 5, 11 | 2 |
+| 281 | PE | ESCADA (24031) | 19 | 136 | — | 1392 | 2161170 | 90915059390515956137183 | 6, 11 | 2 |
+| 282 | PE | ESCADA (24031) | 19 | 140 | — | 1392 | 2170808 | 464652837627626400901513 | 6, 11 | 2 |
+| 283 | PE | FLORESTA (24139) | 72 | 37 | 38 | 1066 | 2343307 | 947365928891597989996453 | 6, 11 | 2 |
+| 284 | PE | IATI (24295) | 136 | 90 | — | 1082 | 1671176 | 361332361184101878074123 | 10, 11 | 2 |
+| 285 | PE | IGARASSU (24350) | 85 | 273 | — | 1562 | 2222418 | 639774634650044805725268 | 6, 11 | 2 |
+| 286 | PE | JATAÚBA (24597) | 54 | 161 | — | 1171 | 1775027 | 348913969961767667513499 | 6, 11 | 2 |
+| 287 | PE | JATAÚBA (24597) | 54 | 185 | — | 1023 | 1659332 | 803559803976776620923207 | 10, 11 | 2 |
+| 288 | PE | LAGOA DOS GATOS (24732) | 86 | 96 | 97 | 1066 | 1663950 | 440266730651893562248622 | 6, 11 | 2 |
+| 289 | PE | PESQUEIRA (25178) | 55 | 196 | — | 1473 | 2353755 | 93299477953613773345031 | 6, 11 | 2 |
+| 290 | PE | PESQUEIRA (25178) | 55 | 197 | — | 1490 | 2354041 | 871077367031271967499469 | 6, 11 | 2 |
+| 291 | PE | PESQUEIRA (25178) | 55 | 198 | — | 1481 | 2320750 | 588148182302262746083397 | 6, 11 | 2 |
+| 292 | PE | PESQUEIRA (25178) | 55 | 200 | — | 1473 | 2270047 | 204310383664485225635330 | 6, 11 | 2 |
+| 293 | PE | PESQUEIRA (25178) | 55 | 202 | — | 1481 | 2358070 | 42794444748696334665924 | 6, 11 | 2 |
+| 294 | PE | PESQUEIRA (25178) | 55 | 204 | — | 1490 | 2335959 | 73097692361941359537482 | 6, 11 | 2 |
+| 295 | PE | PESQUEIRA (25178) | 55 | 246 | — | 1490 | 2288209 | 477037593401701177173689 | 6, 11 | 2 |
+| 296 | PE | PETROLINA (25216) | 83 | 521 | — | 1694 | 2365761 | 156104858917042951516336 | 6, 11 | 2 |
+| 297 | PE | SERRITA (25798) | 76 | 37 | — | 1082 | 2359057 | 665381645916810690730181 | 10, 11 | 2 |
+| 298 | PE | TRACUNHAÉM (26093) | 23 | 136 | — | 1155 | 2161137 | 798126758245730796559592 | 6, 11 | 2 |
+| 299 | PE | TRACUNHAÉM (26093) | 23 | 138 | — | 1155 | 2042168 | 192166374485344762914957 | 6, 11 | 2 |
+| 300 | PE | TRACUNHAÉM (26093) | 23 | 141 | 150 | 1155 | 2186345 | 848631326150299755841034 | 6, 11 | 2 |
+| 301 | PI | BAIXA GRANDE DO RIBEIRO (10049) | 44 | 41 | — | 1104 | 2399554 | 316703707660924648981360 | 6, 11 | 2 |
+| 302 | PI | BATALHA (10294) | 45 | 32 | 33 | 1147 | 1659268 | 339316767283487788534232 | 10, 11 | 2 |
+| 303 | PI | PADRE MARCOS (11436) | 68 | 65 | 81 | 1090 | 2399886 | 13631981833254704191273 | 6, 11 | 2 |
+| 304 | PI | PAES LANDIM (11452) | 37 | 169 | — | 1058 | 2087187 | 699067199636728266789980 | 6, 11 | 2 |
+| 305 | PI | PAULISTANA (11550) | 38 | 108 | — | 1465 | 2194482 | 374746343145819038215072 | 7, 11 | 2 |
+| 306 | PI | PEDRO II (11576) | 12 | 53 | 54 | 1287 | 2396156 | 453174135305041244018076 | 6, 11 | 2 |
+| 307 | PI | JÚLIO BORGES (12203) | 88 | 65 | — | 1066 | 2030923 | 623206592592606103442627 | 5, 11 | 2 |
+| 308 | PI | UNIÃO (12211) | 16 | 131 | 191 | 1600 | 1800988 | 450818863391127201605134 | 6, 11 | 2 |
+| 309 | PR | CAMBÉ (74713) | 78 | 261 | — | 1481 | 1673448 | 828219828150329917696059 | 10, 11 | 2 |
+| 310 | PR | IGUARAÇU (75957) | 67 | 139 | — | 1023 | 1662736 | 909309196150355474088358 | 10, 11 | 2 |
+| 311 | PR | JAPURÁ (76414) | 149 | 73 | — | 1023 | 1804136 | 152151151091313694432065 | 10, 11 | 2 |
+| 312 | PR | PALOTINA (77399) | 124 | 1 | — | 1015 | 1660303 | 549521651982627057368599 | 10, 11 | 2 |
+| 313 | PR | PORTO RICO (77836) | 85 | 40 | — | 1015 | 1663510 | 675078955777593898446294 | 10, 11 | 2 |
+| 314 | PR | SANTANA DO ITARARÉ (78557) | 20 | 90 | — | 1147 | 1842791 | 656779284981929928759822 | 7, 11 | 2 |
+| 315 | PR | SANTO ANTÔNIO DA PLATINA (78590) | 22 | 70 | 115 | 1260 | 1833501 | 533689532234403426089078 | 10, 11 | 2 |
+| 316 | RJ | RIO DE JANEIRO (60011) | 9 | 236 | — | 1155 | 1671776 | 99508092677685105045853 | 10, 11 | 2 |
+| 317 | RJ | RIO DE JANEIRO (60011) | 10 | 302 | — | 1660 | 1671779 | 746081741845007947558413 | 10, 11 | 2 |
+| 318 | RJ | RIO DE JANEIRO (60011) | 188 | 329 | — | 1570 | 1665369 | 685421689835849918137829 | 10, 11 | 2 |
+| 319 | RJ | RIO DE JANEIRO (60011) | 214 | 325 | — | 1457 | 1664203 | 291598292307706090758862 | 10, 11 | 2 |
+| 320 | RN | CAMPO GRANDE (16250) | 31 | 35 | — | 1180 | 2356171 | 629694380361384967064223 | 6, 11 | 2 |
+| 321 | RN | CAMPO GRANDE (16250) | 31 | 36 | 86 | 1180 | 2345287 | 13533889400980639486360 | 6, 11 | 2 |
+| 322 | RN | CAMPO REDONDO (16411) | 68 | 87 | — | 1074 | 2058552 | 132643466626265284954557 | 6, 11 | 2 |
+| 323 | RN | DOUTOR SEVERIANO (16632) | 43 | 105 | — | 1082 | 2390535 | 652326291676564101259072 | 6, 11 | 2 |
+| 324 | RN | JOÃO DIAS (17159) | 41 | 29 | — | 1015 | 2344912 | 284567413924774770325372 | 6, 11 | 2 |
+| 325 | RN | JOÃO DIAS (17159) | 41 | 30 | — | 1015 | 2351945 | 82547296304923227108369 | 6, 11 | 2 |
+| 326 | RN | JOÃO DIAS (17159) | 41 | 31 | — | 1015 | 2339888 | 304769629926090846674693 | 6, 11 | 2 |
+| 327 | RN | JOÃO DIAS (17159) | 41 | 72 | — | 1015 | 2340123 | 648103350360981897526955 | 6, 11 | 2 |
+| 328 | RN | MONTE DAS GAMELEIRAS (17574) | 15 | 4 | — | 1023 | 2055109 | 143676582062497892314936 | 6, 11 | 2 |
+| 329 | RN | NATAL (17612) | 3 | 473 | — | 2046 | 1784265 | 671200857488202064355067 | 10, 11 | 2 |
+| 330 | RN | PAU DOS FERROS (17876) | 40 | 120 | — | 1252 | 2344224 | 955623188695349380064308 | 6, 11 | 2 |
+| 331 | RN | PEDRO AVELINO (17930) | 17 | 79 | — | 1066 | 2015142 | 653549130865556190763651 | 6, 11 | 2 |
+| 332 | RN | SANTA CRUZ (18236) | 16 | 135 | — | 1252 | 2059164 | 210594068491903402930042 | 6, 11 | 2 |
+| 333 | RN | SANTA CRUZ (18236) | 16 | 137 | — | 1252 | 2059658 | 8473072370253578408613 | 6, 11 | 2 |
+| 334 | RN | SANTANA DO MATOS (18279) | 18 | 105 | 106 | 1074 | 2059823 | 76202716681304608620250 | 6, 11 | 2 |
+| 335 | RN | SÃO GONÇALO DO AMARANTE (18376) | 51 | 52 | — | 1260 | 2052119 | 447990013491903834018810 | 6, 11 | 2 |
+| 336 | RN | RAFAEL GODEIRO (18937) | 37 | 104 | 107 | 1015 | 2338199 | 670965209831620549770383 | 6, 11 | 2 |
+| 337 | RS | CAMAQUÃ (85693) | 12 | 212 | — | 2437 | 1658955 | 907519903159976639583112 | 10, 11 | 2 |
+| 338 | RS | CAMPINAS DO SUL (85758) | 148 | 380 | — | 1082 | 1650272 | 71632072241627176904908 | 10, 11 | 2 |
+| 339 | RS | REDENTORA (88110) | 140 | 51 | — | 1139 | 2451886 | 906827369816732125955789 | 6, 11 | 2 |
+| 340 | RS | CORONEL PILAR (89184) | 98 | 15 | — | 1015 | 1846902 | 10152634573608527431946 | 10, 11 | 2 |
+| 341 | SE | SANTANA DO SÃO FRANCISCO (31003) | 15 | 164 | — | 1058 | 2173250 | 481710434619595252323993 | 6, 11 | 2 |
+| 342 | SE | BREJO GRANDE (31135) | 15 | 196 | — | 1074 | 2048561 | 356297737977269333523700 | 10, 11 | 2 |
+| 343 | SE | CARIRA (31275) | 29 | 56 | — | 1198 | 2274345 | 432156449859428330944604 | 6, 11 | 2 |
+| 344 | SE | DIVINA PASTORA (31399) | 14 | 195 | 194 | 1066 | 2204336 | 509301772618184819799674 | 6, 11 | 2 |
+| 345 | SE | ITABAIANA (31577) | 9 | 285 | — | 1740 | 2048296 | 476446764829912202619212 | 6, 11 | 2 |
+| 346 | SE | NOSSA SENHORA DAS DORES (31917) | 16 | 37 | — | 1066 | 2275174 | 199892179379579516397056 | 5, 11 | 2 |
+| 347 | SE | SIMÃO DIAS (32417) | 22 | 183 | — | 1503 | 2302848 | 348770326362621082189901 | 8, 11 | 2 |
+| 348 | SE | TOBIAS BARRETO (32476) | 23 | 97 | — | 1490 | 2173929 | 869633268187777828303637 | 6, 11 | 2 |
+| 349 | SP | AMERICANA (61310) | 384 | 230 | — | 1155 | 1665555 | 313858702856616972487993 | 10, 11 | 2 |
+| 350 | SP | EMBU DAS ARTES (64017) | 391 | 164 | — | 1104 | 1668429 | 623863578241596675287563 | 10, 11 | 2 |
 
 ## 11. Distribución de las señalizaciones por UF
 
 | UF | Secciones | Secciones señaladas | % de las secciones |
 |---|---:|---:|---:|
-| AC | 2.270 | 8 | 0,35% |
-| AL | 7.101 | 29 | 0,41% |
-| AM | 8.157 | 96 | 1,18% |
-| AP | 1.914 | 9 | 0,47% |
-| BA | 35.476 | 343 | 0,97% |
-| CE | 23.765 | 86 | 0,36% |
-| DF | 6.969 | 2 | 0,03% |
-| ES | 9.844 | 7 | 0,07% |
-| GO | 15.686 | 6 | 0,04% |
-| MA | 18.093 | 83 | 0,46% |
-| MG | 52.062 | 153 | 0,29% |
-| MS | 7.106 | 31 | 0,44% |
-| MT | 8.287 | 87 | 1,05% |
-| PA | 20.827 | 68 | 0,33% |
-| PB | 10.712 | 55 | 0,51% |
-| PE | 21.418 | 79 | 0,37% |
-| PI | 10.225 | 35 | 0,34% |
-| PR | 27.142 | 35 | 0,13% |
-| RJ | 37.675 | 21 | 0,06% |
-| RN | 8.115 | 63 | 0,78% |
-| RO | 4.698 | 8 | 0,17% |
-| RR | 1.519 | 15 | 0,99% |
-| RS | 27.547 | 31 | 0,11% |
-| SC | 17.326 | 17 | 0,10% |
-| SE | 5.923 | 39 | 0,66% |
-| SP | 103.656 | 59 | 0,06% |
-| TO | 4.384 | 26 | 0,59% |
-| ZZ | 1.309 | 0 | 0,00% |
+| AC | 2.270 | 82 | 3,61% |
+| AL | 7.101 | 2.353 | 33,14% |
+| AM | 8.157 | 1.993 | 24,43% |
+| AP | 1.914 | 303 | 15,83% |
+| BA | 35.476 | 9.000 | 25,37% |
+| CE | 23.765 | 4.449 | 18,72% |
+| DF | 6.969 | 135 | 1,94% |
+| ES | 9.844 | 197 | 2,00% |
+| GO | 15.686 | 580 | 3,70% |
+| MA | 18.093 | 3.294 | 18,21% |
+| MG | 52.062 | 2.475 | 4,75% |
+| MS | 7.106 | 119 | 1,67% |
+| MT | 8.287 | 573 | 6,91% |
+| PA | 20.827 | 3.723 | 17,88% |
+| PB | 10.712 | 1.134 | 10,59% |
+| PE | 21.418 | 6.247 | 29,17% |
+| PI | 10.225 | 951 | 9,30% |
+| PR | 27.142 | 271 | 1,00% |
+| RJ | 37.675 | 3.016 | 8,01% |
+| RN | 8.115 | 1.803 | 22,22% |
+| RO | 4.698 | 20 | 0,43% |
+| RR | 1.519 | 33 | 2,17% |
+| RS | 27.547 | 168 | 0,61% |
+| SC | 17.326 | 194 | 1,12% |
+| SE | 5.923 | 497 | 8,39% |
+| SP | 103.656 | 357 | 0,34% |
+| TO | 4.384 | 133 | 3,03% |
+| ZZ | 1.309 | 70 | 5,35% |
 
 ## 12. Clasificación partidaria y federaciones
 
@@ -6100,28 +6532,30 @@ La clasificación ideológica es una premisa analítica del autor, utilizada exc
 
 El análisis es íntegramente reproducible: con los mismos archivos de entrada (hash del manifiesto idéntico) y el mismo código fuente, los resultados son idénticos. Los archivos producidos y sus hashes SHA-512 se enumeran a continuación; el archivo `manifesto_saida.sha512` registra los hashes de todos los archivos, incluido este informe.
 
-**Verificación de determinismo.** El núcleo analítico (resultados de los 15 análisis y de las urnas listadas, sin fecha, hora ni duración) está en `dados/nucleo_analitico.json`; su SHA-256 es `6585b4ef6297b5217e2a821fe3fc80ed0f7fb0f78348b6997164d21c72ba5412`. El registro de homologación (baseline) de estos archivos de entrada se guarda en `.determinismo/e04043f584b5c16c`. Los números reales se registran con 6 cifras significativas, lo que neutraliza el ruido de redondeo de coma flotante sin afectar ningún resultado.
+**Verificación de determinismo.** El núcleo analítico (resultados de los 15 análisis y de las urnas listadas, sin fecha, hora ni duración) está en `dados/nucleo_analitico.json`; su SHA-256 es `d2dfca3edae23bb85dab8b2e8b89ac8ea1a70186e1eee91410ef18622500c819`. El registro de homologación (baseline) de estos archivos de entrada se guarda en `.determinismo/5eb98193f64b3eb4`. Los números reales se registran con 6 cifras significativas, lo que neutraliza el ruido de redondeo de coma flotante sin afectar ningún resultado.
 
-**Comando de ejecución:** `python auditoria_eleicoes_2026.py --dados <...> --saida <...>`
+**Comando de ejecución:** `python auditoria_eleicoes_2026.py --dados <...> --saida <...> --logs <...>`
 
 | Archivo | SHA-512 |
 |---|---|
-| `dados/classificacao_partidaria.csv` | `3e15cc6f8b0120cce45ce84021684138fb7f47dfbd871e4b0b3ded38dbc4507571a75c12b83120b63f448416ec19f30a430f8fcca51d3791784dd50d7d0c78fc` |
-| `dados/digitos_segundo_mebane.csv` | `bce430c633f732281e06575d1cf595eb874c9869be9c474f1b25fd36536fdd8cb29ebf01c023fc8782c911b8e4e3bd47b80b7060cdf6e2d72e306e99bd667183` |
-| `dados/digitos_ultimo_beber_scacco.csv` | `feae68752fc31f67d6e85d6dfc02e2b686691842f97ed4ad9ef8f4f78b9353ac01f1ba7b6c52aec4a94359e41d5d4aa39bc26c1bb478b9638e2f4c46ba94f0fd` |
-| `dados/integridade_arquivos.csv` | `0c28ae498c1386bbf6d494ad30c5c230a3bf19abc8abfc9a8e159c97dd36edb763315afbd369a2b243b297d4a5f1098ea316b76090482032e57f143fb116bfad` |
-| `dados/klimek_indicadores.csv` | `84402eeac3ac4f18b603b3d1df7ca588ac893a1267e9bc427da446d633ee10b69ee4d8bc5ea6b3617d79ad9900f26b3bd3d036594751d840686bc19b8b4d7267` |
-| `dados/resumo_testes.csv` | `85762ccbcff4cd3a4277bd4a2c2848083c6dabf43bc4943d0a03058cd5c3dab3c36b1bc9fec2425d4cfd0da804d90a459b72809eca8c4db1716ce5ef774fc125` |
-| `dados/secoes_convergentes.csv` | `6750fb5884175a67f4c112c2145b3a47d45496147b770ef92e514a7d0b478595fe32de466fb739046cdcef82a0eabf3594ab48d2a5b3eae23412528b966b92af` |
-| `dados/secoes_sinalizadas.csv` | `f0987295ea3a5b3ddc238f3962056dd466de1ecde677afa4cf321cb4be006c10abd67fcd515e0cc18c4b70775b1e850ca716cc59438ee07c554d29a9ad4f6a24` |
-| `dados/sinalizacoes_por_uf.csv` | `47c8fa9b0771e51ae217b015784b9d1417a0e1ac3ad1a76f83a2384cdb5b5d0473ac801da26ec083ae73e08fb3359d84f461f4e7c8c706932330299b1c0191b8` |
-| `dados/unanimidade_por_candidato.csv` | `4f81da363ffd01981e4cca9d41ab7f9925c16c2379abf3e20606cbb721093f8700625e3f47743b45a7c2424e68ff6664a8a3ec6a155c9a4bd9668ccb9bba77c3` |
-| `dados/busca_urnas.json` | `e4926ee8722812d43182e36221701e196c3e5339cf3c7f84e853dc91d01a4d3c249eac053d68c2f99cc874c6dee0f0296c6a05b5152d104a58ba4fec5a932da5` |
-| `dados/nucleo_analitico.json` | `991e981f0e2e00af8d168a4319bca584d8ee4e42dd07b5cd5b23bed7c09ec3ce521d32236c5d704e56307c914b5cc3825edf3ca10f32df79ac8a415f6d648bf6` |
-| `graficos/klimek_1t_13_brasil.png` | `35c170ae8080c02ba54585d5dbebb725fd098ff2f452a5b172a737753d1bf1b1054fd332a230e4328c345feeb317b3e3a0f254d64ca0cdec6bd1f89a83e4d65f` |
-| `graficos/klimek_1t_13_por_uf.png` | `e64330d1ecdfbb9e36ee5cf5a7fc627ebb695b2c03d8978c5e93ea10a6339e2a57a9b006eb353a9a016732b5037b87b27982d10ba69910a5de628262521c2253` |
-| `graficos/klimek_1t_22_brasil.png` | `481a7cd56aa96158bf6d8a59f064fdeb054e7da50e332680b07f6358b95105572f2fb74651b4d137267f5ca090ca14d3c68e6cd73e21eb3993e8479127c0b182` |
-| `graficos/klimek_1t_22_por_uf.png` | `d09539a7621b4d2164d1a1a411b3f882efea551446c5b56978949b0858843aa9c1fbe50be18ca68cd9d1b74dd0e6471c9c30ca706bf09c9ad40eb4e7a460381d` |
+| `dados/classificacao_partidaria.csv` | `3a3eeea37a86e3dd3599c86b26c830fe607f5f859ec74d3d6536f5daee0b01379b116da59a96e2a93f01e5237e6a5156174cc6f7696caaee97114f143ef89215` |
+| `dados/digitos_segundo_mebane.csv` | `bcefeb0e303d468d23c7c0e844c5331f89a73ed8fb8b0c4f028e74109a63e3839c5bad65c33812aad621cd261a122d288cf2f793b8cfc2b9c2927fb6d43415eb` |
+| `dados/digitos_ultimo_beber_scacco.csv` | `f098d8d5296f39c5bbdf5350f0f7a1f7029334f4146db8efdb99d5c06f3f9096b8674dc1bf2768c04e07aa95573a6317f85acd10d17418998715a5573148f419` |
+| `dados/integridade_arquivos.csv` | `5e6d8082e60ed6c3750e82cbddfe8c41ad8a927e65cd266f7c0a531fd6e3befa979f8b38b5ddd8de9d51e835aaee9e3fdbb4744ea905db20c2e50bad68375f31` |
+| `dados/klimek_indicadores.csv` | `ccaf221187d8e476eabce16fe9ee56c6ef8a7b1eec5a73b2004afb96f5a02bd5deb521485cae95ef966d91dd934ff2beaa69a364d69a5dfa3f6dd24489a11de8` |
+| `dados/logs_falhas.csv` | `4572c0ebbb7c872b94640f45e0ab2fc5cad92edee3f212d904439d38bb98008efaecf8900daf3b3a4c222f86848bb9e6535d2a8fb48e826ba90fe32f08c42a9f` |
+| `dados/logs_sinalizacoes.csv` | `c397522f70c0c6ea2bd7e3490f26b462691a3e5583dd596259d156803efb60208bf22e4ec0ef2ba94fb03e970384275421feaf0aa02ed085ecd14b764f7fc9bb` |
+| `dados/resumo_testes.csv` | `74d096543dc9787f9756ba3a0d8d9f71355c11db58eb0cf7485f57056aa496e0be58b9375bd62bf205414aef492664bfc5ca71bef55ea7f13bf7bb7e054fb583` |
+| `dados/secoes_convergentes.csv` | `f8ede62ad24d363dedba153d6ee977afb798f71d65b3d1f306ae449cdb9422d2b3a0ebffcdb128dc2517bfaee4f76787120d01a0d5051ba6d8f97c186fcdf555` |
+| `dados/secoes_sinalizadas.csv` | `973dbb789e1e5f61d3a60c305b66786bad9e0aaf05a8c950aba93a29baf0b5157af02b8a44f30f120a107c10f4aae623a09493ccee40af3e196844eae4c1d360` |
+| `dados/sinalizacoes_por_uf.csv` | `fa3e55b9b867031ac87df04f8b4382d644d22f6ae6ee98742c30ed736f9901cc42d24731cacaee7ff59f266b671857e5c55b3c0ae2ceead408635a5f97746d44` |
+| `dados/unanimidade_por_candidato.csv` | `f147824d070ec69e65a4b008c31d861b459ee28a3d7b8c6c7cb87adde64ba3cd3312bbc8040896d5c680ab2f5eab24c840e31773987679faeb372c54f769521e` |
+| `dados/busca_urnas.json` | `d734c9cdb169cc4756560228e7b0cb0ec98690aef8f55017cd98ca94e5c294015c6f19e73fa476b5312cd192b11cfae4418dddbe7633a0ea614b3139d1a19621` |
+| `dados/nucleo_analitico.json` | `ae52a8412f7d3421084a5bea54014855f78357d76785916f1cf8d73314891f3aaca6846a558d4caa29dd304233bdb6dfdadcd682adb216ed67279b40d34c01f8` |
+| `graficos/klimek_1t_13_brasil.png` | `2fe5b9c40e6efe63746a832af7ec21068661c7d52c22740f48407de035591f3a5e14436d418f26867144a196d379fc8c8a5612e32a74c904f8b73a8b5b249eec` |
+| `graficos/klimek_1t_13_por_uf.png` | `cf811e62abc2a34fb61ce8ee87373475d44bee2352bf624672a053b74765e879ed63beda5872817d269abbc506c6a18334088b409ed99727dd211829cfa046ed` |
+| `graficos/klimek_1t_22_brasil.png` | `ad2b75c49dcde5401f011ee6fa3f220d856634f004483569befc934fa12d37a35483eed4993120776837f52c58fe94687957cb8305c7bfd0d8cffe666bb09e6c` |
+| `graficos/klimek_1t_22_por_uf.png` | `abfdb2264cc863be8df40da04070053bc7ca13db0058f6ad32cdc036a527852351e2b62b9597d727b99c6eb8cde8547c893c4c4019503cf542534fdb8cba8b37` |
 
 ## 15. Referencias
 
@@ -6137,6 +6571,2353 @@ El análisis es íntegramente reproducible: con los mismos archivos de entrada (
 - Skellam, J. G. (1948). A probability distribution derived from the binomial distribution by regarding the probability of success as variable between the sets of trials. *Journal of the Royal Statistical Society: Series B*, 10(2), 257–261.
 - Tribunal Superior Eleitoral. Portal de Dados Abertos — Resultados 2026: Boletim de Urna; Correspondências esperadas e efetivadas. https://dadosabertos.tse.jus.br/
 
+## Anexo A — Variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta
+
+### A.1 Objetivo y alcance
+
+Comparar, para el cargo de Presidente, los votos de la 1.ª vuelta (04/10/2026) y de la 2.ª vuelta (25/10/2026) en cuatro niveles —Brasil, estado (UF), municipio y sección electoral—, informando por separado cuántos votos ganó o perdió cada finalista, y aplicar seis pruebas (V1 a V6) para identificar variaciones estadísticamente atípicas. Finalistas: Lula (n.º 13) y Flávio Bolsonaro (n.º 22). Cada sección electoral corresponde a una urna; las secciones agregadas aparecen bajo el número de la sección principal, como en el resto del informe.
+
+**No aplicable en esta ejecución.** Las seis pruebas comparan, sección por sección, los votos de la 1.ª y la 2.ª vuelta y exigen los Boletines de Urna de las dos vueltas en la misma carpeta de datos. Esta ejecución tiene los boletines de una sola vuelta, y las pruebas V1 a V6 no se aplicaron.
+
+- ⚪ **V1 — Transferencia atípica en el estado.** *Objetivo:* verificar si la participación de Lula en los votos de los dos finalistas, en la 2.ª vuelta, se apartó de lo esperado para el estado.
+- ⚪ **V2 — Transferencia atípica en el municipio.** *Objetivo:* verificar si la participación de Lula en los votos de los dos finalistas, en la 2.ª vuelta, se apartó de lo esperado para el municipio.
+- ⚪ **V3 — Transferencia atípica en la sección.** *Objetivo:* verificar si la participación de Lula en los votos de los dos finalistas, en la 2.ª vuelta, se apartó de lo esperado para la sección, considerando las secciones vecinas.
+- ⚪ **V4 — Variación atípica de la participación.** *Objetivo:* identificar secciones en las que la participación subió o bajó mucho más de lo observado en el grupo de referencia, tratando como anomalía los casos en que esa variación se concentró en uno de los finalistas.
+- ⚪ **V5 — Ganancia por encima del techo de votos disponibles.** *Objetivo:* identificar secciones en las que un finalista ganó más votos de los que había disponibles sin que electores del otro finalista cambiaran su voto.
+- ⚪ **V6 — Padrón alterado entre las vueltas.** *Objetivo:* registrar secciones cuyo electorado cambió entre las vueltas, lo que afecta la comparación.
+
+
+## Anexo B — Logs de las urnas: pruebas L01 a L14
+
+Las pruebas L usan el log de cada urna publicado por el TSE (archivo .logjez de cada sección), que registra la hora de cada voto y de cada evento de la urna. El motor lee el log en memoria y guarda solo números: hora de cada voto, forma de liberación del elector y eventos de la urna. El .logjez y el logd.dat no se graban, y ningún número de título (de elector o de miembro de mesa) entra en los resultados. Los horarios son los del reloj de la urna (hora local).
+
+Fin oficial: 17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª (cierre extendido), convertidos a la hora local con el huso inferido en la prueba 11; en el Exterior, las mismas horas locales. La urna libera el cierre a partir de las 17 h de Brasilia en las dos vueltas (configuración registrada en el propio log), y esa es la referencia de la prueba L09. Grupo de referencia de las puntuaciones z: el mismo de las pruebas 1 a 15 (zona del municipio, municipio, zona o UF, con 20 secciones o más).
+
+Secciones con log leído: 499.176 (1.ª vuelta: 499.176). Secciones que votaron en urna y quedaron sin log legible: 0 (prueba L14). Secciones del log fuera de los boletines analizados: 17.973.
+
+**Resumen de las pruebas L**
+
+| Prueba | Resultado | Anomalías | Informativos | Secciones |
+|---|---|---:|---:|---:|
+| L01 — Votos después del horario oficial | 🔴 | 15.269 | 22.920 | 499.176 |
+| L02 — Tiempo de cada voto (votos rápidos y en ráfaga) | 🔴 | 3 | 44 | 499.176 |
+| L03 — Liberaciones sin huella seguidas | 🔴 | 320 | 2.799 | 499.176 |
+| L04 — Votos después del “¿todos ya votaron? SÍ” | 🟡 | 0 | 1.505 | 499.176 |
+| L05 — Cortes de energía e interrupciones | 🔴 | 2.397 | 80.036 | 499.176 |
+| L06 — Cambio de urna | 🔴 | 55 | 2.046 | 499.176 |
+| L07 — Intentos repetidos (ya votó, no encontrado, impedido) | 🔴 | 138 | 37.785 | 499.176 |
+| L08 — Votos no concluidos | 🔴 | 96 | 0 | 499.176 |
+| L09 — Intentos de cierre | 🔴 | 14.865 | 20.451 | 499.176 |
+| L10 — Hora de la zerésima y del encendido de la urna | 🔴 | 54 | 2.833 | 499.176 |
+| L11 — Reloj de la urna | 🔴 | 99 | 237 | 499.176 |
+| L12 — Modelo, versión del software y código de carga | 🔴 | 5 | 10 | 499.176 |
+| L13 — Biometría detallada | 🔴 | 727 | 12.993 | 499.176 |
+| L14 — Votos del log × boletín de urna | 🔴 | 10 | 0 | 499.176 |
+
+### B.1 🔴 L01 — Votos después del horario oficial
+
+**Objetivo.** Cuenta los votos registrados después del horario oficial de cierre: 17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª vuelta, cuando el cierre se extendió, siempre convertido a la hora local.
+
+**Método.** Lee en el log la hora de cada voto y la compara con el fin oficial en la hora local del municipio. Cuenta cuántos votos vinieron después, cuánto tiempo después y si el elector fue habilitado con o sin huella.
+
+**Criterio de señalización.** Informativo: voto grabado 1 hora o más después del horario oficial local (17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª, cuando se extendió el cierre). Anomalía estadística: 10 votos o más después del horario, el último 1 hora o más después, y una proporción de votos después del horario muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5).
+
+**Limitaciones y explicaciones alternativas.** El log no muestra si había fila ni a quién fue el voto. El acta de la mesa registra la distribución de turnos.
+
+> 📊 **Resultado:** 🔴 **15.269 anomalía(s)** en 499.176 unidades analizadas (3,059%) · 🟡 22.920 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Voto 1 h o más después del horario (informativo) | 22.920 |
+| 🔴 Votos después del horario fuera del patrón | 15.269 |
+
+**Números generales de los votos después del horario oficial**
+
+| Vuelta | Secciones con log | Votos en el log | Secciones con voto después del horario | Votos después del horario | % de los votos | Secciones con voto 1 h o más después | Votos 1 h o más después | Liberados sin huella después del horario |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 499.176 | 125.274.427 | 222.332 | 3.727.772 | 2,98% | 38.160 | 779.934 | 444.625 |
+
+Por el número de secciones, la lista urna por urna no entra en este informe. Está en `dados/logs_secoes.csv.gz` y, con la hora de cada voto, en la página **Urnas que cerraron tarde**: https://paranacontraoscorruptos.org/#/encerramento-tardio
+
+### B.2 🔴 L02 — Tiempo de cada voto (votos rápidos y en ráfaga)
+
+**Objetivo.** Mide el tiempo entre un voto y el siguiente y busca votos demasiado rápidos y secuencias en ráfaga.
+
+**Método.** Calcula, en el log, el intervalo entre el fin de un voto y el fin del siguiente. Busca secuencias de votos con 30 segundos o menos entre sí y compara el tiempo mediano de la sección con el del municipio.
+
+**Criterio de señalización.** Anomalía estadística: 5 o más votos seguidos con 30 segundos o menos entre ellos, todos liberados sin huella. Informativo: tiempo mediano entre votos muy por debajo del grupo de referencia (puntuación z robusta ≤ −3,5), en secciones con 30 votos o más.
+
+**Limitaciones y explicaciones alternativas.** Electores rápidos y boletas con pocos cargos acortan el tiempo. El log no muestra quién estaba en la cabina.
+
+> 📊 **Resultado:** 🔴 **3 anomalía(s)** en 499.176 unidades analizadas (0,001%) · 🟡 44 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Tiempo mediano entre votos muy bajo (informativo) | 44 |
+| 🔴 Ráfaga de votos sin huella | 3 |
+
+*Observado: mayor ráfaga (votos) o tiempo mediano entre votos. Referencia: número de ráfagas o puntuación z.*
+
+#### 🔴 Urnas con anomalía — lista completa (3)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | ZZ | DUBLIN (29661) | 1 | 3315 | 3778 | 1015 | 1665534 | 810192034760459198583910 | — | 5 | 1 |  |
+| 2 | ZZ | PORTO (30341) | 1 | 1876 | 3820 | 1015 | 1673385 | 233034213221265269256398 | — | 5 | 1 |  |
+| 3 | ZZ | SYDNEY (30562) | 1 | 1375 | 3843 | 1015 | 1673096 | 793190218733257351655477 | — | 6 | 1 |  |
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (44)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | BA | TANQUINHO (39217) | 160 | 111 | — | 1023 | 1755632 | 676918941893064351940326 | — | 101 s | z = -4,3 |  |
+| 2 | BA | WAGNER (39675) | 69 | 98 | — | 1066 | 2223786 | 886629396019715418426823 | — | 101 s | z = -3,8 |  |
+| 3 | GO | EDÉIA (93491) | 68 | 85 | 38 | 1031 | 2158295 | 400270515052267946364632 | — | 85 s | z = -3,6 |  |
+| 4 | MA | SANTA LUZIA DO PARUÁ (9652) | 80 | 111 | — | 1368 | 2091607 | 837939101416488260400490 | — | 83 s | z = -3,8 |  |
+| 5 | MG | CENTRAL DE MINAS (43133) | 169 | 146 | — | 1023 | 2400709 | 801830835638595689944095 | — | 109 s | z = -4,0 |  |
+| 6 | MG | MONJOLOS (48496) | 101 | 267 | — | 1031 | 2069536 | 302750671789372619575498 | — | 97 s | z = -4,0 |  |
+| 7 | MS | CAMPO GRANDE (90514) | 36 | 291 | 407 | 1988 | 2339036 | 412228338134637968946463 | — | 63 s | z = -4,4 |  |
+| 8 | MS | SETE QUEDAS (98132) | 33 | 132 | — | 1015 | 2007910 | 699823212489011856307296 | — | 107 s | z = -4,4 |  |
+| 9 | MS | SETE QUEDAS (98132) | 33 | 133 | — | 1015 | 2008997 | 366590995156420606251510 | — | 111 s | z = -4,0 |  |
+| 10 | MS | SETE QUEDAS (98132) | 33 | 134 | — | 1015 | 2009129 | 487702225768822583564617 | — | 113 s | z = -3,8 |  |
+| 11 | MS | SETE QUEDAS (98132) | 33 | 136 | — | 1015 | 2149496 | 114065074231332894012900 | — | 111 s | z = -4,0 |  |
+| 12 | MS | SETE QUEDAS (98132) | 33 | 138 | — | 1015 | 2152995 | 204974382540657808606092 | — | 110 s | z = -4,1 |  |
+| 13 | MS | SETE QUEDAS (98132) | 33 | 139 | — | 1015 | 2153112 | 225176516542484603033146 | — | 112 s | z = -3,9 |  |
+| 14 | MT | PLANALTO DA SERRA (90344) | 34 | 130 | — | 1058 | 2271102 | 555520859804077631023505 | — | 91 s | z = -3,8 |  |
+| 15 | MT | DENISE (98337) | 13 | 163 | — | 1074 | 2288370 | 574597414733574218353768 | — | 90 s | z = -3,6 |  |
+| 16 | PA | ANANINDEUA (4154) | 72 | 604 | — | 2410 | 2200988 | 124683106764430963648826 | — | 78 s | z = -3,9 |  |
+| 17 | PB | CALDAS BRANDÃO (19771) | 75 | 66 | — | 1066 | 2102038 | 43108125269021469632789 | — | 99 s | z = -3,5 |  |
+| 18 | PB | CAMPINA GRANDE (19810) | 17 | 358 | — | 1821 | 2034867 | 571641072975810853951397 | — | 62 s | z = -5,3 |  |
+| 19 | PB | CAMPINA GRANDE (19810) | 17 | 402 | — | 1821 | 2217206 | 430227011714651060823450 | — | 65 s | z = -4,7 |  |
+| 20 | PB | JOÃO PESSOA (20516) | 76 | 448 | — | 2046 | 1650896 | 103225622526324371257073 | — | 69 s | z = -3,8 |  |
+| 21 | PB | JOÃO PESSOA (20516) | 76 | 450 | — | 2046 | 1663460 | 678982380583324845438967 | — | 65 s | z = -4,5 |  |
+| 22 | PB | JOÃO PESSOA (20516) | 76 | 454 | — | 2020 | 1656991 | 194134345035640896943378 | — | 66 s | z = -4,3 |  |
+| 23 | PB | JOÃO PESSOA (20516) | 76 | 455 | — | 2020 | 1673046 | 416356679457753076651834 | — | 66 s | z = -4,2 |  |
+| 24 | PB | JOÃO PESSOA (20516) | 76 | 456 | — | 2020 | 1668305 | 537568900869312217452405 | — | 67 s | z = -4,1 |  |
+| 25 | PB | JOÃO PESSOA (20516) | 76 | 457 | — | 2020 | 1653738 | 274942751443639257856214 | — | 70 s | z = -3,6 |  |
+| 26 | PB | JOÃO PESSOA (20516) | 76 | 458 | — | 2062 | 1680877 | 274942866243796800813729 | — | 70 s | z = -3,6 |  |
+| 27 | PB | SANTANA DE MANGUEIRA (21717) | 41 | 152 | 156 | 1023 | 2371230 | 530792192586855859336468 | — | 88 s | z = -3,9 |  |
+| 28 | PB | SÃO MAMEDE (21997) | 26 | 101 | — | 1112 | 2333222 | 177397377000213628623306 | — | 89 s | z = -3,7 |  |
+| 29 | PB | SÃO SEBASTIÃO DE LAGOA DE ROÇA (22039) | 19 | 119 | — | 1023 | 2209379 | 773183926963402608103456 | — | 90 s | z = -3,7 |  |
+| 30 | PB | SÃO SEBASTIÃO DE LAGOA DE ROÇA (22039) | 19 | 122 | — | 1023 | 2031286 | 520658976838179444909187 | — | 86 s | z = -5,1 |  |
+| 31 | PB | SÃO SEBASTIÃO DE LAGOA DE ROÇA (22039) | 19 | 123 | — | 1023 | 2217443 | 379143934223303355385070 | — | 90 s | z = -3,7 |  |
+| 32 | PB | SÃO SEBASTIÃO DE LAGOA DE ROÇA (22039) | 19 | 147 | — | 1023 | 2168891 | 924698061941172432595040 | — | 86 s | z = -5,1 |  |
+| 33 | PB | SÃO SEBASTIÃO DE LAGOA DE ROÇA (22039) | 19 | 148 | — | 1082 | 2209603 | 672173924916522898537811 | — | 84 s | z = -5,7 |  |
+| 34 | PE | RECIFE (25313) | 149 | 447 | — | 1520 | 2369152 | 962232376238181089814856 | — | 60 s | z = -3,9 |  |
+| 35 | PE | RECIFE (25313) | 149 | 448 | — | 1520 | 2388531 | 861222386228179967777756 | — | 63 s | z = -3,6 |  |
+| 36 | PE | RECIFE (25313) | 149 | 457 | — | 1520 | 2346212 | 386474861880729454783803 | — | 59 s | z = -4,0 |  |
+| 37 | PI | JACOBINA DO PIAUÍ (10286) | 38 | 73 | — | 1040 | 2103414 | 188527004573980453027127 | — | 94 s | z = -3,7 |  |
+| 38 | PI | PARNAÍBA (11533) | 4 | 139 | — | 1015 | 2035188 | 536897821603744227037934 | — | 101 s | z = -3,9 |  |
+| 39 | PR | SANTO ANTÔNIO DO CAIUÁ (78611) | 87 | 28 | — | 1015 | 1793364 | 263759283321566116865101 | — | 93 s | z = -4,7 |  |
+| 40 | PR | SÃO JORGE DO IVAÍ (78794) | 102 | 48 | — | 1015 | 1825673 | 63937228432438827726774 | — | 93 s | z = -3,9 |  |
+| 41 | RN | SÃO VICENTE (18570) | 21 | 50 | 66 | 1074 | 2064046 | 474272826549361804253314 | — | 94 s | z = -4,0 |  |
+| 42 | SC | OURO (82317) | 37 | 66 | — | 1120 | 2004412 | 717269798249839704963106 | — | 88 s | z = -3,9 |  |
+| 43 | SE | ARACAJU (31054) | 27 | 523 | — | 2097 | 2174251 | 619452537707803027649085 | — | 62 s | z = -3,7 |  |
+| 44 | SP | CABRÁLIA PAULISTA (62677) | 159 | 57 | — | 1015 | 2137966 | 370380494167625776548410 | — | 88 s | z = -3,6 |  |
+
+</details>
+
+### B.3 🔴 L03 — Liberaciones sin huella seguidas
+
+**Objetivo.** Busca secuencias largas de electores habilitados sin huella, con el código digitado por el miembro de mesa.
+
+**Método.** Lee en el log cómo fue habilitado cada elector (huella reconocida o habilitación sin huella) y mide la secuencia más larga de habilitaciones sin huella.
+
+**Criterio de señalización.** Anomalía estadística: 10 o más liberaciones seguidas sin huella, en una sección en que la mayoría de los electores votó con la huella. Informativo: la misma secuencia cuando la mayoría de la sección votó sin huella o cuando la urna registró un error en el mismo período.
+
+**Limitaciones y explicaciones alternativas.** Lectores defectuosos, huellas gastadas y electores sin biometría registrada explican muchos casos. Solo el acta de la mesa lo confirma.
+
+> 📊 **Resultado:** 🔴 **320 anomalía(s)** en 499.176 unidades analizadas (0,064%) · 🟡 2.799 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Secuencia sin huella con causa probable (informativo) | 2.799 |
+| 🔴 Secuencia larga sin huella | 320 |
+
+*Observado: mayor secuencia de liberaciones sin huella. Referencia: electores de la sección que votaron con huella.*
+
+#### 🔴 Urnas con anomalía — lista completa (320)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | ASSIS BRASIL (1570) | 6 | 150 | — | 1350 | 2266388 | 446510887778929650057995 | — | 10 | 50% |  |
+| 2 | AL | CAMPO ALEGRE (27278) | 47 | 140 | — | 1210 | 2474156 | 651370024061163126932788 | — | 11 | 56% |  |
+| 3 | AL | CANAPI (27316) | 27 | 165 | — | 1163 | 1674026 | 380929387812966506706221 | — | 21 | 73% |  |
+| 4 | AL | DELMIRO GOUVEIA (27472) | 40 | 239 | — | 1392 | 1768086 | 889616262658726020393473 | — | 10 | 53% |  |
+| 5 | AL | PÃO DE AÇÚCAR (28274) | 11 | 46 | — | 1350 | 1768946 | 921310864946881312394745 | — | 10 | 85% |  |
+| 6 | AL | SANTANA DO IPANEMA (28592) | 19 | 222 | — | 1260 | 1673098 | 247030245078947127143721 | — | 26 | 77% |  |
+| 7 | AL | SÃO JOSÉ DA TAPERA (28673) | 51 | 112 | — | 1112 | 1768258 | 670713050464271558382388 | — | 10 | 53% |  |
+| 8 | AL | CRAÍBAS (28894) | 31 | 139 | — | 1074 | 1667527 | 675299966740900317452092 | — | 26 | 73% |  |
+| 9 | AM | MANAUS (2550) | 59 | 773 | — | 2046 | 1789484 | 834457981925844361870 | — | 11 | 51% |  |
+| 10 | AM | MANAUS (2550) | 62 | 633 | — | 1970 | 2028081 | 384649384728211390061738 | — | 10 | 56% |  |
+| 11 | AM | MANAUS (2550) | 62 | 636 | — | 1864 | 2040861 | 960460378915840700310496 | — | 10 | 53% |  |
+| 12 | AM | MANAUS (2550) | 63 | 800 | — | 1775 | 1789204 | 556330273288713710056167 | — | 10 | 58% |  |
+| 13 | AM | MANAUS (2550) | 65 | 644 | — | 1813 | 1789505 | 738170998014654810293403 | — | 10 | 57% |  |
+| 14 | AM | MANAUS (2550) | 65 | 656 | — | 1805 | 1786882 | 778574323901996003703648 | — | 11 | 52% |  |
+| 15 | AM | MANAUS (2550) | 68 | 794 | — | 1651 | 1787927 | 384668089527328041974145 | — | 12 | 51% |  |
+| 16 | AP | SANTANA (6157) | 6 | 257 | — | 1139 | 2016311 | 624128928687159974677102 | — | 10 | 54% |  |
+| 17 | BA | ALAGOINHAS (33138) | 163 | 447 | — | 1945 | 2226415 | 653749065736010333493512 | — | 12 | 58% |  |
+| 18 | BA | CANDEIAS (34290) | 127 | 14 | — | 1554 | 1655467 | 876987389555826435340604 | — | 76 | 51% |  |
+| 19 | BA | CANDEIAS (34290) | 127 | 212 | — | 1201 | 1656051 | 382038856258164273671558 | — | 14 | 77% |  |
+| 20 | BA | LAURO DE FREITAS (36854) | 180 | 49 | — | 1147 | 1680605 | 346899616066053674365974 | — | 10 | 72% |  |
+| 21 | BA | LAURO DE FREITAS (36854) | 180 | 131 | — | 1287 | 1672949 | 468011878000754930008770 | — | 14 | 86% |  |
+| 22 | BA | LAURO DE FREITAS (36854) | 180 | 175 | — | 1449 | 1670693 | 326697452886815228533176 | — | 11 | 73% |  |
+| 23 | BA | LAURO DE FREITAS (36854) | 180 | 340 | — | 1600 | 1658368 | 942859493195250276708682 | — | 22 | 76% |  |
+| 24 | BA | LAURO DE FREITAS (36854) | 180 | 477 | — | 1546 | 1681990 | 447809065496918979628459 | — | 52 | 50% |  |
+| 25 | BA | MACURURÉ (36994) | 158 | 46 | — | 1015 | 1786910 | 493481432378740015634623 | — | 12 | 67% |  |
+| 26 | BA | RIACHO DE SANTANA (38296) | 113 | 63 | — | 1147 | 1824928 | 552704303532994448643153 | — | 10 | 58% |  |
+| 27 | BA | SALVADOR (38490) | 4 | 583 | — | 1929 | 2424279 | 912335256730868169696718 | — | 11 | 61% |  |
+| 28 | BA | SALVADOR (38490) | 10 | 934 | — | 2437 | 2391939 | 649671108804398064363913 | — | 13 | 50% |  |
+| 29 | BA | SANTO AMARO (38717) | 178 | 51 | — | 1074 | 1657431 | 962442423548775422416265 | — | 10 | 81% |  |
+| 30 | BA | SIMÕES FILHO (39136) | 33 | 98 | — | 1147 | 1657882 | 404894917107603768385372 | — | 36 | 73% |  |
+| 31 | BA | SIMÕES FILHO (39136) | 33 | 166 | — | 1317 | 1655063 | 606814770473111847144748 | — | 29 | 63% |  |
+| 32 | BA | TUCANO (39373) | 80 | 116 | — | 1074 | 2308952 | 721128541906748758588105 | — | 12 | 51% |  |
+| 33 | BA | LAPÃO (39730) | 104 | 22 | — | 1104 | 2341669 | 444097802528233762875598 | — | 10 | 58% |  |
+| 34 | CE | CHAVAL (13773) | 108 | 16 | — | 1031 | 1656380 | 676964673628032137563205 | — | 57 | 55% |  |
+| 35 | CE | JAGUARUANA (14419) | 75 | 19 | — | 1040 | 1818560 | 107714105993177481736551 | — | 18 | 77% |  |
+| 36 | CE | JAGUARUANA (14419) | 75 | 27 | — | 1422 | 1762031 | 107714109403242831938573 | — | 14 | 84% |  |
+| 37 | CE | JUAZEIRO DO NORTE (14478) | 119 | 406 | — | 1139 | 2248446 | 103425128476031950712745 | — | 11 | 50% |  |
+| 38 | CE | MORADA NOVA (14753) | 47 | 5 | — | 1104 | 1659777 | 886693436448314787520654 | — | 26 | 65% |  |
+| 39 | CE | PENTECOSTE (15156) | 50 | 72 | — | 1104 | 1680188 | 785013498481867605860462 | — | 53 | 55% |  |
+| 40 | CE | PENTECOSTE (15156) | 50 | 215 | — | 1074 | 1682004 | 936528738664019591247511 | — | 17 | 78% |  |
+| 41 | CE | QUIXERAMOBIM (15296) | 11 | 16 | — | 1104 | 1755773 | 446762175576302494439962 | — | 11 | 62% |  |
+| 42 | CE | SOBRAL (15598) | 24 | 628 | — | 2844 | 1680481 | 157773157971742146337185 | — | 45 | 64% |  |
+| 43 | CE | SOLONÓPOLE (15610) | 55 | 3 | — | 1023 | 1659413 | 707960032349694443954364 | — | 17 | 58% |  |
+| 44 | DF | BRASÍLIA (97012) | 9 | 436 | — | 1333 | 2013987 | 776876004735121158845816 | — | 13 | 53% |  |
+| 45 | ES | ARACRUZ (56111) | 20 | 166 | — | 1546 | 2205213 | 781492950789904864452386 | — | 10 | 62% |  |
+| 46 | ES | ARACRUZ (56111) | 20 | 191 | — | 1457 | 2040402 | 165230992409919732958012 | — | 10 | 57% |  |
+| 47 | ES | SOORETAMA (56189) | 41 | 274 | — | 1155 | 2392228 | 887327995224354150943179 | — | 10 | 57% |  |
+| 48 | ES | CARIACICA (56251) | 34 | 563 | — | 2038 | 1754841 | 746139943277373643839315 | — | 10 | 51% |  |
+| 49 | ES | CARIACICA (56251) | 34 | 608 | — | 2046 | 1780128 | 806745222750474399801449 | — | 10 | 58% |  |
+| 50 | ES | CARIACICA (56251) | 34 | 931 | — | 2100 | 1770743 | 89573216319910686760301 | — | 10 | 50% |  |
+| 51 | ES | CARIACICA (56251) | 54 | 39 | — | 1074 | 1833591 | 150294358381251933324736 | — | 10 | 58% |  |
+| 52 | ES | CARIACICA (56251) | 54 | 399 | — | 1821 | 1757799 | 544133435941396411911891 | — | 12 | 51% |  |
+| 53 | ES | CONCEIÇÃO DO CASTELO (56332) | 40 | 40 | — | 1155 | 2360170 | 725300006107272232186171 | — | 11 | 53% |  |
+| 54 | ES | GUARAPARI (56472) | 24 | 256 | — | 1805 | 1839486 | 467804659537562263936702 | — | 10 | 51% |  |
+| 55 | ES | LINHARES (56634) | 25 | 494 | — | 2496 | 2337797 | 779746202345103184040019 | — | 11 | 53% |  |
+| 56 | ES | SÃO MATEUS (56979) | 21 | 23 | — | 1040 | 2352530 | 124237599272381426075903 | — | 13 | 53% |  |
+| 57 | ES | SÃO MATEUS (56979) | 21 | 58 | — | 1139 | 2331754 | 63631292702792452535711 | — | 12 | 50% |  |
+| 58 | ES | SÃO MATEUS (56979) | 21 | 154 | — | 1570 | 2341667 | 53530936839541314385465 | — | 10 | 51% |  |
+| 59 | ES | SÃO MATEUS (56979) | 21 | 249 | — | 1643 | 2349402 | 447469895478500275043619 | — | 10 | 50% |  |
+| 60 | ES | SÃO MATEUS (56979) | 21 | 263 | — | 1643 | 2332533 | 285853211362224587085928 | — | 11 | 52% |  |
+| 61 | ES | SÃO MATEUS (56979) | 21 | 303 | — | 1643 | 2350553 | 437368035477030590046322 | — | 12 | 54% |  |
+| 62 | ES | SÃO MATEUS (56979) | 21 | 948 | — | 1805 | 2336144 | 275752244049306689080660 | — | 10 | 51% |  |
+| 63 | ES | SÃO MATEUS (56979) | 21 | 983 | — | 1856 | 2392483 | 73732770637397124991596 | — | 13 | 51% |  |
+| 64 | ES | SÃO MATEUS (56979) | 21 | 990 | — | 1864 | 2340060 | 851510293478315389801183 | — | 11 | 50% |  |
+| 65 | ES | SÃO MATEUS (56979) | 21 | 998 | — | 1880 | 2332927 | 669691980459624012409177 | — | 15 | 59% |  |
+| 66 | ES | SÃO MATEUS (56979) | 21 | 999 | — | 1880 | 2391144 | 235348665716437376755167 | — | 11 | 55% |  |
+| 67 | ES | SERRA (56995) | 26 | 33 | — | 1082 | 1672299 | 880468422861096620174511 | — | 10 | 50% |  |
+| 68 | ES | SERRA (56995) | 26 | 343 | — | 1082 | 1672579 | 284408166701715502115896 | — | 11 | 54% |  |
+| 69 | ES | SERRA (56995) | 26 | 411 | — | 1783 | 1672376 | 880468428627271099310293 | — | 10 | 52% |  |
+| 70 | ES | SERRA (56995) | 26 | 419 | — | 1694 | 1671481 | 31983456553882486711067 | — | 10 | 52% |  |
+| 71 | ES | SERRA (56995) | 26 | 572 | — | 1902 | 1671628 | 435923591682805842825213 | — | 10 | 52% |  |
+| 72 | ES | SERRA (56995) | 26 | 585 | — | 1120 | 1671947 | 203600762772459188069307 | — | 12 | 53% |  |
+| 73 | ES | SERRA (56995) | 53 | 375 | — | 1368 | 1670899 | 244092558826530509061309 | — | 12 | 55% |  |
+| 74 | ES | SERRA (56995) | 59 | 177 | — | 1201 | 1751979 | 122846475589014251428539 | — | 11 | 51% |  |
+| 75 | ES | SERRA (56995) | 59 | 180 | — | 1210 | 1836248 | 941028597621670773648816 | — | 10 | 50% |  |
+| 76 | ES | SERRA (56995) | 59 | 224 | — | 1171 | 1754299 | 102644865308862529138774 | — | 15 | 58% |  |
+| 77 | ES | SERRA (56995) | 59 | 243 | — | 1074 | 1753984 | 597593388606081224165536 | — | 12 | 51% |  |
+| 78 | ES | SERRA (56995) | 59 | 327 | — | 1058 | 1808492 | 577391753972090017526337 | — | 10 | 53% |  |
+| 79 | ES | VARGEM ALTA (57959) | 35 | 145 | — | 1040 | 2002716 | 688544601800284438638954 | — | 13 | 51% |  |
+| 80 | ES | VENDA NOVA DO IMIGRANTE (57975) | 40 | 55 | — | 1139 | 2263625 | 81136984260804609353956 | — | 13 | 53% |  |
+| 81 | GO | APARECIDA DE GOIÂNIA (92274) | 132 | 638 | — | 1953 | 2366351 | 832735462789075268201165 | — | 11 | 60% |  |
+| 82 | GO | SENADOR CANEDO (92703) | 40 | 228 | — | 1015 | 2395331 | 575085770345216804329059 | — | 10 | 51% |  |
+| 83 | GO | CARMO DO RIO VERDE (92991) | 76 | 123 | — | 1023 | 1818119 | 271542837418955320211925 | — | 11 | 53% |  |
+| 84 | GO | VALPARAÍSO DE GOIÁS (93300) | 33 | 259 | — | 1325 | 2151412 | 95663615557647985770046 | — | 10 | 61% |  |
+| 85 | GO | ÁGUAS LINDAS DE GOIÁS (93343) | 28 | 276 | — | 1031 | 2384355 | 951397287905805266934628 | — | 10 | 52% |  |
+| 86 | GO | ITABERAÍ (94030) | 15 | 131 | — | 1252 | 2010579 | 491711907199749561420932 | — | 10 | 63% |  |
+| 87 | GO | MOZARLÂNDIA (94773) | 110 | 136 | — | 1120 | 1823268 | 594775552551844318920757 | — | 10 | 53% |  |
+| 88 | GO | RIO VERDE (95710) | 30 | 422 | — | 1899 | 2157046 | 616582330243538617246120 | — | 11 | 58% |  |
+| 89 | GO | TRINDADE (96253) | 49 | 58 | — | 1147 | 1664839 | 580785818197427007308652 | — | 19 | 76% |  |
+| 90 | GO | TRINDADE (96253) | 49 | 173 | — | 1511 | 1668343 | 429169422350966383075084 | — | 24 | 85% |  |
+| 91 | GO | TRINDADE (96253) | 49 | 249 | — | 1163 | 1664650 | 621189621278166523775981 | — | 27 | 73% |  |
+| 92 | GO | TRINDADE (96253) | 49 | 264 | — | 1481 | 1667341 | 287755328213695941591317 | — | 45 | 73% |  |
+| 93 | GO | ARAGUAPAZ (96695) | 110 | 135 | — | 1031 | 1816152 | 266542113676926607117409 | — | 12 | 51% |  |
+| 94 | MA | BOM LUGAR (7285) | 66 | 63 | — | 1171 | 2126609 | 112119863500241971580177 | — | 14 | 76% |  |
+| 95 | MA | BOM LUGAR (7285) | 66 | 121 | — | 1104 | 2129562 | 344442688140048166418754 | — | 15 | 72% |  |
+| 96 | MA | PAÇO DO LUMIAR (8494) | 93 | 86 | — | 1163 | 1653317 | 872283091599382546973704 | — | 13 | 85% |  |
+| 97 | MA | SÃO JOSÉ DE RIBAMAR (8893) | 47 | 392 | — | 1520 | 1764188 | 561061568371255916003863 | — | 26 | 77% |  |
+| 98 | MA | SÃO LUÍS (9210) | 1 | 242 | — | 2127 | 1672583 | 374348053377031720710817 | — | 33 | 73% |  |
+| 99 | MA | SÃO LUÍS (9210) | 3 | 498 | — | 1775 | 1655915 | 849017845462158432232087 | — | 18 | 77% |  |
+| 100 | MA | SÃO LUÍS (9210) | 10 | 282 | — | 1562 | 1661052 | 243031202304762552024069 | — | 27 | 71% |  |
+
+Mostrando 100 de 320 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (2.799)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AL | CAJUEIRO (27251) | 5 | 150 | — | 1058 | 2435957 | 349789783978920514924498 | — | 15 | 39% |  |
+| 2 | AL | DELMIRO GOUVEIA (27472) | 40 | 12 | — | 1040 | 1677076 | 970525971910366951670580 | — | 38 | 6% |  |
+| 3 | AL | OLHO D'ÁGUA DAS FLORES (28134) | 11 | 119 | — | 1058 | 1675105 | 431361586879789458766861 | — | 40 | 36% |  |
+| 4 | AL | TAQUARANA (28819) | 45 | 174 | 172 | 1066 | 1675293 | 556538556820368598646968 | — | 27 | 48% |  |
+| 5 | AL | CRAÍBAS (28894) | 31 | 154 | — | 1104 | 1823129 | 99441973324405283528849 | — | 11 | 42% |  |
+| 6 | AM | BOCA DO ACRE (2151) | 14 | 75 | — | 1341 | 2017237 | 352486393717837012024452 | — | 13 | 47% |  |
+| 7 | AM | MANAUS (2550) | 59 | 770 | — | 2402 | 1789696 | 834122281844953552762 | — | 10 | 44% |  |
+| 8 | AM | MANAUS (2550) | 62 | 635 | — | 1996 | 2018645 | 91773394128527649687440 | — | 10 | 44% |  |
+| 9 | AM | MANAUS (2550) | 65 | 650 | — | 1554 | 2040647 | 324029214315340994970865 | — | 11 | 43% |  |
+| 10 | BA | DIAS D'ÁVILA (30872) | 186 | 10 | — | 1112 | 1656532 | 372168448396067733777606 | — | 60 | 46% |  |
+| 11 | BA | DIAS D'ÁVILA (30872) | 186 | 21 | — | 1163 | 1656846 | 877118120146608880456316 | — | 40 | 4% |  |
+| 12 | BA | DIAS D'ÁVILA (30872) | 186 | 91 | — | 1015 | 1669609 | 917522651220700455084186 | — | 80 | 9% | ERRO |
+| 13 | BA | DIAS D'ÁVILA (30872) | 186 | 102 | — | 1198 | 1656971 | 735704048202626252047305 | — | 121 | 1% |  |
+| 14 | BA | DIAS D'ÁVILA (30872) | 186 | 116 | — | 1198 | 1657553 | 271158091353256138369637 | — | 73 | 4% |  |
+| 15 | BA | DIAS D'ÁVILA (30872) | 186 | 126 | — | 1210 | 1674774 | 553986558184172830770888 | — | 117 | 24% |  |
+| 16 | BA | DIAS D'ÁVILA (30872) | 186 | 134 | — | 1015 | 1657522 | 483279229274889600977916 | — | 63 | 11% |  |
+| 17 | BA | CAMAÇARI (34134) | 170 | 237 | — | 1279 | 1750313 | 75265237909969276916032 | — | 10 | 50% |  |
+| 18 | BA | CAMAÇARI (34134) | 170 | 238 | — | 1236 | 1766397 | 933851205495910399436903 | — | 14 | 48% |  |
+| 19 | BA | CANDEIAS (34290) | 127 | 326 | — | 1040 | 1680929 | 755775828016481019853204 | — | 67 | 5% |  |
+| 20 | BA | FEIRA DE SANTANA (35157) | 154 | 378 | — | 1090 | 1757279 | 980186624613873695680384 | — | 11 | 44% |  |
+| 21 | BA | FEIRA DE SANTANA (35157) | 154 | 379 | — | 1163 | 1764086 | 565944315802204732583191 | — | 13 | 46% |  |
+| 22 | BA | FEIRA DE SANTANA (35157) | 156 | 247 | — | 1813 | 1765568 | 424552658488369179263833 | — | 17 | 34% |  |
+| 23 | BA | FEIRA DE SANTANA (35157) | 156 | 467 | — | 2186 | 1768790 | 515461069597745011801929 | — | 10 | 42% |  |
+| 24 | BA | FEIRA DE SANTANA (35157) | 156 | 469 | — | 2186 | 1760063 | 717481488817036167860093 | — | 11 | 37% |  |
+| 25 | BA | FEIRA DE SANTANA (35157) | 157 | 410 | — | 1040 | 1759910 | 222543659041671666063284 | — | 10 | 37% |  |
+| 26 | BA | FEIRA DE SANTANA (35157) | 157 | 411 | — | 1481 | 1755985 | 889109424207922466969842 | — | 11 | 40% |  |
+| 27 | BA | GLÓRIA (35270) | 84 | 340 | — | 1430 | 1762842 | 27102576241464620940902 | — | 11 | 31% |  |
+| 28 | BA | ITABUNA (35971) | 27 | 245 | — | 1597 | 2175322 | 628953637013238602844604 | — | 11 | 33% |  |
+| 29 | BA | LAURO DE FREITAS (36854) | 180 | 159 | — | 1147 | 1657861 | 791344227933339717560244 | — | 97 | 9% |  |
+| 30 | BA | LAURO DE FREITAS (36854) | 180 | 202 | — | 1430 | 1671252 | 872152271184117131062764 | — | 74 | 3% |  |
+| 31 | BA | LAURO DE FREITAS (36854) | 180 | 232 | — | 1449 | 1667744 | 660031277563815998118634 | — | 99 | 3% |  |
+| 32 | BA | LAURO DE FREITAS (36854) | 180 | 236 | — | 1430 | 1676786 | 841849895781357939244114 | — | 132 | 11% |  |
+| 33 | BA | LAURO DE FREITAS (36854) | 180 | 280 | — | 1554 | 1670777 | 114576852808452416668669 | — | 55 | 13% |  |
+| 34 | BA | LAURO DE FREITAS (36854) | 180 | 331 | — | 1597 | 1679832 | 811546409782994999556331 | — | 142 | 2% |  |
+| 35 | BA | LAURO DE FREITAS (36854) | 180 | 386 | — | 1660 | 1655626 | 74172567616091508023958 | — | 124 | 1% |  |
+| 36 | BA | LAURO DE FREITAS (36854) | 180 | 426 | — | 1694 | 1654154 | 33768034300378024010422 | — | 10 | 86% | ERRO |
+| 37 | BA | LAURO DE FREITAS (36854) | 180 | 445 | — | 1716 | 1656704 | 548819739938042241212046 | — | 118 | 17% |  |
+| 38 | BA | LAURO DE FREITAS (36854) | 180 | 547 | — | 1155 | 1655960 | 367001861622943333098456 | — | 26 | 33% |  |
+| 39 | BA | SALVADOR (38490) | 3 | 606 | — | 1635 | 2315093 | 417374616225955736019132 | — | 12 | 35% |  |
+| 40 | BA | SALVADOR (38490) | 3 | 607 | — | 1163 | 2425447 | 972930284523019420995074 | — | 13 | 38% |  |
+| 41 | BA | SALVADOR (38490) | 7 | 473 | — | 1970 | 2423927 | 185095366174287094118973 | — | 11 | 35% |  |
+| 42 | BA | SALVADOR (38490) | 8 | 673 | — | 2160 | 2391464 | 710359074864346461863367 | — | 19 | 35% |  |
+| 43 | BA | SALVADOR (38490) | 11 | 715 | — | 2240 | 2273436 | 558773800620518620324023 | — | 11 | 45% |  |
+| 44 | BA | SALVADOR (38490) | 11 | 789 | — | 2283 | 2392394 | 983016161002973442887280 | — | 13 | 49% |  |
+| 45 | BA | SALVADOR (38490) | 11 | 790 | — | 2232 | 2351748 | 750793014340236308151233 | — | 12 | 36% |  |
+| 46 | BA | SALVADOR (38490) | 17 | 453 | — | 1937 | 2382837 | 831567878038450170715006 | — | 10 | 49% |  |
+| 47 | BA | SALVADOR (38490) | 17 | 571 | — | 1767 | 2315613 | 144698198955937409654365 | — | 12 | 45% |  |
+| 48 | BA | SALVADOR (38490) | 19 | 808 | — | 1813 | 2392988 | 700276304985630776989086 | — | 11 | 43% |  |
+| 49 | BA | SANTO ANTÔNIO DE JESUS (38733) | 202 | 215 | — | 1449 | 2212290 | 910531716518014576156723 | — | 12 | 39% |  |
+| 50 | BA | SÃO FÉLIX (38792) | 118 | 81 | — | 1058 | 2038538 | 451649120804823588374677 | — | 10 | 46% |  |
+| 51 | BA | SÃO FRANCISCO DO CONDE (38830) | 162 | 14 | — | 1023 | 1669567 | 443817950687844441716652 | — | 173 | 1% |  |
+| 52 | BA | SÃO FRANCISCO DO CONDE (38830) | 162 | 46 | — | 1031 | 1652153 | 171190113079962838417575 | — | 136 | 38% |  |
+| 53 | BA | SÃO FRANCISCO DO CONDE (38830) | 162 | 96 | — | 1406 | 1657792 | 969069253158731955263873 | — | 100 | 2% |  |
+| 54 | BA | SÃO FRANCISCO DO CONDE (38830) | 162 | 153 | — | 1406 | 1655929 | 979170741402791464064468 | — | 58 | 6% |  |
+| 55 | BA | SÃO GONÇALO DOS CAMPOS (38857) | 108 | 66 | — | 1015 | 1765846 | 553452637805467320123294 | — | 14 | 36% |  |
+| 56 | BA | SÃO SEBASTIÃO DO PASSÉ (38890) | 128 | 17 | — | 1023 | 1664337 | 773788614765654852869741 | — | 62 | 46% |  |
+| 57 | BA | SÃO SEBASTIÃO DO PASSÉ (38890) | 128 | 35 | — | 1023 | 1657713 | 875598874305379948102263 | — | 87 | 23% |  |
+| 58 | BA | SÃO SEBASTIÃO DO PASSÉ (38890) | 128 | 54 | — | 1147 | 1651356 | 288839077311155999661122 | — | 167 | 1% |  |
+| 59 | BA | SÃO SEBASTIÃO DO PASSÉ (38890) | 128 | 59 | — | 1171 | 1654690 | 117122459402703480779636 | — | 145 | 3% |  |
+| 60 | BA | SAUBARA (38946) | 178 | 141 | — | 1139 | 1681967 | 905636383041191961344241 | — | 10 | 36% |  |
+| 61 | BA | SAUBARA (38946) | 178 | 179 | — | 1104 | 1656755 | 562202136507836395099389 | — | 104 | 4% |  |
+| 62 | BA | SENHOR DO BONFIM (39012) | 45 | 324 | — | 1120 | 2425565 | 145797997326421831844349 | — | 12 | 23% |  |
+| 63 | BA | SIMÕES FILHO (39136) | 33 | 68 | — | 1090 | 1673838 | 344288645001045117339234 | — | 66 | 5% |  |
+| 64 | BA | SIMÕES FILHO (39136) | 33 | 139 | — | 1252 | 1657138 | 940248237535708701367828 | — | 153 | 1% | ERRO |
+| 65 | BA | SIMÕES FILHO (39136) | 33 | 204 | — | 1368 | 1656135 | 889642883398660189199252 | — | 69 | 45% |  |
+| 66 | BA | SIMÕES FILHO (39136) | 33 | 222 | — | 1155 | 1675915 | 778531316959890096729192 | — | 115 | 3% |  |
+| 67 | BA | SIMÕES FILHO (39136) | 33 | 228 | — | 1368 | 1658327 | 586612784240231924395090 | — | 57 | 9% | ERRO |
+| 68 | BA | SIMÕES FILHO (39136) | 33 | 241 | — | 1066 | 1669681 | 980652553580684784847865 | — | 76 | 7% |  |
+| 69 | BA | TANQUINHO (39217) | 160 | 121 | — | 1023 | 1834954 | 343685682260418845428257 | — | 11 | 43% |  |
+| 70 | BA | TERRA NOVA (39330) | 128 | 155 | — | 1015 | 1674179 | 582669578776028513029806 | — | 45 | 22% |  |
+| 71 | BA | TERRA NOVA (39330) | 128 | 179 | — | 1139 | 1671161 | 299740864836709639449837 | — | 85 | 1% |  |
+| 72 | BA | TERRA NOVA (39330) | 128 | 190 | — | 1171 | 1657790 | 229033943929886845995936 | — | 92 | 5% |  |
+| 73 | BA | TANQUE NOVO (39918) | 168 | 178 | 194 | 1198 | 1675729 | 844423300923011987627865 | — | 74 | 5% |  |
+| 74 | CE | BARBALHA (13374) | 31 | 158 | — | 1716 | 2186887 | 401272721401885767616370 | — | 10 | 49% |  |
+| 75 | CE | CAMOCIM (13510) | 32 | 175 | — | 2208 | 1657058 | 644807776028746678764179 | — | 43 | 3% |  |
+| 76 | CE | CAMOCIM (13510) | 32 | 202 | — | 1082 | 1659433 | 250968650011577525790596 | — | 57 | 20% |  |
+| 77 | CE | CHAVAL (13773) | 108 | 1 | — | 1023 | 1657035 | 49501155152692513271788 | — | 54 | 4% |  |
+| 78 | CE | GRANJA (13951) | 25 | 117 | — | 1368 | 1659994 | 774246706271347532844623 | — | 143 | 5% |  |
+| 79 | CE | JAGUARIBE (14397) | 10 | 7 | 60 | 1040 | 1674619 | 265633032485888345997856 | — | 13 | 22% |  |
+| 80 | CE | JAGUARIBE (14397) | 10 | 34 | — | 1422 | 1773607 | 43411047136523436892743 | — | 66 | 38% |  |
+| 81 | CE | JUAZEIRO DO NORTE (14478) | 119 | 413 | — | 1104 | 2242013 | 52920813705120503001110 | — | 11 | 49% |  |
+| 82 | CE | MASSAPÊ (14613) | 45 | 89 | — | 1104 | 1650268 | 134096687113315298444293 | — | 49 | 10% |  |
+| 83 | CE | MASSAPÊ (14613) | 45 | 134 | — | 1554 | 1750540 | 871470617923024391719547 | — | 11 | 46% |  |
+| 84 | CE | MASSAPÊ (14613) | 45 | 136 | — | 1546 | 1657078 | 83591042677374659534539 | — | 11 | 40% |  |
+| 85 | CE | MORADA NOVA (14753) | 47 | 36 | — | 1104 | 1659484 | 270532146687994098427761 | — | 37 | 23% |  |
+| 86 | CE | NOVA RUSSAS (14877) | 48 | 41 | — | 1856 | 1659495 | 196235197884062290658234 | — | 60 | 30% |  |
+| 87 | CE | SOBRAL (15598) | 24 | 330 | — | 1236 | 1652409 | 854743331877326159503756 | — | 28 | 42% |  |
+| 88 | CE | SOLONÓPOLE (15610) | 55 | 20 | — | 1074 | 1771426 | 617051610909657169421547 | — | 45 | 47% |  |
+| 89 | CE | MARACANAÚ (15857) | 104 | 419 | — | 1945 | 2305333 | 205073628517652855373303 | — | 17 | 44% |  |
+| 90 | DF | BRASÍLIA (97012) | 16 | 522 | — | 1287 | 2225618 | 9173812484894014603203 | — | 11 | 46% |  |
+| 91 | DF | BRASÍLIA (97012) | 16 | 523 | — | 1228 | 2229582 | 665739584231151308344329 | — | 12 | 48% |  |
+| 92 | ES | IRUPI (56049) | 19 | 55 | — | 1015 | 2358463 | 43810949185093876364452 | — | 10 | 34% |  |
+| 93 | ES | IRUPI (56049) | 19 | 57 | — | 1015 | 2341729 | 225628346603299560179819 | — | 11 | 31% |  |
+| 94 | ES | IRUPI (56049) | 19 | 59 | — | 1015 | 2379079 | 700476042551083823506859 | — | 15 | 35% |  |
+| 95 | ES | IRUPI (56049) | 19 | 62 | — | 1015 | 2361278 | 104416748791211198772764 | — | 10 | 37% |  |
+| 96 | ES | IRUPI (56049) | 19 | 64 | — | 1015 | 2392053 | 266032126407043680118816 | — | 11 | 46% |  |
+| 97 | ES | IRUPI (56049) | 19 | 65 | — | 1023 | 2348920 | 296335266910737060486516 | — | 13 | 38% |  |
+| 98 | ES | IRUPI (56049) | 19 | 66 | — | 1023 | 2360532 | 771183856858822093832995 | — | 10 | 34% |  |
+| 99 | ES | IRUPI (56049) | 19 | 67 | — | 1023 | 2361820 | 700476896251721000375045 | — | 13 | 32% |  |
+| 100 | ES | IRUPI (56049) | 19 | 70 | — | 1023 | 2365434 | 498355989630876544868449 | — | 11 | 49% |  |
+
+Mostrando 100 de 2.799 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.4 🟡 L04 — Votos después del “¿todos ya votaron? SÍ”
+
+**Objetivo.** Verifica si la urna registró votos después de que el miembro de mesa respondiera, al cierre, que todos los electores ya votaron.
+
+**Método.** Localiza en el log la pregunta de cierre y la respuesta SÍ y busca votos registrados después.
+
+**Criterio de señalización.** Anomalía estadística: voto grabado después de la respuesta SÍ, sin que el cierre se haya cancelado antes. Informativo: votos después de la respuesta NO o después de un cierre cancelado (la votación se reanudó, como está previsto).
+
+**Limitaciones y explicaciones alternativas.** Depende de que la urna registre la pregunta y la respuesta en el log; modelos distintos pueden registrarlas de formas distintas.
+
+> 📊 **Resultado:** 🟡 **0 anomalía(s)** en 499.176 unidades analizadas (0,000%) · 🟡 1.505 evento(s) informativo(s).
+>
+> **Qué significa:** ninguna urna alcanzó el criterio de anomalía de esta prueba.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Votación reanudada después del NO o de un cierre cancelado (informativo) | 1.505 |
+
+*Observado: votos grabados después de la respuesta.*
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (1.505)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | RIO BRANCO (1392) | 1 | 95 | — | 1961 | 2039516 | 499660678114905398230728 | — | 1 |  |  |
+| 2 | AC | RIO BRANCO (1392) | 1 | 460 | — | 2542 | 2048158 | 277438059548102541260618 | — | 1 |  |  |
+| 3 | AC | RIO BRANCO (1392) | 1 | 476 | — | 2690 | 2044952 | 398650907360620131199301 | — | 1 |  |  |
+| 4 | AC | SENA MADUREIRA (1457) | 3 | 113 | — | 1180 | 2047922 | 96442583745140638571320 | — | 2 |  |  |
+| 5 | AC | SENA MADUREIRA (1457) | 3 | 146 | — | 1066 | 2044839 | 237856269125763503274586 | — | 1 |  |  |
+| 6 | AC | XAPURI (1490) | 2 | 27 | — | 1082 | 2267217 | 730995642257461698614517 | — | 1 |  |  |
+| 7 | AL | BATALHA (27138) | 29 | 62 | — | 1031 | 2038455 | 827995463396452557798657 | — | 1 |  |  |
+| 8 | AL | COITÉ DO NÓIA (27391) | 45 | 120 | — | 1023 | 1766637 | 112594342734229187553438 | — | 1 |  |  |
+| 9 | AL | DELMIRO GOUVEIA (27472) | 40 | 239 | — | 1392 | 1768086 | 889616262658726020393473 | — | 1 |  |  |
+| 10 | AL | IGACI (27618) | 45 | 28 | — | 1325 | 1767012 | 697952718518763325471151 | — | 2 |  |  |
+| 11 | AL | LIMOEIRO DE ANADIA (27839) | 47 | 104 | — | 1422 | 2035087 | 631868161094383528241798 | — | 1 |  |  |
+| 12 | AL | MACEIÓ (27855) | 2 | 94 | — | 1210 | 2071440 | 44526118024501764910081 | — | 1 |  |  |
+| 13 | AL | MACEIÓ (27855) | 2 | 371 | — | 1856 | 2433115 | 488970351799880821479277 | — | 1 |  |  |
+| 14 | AL | MACEIÓ (27855) | 3 | 206 | — | 1368 | 2071456 | 95042935007549672211076 | — | 1 |  |  |
+| 15 | AL | MACEIÓ (27855) | 33 | 312 | — | 1350 | 2072244 | 246578803181616516029301 | — | 1 |  |  |
+| 16 | AL | MACEIÓ (27855) | 54 | 211 | — | 1252 | 2438991 | 590038958173885713763705 | — | 22 |  |  |
+| 17 | AL | MACEIÓ (27855) | 54 | 269 | — | 1252 | 2037750 | 297008884718040039019675 | — | 81 |  |  |
+| 18 | AL | MATA GRANDE (27995) | 27 | 96 | — | 1228 | 1768373 | 413332706217501942385616 | — | 1 |  |  |
+| 19 | AL | OLHO D'ÁGUA DO CASADO (28150) | 40 | 253 | — | 1031 | 1673239 | 541082403756747133914644 | — | 1 |  |  |
+| 20 | AL | PASSO DE CAMARAGIBE (28290) | 12 | 107 | — | 1058 | 2038053 | 879416739255968744891204 | — | 1 |  |  |
+| 21 | AL | RIO LARGO (28533) | 15 | 144 | — | 1562 | 2473530 | 746336559207606643729698 | — | 1 |  |  |
+| 22 | AL | RIO LARGO (28533) | 15 | 235 | — | 1139 | 2071407 | 776639717289977874089552 | — | 1 |  |  |
+| 23 | AL | SANTANA DO IPANEMA (28592) | 19 | 88 | — | 1279 | 1774367 | 85414522908446891553380 | — | 1 |  |  |
+| 24 | AL | SANTANA DO MUNDAÚ (28614) | 21 | 13 | — | 1058 | 2432221 | 119436515335102488529161 | — | 1 |  |  |
+| 25 | AL | SÃO JOSÉ DA TAPERA (28673) | 51 | 22 | — | 1090 | 1773234 | 711117071604753781003632 | — | 34 |  |  |
+| 26 | AL | SÃO LUÍS DO QUITUNDE (28690) | 17 | 129 | — | 1139 | 2456019 | 367120588353755639200657 | — | 16 |  |  |
+| 27 | AL | UNIÃO DOS PALMARES (28851) | 21 | 86 | — | 1120 | 2438615 | 183243406752123843362615 | — | 1 |  |  |
+| 28 | AM | BARREIRINHA (2119) | 26 | 54 | — | 1350 | 2354501 | 122992918694416869634026 | — | 1 |  |  |
+| 29 | AM | BENJAMIN CONSTANT (2135) | 20 | 66 | — | 1171 | 2350318 | 212435291911571271968037 | — | 20 |  |  |
+| 30 | AM | CAREIRO (2232) | 23 | 81 | — | 1040 | 2339155 | 240771918449134664932110 | — | 1 |  |  |
+| 31 | AM | COARI (2259) | 8 | 180 | — | 1139 | 2040586 | 57393704497628431628835 | — | 1 |  |  |
+| 32 | AM | HUMAITÁ (2356) | 17 | 96 | — | 1279 | 2459991 | 661450951984822607969741 | — | 1 |  |  |
+| 33 | AM | ITACOATIARA (2410) | 3 | 98 | — | 1015 | 2355523 | 480581997113967246922064 | — | 1 |  |  |
+| 34 | AM | ITACOATIARA (2410) | 3 | 152 | — | 1074 | 2359114 | 430076097227474868264835 | — | 1 |  |  |
+| 35 | AM | ITACOATIARA (2410) | 3 | 169 | — | 1813 | 2353140 | 672400173951423167491661 | — | 1 |  |  |
+| 36 | AM | LÁBREA (2518) | 12 | 114 | — | 1295 | 2015026 | 235952837331570654349409 | — | 1 |  |  |
+| 37 | AM | MANAUS (2550) | 32 | 941 | — | 2194 | 2017655 | 920035122608773595208391 | — | 1 |  |  |
+| 38 | AM | MANAUS (2550) | 37 | 540 | — | 2020 | 2084836 | 354333082077930863880260 | — | 1 |  |  |
+| 39 | AM | MANAUS (2550) | 37 | 642 | — | 1961 | 1783605 | 606858642036887380064865 | — | 1 |  |  |
+| 40 | AM | MANAUS (2550) | 40 | 600 | — | 1481 | 2017730 | 616989153590686430578088 | — | 2 |  |  |
+| 41 | AM | MANAUS (2550) | 58 | 943 | — | 1996 | 2338074 | 606883021764212516626826 | — | 1 |  |  |
+| 42 | AM | MANAUS (2550) | 58 | 952 | — | 1813 | 2359201 | 930116319142839967544728 | — | 1 |  |  |
+| 43 | AM | MANAUS (2550) | 58 | 1036 | — | 1813 | 2349347 | 940217928694256622414161 | — | 1 |  |  |
+| 44 | AM | MANAUS (2550) | 62 | 630 | — | 1635 | 1788316 | 243288992884636315732709 | — | 1 |  |  |
+| 45 | AM | MANAUS (2550) | 65 | 388 | — | 1562 | 2014273 | 738170445663535677939141 | — | 1 |  |  |
+| 46 | AM | MANAUS (2550) | 65 | 442 | — | 1651 | 1787067 | 303827166812802117304152 | — | 1 |  |  |
+| 47 | AM | MANAUS (2550) | 65 | 535 | — | 1554 | 2038091 | 303827516182424313580202 | — | 4 |  |  |
+| 48 | AM | MANAUS (2550) | 70 | 748 | — | 1929 | 1789449 | 758324545587530069222552 | — | 1 |  |  |
+| 49 | AM | MANICORÉ (2577) | 16 | 115 | — | 1449 | 2460042 | 393212101357873493194171 | — | 1 |  |  |
+| 50 | AM | MAUÉS (2615) | 5 | 42 | — | 1236 | 2470439 | 506605001597176866865891 | — | 13 |  |  |
+| 51 | AM | PARINTINS (2690) | 4 | 160 | — | 1686 | 2353007 | 16045528597900074860571 | — | 1 |  |  |
+| 52 | AM | PARINTINS (2690) | 4 | 243 | — | 1732 | 2261865 | 915035706535839825612620 | — | 1 |  |  |
+| 53 | AM | TEFÉ (2810) | 9 | 167 | 213 | 1619 | 2462460 | 907589181470195002929786 | — | 66 |  |  |
+| 54 | AM | ALVARÃES (2895) | 60 | 18 | — | 1040 | 2355554 | 11943966615465547591727 | — | 1 |  |  |
+| 55 | AM | IRANDUBA (98353) | 56 | 30 | — | 1554 | 2018772 | 158916366016894443804172 | — | 1 |  |  |
+| 56 | AM | TABATINGA (98477) | 36 | 16 | — | 1317 | 2341918 | 711058440952855723417820 | — | 19 |  |  |
+| 57 | AP | PORTO GRANDE (6025) | 12 | 6 | — | 1015 | 2468193 | 577886237481448948608134 | — | 1 |  |  |
+| 58 | AP | MACAPÁ (6050) | 2 | 845 | — | 2658 | 2355757 | 243346793008503153236101 | — | 1 |  |  |
+| 59 | AP | MACAPÁ (6050) | 10 | 65 | — | 1074 | 2355293 | 505957472960750732764928 | — | 13 |  |  |
+| 60 | AP | MACAPÁ (6050) | 10 | 384 | — | 1635 | 2341094 | 677674949472089947592516 | — | 1 |  |  |
+| 61 | AP | CUTIAS (6068) | 10 | 458 | — | 1058 | 2340907 | 443651035389056690605512 | — | 1 |  |  |
+| 62 | AP | OIAPOQUE (6092) | 4 | 1 | — | 1015 | 2016018 | 815225924724800425509222 | — | 1 |  |  |
+| 63 | AP | SANTANA (6157) | 6 | 85 | — | 1082 | 2015797 | 139279249804931393227714 | — | 2 |  |  |
+| 64 | BA | LUÍS EDUARDO MAGALHÃES (30007) | 205 | 176 | — | 1252 | 2222985 | 60279307446259766931123 | — | 1 |  |  |
+| 65 | BA | EUNÁPOLIS (30058) | 188 | 315 | — | 1694 | 2232050 | 581811479691578826640409 | — | 1 |  |  |
+| 66 | BA | EUNÁPOLIS (30058) | 188 | 316 | — | 1694 | 2219600 | 925245925825192229489334 | — | 1 |  |  |
+| 67 | BA | JABORANDI (30678) | 61 | 48 | — | 1040 | 1771431 | 22655181637576742074972 | — | 1 |  |  |
+| 68 | BA | JUSSARI (30694) | 28 | 423 | 424 | 1090 | 2174502 | 203022031109858859690941 | — | 19 |  |  |
+| 69 | BA | ARAÇÁS (33383) | 200 | 104 | — | 1082 | 2041011 | 454163983617210960312532 | — | 1 |  |  |
+| 70 | BA | ARAÇÁS (33383) | 200 | 120 | — | 1082 | 2241675 | 615779841033652296283470 | — | 13 |  |  |
+| 71 | BA | BARRA (33537) | 77 | 38 | — | 1228 | 2290831 | 786904870752209349317028 | — | 1 |  |  |
+| 72 | BA | BARREIRAS (33634) | 70 | 23 | — | 1015 | 2237580 | 552604020639626621136865 | — | 1 |  |  |
+| 73 | BA | BRUMADO (33910) | 90 | 138 | 151 | 1376 | 2302263 | 154978337917053634299387 | — | 52 |  |  |
+| 74 | BA | CACHOEIRA (33979) | 118 | 51 | — | 1295 | 2155708 | 806184262683033038071464 | — | 1 |  |  |
+| 75 | BA | CAETITÉ (34037) | 63 | 139 | — | 1880 | 2192624 | 945969233646634811685921 | — | 1 |  |  |
+| 76 | BA | CAETITÉ (34037) | 63 | 190 | — | 1694 | 2171170 | 97484810499409808652232 | — | 1 |  |  |
+| 77 | BA | CAMAÇARI (34134) | 170 | 86 | — | 1090 | 1790097 | 257083474482037438148465 | — | 2 |  |  |
+| 78 | BA | CAMAÇARI (34134) | 171 | 131 | — | 1341 | 1765753 | 822751238248030847754097 | — | 1 |  |  |
+| 79 | BA | CAMAÇARI (34134) | 171 | 429 | — | 1210 | 1766939 | 176286667292294494371415 | — | 1 |  |  |
+| 80 | BA | CANÁPOLIS (34215) | 99 | 186 | — | 1112 | 1752466 | 145376459377310003708130 | — | 4 |  |  |
+| 81 | BA | CANDEIAS (34290) | 127 | 217 | — | 1325 | 1667054 | 967896966764357420686833 | — | 18 |  |  |
+| 82 | BA | CANDEIAS (34290) | 127 | 358 | — | 1449 | 1676797 | 977997479060950774268836 | — | 1 |  |  |
+| 83 | BA | CARAVELAS (34371) | 112 | 353 | — | 1066 | 2341848 | 765214714085430239417202 | — | 17 |  |  |
+| 84 | BA | CONCEIÇÃO DA FEIRA (34630) | 108 | 82 | — | 1031 | 1767285 | 368033147063055877887462 | — | 1 |  |  |
+| 85 | BA | CONCEIÇÃO DA FEIRA (34630) | 108 | 126 | — | 1155 | 1789212 | 115508008138863477659880 | — | 1 |  |  |
+| 86 | BA | CONCEIÇÃO DO COITÉ (34673) | 132 | 168 | — | 1929 | 2177626 | 506502893314543737641098 | — | 1 |  |  |
+| 87 | BA | CONCEIÇÃO DO COITÉ (34673) | 132 | 220 | — | 2011 | 2234840 | 233875552451187677848465 | — | 2 |  |  |
+| 88 | BA | CONCEIÇÃO DO JACUÍPE (34690) | 192 | 209 | — | 1287 | 1795463 | 344428515744478620064486 | — | 1 |  |  |
+| 89 | BA | CONDE (34711) | 21 | 149 | — | 1023 | 2154658 | 458370813049951414083174 | — | 1 |  |  |
+| 90 | BA | CONDE (34711) | 21 | 181 | — | 1228 | 2234696 | 741299507068528896292646 | — | 1 |  |  |
+| 91 | BA | CONDEÚBA (34738) | 60 | 1 | 120 | 1015 | 2037931 | 547796657301257132322352 | — | 1 |  |  |
+| 92 | BA | CORIBE (34819) | 61 | 10 | 11 | 1031 | 1825394 | 294682361794420398187107 | — | 40 |  |  |
+| 93 | BA | CRISTÓPOLIS (34932) | 126 | 145 | — | 1279 | 2236380 | 553844478392321673562492 | — | 1 |  |  |
+| 94 | BA | ENCRUZILHADA (35076) | 152 | 154 | — | 1163 | 2048953 | 637229514246247833895718 | — | 3 |  |  |
+| 95 | BA | EUCLIDES DA CUNHA (35130) | 102 | 198 | — | 1635 | 2308577 | 1831608667403920249303 | — | 2 |  |  |
+| 96 | BA | FEIRA DE SANTANA (35157) | 154 | 300 | — | 1333 | 1765083 | 444732712834940165966071 | — | 1 |  |  |
+| 97 | BA | FEIRA DE SANTANA (35157) | 155 | 207 | — | 1198 | 1767359 | 485147439266077532709035 | — | 1 |  |  |
+| 98 | BA | FEIRA DE SANTANA (35157) | 156 | 261 | — | 1716 | 1766383 | 161926873003465495895698 | — | 24 |  |  |
+| 99 | BA | FEIRA DE SANTANA (35157) | 156 | 461 | — | 2178 | 1765810 | 767986651263695247329171 | — | 1 |  |  |
+| 100 | BA | FEIRA DE SANTANA (35157) | 157 | 850 | — | 1198 | 1842686 | 363957434755437704783841 | — | 1 |  |  |
+
+Mostrando 100 de 1.505 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.5 🔴 L05 — Cortes de energía e interrupciones
+
+**Objetivo.** Encuentra cortes de energía, apagados y reinicios de la urna durante la votación.
+
+**Método.** Lee en el log los eventos de batería, apagado y reencendido y mide cuánto tiempo la urna estuvo detenida.
+
+**Criterio de señalización.** Informativo: interrupción registrada durante la votación (urna apagada o funcionando con batería). Anomalía estadística: voto grabado con hora dentro del período en que la misma urna estaba apagada, o 3 reencendidos o más durante la votación.
+
+**Limitaciones y explicaciones alternativas.** Cortes de luz y batería baja ocurren, sobre todo en lugares alejados. El acta registra los hechos.
+
+> 📊 **Resultado:** 🔴 **2.397 anomalía(s)** en 499.176 unidades analizadas (0,480%) · 🟡 80.036 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Interrupción durante la votación (informativo) | 80.036 |
+| 🔴 Voto con la urna apagada o 3+ reencendidos | 2.397 |
+
+*Observado: reencendidos / avisos de batería / votos con la urna apagada. Referencia: tiempo detenida.*
+
+#### 🔴 Urnas con anomalía — lista completa (2.397)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | PORTO ACRE (1023) | 1 | 797 | — | 1082 | 2047027 | 913802910118455869967967 | — | 3 / 0 / 0 | 3 min |  |
+| 2 | AC | CRUZEIRO DO SUL (1074) | 4 | 198 | — | 2135 | 2275208 | 335577337345173306400454 | — | 3 / 0 / 0 | 0 min |  |
+| 3 | AC | CRUZEIRO DO SUL (1074) | 4 | 308 | — | 2313 | 2264651 | 354379357524668345293968 | — | 5 / 3 / 0 | 9 min |  |
+| 4 | AC | RODRIGUES ALVES (1082) | 4 | 349 | — | 1074 | 2277475 | 52749052777487185146769 | — | 10 / 1 / 0 | 0 min |  |
+| 5 | AC | ACRELÂNDIA (1120) | 8 | 205 | — | 1040 | 2047973 | 671655675974114948376730 | — | 11 / 1 / 0 | 0 min |  |
+| 6 | AC | RIO BRANCO (1392) | 1 | 99 | — | 2569 | 2046116 | 439054053108138289981315 | — | 4 / 0 / 0 | 0 min |  |
+| 7 | AC | RIO BRANCO (1392) | 9 | 104 | — | 1627 | 2269815 | 580557584955218400447834 | — | 3 / 0 / 0 | 2 min |  |
+| 8 | AC | RIO BRANCO (1392) | 9 | 225 | — | 1155 | 2266667 | 327931195578769376524911 | — | 7 / 0 / 0 | 1 min |  |
+| 9 | AC | RIO BRANCO (1392) | 9 | 278 | — | 1694 | 2256402 | 671466225480373376587021 | — | 3 / 0 / 0 | 4 min |  |
+| 10 | AL | ÁGUA BRANCA (27014) | 39 | 127 | — | 1279 | 1673934 | 43624049162054757069157 | — | 6 / 0 / 0 | 12 min |  |
+| 11 | AL | ARAPIRACA (27057) | 22 | 582 | — | 1864 | 2032662 | 192255191468750533153413 | — | 6 / 3 / 0 | 0 min |  |
+| 12 | AL | ARAPIRACA (27057) | 55 | 116 | — | 1074 | 2069734 | 151805159805713427338788 | — | 5 / 10 / 0 | 0 min |  |
+| 13 | AL | CAMPO ALEGRE (27278) | 47 | 67 | — | 1198 | 2069865 | 934198122589499903606268 | — | 5 / 0 / 0 | 0 min |  |
+| 14 | AL | CAMPO ALEGRE (27278) | 47 | 68 | — | 1104 | 2067306 | 378542375933324253994786 | — | 5 / 8 / 0 | 4 min |  |
+| 15 | AL | CANAPI (27316) | 27 | 112 | — | 1147 | 1673335 | 694060692341006334311533 | — | 6 / 0 / 0 | 0 min |  |
+| 16 | AL | COQUEIRO SECO (27430) | 8 | 126 | — | 1015 | 2443859 | 540042436351529001986326 | — | 4 / 0 / 0 | 2 min |  |
+| 17 | AL | FEIRA GRANDE (27510) | 49 | 122 | — | 1082 | 2072189 | 498076493857604130252000 | — | 3 / 3 / 0 | 2 min |  |
+| 18 | AL | IGACI (27618) | 45 | 14 | — | 1104 | 1667745 | 516534516974722403914047 | — | 4 / 0 / 0 | 0 min |  |
+| 19 | AL | IGACI (27618) | 45 | 15 | — | 1325 | 1650792 | 556538552720879792149808 | — | 3 / 0 / 0 | 0 min |  |
+| 20 | AL | IGREJA NOVA (27634) | 37 | 130 | — | 1090 | 2472190 | 494547799642955711108114 | — | 3 / 0 / 0 | 0 min |  |
+| 21 | AL | IGREJA NOVA (27634) | 37 | 157 | — | 1236 | 2438364 | 716769714564443225990852 | — | 4 / 2 / 0 | 2 min |  |
+| 22 | AL | INHAPI (27650) | 39 | 114 | — | 1090 | 1821715 | 48624640518720713808324 | — | 4 / 0 / 0 | 0 min |  |
+| 23 | AL | JOAQUIM GOMES (27758) | 53 | 40 | 42 | 1066 | 2074113 | 309198580620614311009065 | — | 5 / 2 / 0 | 0 min |  |
+| 24 | AL | JUNDIÁ (27774) | 14 | 28 | — | 1015 | 2473574 | 833034858199617816651614 | — | 4 / 0 / 0 | 2 min |  |
+| 25 | AL | MACEIÓ (27855) | 1 | 445 | — | 1970 | 2069479 | 539464530416346558815479 | — | 3 / 0 / 0 | 0 min |  |
+| 26 | AL | MACEIÓ (27855) | 1 | 453 | — | 2194 | 2036481 | 721383760242993622593598 | — | 12 / 8 / 0 | 0 min |  |
+| 27 | AL | MACEIÓ (27855) | 3 | 367 | — | 1457 | 2470882 | 670800675292690106742816 | — | 5 / 0 / 0 | 4 min |  |
+| 28 | AL | MACEIÓ (27855) | 33 | 211 | — | 1201 | 2036931 | 963750960614334327857423 | — | 5 / 1 / 0 | 0 min |  |
+| 29 | AL | MACEIÓ (27855) | 54 | 12 | — | 1015 | 2447519 | 236402230337428461120125 | — | 3 / 1 / 0 | 2 min |  |
+| 30 | AL | MACEIÓ (27855) | 54 | 337 | — | 1376 | 2072682 | 741553743563060848237711 | — | 3 / 0 / 0 | 1 min |  |
+| 31 | AL | MARAGOGI (27898) | 14 | 124 | — | 1015 | 2070247 | 445695446043194249370812 | — | 5 / 29 / 0 | 0 min |  |
+| 32 | AL | MARAVILHA (27910) | 50 | 14 | — | 1023 | 1670000 | 702905709899583405930990 | — | 4 / 0 / 0 | 0 min |  |
+| 33 | AL | MARIBONDO (27952) | 48 | 154 | — | 1015 | 2074094 | 2116006659017092286754 | — | 3 / 0 / 0 | 0 min |  |
+| 34 | AL | OLHO D'ÁGUA DAS FLORES (28134) | 11 | 116 | — | 1058 | 1762983 | 845402660420395339212890 | — | 7 / 0 / 0 | 0 min |  |
+| 35 | AL | OLHO D'ÁGUA DAS FLORES (28134) | 11 | 124 | — | 1066 | 1753594 | 885806559821353188700232 | — | 3 / 0 / 0 | 7 min |  |
+| 36 | AL | OLHO D'ÁGUA DAS FLORES (28134) | 11 | 136 | — | 1066 | 1847604 | 512169470184935989093447 | — | 6 / 0 / 0 | 13 min |  |
+| 37 | AL | OURO BRANCO (28215) | 50 | 96 | — | 1082 | 1813340 | 127647418071115522498659 | — | 3 / 0 / 0 | 0 min |  |
+| 38 | AL | PALMEIRA DOS ÍNDIOS (28258) | 10 | 97 | — | 1074 | 1670614 | 801587209735460073578951 | — | 3 / 0 / 0 | 0 min |  |
+| 39 | AL | PALMEIRA DOS ÍNDIOS (28258) | 10 | 141 | — | 1139 | 1767539 | 660173140227754043584119 | — | 3 / 0 / 0 | 2 min |  |
+| 40 | AL | PÃO DE AÇÚCAR (28274) | 11 | 137 | — | 1236 | 1668905 | 648582716165145538431563 | — | 3 / 4 / 0 | 2 min |  |
+| 41 | AL | PENEDO (28339) | 13 | 181 | — | 1449 | 2438080 | 962536963539592114494457 | — | 4 / 0 / 0 | 3 min |  |
+| 42 | AL | PIRANHAS (28410) | 40 | 168 | — | 1023 | 1768633 | 700398096811152366791375 | — | 3 / 2 / 0 | 5 min |  |
+| 43 | AL | PIRANHAS (28410) | 40 | 243 | — | 1147 | 1816413 | 195247981508613314215881 | — | 3 / 0 / 0 | 0 min |  |
+| 44 | AL | PORTO CALVO (28452) | 14 | 87 | — | 1198 | 2073475 | 706521034225361158155883 | — | 3 / 0 / 0 | 0 min |  |
+| 45 | AL | PORTO REAL DO COLÉGIO (28495) | 37 | 174 | — | 1090 | 2067344 | 137911156134553786501239 | — | 4 / 1 / 0 | 0 min |  |
+| 46 | AL | PORTO REAL DO COLÉGIO (28495) | 37 | 183 | — | 1228 | 2438543 | 764274763337161048179485 | — | 8 / 0 / 0 | 0 min |  |
+| 47 | AL | RIO LARGO (28533) | 15 | 125 | — | 1422 | 2031580 | 857447636867558872843030 | — | 4 / 0 / 0 | 0 min |  |
+| 48 | AL | SÃO BRÁS (28630) | 37 | 172 | — | 1040 | 2035940 | 128110921564146220243899 | — | 3 / 2 / 0 | 0 min |  |
+| 49 | AL | SÃO SEBASTIÃO (28754) | 49 | 2 | — | 1368 | 2072124 | 296356510732885850761167 | — | 3 / 0 / 0 | 0 min |  |
+| 50 | AL | SÃO SEBASTIÃO (28754) | 49 | 23 | — | 1376 | 2069386 | 478174947550378349494359 | — | 4 / 8 / 0 | 2 min |  |
+| 51 | AL | SATUBA (28770) | 8 | 120 | — | 1040 | 2474154 | 123200126976931303579335 | — | 5 / 1 / 0 | 2 min |  |
+| 52 | AL | SENADOR RUI PALMEIRA (28916) | 51 | 116 | — | 1031 | 1670843 | 264872088154792905071599 | — | 5 / 0 / 0 | 0 min |  |
+| 53 | AL | TEOTÔNIO VILELA (28932) | 34 | 162 | — | 1163 | 2456898 | 384603112059716392266319 | — | 3 / 0 / 0 | 1 min |  |
+| 54 | AM | CAREIRO DA VÁRZEA (2046) | 31 | 768 | — | 1074 | 2084619 | 193551129511630495856487 | — | 3 / 0 / 0 | 0 min |  |
+| 55 | AM | COARI (2259) | 8 | 53 | — | 1163 | 2084510 | 532141214165669035373369 | — | 5 / 2 / 0 | 11 min |  |
+| 56 | AM | FONTE BOA (2330) | 10 | 47 | — | 1031 | 2040392 | 128419121273796707784412 | — | 4 / 0 / 0 | 0 min |  |
+| 57 | AM | IPIXUNA (2399) | 45 | 63 | — | 1139 | 2018717 | 900973901415646241309326 | — | 3 / 3 / 0 | 0 min |  |
+| 58 | AM | ITACOATIARA (2410) | 3 | 62 | — | 1295 | 2356115 | 207753843165727880510703 | — | 3 / 1 / 0 | 3 min |  |
+| 59 | AM | ITACOATIARA (2410) | 3 | 122 | — | 1660 | 2462794 | 793612249345423137313802 | — | 3 / 0 / 0 | 65 min |  |
+| 60 | AM | JUTAÍ (2496) | 41 | 11 | — | 1066 | 2085065 | 100949107257064807379064 | — | 3 / 1 / 0 | 3 min |  |
+| 61 | AM | LÁBREA (2518) | 12 | 26 | 56 | 2836 | 2086096 | 498578296214307851288488 | — | 3 / 1 / 0 | 37 min |  |
+| 62 | AM | MANACAPURU (2534) | 6 | 307 | — | 1880 | 2356008 | 103276103095936688861037 | — | 3 / 2 / 0 | 2 min |  |
+| 63 | AM | MANAUS (2550) | 31 | 739 | — | 1988 | 1806286 | 596791593416395979629596 | — | 3 / 0 / 0 | 0 min |  |
+| 64 | AM | MANAUS (2550) | 32 | 643 | — | 2020 | 1782893 | 354378508195495732728102 | — | 4 / 0 / 0 | 0 min |  |
+| 65 | AM | MANAUS (2550) | 32 | 861 | — | 2216 | 2015832 | 495792743000780798050001 | — | 3 / 0 / 0 | 0 min |  |
+| 66 | AM | MANAUS (2550) | 37 | 657 | — | 1945 | 1789394 | 394750392245062239949459 | — | 4 / 3 / 0 | 13 min |  |
+| 67 | AM | MANAUS (2550) | 40 | 417 | — | 1724 | 1788013 | 243252448003061971704182 | — | 3 / 6 / 0 | 0 min |  |
+| 68 | AM | MANAUS (2550) | 40 | 423 | — | 1473 | 1787540 | 879515707526307061518699 | — | 5 / 2 / 0 | 15 min |  |
+| 69 | AM | MANAUS (2550) | 62 | 633 | — | 1970 | 2028081 | 384649384728211390061738 | — | 13 / 0 / 0 | 1 min |  |
+| 70 | AM | MANAUS (2550) | 65 | 424 | — | 1597 | 1810108 | 647261641916607371169427 | — | 3 / 0 / 0 | 4 min |  |
+| 71 | AM | MANAUS (2550) | 65 | 598 | — | 1775 | 1760291 | 657362611181694956350723 | — | 3 / 0 / 0 | 0 min |  |
+| 72 | AM | MANAUS (2550) | 65 | 608 | — | 1783 | 1798059 | 647261062999987740225940 | — | 6 / 0 / 0 | 0 min |  |
+| 73 | AM | MANAUS (2550) | 65 | 625 | — | 1791 | 1798876 | 233120463999750149936784 | — | 3 / 0 / 0 | 4 min |  |
+| 74 | AM | MANAUS (2550) | 68 | 500 | — | 1708 | 1787829 | 152345608389246430690630 | — | 3 / 0 / 0 | 0 min |  |
+| 75 | AM | MANAUS (2550) | 68 | 618 | — | 1775 | 1786042 | 61436556873384473862591 | — | 4 / 0 / 0 | 0 min |  |
+| 76 | AM | MANAUS (2550) | 70 | 680 | — | 1830 | 1798400 | 71556076475310766380256 | — | 8 / 0 / 0 | 39 min |  |
+| 77 | AM | MANAUS (2550) | 70 | 687 | — | 1813 | 2038063 | 152364023189833839942528 | — | 4 / 2 / 0 | 0 min |  |
+| 78 | AM | MANAUS (2550) | 70 | 697 | — | 1988 | 1782948 | 667415600953769679621824 | — | 3 / 0 / 0 | 0 min |  |
+| 79 | AM | MANICORÉ (2577) | 16 | 107 | — | 1171 | 2101690 | 857858716053894291086305 | — | 3 / 10 / 0 | 1 min |  |
+| 80 | AM | SÃO GABRIEL DA CACHOEIRA (2836) | 19 | 69 | — | 1554 | 2358801 | 521358528318286372728965 | — | 3 / 6 / 0 | 5 min |  |
+| 81 | AM | BERURI (2950) | 54 | 16 | — | 1031 | 2390486 | 660245667448124999254644 | — | 4 / 0 / 0 | 3 min |  |
+| 82 | AM | BOA VISTA DO RAMOS (2976) | 5 | 173 | — | 1082 | 2350771 | 71962983622628221848917 | — | 5 / 3 / 0 | 233 min |  |
+| 83 | AM | PRESIDENTE FIGUEIREDO (98418) | 51 | 68 | — | 1139 | 2357891 | 513397517206450980354596 | — | 4 / 0 / 0 | 2 min |  |
+| 84 | AM | TONANTINS (98515) | 47 | 25 | — | 1082 | 2017221 | 743679431183272177649404 | — | 3 / 0 / 0 | 0 min |  |
+| 85 | AP | ITAUBAL (6041) | 10 | 461 | — | 1104 | 2358719 | 354242244247886621300701 | — | 5 / 0 / 0 | 0 min |  |
+| 86 | AP | MACAPÁ (6050) | 10 | 215 | — | 1520 | 2340962 | 81715883812967260796815 | — | 3 / 0 / 0 | 5 min |  |
+| 87 | AP | OIAPOQUE (6092) | 4 | 66 | — | 1040 | 2016405 | 300174308693511499317686 | — | 6 / 0 / 0 | 0 min |  |
+| 88 | BA | LUÍS EDUARDO MAGALHÃES (30007) | 205 | 19 | — | 1066 | 2232155 | 484421543839865804160791 | — | 4 / 1 / 0 | 0 min |  |
+| 89 | BA | LUÍS EDUARDO MAGALHÃES (30007) | 205 | 75 | — | 1074 | 2225516 | 474320514683019368838682 | — | 6 / 1 / 0 | 0 min |  |
+| 90 | BA | JUSSARI (30694) | 28 | 413 | — | 1066 | 2179308 | 61608068295892919388793 | — | 7 / 0 / 0 | 12 min |  |
+| 91 | BA | CAPELA DO ALTO ALEGRE (30813) | 196 | 148 | — | 1104 | 2103032 | 672705677001368555815684 | — | 3 / 0 / 0 | 0 min |  |
+| 92 | BA | CAPIM GROSSO (30830) | 191 | 170 | — | 1066 | 2090533 | 325415324499089085709265 | — | 3 / 0 / 0 | 0 min |  |
+| 93 | BA | DIAS D'ÁVILA (30872) | 186 | 31 | — | 1066 | 1661358 | 18532017586239036291124 | — | 3 / 0 / 0 | 0 min |  |
+| 94 | BA | DIAS D'ÁVILA (30872) | 186 | 55 | — | 1309 | 1674221 | 665097667526118191719792 | — | 6 / 0 / 0 | 3 min |  |
+| 95 | BA | DIAS D'ÁVILA (30872) | 186 | 67 | — | 1139 | 1657773 | 523683717437511865060135 | — | 3 / 0 / 0 | 0 min |  |
+| 96 | BA | DIAS D'ÁVILA (30872) | 186 | 89 | — | 1368 | 1656348 | 503481054779809485309467 | — | 3 / 0 / 0 | 0 min |  |
+| 97 | BA | DIAS D'ÁVILA (30872) | 186 | 122 | — | 1198 | 1656410 | 271158272687670926389734 | — | 3 / 0 / 0 | 0 min |  |
+| 98 | BA | DIAS D'ÁVILA (30872) | 186 | 163 | — | 1325 | 1667137 | 331764331668061758702168 | — | 3 / 0 / 0 | 0 min |  |
+| 99 | BA | DIAS D'ÁVILA (30872) | 186 | 181 | 182 | 1180 | 1676688 | 644895644893261231853709 | — | 11 / 0 / 0 | 0 min |  |
+| 100 | BA | FILADÉLFIA (30910) | 149 | 132 | — | 1163 | 2427075 | 182554707170015329867220 | — | 3 / 1 / 0 | 6 min |  |
+
+Mostrando 100 de 2.397 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (80.036)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | BUJARI (1007) | 9 | 136 | — | 1023 | 2280706 | 7299962391925921021864 | — | 0 / 2 / 0 | 0 min |  |
+| 2 | AC | BUJARI (1007) | 9 | 413 | — | 1074 | 2273127 | 360835126406318441162843 | — | 0 / 1 / 0 | 0 min |  |
+| 3 | AC | BUJARI (1007) | 9 | 437 | — | 1120 | 2046630 | 418852413282473555234394 | — | 0 / 1 / 0 | 0 min |  |
+| 4 | AC | BUJARI (1007) | 9 | 476 | — | 1120 | 2265332 | 620961627778086480023438 | — | 1 / 0 / 0 | 0 min |  |
+| 5 | AC | CAPIXABA (1015) | 2 | 87 | 112 | 1104 | 2289949 | 996421328898179630641220 | — | 0 / 2 / 0 | 0 min |  |
+| 6 | AC | CAPIXABA (1015) | 2 | 103 | — | 1236 | 2256067 | 541976962453372786859320 | — | 1 / 0 / 0 | 6 min |  |
+| 7 | AC | PORTO ACRE (1023) | 1 | 584 | — | 1023 | 2258570 | 682679133995422507550993 | — | 0 / 1 / 0 | 0 min |  |
+| 8 | AC | PORTO ACRE (1023) | 1 | 585 | — | 1023 | 2266212 | 369447923163454586350709 | — | 0 / 1 / 0 | 0 min |  |
+| 9 | AC | PORTO ACRE (1023) | 1 | 600 | — | 1066 | 2047854 | 803891345206946192715926 | — | 0 / 4 / 0 | 0 min |  |
+| 10 | AC | PORTO ACRE (1023) | 1 | 621 | — | 1163 | 2261303 | 288639078344800738479808 | — | 1 / 0 / 0 | 9 min |  |
+| 11 | AC | SANTA ROSA DO PURUS (1031) | 3 | 96 | 124 | 1066 | 2046432 | 207153491569995673921967 | — | 0 / 3 / 0 | 0 min |  |
+| 12 | AC | MARECHAL THAUMATURGO (1040) | 4 | 162 | — | 1074 | 2273101 | 762920492853231914624039 | — | 0 / 2 / 0 | 0 min |  |
+| 13 | AC | MARECHAL THAUMATURGO (1040) | 4 | 201 | — | 1074 | 2273387 | 278071563504420467143936 | — | 0 / 3 / 0 | 0 min |  |
+| 14 | AC | MARECHAL THAUMATURGO (1040) | 4 | 236 | 503 | 1147 | 2264095 | 752819805352622037243370 | — | 0 / 3 / 0 | 0 min |  |
+| 15 | AC | MARECHAL THAUMATURGO (1040) | 4 | 324 | — | 1171 | 2264518 | 55849905704508895575464 | — | 0 / 1 / 0 | 0 min |  |
+| 16 | AC | MARECHAL THAUMATURGO (1040) | 4 | 384 | — | 1147 | 2279772 | 490293768348435914270925 | — | 0 / 1 / 0 | 0 min |  |
+| 17 | AC | MARECHAL THAUMATURGO (1040) | 4 | 424 | — | 1015 | 2256497 | 591203539058482577389734 | — | 0 / 1 / 0 | 0 min |  |
+| 18 | AC | MARECHAL THAUMATURGO (1040) | 4 | 444 | — | 1074 | 2269434 | 298273370528672339493042 | — | 0 / 1 / 0 | 0 min |  |
+| 19 | AC | BRASILÉIA (1058) | 6 | 4 | — | 1040 | 2256692 | 13767450182721939660836 | — | 0 / 2 / 0 | 0 min |  |
+| 20 | AC | BRASILÉIA (1058) | 6 | 45 | — | 1040 | 2260915 | 286494114509441082728286 | — | 0 / 2 / 0 | 0 min |  |
+| 21 | AC | BRASILÉIA (1058) | 6 | 54 | — | 2305 | 2250541 | 74373868258556742563595 | — | 0 / 1 / 0 | 0 min |  |
+| 22 | AC | BRASILÉIA (1058) | 6 | 55 | — | 1198 | 2297096 | 892555793640862437632401 | — | 0 / 6 / 0 | 0 min |  |
+| 23 | AC | BRASILÉIA (1058) | 6 | 56 | — | 1198 | 2257024 | 508616515801499550661442 | — | 0 / 5 / 0 | 0 min |  |
+| 24 | AC | BRASILÉIA (1058) | 6 | 87 | — | 1120 | 2258151 | 468212797697484523613951 | — | 0 / 1 / 0 | 0 min |  |
+| 25 | AC | BRASILÉIA (1058) | 6 | 99 | — | 1074 | 2272368 | 922858547843218629765725 | — | 0 / 1 / 0 | 0 min |  |
+| 26 | AC | BRASILÉIA (1058) | 6 | 112 | — | 1198 | 2286347 | 235989612574766094699318 | — | 0 / 5 / 0 | 0 min |  |
+| 27 | AC | BRASILÉIA (1058) | 6 | 117 | — | 2224 | 2289947 | 771343704828643823952564 | — | 0 / 3 / 0 | 0 min |  |
+| 28 | AC | BRASILÉIA (1058) | 6 | 126 | — | 1040 | 2258695 | 902656793541126965703420 | — | 0 / 2 / 0 | 0 min |  |
+| 29 | AC | BRASILÉIA (1058) | 6 | 133 | — | 1040 | 2269877 | 124878758763333504711107 | — | 0 / 2 / 0 | 0 min |  |
+| 30 | AC | BRASILÉIA (1058) | 6 | 137 | — | 1198 | 2273839 | 821848898833947630881743 | — | 0 / 5 / 0 | 0 min |  |
+| 31 | AC | PORTO WALTER (1066) | 4 | 164 | — | 1058 | 2256144 | 427186377048994544002524 | — | 0 / 4 / 0 | 0 min |  |
+| 32 | AC | PORTO WALTER (1066) | 4 | 245 | — | 1058 | 2267872 | 63550071812792329926388 | — | 0 / 4 / 0 | 0 min |  |
+| 33 | AC | PORTO WALTER (1066) | 4 | 311 | — | 1090 | 2261308 | 710015167177657300777466 | — | 0 / 1 / 0 | 0 min |  |
+| 34 | AC | PORTO WALTER (1066) | 4 | 313 | — | 1139 | 2256655 | 245368910730890191925743 | — | 0 / 1 / 0 | 0 min |  |
+| 35 | AC | PORTO WALTER (1066) | 4 | 314 | — | 1082 | 2280822 | 23146801808847252321750 | — | 0 / 1 / 0 | 0 min |  |
+| 36 | AC | PORTO WALTER (1066) | 4 | 321 | — | 1112 | 2271874 | 912035437815164083162479 | — | 0 / 1 / 0 | 0 min |  |
+| 37 | AC | PORTO WALTER (1066) | 4 | 325 | — | 1147 | 2264624 | 396883357363751480809187 | — | 0 / 2 / 0 | 0 min |  |
+| 38 | AC | PORTO WALTER (1066) | 4 | 361 | — | 1031 | 2256274 | 710015513995234188108725 | — | 1 / 0 / 0 | 1 min |  |
+| 39 | AC | PORTO WALTER (1066) | 4 | 467 | — | 1120 | 2278602 | 891833443013696317304327 | — | 0 / 1 / 0 | 0 min |  |
+| 40 | AC | PORTO WALTER (1066) | 4 | 498 | — | 1090 | 2259022 | 710015587995344855374503 | — | 0 / 2 / 0 | 0 min |  |
+| 41 | AC | CRUZEIRO DO SUL (1074) | 4 | 55 | — | 1520 | 2277537 | 436587334688286099199991 | — | 0 / 1 / 0 | 0 min |  |
+| 42 | AC | CRUZEIRO DO SUL (1074) | 4 | 110 | — | 1520 | 2254463 | 416385578595404234243057 | — | 1 / 1 / 0 | 1 min |  |
+| 43 | AC | CRUZEIRO DO SUL (1074) | 4 | 120 | — | 1597 | 2259386 | 173961404871534982499110 | — | 0 / 1 / 0 | 0 min |  |
+| 44 | AC | CRUZEIRO DO SUL (1074) | 4 | 123 | — | 1155 | 2293921 | 244668807678835615548486 | — | 0 / 6 / 0 | 0 min |  |
+| 45 | AC | CRUZEIRO DO SUL (1074) | 4 | 136 | — | 1791 | 2313663 | 931537890569487799249247 | — | 1 / 0 / 0 | 0 min |  |
+| 46 | AC | CRUZEIRO DO SUL (1074) | 4 | 165 | — | 2224 | 2264645 | 901234965566675128574821 | — | 0 / 9 / 0 | 0 min |  |
+| 47 | AC | CRUZEIRO DO SUL (1074) | 4 | 214 | — | 1597 | 2266692 | 83052771980938828291600 | — | 0 / 1 / 0 | 0 min |  |
+| 48 | AC | CRUZEIRO DO SUL (1074) | 4 | 285 | — | 2224 | 2274683 | 881032179016819085172755 | — | 0 / 10 / 0 | 0 min |  |
+| 49 | AC | CRUZEIRO DO SUL (1074) | 4 | 319 | — | 2330 | 2268076 | 426486754370102409305671 | — | 1 / 0 / 0 | 1 min |  |
+| 50 | AC | CRUZEIRO DO SUL (1074) | 4 | 322 | — | 1392 | 2261289 | 901234538018030982161361 | — | 1 / 0 / 0 | 0 min |  |
+| 51 | AC | CRUZEIRO DO SUL (1074) | 4 | 333 | — | 1198 | 2264646 | 810325625593477350569087 | — | 0 / 1 / 0 | 0 min |  |
+| 52 | AC | CRUZEIRO DO SUL (1074) | 4 | 355 | — | 1422 | 2272246 | 881032052700502453622193 | — | 1 / 1 / 0 | 1 min |  |
+| 53 | AC | CRUZEIRO DO SUL (1074) | 4 | 410 | — | 1554 | 2266958 | 850729282753657710079395 | — | 0 / 1 / 0 | 0 min |  |
+| 54 | AC | CRUZEIRO DO SUL (1074) | 4 | 416 | — | 1392 | 2257509 | 941638036062303349349254 | — | 2 / 3 / 0 | 2 min |  |
+| 55 | AC | CRUZEIRO DO SUL (1074) | 4 | 419 | — | 1295 | 2258600 | 426486844310089731195878 | — | 1 / 1 / 0 | 1 min |  |
+| 56 | AC | CRUZEIRO DO SUL (1074) | 4 | 449 | — | 2267 | 2264147 | 254769887350059721157698 | — | 0 / 1 / 0 | 0 min |  |
+| 57 | AC | CRUZEIRO DO SUL (1074) | 4 | 452 | — | 2372 | 2264213 | 173961100342512659926244 | — | 0 / 2 / 0 | 0 min |  |
+| 58 | AC | CRUZEIRO DO SUL (1074) | 4 | 454 | — | 2330 | 2294152 | 830527983008596137046951 | — | 0 / 1 / 0 | 0 min |  |
+| 59 | AC | RODRIGUES ALVES (1082) | 4 | 241 | — | 1112 | 2278236 | 890433467134829370516660 | — | 1 / 0 / 0 | 0 min |  |
+| 60 | AC | RODRIGUES ALVES (1082) | 4 | 438 | — | 1228 | 2251203 | 890433342644974091242678 | — | 0 / 1 / 0 | 0 min |  |
+| 61 | AC | RODRIGUES ALVES (1082) | 4 | 455 | — | 1228 | 2278168 | 314675575786223633010385 | — | 0 / 1 / 0 | 0 min |  |
+| 62 | AC | RODRIGUES ALVES (1082) | 4 | 475 | — | 1279 | 2251320 | 435887838298789235937450 | — | 0 / 2 / 0 | 0 min |  |
+| 63 | AC | MÂNCIO LIMA (1090) | 4 | 177 | — | 1180 | 2259600 | 667410017644177548415139 | — | 0 / 3 / 0 | 0 min |  |
+| 64 | AC | MÂNCIO LIMA (1090) | 4 | 217 | — | 1090 | 2268458 | 950339972073944974393602 | — | 0 / 1 / 0 | 0 min |  |
+| 65 | AC | JORDÃO (1104) | 5 | 32 | — | 1112 | 2295777 | 954750386028807712326789 | — | 1 / 0 / 0 | 1 min |  |
+| 66 | AC | JORDÃO (1104) | 5 | 56 | 113 | 1066 | 2269515 | 409295411073256726665557 | — | 0 / 1 / 0 | 0 min |  |
+| 67 | AC | JORDÃO (1104) | 5 | 62 | — | 1066 | 2257027 | 500205148583982570455598 | — | 0 / 10 / 0 | 0 min |  |
+| 68 | AC | JORDÃO (1104) | 5 | 65 | — | 1074 | 2285723 | 641619612797794095077374 | — | 0 / 1 / 0 | 0 min |  |
+| 69 | AC | JORDÃO (1104) | 5 | 66 | — | 1074 | 2273044 | 86063162441442089701437 | — | 0 / 2 / 0 | 0 min |  |
+| 70 | AC | JORDÃO (1104) | 5 | 125 | — | 1074 | 2256855 | 409295183773983336884034 | — | 0 / 3 / 0 | 0 min |  |
+| 71 | AC | EPITACIOLÂNDIA (1112) | 6 | 50 | — | 1031 | 2256272 | 24768375234475976231588 | — | 1 / 0 / 0 | 1 min |  |
+| 72 | AC | EPITACIOLÂNDIA (1112) | 6 | 69 | — | 1317 | 2269475 | 832849241215253469673147 | — | 1 / 0 / 0 | 1 min |  |
+| 73 | AC | EPITACIOLÂNDIA (1112) | 6 | 125 | — | 1287 | 2283656 | 469112244499259200607752 | — | 0 / 1 / 0 | 0 min |  |
+| 74 | AC | EPITACIOLÂNDIA (1112) | 6 | 134 | — | 1309 | 2256570 | 903556644343351574049867 | — | 0 / 1 / 0 | 0 min |  |
+| 75 | AC | ACRELÂNDIA (1120) | 8 | 85 | 237 | 1031 | 2038262 | 923080031356057849984890 | — | 1 / 0 / 0 | 1 min |  |
+| 76 | AC | ACRELÂNDIA (1120) | 8 | 94 | — | 1066 | 2048179 | 498737564813829025298773 | — | 1 / 0 / 0 | 0 min |  |
+| 77 | AC | ACRELÂNDIA (1120) | 8 | 132 | — | 1040 | 2046294 | 761464284140103187812844 | — | 2 / 0 / 0 | 0 min |  |
+| 78 | AC | ACRELÂNDIA (1120) | 8 | 233 | — | 1015 | 2044884 | 195707919728707626773700 | — | 2 / 0 / 0 | 6 min |  |
+| 79 | AC | ACRELÂNDIA (1120) | 8 | 272 | — | 1074 | 2046554 | 549242439663910095049102 | — | 0 / 1 / 0 | 0 min |  |
+| 80 | AC | FEIJÓ (1139) | 7 | 2 | — | 1031 | 2297114 | 508027729891306248742149 | — | 1 / 0 / 0 | 1 min |  |
+| 81 | AC | FEIJÓ (1139) | 7 | 23 | — | 1031 | 2251107 | 881865355429268732782256 | — | 0 / 6 / 0 | 0 min |  |
+| 82 | AC | FEIJÓ (1139) | 7 | 26 | — | 1112 | 2256086 | 467623262987838966782041 | — | 1 / 1 / 0 | 1 min |  |
+| 83 | AC | FEIJÓ (1139) | 7 | 36 | — | 1040 | 2257013 | 750552626306420139771126 | — | 0 / 1 / 0 | 0 min |  |
+| 84 | AC | FEIJÓ (1139) | 7 | 55 | 52 | 1228 | 2285878 | 588835482889230705669500 | — | 0 / 9 / 0 | 0 min |  |
+| 85 | AC | FEIJÓ (1139) | 7 | 66 | — | 1228 | 2261681 | 528229609899633591485254 | — | 0 / 4 / 0 | 0 min |  |
+| 86 | AC | FEIJÓ (1139) | 7 | 67 | 93 | 1341 | 2264378 | 13178200548545791070268 | — | 0 / 3 / 0 | 0 min |  |
+| 87 | AC | FEIJÓ (1139) | 7 | 68 | — | 1279 | 2256769 | 336310637080094778812919 | — | 0 / 1 / 0 | 0 min |  |
+| 88 | AC | FEIJÓ (1139) | 7 | 69 | 92 | 1341 | 2276053 | 861663273133295800554056 | — | 0 / 2 / 0 | 0 min |  |
+| 89 | AC | FEIJÓ (1139) | 7 | 76 | — | 1279 | 2277706 | 609037753507071379215572 | — | 0 / 2 / 0 | 0 min |  |
+| 90 | AC | FEIJÓ (1139) | 7 | 81 | — | 1171 | 2257516 | 265603937673936393067201 | — | 0 / 1 / 0 | 0 min |  |
+| 91 | AC | RIO BRANCO (1392) | 1 | 66 | — | 1260 | 2048081 | 378448456802800524496365 | — | 0 / 4 / 0 | 0 min |  |
+| 92 | AC | RIO BRANCO (1392) | 1 | 75 | — | 1260 | 2046390 | 115822154776217654545541 | — | 0 / 3 / 0 | 0 min |  |
+| 93 | AC | RIO BRANCO (1392) | 1 | 76 | — | 1260 | 2046438 | 529963670117044151635124 | — | 0 / 3 / 0 | 0 min |  |
+| 94 | AC | RIO BRANCO (1392) | 1 | 95 | — | 1961 | 2039516 | 499660678114905398230728 | — | 1 / 0 / 0 | 1 min |  |
+| 95 | AC | RIO BRANCO (1392) | 1 | 172 | — | 1490 | 2048021 | 600771402579214177397864 | — | 0 / 1 / 0 | 0 min |  |
+| 96 | AC | RIO BRANCO (1392) | 1 | 178 | 179 | 1589 | 2042625 | 822993287101262987238781 | — | 1 / 0 / 0 | 0 min |  |
+| 97 | AC | RIO BRANCO (1392) | 1 | 182 | — | 1643 | 2045061 | 772488645996026502436031 | — | 2 / 0 / 0 | 1 min |  |
+| 98 | AC | RIO BRANCO (1392) | 1 | 183 | — | 1643 | 2048122 | 529963503371098799072628 | — | 2 / 0 / 0 | 1 min |  |
+| 99 | AC | RIO BRANCO (1392) | 1 | 268 | — | 1929 | 2045019 | 4711489958510199611435 | — | 0 / 3 / 0 | 0 min |  |
+| 100 | AC | RIO BRANCO (1392) | 1 | 271 | — | 1139 | 2048013 | 216832999379952826779408 | — | 0 / 1 / 0 | 0 min |  |
+
+Mostrando 100 de 80.036 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.6 🔴 L06 — Cambio de urna
+
+**Objetivo.** Verifica los cambios de urna durante la votación y si los votos de las dos urnas suman lo que dice el boletín.
+
+**Método.** Identifica en el log la urna original y la de contingencia (número y hora de cada una) y suma los votos registrados en cada una.
+
+**Criterio de señalización.** Informativo: cambio de urna registrado. Anomalía estadística: voto grabado en la urna anterior después del primer voto de la urna nueva. La suma de los votos de las urnas comparada con el boletín está en la prueba L14.
+
+**Limitaciones y explicaciones alternativas.** El log no dice el motivo del cambio; el acta de la mesa lo registra.
+
+> 📊 **Resultado:** 🔴 **55 anomalía(s)** en 499.176 unidades analizadas (0,011%) · 🟡 2.046 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Cambio de urna (informativo) | 2.046 |
+| 🔴 Voto en la urna anterior después del cambio | 55 |
+
+*Observado: votos en la urna anterior después del cambio, o urnas con votos. Referencia: números de las urnas en el log.*
+
+#### 🔴 Urnas con anomalía — lista completa (55)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | BA | AMARGOSA (33197) | 36 | 3 | — | 1015 | 2212056 | 235210239348604937384540 | — | 200 | 2212056;2154663 |  |
+| 2 | BA | SÁTIRO DIAS (38938) | 44 | 158 | 165 | 1295 | 2231478 | 310403318222773894514961 | — | 98 | 2231478;2246331 |  |
+| 3 | BA | VITÓRIA DA CONQUISTA (39659) | 41 | 169 | — | 1724 | 2051935 | 90129093200183087388199 | — | 207 | 2051935;2155361 |  |
+| 4 | PA | BARCARENA (4251) | 65 | 34 | — | 1210 | 2398947 | 425639422276387174295306 | — | 76 | 2398947;2285262 |  |
+| 5 | PR | CAMBÉ (74713) | 78 | 261 | — | 1481 | 1673448 | 828219828150329917696059 | — | 18 | 1653959;1673448 |  |
+| 6 | PR | CORUMBATAÍ DO SUL (75280) | 133 | 30 | — | 1066 | 2021395 | 598322597392714970066720 | — | 217 | 2021395;2075828 |  |
+| 7 | PR | CURITIBA (75353) | 178 | 671 | — | 2194 | 2327179 | 204566200926361865369193 | — | 242 | 2327179;2274234 |  |
+| 8 | RJ | RIO DE JANEIRO (60011) | 214 | 24 | — | 1074 | 1671769 | 705639700369045687973182 | — | 5 | 1769516;1671769 |  |
+| 9 | SC | ABELARDO LUZ (80012) | 71 | 50 | — | 1333 | 2180030 | 336693337979783756063612 | — | 211 | 2180030;2192087 |  |
+| 10 | SC | BLUMENAU (80470) | 88 | 22 | — | 1058 | 2370331 | 807324805960816694142578 | — | 264 | 2370331;2460303 |  |
+| 11 | SC | BLUMENAU (80470) | 88 | 32 | — | 1066 | 2367504 | 484192488728341112849009 | — | 318 | 2367504;2438318 |  |
+| 12 | SC | ARABUTÃ (80489) | 90 | 29 | — | 1058 | 2177622 | 555018550238761862962095 | — | 23 | 2177622;2000391 |  |
+| 13 | SC | BRUSQUE (80551) | 86 | 69 | — | 1481 | 2191675 | 493671494647436759595962 | — | 12 | 2191675;2179626 |  |
+| 14 | SC | RIQUEZA (80560) | 41 | 137 | — | 1040 | 2048486 | 56344050929355177404891 | — | 116 | 2048486;2182505 |  |
+| 15 | SC | SANGÃO (81000) | 33 | 50 | — | 1023 | 2190970 | 815135814580993805030843 | — | 195 | 2190970;2181402 |  |
+| 16 | SC | ERVAL VELHO (81019) | 85 | 157 | — | 1015 | 2180529 | 2711005173716205664034 | — | 170 | 2180529;2022410 |  |
+| 17 | SC | GASPAR (81175) | 64 | 29 | — | 1120 | 1699625 | 239409236318567189826137 | — | 32 | 1699625;1769522 |  |
+| 18 | SC | GASPAR (81175) | 64 | 105 | — | 1228 | 1678454 | 265212264552229499209776 | — | 284 | 1678454;1845544 |  |
+| 19 | SC | GASPAR (81175) | 64 | 121 | — | 1120 | 1678015 | 411227419736140508484809 | — | 281 | 1678015;1801681 |  |
+| 20 | SC | GASPAR (81175) | 64 | 132 | — | 1210 | 1680667 | 411227415136511159279030 | — | 307 | 1680667;1829394 |  |
+| 21 | SC | GASPAR (81175) | 64 | 139 | — | 1376 | 1776208 | 239409239818136291921529 | — | 258 | 1776208;1662848 |  |
+| 22 | SC | GUABIRUBA (81230) | 5 | 164 | — | 1171 | 2022308 | 256980257626912972371443 | — | 241 | 2022308;2189969 |  |
+| 23 | SC | IMBITUBA (81434) | 73 | 63 | — | 1058 | 1681275 | 979179978188014896842135 | — | 269 | 1681275;1778025 |  |
+| 24 | SC | ITAIÓPOLIS (81590) | 38 | 1 | — | 1015 | 1782561 | 498358492318263706345727 | — | 223 | 1782561;1846012 |  |
+| 25 | SC | FLOR DO SERTÃO (81604) | 58 | 73 | — | 1058 | 2172583 | 488171481835714827123473 | — | 196 | 2172583;2192117 |  |
+| 26 | SC | ITAJAÍ (81612) | 97 | 27 | — | 1112 | 2469445 | 421082425235513335124235 | — | 174 | 2469445;2459642 |  |
+| 27 | SC | LAGES (81833) | 104 | 39 | — | 1066 | 2443265 | 395292398112252453860491 | — | 128 | 2443265;2454650 |  |
+| 28 | SC | LAGUNA (81850) | 20 | 60 | — | 1244 | 2190130 | 61420067090280807259765 | — | 151 | 2190130;2190925 |  |
+| 29 | SC | LAURO MÜLLER (81892) | 23 | 22 | — | 1058 | 1664003 | 502097503042552767059775 | — | 113 | 1664003;1680788 |  |
+| 30 | SC | PALMITOS (82376) | 41 | 42 | — | 1058 | 2003550 | 106849104534050510535142 | — | 21 | 2003550;2191781 |  |
+| 31 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 62 | — | 1155 | 1680318 | 35533034614063625385101 | — | 116 | 1674913;1680318;1681056 |  |
+| 32 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 74 | — | 1163 | 1679944 | 187048187068212336254474 | — | 202 | 1679944;1829329 |  |
+| 33 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 143 | — | 1180 | 1677842 | 298159293879251148270791 | — | 186 | 1677842;1677360 |  |
+| 34 | SC | RIO DO SUL (82910) | 26 | 97 | — | 1015 | 2003314 | 725252728578650996818927 | — | 98 | 2003314;2013431 |  |
+| 35 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 76 | — | 1139 | 1651603 | 448935442851303722017882 | — | 145 | 1651603;1806154 |  |
+| 36 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 177 | — | 1430 | 1681481 | 722963724581368495852589 | — | 181 | 1681481;1681382 |  |
+| 37 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 244 | — | 1414 | 1678819 | 712862711968865261491896 | — | 189 | 1678819;1660831 |  |
+| 38 | SC | SÃO JOAQUIM (83259) | 28 | 5 | — | 1023 | 1660109 | 16603010614514773961463 | — | 227 | 1660109;1674213 |  |
+| 39 | SC | SÃO JOSÉ (83275) | 84 | 255 | — | 1317 | 2250011 | 692069697651811143210706 | — | 38 | 2250011;2397851 |  |
+| 40 | SC | SCHROEDER (83437) | 17 | 311 | — | 1015 | 2454467 | 537237534733543943025100 | — | 115 | 2454467;2368653 |  |
+| 41 | SC | TANGARÁ (83534) | 47 | 42 | — | 1015 | 1803918 | 416046417914473299458369 | — | 225 | 1803918;1679723 |  |
+| 42 | SC | URUSSANGA (83739) | 34 | 69 | — | 1058 | 1680270 | 502815508048243790642566 | — | 12 | 1680270;1821965 |  |
+| 43 | SC | URUSSANGA (83739) | 34 | 82 | — | 1112 | 1678602 | 805845804078571515566109 | — | 121 | 1678602;1838314 |  |
+| 44 | SP | GUARULHOS (64777) | 185 | 235 | — | 1287 | 2330646 | 443564445677101318208761 | — | 50 | 2330646;2127069 |  |
+| 45 | SP | GUARULHOS (64777) | 185 | 388 | — | 1473 | 1803354 | 948514949809220840773077 | — | 244 | 1803354;1803198 |  |
+| 46 | SP | GUARULHOS (64777) | 393 | 155 | — | 1198 | 2463274 | 847507845083754032839769 | — | 34 | 2463274;2147043 |  |
+| 47 | SP | RIBEIRÃO PIRES (69671) | 183 | 307 | — | 1325 | 2013654 | 401538402997640320427804 | — | 240 | 2013654;2136488 |  |
+| 48 | SP | SANTO ANTÔNIO DO JARDIM (70637) | 91 | 55 | — | 1015 | 1668896 | 637837636160934704377526 | — | 191 | 1668896;1782675 |  |
+| 49 | SP | SÃO PAULO (71072) | 258 | 558 | — | 1481 | 2010001 | 563797569486978948105014 | — | 167 | 2010001;2056517 |  |
+| 50 | SP | SÃO PAULO (71072) | 350 | 463 | — | 2216 | 1829376 | 775839779713365896768888 | — | 224 | 1829376;1831846 |  |
+| 51 | SP | SÃO PAULO (71072) | 381 | 607 | — | 1422 | 2077389 | 775871772550812899807800 | — | 219 | 2077389;2055972 |  |
+| 52 | SP | SUMARÉ (71498) | 362 | 140 | — | 1970 | 1677292 | 675258678932765812699922 | — | 210 | 1677292;1783759 |  |
+| 53 | SP | TABOÃO DA SERRA (71579) | 324 | 131 | — | 1147 | 2131520 | 836268830729569004042399 | — | 31 | 2131520;2386995 |  |
+| 54 | SP | TABOÃO DA SERRA (71579) | 324 | 204 | — | 1104 | 1833848 | 664551666301838695114246 | — | 135 | 1833848;1670183 |  |
+| 55 | SP | TABOÃO DA SERRA (71579) | 324 | 237 | — | 1244 | 2137808 | 391824398885783817842042 | — | 183 | 2137808;2124305 |  |
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (2.046)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | PORTO ACRE (1023) | 1 | 797 | — | 1082 | 2047027 | 913802910118455869967967 | — | 2 | 2272699;2047027 |  |
+| 2 | AC | CRUZEIRO DO SUL (1074) | 4 | 198 | — | 2135 | 2275208 | 335577337345173306400454 | — | 2 | 2256951;2275208 |  |
+| 3 | AC | CRUZEIRO DO SUL (1074) | 4 | 308 | — | 2313 | 2264651 | 354379357524668345293968 | — | 2 | 2283796;2264651 |  |
+| 4 | AC | RODRIGUES ALVES (1082) | 4 | 349 | — | 1074 | 2277475 | 52749052777487185146769 | — | 2 | 2261917;2277475 |  |
+| 5 | AC | ACRELÂNDIA (1120) | 8 | 205 | — | 1040 | 2047973 | 671655675974114948376730 | — | 2 | 2019031;2047973 |  |
+| 6 | AC | RIO BRANCO (1392) | 9 | 104 | — | 1627 | 2269815 | 580557584955218400447834 | — | 2 | 2044904;2269815 |  |
+| 7 | AL | ÁGUA BRANCA (27014) | 39 | 127 | — | 1279 | 1673934 | 43624049162054757069157 | — | 2 | 1671992;1673934 |  |
+| 8 | AL | ANADIA (27030) | 48 | 102 | — | 1058 | 2445386 | 314947312937611049545186 | — | 2 | 2073271;2445386 |  |
+| 9 | AL | ARAPIRACA (27057) | 22 | 582 | — | 1864 | 2032662 | 192255191468750533153413 | — | 2 | 2071813;2032662 |  |
+| 10 | AL | ARAPIRACA (27057) | 55 | 116 | — | 1074 | 2069734 | 151805159805713427338788 | — | 2 | 2070351;2069734 |  |
+| 11 | AL | ARAPIRACA (27057) | 55 | 122 | 123 | 1082 | 2036691 | 303320308533585779603720 | — | 2 | 2038494;2036691 |  |
+| 12 | AL | ATALAIA (27073) | 6 | 10 | — | 1082 | 2448755 | 514017516227270244818576 | — | 2 | 2072722;2448755 |  |
+| 13 | AL | BELÉM (27154) | 28 | 89 | — | 1023 | 2457355 | 563958564147452559838283 | — | 2 | 2031543;2457355 |  |
+| 14 | AL | CAJUEIRO (27251) | 5 | 118 | — | 1015 | 2448806 | 551810552759625606127557 | — | 2 | 2444370;2448806 |  |
+| 15 | AL | CAMPO ALEGRE (27278) | 47 | 68 | — | 1104 | 2067306 | 378542375933324253994786 | — | 2 | 2030839;2067306 |  |
+| 16 | AL | CANAPI (27316) | 27 | 112 | — | 1147 | 1673335 | 694060692341006334311533 | — | 2 | 1673247;1673335 |  |
+| 17 | AL | CANAPI (27316) | 27 | 165 | — | 1163 | 1674026 | 380929387812966506706221 | — | 2 | 1676791;1674026 |  |
+| 18 | AL | CORURIPE (27456) | 7 | 80 | — | 1350 | 2073858 | 52782051024905063213694 | — | 2 | 2072535;2073858 |  |
+| 19 | AL | CORURIPE (27456) | 7 | 148 | — | 1180 | 2449366 | 22479021402882267596362 | — | 2 | 2073419;2449366 |  |
+| 20 | AL | DELMIRO GOUVEIA (27472) | 40 | 19 | — | 1040 | 1670216 | 354363354282544022225625 | — | 2 | 1661985;1670216 |  |
+| 21 | AL | FEIRA GRANDE (27510) | 49 | 122 | — | 1082 | 2072189 | 498076493857604130252000 | — | 2 | 2071409;2072189 |  |
+| 22 | AL | IGACI (27618) | 45 | 15 | — | 1325 | 1650792 | 556538552720879792149808 | — | 2 | 1673910;1650792 |  |
+| 23 | AL | IGACI (27618) | 45 | 29 | — | 1325 | 1671871 | 206203209987853284856667 | — | 2 | 1842119;1671871 |  |
+| 24 | AL | IGACI (27618) | 45 | 166 | — | 1201 | 1667990 | 963879963838352230923851 | — | 2 | 1670554;1667990 |  |
+| 25 | AL | IGREJA NOVA (27634) | 37 | 157 | — | 1236 | 2438364 | 716769714564443225990852 | — | 2 | 2067430;2438364 |  |
+| 26 | AL | MACEIÓ (27855) | 1 | 389 | — | 1724 | 2073316 | 196030192782370059002095 | — | 2 | 2070272;2073316 |  |
+| 27 | AL | MACEIÓ (27855) | 1 | 445 | — | 1970 | 2069479 | 539464530416346558815479 | — | 2 | 2034141;2069479 |  |
+| 28 | AL | MACEIÓ (27855) | 3 | 60 | — | 1880 | 2473656 | 529385525326134322084505 | — | 2 | 2053186;2473656 |  |
+| 29 | AL | MACEIÓ (27855) | 3 | 89 | — | 1198 | 2073312 | 792012795186408805243478 | — | 2 | 2038326;2073312 |  |
+| 30 | AL | MACEIÓ (27855) | 3 | 367 | — | 1457 | 2470882 | 670800675292690106742816 | — | 2 | 2442599;2470882 |  |
+| 31 | AL | MACEIÓ (27855) | 3 | 376 | — | 1511 | 2442208 | 377870373144607569577678 | — | 2 | 2070485;2442208 |  |
+| 32 | AL | MACEIÓ (27855) | 33 | 211 | — | 1201 | 2036931 | 963750960614334327857423 | — | 2 | 2074265;2036931 |  |
+| 33 | AL | MACEIÓ (27855) | 54 | 12 | — | 1015 | 2447519 | 236402230337428461120125 | — | 2 | 2072392;2447519 |  |
+| 34 | AL | MACEIÓ (27855) | 54 | 337 | — | 1376 | 2072682 | 741553743563060848237711 | — | 2 | 2038503;2072682 |  |
+| 35 | AL | MARAGOGI (27898) | 14 | 124 | — | 1015 | 2070247 | 445695446043194249370812 | — | 2 | 2037457;2070247 |  |
+| 36 | AL | MARAVILHA (27910) | 50 | 14 | — | 1023 | 1670000 | 702905709899583405930990 | — | 2 | 1671869;1670000 |  |
+| 37 | AL | MARAVILHA (27910) | 50 | 89 | — | 1074 | 1668115 | 16036015330477295933259 | — | 2 | 1768591;1668115 |  |
+| 38 | AL | MARIBONDO (27952) | 48 | 154 | — | 1015 | 2074094 | 2116006659017092286754 | — | 2 | 2443248;2074094 |  |
+| 39 | AL | MAR VERMELHO (27979) | 5 | 18 | — | 1031 | 2437604 | 504905507030081283762763 | — | 2 | 2443845;2437604 |  |
+| 40 | AL | OLHO D'ÁGUA DAS FLORES (28134) | 11 | 97 | — | 1104 | 1671233 | 390957395092411911567188 | — | 2 | 1813842;1671233 |  |
+| 41 | AL | OLIVENÇA (28193) | 19 | 148 | — | 1236 | 1676562 | 426948424388214525416634 | — | 2 | 1768645;1676562 |  |
+| 42 | AL | PALESTINA (28231) | 11 | 86 | — | 1112 | 1673042 | 744492749127134731491216 | — | 2 | 1659028;1673042 |  |
+| 43 | AL | PALMEIRA DOS ÍNDIOS (28258) | 10 | 72 | — | 1139 | 1665459 | 286335285401171901638357 | — | 2 | 1672946;1665459 |  |
+| 44 | AL | PALMEIRA DOS ÍNDIOS (28258) | 10 | 178 | — | 1082 | 1671562 | 902597904694959707768178 | — | 2 | 1820031;1671562 |  |
+| 45 | AL | PALMEIRA DOS ÍNDIOS (28258) | 10 | 217 | — | 1074 | 1669629 | 74214075011235039098905 | — | 2 | 1664857;1669629 |  |
+| 46 | AL | PALMEIRA DOS ÍNDIOS (28258) | 10 | 237 | — | 1309 | 1664818 | 43911049665952872627575 | — | 2 | 1671159;1664818 |  |
+| 47 | AL | PALMEIRA DOS ÍNDIOS (28258) | 10 | 326 | — | 1333 | 1666755 | 639870638312476364111437 | — | 2 | 1669742;1666755 |  |
+| 48 | AL | PENEDO (28339) | 13 | 26 | — | 1015 | 2472102 | 194859198563581997435632 | — | 2 | 2448961;2472102 |  |
+| 49 | AL | PENEDO (28339) | 13 | 181 | — | 1449 | 2438080 | 962536963539592114494457 | — | 2 | 2455691;2438080 |  |
+| 50 | AL | PORTO DE PEDRAS (28479) | 12 | 151 | — | 1023 | 2072469 | 634392635138373947811608 | — | 2 | 2038254;2072469 |  |
+| 51 | AL | PORTO REAL DO COLÉGIO (28495) | 37 | 183 | — | 1228 | 2438543 | 764274763337161048179485 | — | 2 | 2033003;2438543 |  |
+| 52 | AL | SANTANA DO IPANEMA (28592) | 19 | 222 | — | 1260 | 1673098 | 247030245078947127143721 | — | 2 | 1670581;1673098 |  |
+| 53 | AL | SÃO JOSÉ DA LAJE (28657) | 16 | 31 | — | 1104 | 2436253 | 813554811006048028532672 | — | 2 | 2038347;2436253 |  |
+| 54 | AL | SATUBA (28770) | 8 | 120 | — | 1040 | 2474154 | 123200126976931303579335 | — | 2 | 2071645;2474154 |  |
+| 55 | AL | TAQUARANA (28819) | 45 | 174 | 172 | 1066 | 1675293 | 556538556820368598646968 | — | 2 | 1670138;1675293 |  |
+| 56 | AL | TRAIPU (28835) | 20 | 83 | — | 1376 | 2473502 | 407454404347896229570078 | — | 2 | 2036715;2473502 |  |
+| 57 | AM | GUAJARÁ (2020) | 45 | 16 | — | 1031 | 2037939 | 620245625343747811402982 | — | 2 | 2082500;2037939 |  |
+| 58 | AM | COARI (2259) | 8 | 174 | — | 1562 | 2036568 | 936181937104030106002667 | — | 2 | 2037727;2036568 |  |
+| 59 | AM | FONTE BOA (2330) | 10 | 47 | — | 1031 | 2040392 | 128419121273796707784412 | — | 2 | 2090856;2040392 |  |
+| 60 | AM | IPIXUNA (2399) | 45 | 63 | — | 1139 | 2018717 | 900973901415646241309326 | — | 2 | 2018634;2018717 |  |
+| 61 | AM | JUTAÍ (2496) | 41 | 11 | — | 1066 | 2085065 | 100949107257064807379064 | — | 2 | 2018400;2085065 |  |
+| 62 | AM | LÁBREA (2518) | 12 | 73 | — | 2860 | 2017028 | 336962331942907842194209 | — | 2 | 2017285;2017028 |  |
+| 63 | AM | MANACAPURU (2534) | 6 | 307 | — | 1880 | 2356008 | 103276103095936688861037 | — | 2 | 2470225;2356008 |  |
+| 64 | AM | MANAUS (2550) | 1 | 729 | — | 2194 | 1839553 | 627073625868018300087865 | — | 2 | 1844054;1839553 |  |
+| 65 | AM | MANAUS (2550) | 1 | 744 | — | 2062 | 1788722 | 980609980528184544524313 | — | 2 | 1789020;1788722 |  |
+| 66 | AM | MANAUS (2550) | 1 | 945 | — | 2283 | 1788728 | 960407965717357225458543 | — | 2 | 1789415;1788728 |  |
+| 67 | AM | MANAUS (2550) | 31 | 739 | — | 1988 | 1806286 | 596791593416395979629596 | — | 2 | 1810303;1806286 |  |
+| 68 | AM | MANAUS (2550) | 32 | 739 | — | 2216 | 2039160 | 596770596449481895903157 | — | 2 | 2039234;2039160 |  |
+| 69 | AM | MANAUS (2550) | 32 | 797 | — | 2178 | 2040250 | 647207649577884707524728 | — | 2 | 2018177;2040250 |  |
+| 70 | AM | MANAUS (2550) | 37 | 654 | — | 1783 | 1787126 | 10999019354231225164591 | — | 2 | 1808971;1787126 |  |
+| 71 | AM | MANAUS (2550) | 37 | 657 | — | 1945 | 1789394 | 394750392245062239949459 | — | 2 | 1798764;1789394 |  |
+| 72 | AM | MANAUS (2550) | 62 | 633 | — | 1970 | 2028081 | 384649384728211390061738 | — | 2 | 2079640;2028081 |  |
+| 73 | AM | MANAUS (2550) | 63 | 590 | — | 1945 | 1788916 | 202895206663493910349502 | — | 2 | 1787517;1788916 |  |
+| 74 | AM | MANAUS (2550) | 63 | 597 | — | 2062 | 1789728 | 455320451512676019796908 | — | 2 | 1789826;1789728 |  |
+| 75 | AM | MANAUS (2550) | 63 | 649 | — | 1953 | 1787017 | 990774998252283207768462 | — | 2 | 1785395;1787017 |  |
+| 76 | AM | MANAUS (2550) | 65 | 424 | — | 1597 | 1810108 | 647261641916607371169427 | — | 2 | 1797527;1810108 |  |
+| 77 | AM | MANAUS (2550) | 65 | 677 | — | 1830 | 1786498 | 394736393821195065877650 | — | 2 | 1766619;1786498 |  |
+| 78 | AM | MANAUS (2550) | 70 | 680 | — | 1830 | 1798400 | 71556076475310766380256 | — | 2 | 1806989;1798400 |  |
+| 79 | AM | MANICORÉ (2577) | 16 | 116 | — | 1449 | 2313525 | 59878058416720160601659 | — | 2 | 2362346;2313525 |  |
+| 80 | AM | MAUÉS (2615) | 5 | 21 | — | 1074 | 2344463 | 860241862681471540596880 | — | 2 | 2340710;2344463 |  |
+| 81 | AM | TEFÉ (2810) | 9 | 128 | — | 1171 | 2357611 | 129711123179329875401395 | — | 2 | 2454584;2357611 |  |
+| 82 | AM | SÃO GABRIEL DA CACHOEIRA (2836) | 19 | 69 | — | 1554 | 2358801 | 521358528318286372728965 | — | 2 | 2470163;2358801 |  |
+| 83 | AM | AMATURÁ (2917) | 22 | 64 | — | 1058 | 2340752 | 136849131844816691193027 | — | 2 | 2345688;2340752 |  |
+| 84 | AM | BERURI (2950) | 54 | 16 | — | 1031 | 2390486 | 660245667448124999254644 | — | 2 | 2454992;2390486 |  |
+| 85 | AM | PRESIDENTE FIGUEIREDO (98418) | 51 | 68 | — | 1139 | 2357891 | 513397517206450980354596 | — | 2 | 2356472;2357891 |  |
+| 86 | AP | AMAPÁ (6017) | 1 | 35 | — | 1104 | 2015995 | 53316058643242636870873 | — | 2 | 2015761;2015995 |  |
+| 87 | AP | MAZAGÃO (6076) | 5 | 66 | — | 1015 | 2244699 | 766131761010421398065397 | — | 2 | 2031153;2244699 |  |
+| 88 | AP | SANTANA (6157) | 6 | 20 | — | 1058 | 2018219 | 906956909781725019290336 | — | 2 | 2017783;2018219 |  |
+| 89 | BA | JUSSARI (30694) | 28 | 413 | — | 1066 | 2179308 | 61608068295892919388793 | — | 2 | 2165493;2179308 |  |
+| 90 | BA | CAPELA DO ALTO ALEGRE (30813) | 196 | 148 | — | 1104 | 2103032 | 672705677001368555815684 | — | 2 | 2230729;2103032 |  |
+| 91 | BA | CAPIM GROSSO (30830) | 191 | 170 | — | 1066 | 2090533 | 325415324499089085709265 | — | 2 | 2238459;2090533 |  |
+| 92 | BA | DIAS D'ÁVILA (30872) | 186 | 31 | — | 1066 | 1661358 | 18532017586239036291124 | — | 2 | 1666572;1661358 |  |
+| 93 | BA | DIAS D'ÁVILA (30872) | 186 | 55 | — | 1309 | 1674221 | 665097667526118191719792 | — | 2 | 1658330;1674221 |  |
+| 94 | BA | DIAS D'ÁVILA (30872) | 186 | 122 | — | 1198 | 1656410 | 271158272687670926389734 | — | 2 | 1666200;1656410 |  |
+| 95 | BA | DIAS D'ÁVILA (30872) | 186 | 126 | — | 1210 | 1674774 | 553986558184172830770888 | — | 2 | 1671903;1674774 |  |
+| 96 | BA | DIAS D'ÁVILA (30872) | 186 | 163 | — | 1325 | 1667137 | 331764331668061758702168 | — | 2 | 1656282;1667137 |  |
+| 97 | BA | DIAS D'ÁVILA (30872) | 186 | 181 | 182 | 1180 | 1676688 | 644895644893261231853709 | — | 2 | 1655021;1680467;1676688 |  |
+| 98 | BA | ABAÍRA (33014) | 105 | 18 | — | 1155 | 2274519 | 41168047647816487218082 | — | 2 | 2388329;2274519 |  |
+| 99 | BA | ACAJUTIBA (33057) | 21 | 104 | — | 1074 | 2177582 | 680093687418051264478557 | — | 2 | 2239725;2177582 |  |
+| 100 | BA | ADUSTINA (33065) | 52 | 44 | — | 1015 | 2354912 | 188975184020727893789343 | — | 2 | 2310103;2354912 |  |
+
+Mostrando 100 de 2.046 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.7 🔴 L07 — Intentos repetidos (ya votó, no encontrado, impedido)
+
+**Objetivo.** Cuenta los intentos de habilitar electores que ya votaron, que no fueron encontrados en la sección o que están impedidos de votar.
+
+**Método.** Suma en el log los mensajes de elector que ya votó, título no encontrado y elector impedido, y compara la tasa de la sección con la del municipio y la de las secciones vecinas.
+
+**Criterio de señalización.** Anomalía estadística: tasa de intentos muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5 y prueba beta-binomial con tasa de falsos descubrimientos del 1 %), con 5 intentos o más. Informativo: 3 intentos o más seguidos con el mismo resultado, sin voto entre ellos.
+
+**Limitaciones y explicaciones alternativas.** Errores al digitar el número del título generan intentos. El log no muestra el nombre del elector.
+
+> 📊 **Resultado:** 🔴 **138 anomalía(s)** en 499.176 unidades analizadas (0,028%) · 🟡 37.785 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Intentos seguidos con el mismo resultado (informativo) | 37.785 |
+| 🔴 Intentos por encima del patrón | 138 |
+
+*Observado: intentos (mayor secuencia). Referencia: puntuación z; detalle: q.*
+
+#### 🔴 Urnas con anomalía — lista completa (138)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | BUJARI (1007) | 9 | 440 | — | 1023 | 2296935 | 27401662852912615149045 | — | 164 (2) | z = 41,1 | q = 2,4e-09 |
+| 2 | AC | RIO BRANCO (1392) | 1 | 463 | — | 2720 | 2048124 | 428953534163290792183661 | — | 67 (1) | z = 17,0 | q = 6,7e-07 |
+| 3 | AL | MACEIÓ (27855) | 2 | 243 | — | 1597 | 2037776 | 398061183309035234577974 | — | 133 (1) | z = 30,3 | q = 0 |
+| 4 | AL | MARECHAL DEODORO (27936) | 26 | 146 | — | 1350 | 2473709 | 205500230016117786929446 | — | 96 (1) | z = 15,3 | q = 2,3e-08 |
+| 5 | AL | SÃO LUÍS DO QUITUNDE (28690) | 17 | 87 | — | 1147 | 2449862 | 64190391743583406680615 | — | 166 (4) | z = 45,0 | q = 0 |
+| 6 | AM | COARI (2259) | 8 | 177 | — | 1350 | 2039092 | 239111587215572684770058 | — | 155 (2) | z = 45,8 | q = 3,8e-09 |
+| 7 | AM | MANAUS (2550) | 59 | 570 | — | 2194 | 1787557 | 697703633155118091798830 | — | 35 (3) | z = 20,1 | q = 0,0013 |
+| 8 | AM | MANAUS (2550) | 62 | 512 | — | 1864 | 2082988 | 31167775046846860595269 | — | 180 (2) | z = 68,8 | q = 2,9e-09 |
+| 9 | AM | MANICORÉ (2577) | 16 | 105 | — | 1066 | 2040832 | 201393848988150426880373 | — | 206 (1) | z = 78,2 | q = 3,8e-09 |
+| 10 | AP | MACAPÁ (6050) | 10 | 490 | — | 1309 | 2342299 | 71614060212980045370336 | — | 24 (3) | z = 35,3 | q = 7e-06 |
+| 11 | BA | BOQUIRA (33812) | 65 | 265 | — | 1406 | 2304799 | 459042604989909480673206 | — | 129 (2) | z = 44,5 | q = 3,5e-09 |
+| 12 | BA | BUERAREMA (33936) | 166 | 22 | — | 1058 | 2176500 | 536370894482354878532777 | — | 121 (3) | z = 24,4 | q = 0 |
+| 13 | BA | IBIRATAIA (35599) | 24 | 173 | — | 1040 | 2225773 | 696227602182670180885039 | — | 89 (4) | z = 29,3 | q = 2,8e-09 |
+| 14 | BA | ILHÉUS (35734) | 26 | 396 | — | 1716 | 2176044 | 262206826225794644083273 | — | 24 (5) | z = 25,7 | q = 1,2e-05 |
+| 15 | BA | ITABUNA (35971) | 27 | 216 | — | 1104 | 2176640 | 416832328387065942841150 | — | 103 (1) | z = 24,6 | q = 7,4e-08 |
+| 16 | BA | MARAÚ (37150) | 78 | 191 | — | 1295 | 1810777 | 571594402289647235833262 | — | 60 (4) | z = 21,1 | q = 0,0074 |
+| 17 | BA | MUQUÉM DO SÃO FRANCISCO (37460) | 98 | 196 | — | 1015 | 2246021 | 251576638660491075562585 | — | 145 (1) | z = 54,0 | q = 0 |
+| 18 | BA | NOVA REDENÇÃO (37583) | 119 | 42 | — | 1074 | 2301734 | 843099345084117924232013 | — | 19 (3) | z = 7,5 | q = 1,1e-05 |
+| 19 | BA | OURIÇANGAS (37672) | 74 | 218 | — | 1180 | 1764656 | 427535555393104123514244 | — | 22 (3) | z = 15,9 | q = 1e-05 |
+| 20 | BA | PARATINGA (37753) | 173 | 166 | — | 1376 | 1775406 | 618852782340093602180562 | — | 135 (2) | z = 56,4 | q = 0 |
+| 21 | BA | PAU BRASIL (37796) | 133 | 192 | — | 1066 | 2174089 | 424005364931887305376322 | — | 135 (3) | z = 40,9 | q = 0 |
+| 22 | BA | PORTO SEGURO (38075) | 122 | 397 | — | 1473 | 2039371 | 43149714352919348269672 | — | 101 (3) | z = 43,3 | q = 7,5e-08 |
+| 23 | BA | SÍTIO DO MATO (39144) | 71 | 328 | — | 1147 | 1838229 | 60766359352721883732882 | — | 210 (1) | z = 33,4 | q = 0 |
+| 24 | BA | VITÓRIA DA CONQUISTA (39659) | 39 | 338 | — | 1554 | 2156068 | 686088044059972892205957 | — | 32 (2) | z = 33,3 | q = 9,1e-07 |
+| 25 | BA | SOBRADINHO (39985) | 66 | 168 | — | 1058 | 2260533 | 384846773166956812032042 | — | 261 (2) | z = 35,9 | q = 7,1e-09 |
+| 26 | CE | ABAIARA (13013) | 26 | 108 | — | 1155 | 2237353 | 48084013592519875153518 | — | 125 (4) | z = 31,1 | q = 1,5e-10 |
+| 27 | CE | ASSARÉ (13315) | 18 | 76 | — | 1287 | 2186502 | 668161818655268902469757 | — | 204 (2) | z = 41,3 | q = 6,9e-09 |
+| 28 | CE | BARROQUINHA (13404) | 108 | 54 | — | 1058 | 1767151 | 252722048386417501824359 | — | 29 (3) | z = 16,5 | q = 0 |
+| 29 | CE | CASCAVEL (13692) | 7 | 147 | — | 1031 | 2280064 | 252202394706364497941478 | — | 132 (1) | z = 39,6 | q = 0 |
+| 30 | CE | SANTA QUITÉRIA (15458) | 54 | 54 | — | 1104 | 2240816 | 799058587615623399237329 | — | 30 (3) | z = 11,6 | q = 1,1e-05 |
+| 31 | CE | SOBRAL (15598) | 24 | 681 | — | 1252 | 1678636 | 218379425013192251419838 | — | 243 (2) | z = 46,1 | q = 3,2e-09 |
+| 32 | CE | SOBRAL (15598) | 121 | 157 | — | 1597 | 1819092 | 511385722563866972262166 | — | 85 (1) | z = 24,0 | q = 5,8e-05 |
+| 33 | CE | ITAREMA (15954) | 98 | 199 | — | 1279 | 2037745 | 445495159679850482775099 | — | 25 (3) | z = 10,7 | q = 0,0039 |
+| 34 | DF | BRASÍLIA (97012) | 6 | 425 | — | 1910 | 2465316 | 867752912945027717571433 | — | 269 (1) | z = 51,0 | q = 0 |
+| 35 | ES | MARECHAL FLORIANO (56103) | 12 | 99 | — | 1155 | 1753528 | 54834677474799312527022 | — | 203 (1) | z = 66,0 | q = 0 |
+| 36 | ES | BARRA DE SÃO FRANCISCO (56170) | 23 | 27 | — | 1589 | 2352742 | 443791356762093848305326 | — | 74 (3) | z = 37,4 | q = 0 |
+| 37 | ES | ECOPORANGA (56413) | 33 | 43 | 55 | 1171 | 2313682 | 270281885234671248846112 | — | 93 (2) | z = 23,1 | q = 0 |
+| 38 | ES | SANTA MARIA DE JETIBÁ (57932) | 9 | 111 | — | 1368 | 1844724 | 932592204535274801223588 | — | 105 (85) | z = 26,4 | q = 0,0031 |
+| 39 | GO | ANÁPOLIS (92215) | 3 | 508 | — | 2127 | 2462500 | 28935356767564194019402 | — | 33 (16) | z = 16,2 | q = 0,00066 |
+| 40 | GO | EDÉIA (93491) | 68 | 89 | — | 1066 | 2184309 | 753705302687895725910840 | — | 13 (2) | z = 20,5 | q = 0,00027 |
+| 41 | GO | INHUMAS (93955) | 13 | 114 | — | 1180 | 2201517 | 39243635321198317033425 | — | 112 (2) | z = 28,5 | q = 0 |
+| 42 | GO | PARAÚNA (95230) | 43 | 10 | — | 1104 | 2158488 | 696030760954519014823840 | — | 32 (2) | z = 16,1 | q = 0,0095 |
+| 43 | MA | BALSAS (7277) | 22 | 157 | — | 1449 | 2025301 | 870423080204845105375983 | — | 290 (1) | z = 44,1 | q = 0,00017 |
+| 44 | MA | CODÓ (7633) | 7 | 285 | — | 1600 | 2279284 | 855062141336581838132329 | — | 67 (2) | z = 25,9 | q = 0 |
+| 45 | MA | CURURUPU (7714) | 14 | 192 | — | 1678 | 2254967 | 420193365734724549783286 | — | 158 (2) | z = 29,1 | q = 1,4e-09 |
+| 46 | MA | IMPERATRIZ (8036) | 33 | 54 | — | 1341 | 2123182 | 793833586644798335253938 | — | 28 (3) | z = 13,9 | q = 0,0053 |
+| 47 | MA | LAGO DA PEDRA (8133) | 74 | 340 | — | 1635 | 2103142 | 842377390541732308780883 | — | 22 (4) | z = 29,5 | q = 1,3e-08 |
+| 48 | MA | TURILÂNDIA (8605) | 83 | 67 | — | 1023 | 2131403 | 410030606320839243701658 | — | 159 (1) | z = 35,7 | q = 0 |
+| 49 | MA | POÇÃO DE PEDRAS (8753) | 61 | 33 | — | 1198 | 2028055 | 747727288622599055843514 | — | 194 (3) | z = 39,0 | q = 3,5e-09 |
+| 50 | MA | SANTA LUZIA (8974) | 70 | 224 | — | 1821 | 2090812 | 317980073333228598676466 | — | 154 (2) | z = 44,0 | q = 0 |
+| 51 | MA | SÃO BERNARDO (9091) | 51 | 161 | — | 1104 | 2298997 | 594805218792760901081849 | — | 159 (2) | z = 30,0 | q = 1,1e-09 |
+| 52 | MA | VIANA (9490) | 20 | 209 | — | 1848 | 2288794 | 344248511064375487560127 | — | 114 (1) | z = 34,8 | q = 4,2e-10 |
+| 53 | MG | CARMÓPOLIS DE MINAS (42897) | 208 | 96 | — | 1112 | 1755787 | 674773962522583223659299 | — | 28 (18) | z = 14,6 | q = 0,00023 |
+| 54 | MG | CONCEIÇÃO DO MATO DENTRO (43494) | 83 | 29 | — | 1112 | 2279756 | 781267912600858639289410 | — | 50 (1) | z = 15,2 | q = 4,9e-09 |
+| 55 | MG | DIVINÓPOLIS (44458) | 102 | 241 | — | 1473 | 2414813 | 680399255533386875713122 | — | 52 (1) | z = 32,9 | q = 1,2e-06 |
+| 56 | MG | DORES DE GUANHÃES (44610) | 121 | 30 | — | 1155 | 1832626 | 175051385188733278891389 | — | 24 (2) | z = 10,0 | q = 0,0078 |
+| 57 | MG | MADRE DE DEUS DE MINAS (47813) | 14 | 62 | — | 1104 | 2098682 | 787929421530249256650458 | — | 14 (2) | z = 5,6 | q = 0,0033 |
+| 58 | MG | MONTALVÂNIA (48534) | 342 | 77 | — | 1201 | 2144397 | 446421703214917654458637 | — | 29 (1) | z = 16,4 | q = 0,00013 |
+| 59 | MG | PATOS DE MINAS (49590) | 330 | 255 | — | 1163 | 2097912 | 571605652935342141844412 | — | 131 (1) | z = 29,6 | q = 1,2e-08 |
+| 60 | MS | BANDEIRANTES (90298) | 34 | 67 | — | 1090 | 2001752 | 463011659503692573976580 | — | 18 (1) | z = 11,5 | q = 2,7e-08 |
+| 61 | MS | CAMPO GRANDE (90514) | 54 | 324 | — | 1155 | 2451272 | 917270761014212316910905 | — | 21 (10) | z = 19,8 | q = 0,0012 |
+| 62 | MS | NIOAQUE (91154) | 45 | 9 | — | 1023 | 2023418 | 683997838195724560984 | — | 162 (2) | z = 57,1 | q = 0 |
+| 63 | MT | ALTA FLORESTA (89877) | 24 | 303 | — | 1406 | 2009515 | 77265679704217312831714 | — | 55 (1) | z = 21,6 | q = 2,8e-06 |
+| 64 | MT | BRASNORTE (90468) | 56 | 114 | — | 1104 | 2135554 | 562157168503861513925685 | — | 41 (2) | z = 19,9 | q = 3,7e-05 |
+| 65 | MT | CUIABÁ (90670) | 55 | 327 | — | 1597 | 1837839 | 577547758840563113046299 | — | 118 (4) | z = 55,4 | q = 0 |
+| 66 | MT | SÃO JOSÉ DO RIO CLARO (91995) | 29 | 41 | — | 1155 | 2467626 | 546967934725079453659093 | — | 186 (1) | z = 45,4 | q = 0 |
+| 67 | MT | VILA RICA (98990) | 16 | 67 | — | 1074 | 2473216 | 851858041495927708557007 | — | 40 (3) | z = 20,4 | q = 0 |
+| 68 | PA | TAILÂNDIA (4022) | 93 | 92 | — | 1163 | 2458329 | 320828172989533428404297 | — | 44 (1) | z = 11,6 | q = 0,0001 |
+| 69 | PA | SANTA BÁRBARA DO PARÁ (4243) | 36 | 29 | 121 | 1210 | 1761688 | 274814406287804306114979 | — | 127 (1) | z = 25,2 | q = 3,3e-09 |
+| 70 | PA | BENEVIDES (4294) | 78 | 512 | — | 1317 | 2152361 | 220759961690170948622058 | — | 25 (1) | z = 17,8 | q = 0,00052 |
+| 71 | PA | GURUPÁ (4618) | 26 | 115 | — | 1465 | 2257122 | 612241325890284335745623 | — | 214 (2) | z = 82,9 | q = 0 |
+| 72 | PA | OEIRAS DO PARÁ (5037) | 45 | 79 | — | 1368 | 2156875 | 398022875114751768306069 | — | 20 (20) | z = 14,1 | q = 0,0036 |
+| 73 | PA | PRAINHA (5193) | 92 | 129 | — | 1384 | 2404026 | 411926639970121118087831 | — | 9 (4) | z = 32,8 | q = 0,00017 |
+| 74 | PA | SANTA IZABEL DO PARÁ (5290) | 36 | 443 | — | 1473 | 1792096 | 541241518244216162024436 | — | 115 (1) | z = 42,9 | q = 0 |
+| 75 | PA | SANTARÉM (5355) | 104 | 373 | — | 2038 | 2419202 | 966249056689154304014133 | — | 12 (2) | z = 27,0 | q = 0,0053 |
+| 76 | PA | SÃO GERALDO DO ARAGUAIA (5797) | 62 | 16 | — | 1457 | 2157098 | 652129387951318601318395 | — | 122 (1) | z = 80,9 | q = 0 |
+| 77 | PB | BONITO DE SANTA FÉ (19496) | 40 | 112 | — | 1090 | 2459281 | 391267773203710082703182 | — | 18 (4) | z = 11,1 | q = 0,0044 |
+| 78 | PB | COREMAS (19976) | 52 | 111 | — | 1198 | 2209353 | 8657271620580244883075 | — | 67 (2) | z = 23,2 | q = 1,1e-09 |
+| 79 | PB | MARI (20834) | 4 | 12 | — | 1040 | 2335912 | 287572573725451957714680 | — | 170 (2) | z = 27,3 | q = 0 |
+| 80 | PB | SANTA RITA (21750) | 2 | 252 | 121 | 1368 | 1792278 | 346956097208280853307397 | — | 70 (46) | z = 24,3 | q = 1,6e-06 |
+| 81 | PB | SAPÉ (22071) | 4 | 65 | — | 1082 | 2351804 | 174361141252854558630975 | — | 253 (2) | z = 35,9 | q = 0 |
+| 82 | PE | XEXÉU (23060) | 38 | 156 | — | 1074 | 1774451 | 779286874029627967571924 | — | 211 (3) | z = 73,8 | q = 0 |
+| 83 | PE | CARUARU (23817) | 106 | 339 | — | 1627 | 1814605 | 68581530558405252302309 | — | 16 (4) | z = 41,1 | q = 1,1e-06 |
+| 84 | PE | PETROLINA (25216) | 145 | 480 | — | 2011 | 2363612 | 671359597067810165512567 | — | 19 (4) | z = 25,8 | q = 1,1e-05 |
+| 85 | PI | DEMERVAL LOBÃO (10650) | 54 | 7 | — | 1040 | 1662466 | 495728263240952675980228 | — | 247 (2) | z = 42,8 | q = 0 |
+| 86 | PI | FRANCISCO AYRES (10812) | 61 | 307 | — | 1040 | 2390259 | 686421725688436020414583 | — | 11 (5) | z = 7,3 | q = 0,00075 |
+| 87 | PI | PARNAÍBA (11533) | 3 | 29 | — | 1040 | 2244255 | 213654344711008518295434 | — | 139 (1) | z = 41,5 | q = 2e-10 |
+| 88 | PI | SÃO RAIMUNDO NONATO (12114) | 13 | 289 | — | 1813 | 2217514 | 240764971244510805544550 | — | 158 (2) | z = 68,6 | q = 0 |
+| 89 | PI | JATOBÁ DO PIAUÍ (12394) | 7 | 238 | — | 1066 | 1800807 | 665143935085099738749768 | — | 19 (3) | z = 7,4 | q = 0,0048 |
+| 90 | PR | CURITIBA (75353) | 145 | 683 | — | 1937 | 2334843 | 911683342606660282114893 | — | 38 (14) | z = 20,6 | q = 0,0061 |
+| 91 | PR | ENÉAS MARQUES (75450) | 69 | 303 | — | 1090 | 2094715 | 333874939145778343531552 | — | 13 (4) | z = 20,1 | q = 1,5e-06 |
+| 92 | PR | PONTA GROSSA (77771) | 15 | 374 | — | 1872 | 2064946 | 835845036403714289946748 | — | 17 (4) | z = 15,2 | q = 0,0024 |
+| 93 | RJ | DUQUE DE CAXIAS (58335) | 126 | 51 | — | 1082 | 2218702 | 194508650177319932556427 | — | 132 (1) | z = 16,5 | q = 3,1e-07 |
+| 94 | RJ | NITERÓI (58653) | 71 | 455 | — | 1104 | 2175644 | 308190569979094355252575 | — | 81 (2) | z = 23,0 | q = 1,5e-08 |
+| 95 | RJ | NOVA IGUAÇU (58696) | 156 | 380 | — | 1341 | 2178124 | 103220934951364094966712 | — | 303 (2) | z = 30,8 | q = 0 |
+| 96 | RJ | PARAÍBA DO SUL (58734) | 28 | 14 | — | 1066 | 2434703 | 772279286853558048311043 | — | 235 (1) | z = 42,0 | q = 0 |
+| 97 | RJ | RIO DE JANEIRO (60011) | 125 | 191 | — | 1147 | 2165388 | 261204094350210711754676 | — | 96 (2) | z = 21,6 | q = 3,6e-05 |
+| 98 | RN | LAGOA SALGADA (17310) | 44 | 94 | — | 1074 | 2238242 | 525824596510947507655103 | — | 28 (6) | z = 15,0 | q = 0,0044 |
+| 99 | RN | NOVA CRUZ (17655) | 12 | 176 | — | 1236 | 2054421 | 314760559923333405893239 | — | 41 (7) | z = 14,1 | q = 0,0045 |
+| 100 | RO | MACHADINHO D'OESTE (396) | 32 | 68 | — | 1104 | 2278889 | 68049361224736337014441 | — | 52 (1) | z = 34,6 | q = 5,4e-09 |
+
+Mostrando 100 de 138 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (37.785)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | BUJARI (1007) | 9 | 1 | — | 1104 | 2468149 | 997198101523282243858675 | — | 7 (4) |  |  |
+| 2 | AC | BUJARI (1007) | 9 | 7 | — | 1023 | 2294208 | 279926048051208339759928 | — | 7 (5) |  |  |
+| 3 | AC | BUJARI (1007) | 9 | 163 | — | 1040 | 2262721 | 199118031510800173040007 | — | 3 (3) |  |  |
+| 4 | AC | BUJARI (1007) | 9 | 412 | — | 1112 | 2266654 | 613360264631820455804780 | — | 9 (3) |  |  |
+| 5 | AC | CAPIXABA (1015) | 2 | 69 | — | 1023 | 2277684 | 380360797621565158908644 | — | 5 (4) |  |  |
+| 6 | AC | PORTO ACRE (1023) | 1 | 605 | — | 1082 | 2297020 | 712982808797796430082716 | — | 9 (5) |  |  |
+| 7 | AC | PORTO ACRE (1023) | 1 | 612 | — | 1031 | 2290445 | 228033057025254067172811 | — | 7 (3) |  |  |
+| 8 | AC | PORTO ACRE (1023) | 1 | 619 | — | 1147 | 2269947 | 480659089751787794279058 | — | 7 (3) |  |  |
+| 9 | AC | SANTA ROSA DO PURUS (1031) | 3 | 87 | — | 1040 | 2046084 | 96042424958911078108442 | — | 3 (3) |  |  |
+| 10 | AC | SANTA ROSA DO PURUS (1031) | 3 | 172 | — | 1023 | 2046496 | 661799466315985446970165 | — | 4 (3) |  |  |
+| 11 | AC | MARECHAL THAUMATURGO (1040) | 4 | 73 | — | 1015 | 2266615 | 177061996794400755123599 | — | 6 (3) |  |  |
+| 12 | AC | MARECHAL THAUMATURGO (1040) | 4 | 141 | — | 1023 | 2251090 | 86152560385213233112187 | — | 5 (3) |  |  |
+| 13 | AC | MARECHAL THAUMATURGO (1040) | 4 | 331 | — | 1015 | 2256522 | 651809248164180230100690 | — | 10 (3) |  |  |
+| 14 | AC | MARECHAL THAUMATURGO (1040) | 4 | 389 | — | 1155 | 2293881 | 45748861503652832964009 | — | 7 (3) |  |  |
+| 15 | AC | MARECHAL THAUMATURGO (1040) | 4 | 434 | — | 1023 | 2266260 | 177061184916949726972126 | — | 4 (3) |  |  |
+| 16 | AC | BRASILÉIA (1058) | 6 | 11 | 12 | 1082 | 2254391 | 84474266089092797340041 | — | 5 (3) |  |  |
+| 17 | AC | BRASILÉIA (1058) | 6 | 84 | — | 1066 | 2257610 | 437909434694152238427270 | — | 5 (3) |  |  |
+| 18 | AC | BRASILÉIA (1058) | 6 | 91 | — | 1120 | 2256784 | 993565731350980143457294 | — | 4 (3) |  |  |
+| 19 | AC | BRASILÉIA (1058) | 6 | 138 | — | 1040 | 2284289 | 458111638496318418421182 | — | 4 (3) |  |  |
+| 20 | AC | BRASILÉIA (1058) | 6 | 166 | — | 1066 | 2288638 | 397505567890555824408139 | — | 10 (3) |  |  |
+| 21 | AC | CRUZEIRO DO SUL (1074) | 4 | 25 | — | 1120 | 2289069 | 426486119087422861954893 | — | 11 (4) |  |  |
+| 22 | AC | CRUZEIRO DO SUL (1074) | 4 | 45 | — | 1392 | 2261551 | 547698376099933431467758 | — | 6 (4) |  |  |
+| 23 | AC | CRUZEIRO DO SUL (1074) | 4 | 48 | — | 1406 | 2283415 | 699113850014792590659162 | — | 26 (3) |  |  |
+| 24 | AC | CRUZEIRO DO SUL (1074) | 4 | 63 | — | 1600 | 2266202 | 982042738252667661364584 | — | 11 (3) |  |  |
+| 25 | AC | CRUZEIRO DO SUL (1074) | 4 | 68 | — | 1350 | 2256920 | 93153393563252027421056 | — | 9 (3) |  |  |
+| 26 | AC | CRUZEIRO DO SUL (1074) | 4 | 110 | — | 1520 | 2254463 | 416385578595404234243057 | — | 12 (4) |  |  |
+| 27 | AC | CRUZEIRO DO SUL (1074) | 4 | 167 | — | 2089 | 2252032 | 325476608808114894930010 | — | 13 (3) |  |  |
+| 28 | AC | CRUZEIRO DO SUL (1074) | 4 | 242 | — | 1155 | 2266521 | 113355792983247793751535 | — | 11 (3) |  |  |
+| 29 | AC | CRUZEIRO DO SUL (1074) | 4 | 291 | — | 2267 | 2289064 | 921436849520820252733004 | — | 6 (3) |  |  |
+| 30 | AC | CRUZEIRO DO SUL (1074) | 4 | 306 | — | 2321 | 2289952 | 335577267061480513381601 | — | 4 (3) |  |  |
+| 31 | AC | CRUZEIRO DO SUL (1074) | 4 | 319 | — | 2330 | 2268076 | 426486754370102409305671 | — | 5 (4) |  |  |
+| 32 | AC | CRUZEIRO DO SUL (1074) | 4 | 340 | — | 1171 | 2250955 | 527496070264937044964409 | — | 3 (3) |  |  |
+| 33 | AC | CRUZEIRO DO SUL (1074) | 4 | 392 | — | 1406 | 2289951 | 739517850141392560167402 | — | 6 (3) |  |  |
+| 34 | AC | CRUZEIRO DO SUL (1074) | 4 | 416 | — | 1392 | 2257509 | 941638036062303349349254 | — | 6 (3) |  |  |
+| 35 | AC | CRUZEIRO DO SUL (1074) | 4 | 485 | — | 2208 | 2261978 | 295173764854491486815791 | — | 7 (4) |  |  |
+| 36 | AC | RODRIGUES ALVES (1082) | 4 | 197 | — | 1058 | 2256720 | 243968733669349613071454 | — | 9 (3) |  |  |
+| 37 | AC | RODRIGUES ALVES (1082) | 4 | 479 | — | 1236 | 2289672 | 647908480219732556408804 | — | 5 (4) |  |  |
+| 38 | AC | MÂNCIO LIMA (1090) | 4 | 90 | 98 | 1023 | 2251858 | 10945648079599414335778 | — | 15 (3) |  |  |
+| 39 | AC | MÂNCIO LIMA (1090) | 4 | 101 | — | 1120 | 2273062 | 515995717129244373215201 | — | 17 (3) |  |  |
+| 40 | AC | MÂNCIO LIMA (1090) | 4 | 122 | — | 1031 | 2267875 | 637107080241473828522630 | — | 8 (3) |  |  |
+| 41 | AC | MÂNCIO LIMA (1090) | 4 | 217 | — | 1090 | 2268458 | 950339972073944974393602 | — | 3 (3) |  |  |
+| 42 | AC | MÂNCIO LIMA (1090) | 4 | 267 | — | 1120 | 2266198 | 435187807332266226449953 | — | 9 (4) |  |  |
+| 43 | AC | MÂNCIO LIMA (1090) | 4 | 335 | — | 1147 | 2273132 | 41248079893100328402693 | — | 5 (3) |  |  |
+| 44 | AC | MÂNCIO LIMA (1090) | 4 | 432 | — | 1058 | 2250992 | 930137726082024748227618 | — | 4 (3) |  |  |
+| 45 | AC | JORDÃO (1104) | 5 | 28 | — | 1023 | 2295748 | 136568155446399692414911 | — | 3 (3) |  |  |
+| 46 | AC | EPITACIOLÂNDIA (1112) | 6 | 9 | — | 1295 | 2267899 | 327798312964249637491456 | — | 22 (4) |  |  |
+| 47 | AC | EPITACIOLÂNDIA (1112) | 6 | 168 | 167 | 1465 | 2295785 | 347900739287284165652544 | — | 8 (6) |  |  |
+| 48 | AC | ACRELÂNDIA (1120) | 8 | 159 | — | 1040 | 2045028 | 983686419907172168883375 | — | 4 (3) |  |  |
+| 49 | AC | ACRELÂNDIA (1120) | 8 | 258 | — | 1040 | 2047073 | 377525786646534205057591 | — | 8 (3) |  |  |
+| 50 | AC | FEIJÓ (1139) | 7 | 3 | — | 1031 | 2263134 | 316108643272393763115658 | — | 5 (3) |  |  |
+| 51 | AC | FEIJÓ (1139) | 7 | 4 | — | 1031 | 2278939 | 265603708467551219868652 | — | 5 (4) |  |  |
+| 52 | AC | FEIJÓ (1139) | 7 | 9 | — | 1040 | 2269436 | 63683050047086936499286 | — | 8 (3) |  |  |
+| 53 | AC | FEIJÓ (1139) | 7 | 14 | — | 1058 | 2269710 | 881865392729104082333477 | — | 5 (3) |  |  |
+| 54 | AC | FEIJÓ (1139) | 7 | 15 | — | 1058 | 2279749 | 376714990178255801350982 | — | 4 (3) |  |  |
+| 55 | AC | FEIJÓ (1139) | 7 | 28 | — | 1325 | 2254485 | 942471967835400052237879 | — | 6 (3) |  |  |
+| 56 | AC | FEIJÓ (1139) | 7 | 30 | — | 1147 | 2283466 | 548431754995026680245721 | — | 5 (3) |  |  |
+| 57 | AC | FEIJÓ (1139) | 7 | 35 | — | 1074 | 2267966 | 740451501805069710916169 | — | 4 (3) |  |  |
+| 58 | AC | FEIJÓ (1139) | 7 | 50 | — | 1325 | 2266990 | 841461199815335262036265 | — | 3 (3) |  |  |
+| 59 | AC | FEIJÓ (1139) | 7 | 85 | — | 1171 | 2256812 | 265603375273190117240567 | — | 8 (3) |  |  |
+| 60 | AC | RIO BRANCO (1392) | 1 | 8 | — | 1031 | 2046537 | 883599763515010821867000 | — | 6 (4) |  |  |
+| 61 | AC | RIO BRANCO (1392) | 1 | 169 | 170 | 1554 | 2046362 | 65317562725161078100071 | — | 8 (3) |  |  |
+| 62 | AC | RIO BRANCO (1392) | 1 | 174 | — | 1872 | 2045125 | 196630210038682665491403 | — | 7 (3) |  |  |
+| 63 | AC | RIO BRANCO (1392) | 1 | 176 | — | 1554 | 2045036 | 196630431338353754704985 | — | 8 (3) |  |  |
+| 64 | AC | RIO BRANCO (1392) | 1 | 182 | — | 1643 | 2045061 | 772488645996026502436031 | — | 8 (3) |  |  |
+| 65 | AC | RIO BRANCO (1392) | 1 | 194 | 281 | 1490 | 2048195 | 893600057408924718484165 | — | 6 (3) |  |  |
+| 66 | AC | RIO BRANCO (1392) | 1 | 390 | — | 1996 | 2045142 | 4711907696071934303388 | — | 15 (4) |  |  |
+| 67 | AC | RIO BRANCO (1392) | 1 | 496 | — | 2828 | 2046243 | 479458124840531021168803 | — | 4 (3) |  |  |
+| 68 | AC | RIO BRANCO (1392) | 1 | 497 | — | 2810 | 2044854 | 75418835200573397668122 | — | 5 (3) |  |  |
+| 69 | AC | RIO BRANCO (1392) | 1 | 505 | — | 2720 | 2047845 | 923903926285238304315157 | — | 3 (3) |  |  |
+| 70 | AC | RIO BRANCO (1392) | 1 | 512 | — | 2810 | 2046266 | 317842058124033586209865 | — | 4 (3) |  |  |
+| 71 | AC | RIO BRANCO (1392) | 1 | 546 | — | 2895 | 2048293 | 297640680370197844215886 | — | 6 (3) |  |  |
+| 72 | AC | RIO BRANCO (1392) | 1 | 567 | — | 3247 | 2047939 | 954206599722988239708200 | — | 7 (5) |  |  |
+| 73 | AC | RIO BRANCO (1392) | 1 | 572 | — | 3255 | 2046955 | 934004097220546612292323 | — | 7 (3) |  |  |
+| 74 | AC | RIO BRANCO (1392) | 1 | 573 | — | 3263 | 2046584 | 206731479547165729215104 | — | 3 (3) |  |  |
+| 75 | AC | RIO BRANCO (1392) | 1 | 636 | — | 3280 | 2047079 | 641175054791777292824601 | — | 7 (3) |  |  |
+| 76 | AC | RIO BRANCO (1392) | 1 | 645 | — | 3310 | 2101347 | 711882083398797126473560 | — | 9 (3) |  |  |
+| 77 | AC | RIO BRANCO (1392) | 1 | 674 | — | 3379 | 2047011 | 620973090703700974854144 | — | 4 (3) |  |  |
+| 78 | AC | RIO BRANCO (1392) | 1 | 685 | — | 3425 | 2046249 | 802791453517575952723723 | — | 6 (3) |  |  |
+| 79 | AC | RIO BRANCO (1392) | 1 | 696 | — | 3468 | 2041452 | 964307796833927189262549 | — | 3 (3) |  |  |
+| 80 | AC | RIO BRANCO (1392) | 1 | 729 | — | 3573 | 2101273 | 742185502694411726430702 | — | 8 (3) |  |  |
+| 81 | AC | RIO BRANCO (1392) | 1 | 755 | — | 3638 | 2045205 | 610872142700012183769984 | — | 4 (3) |  |  |
+| 82 | AC | RIO BRANCO (1392) | 1 | 771 | — | 3719 | 2044876 | 378448602276613308643289 | — | 5 (3) |  |  |
+| 83 | AC | RIO BRANCO (1392) | 1 | 778 | — | 3743 | 2048301 | 65317067045413682794459 | — | 7 (3) |  |  |
+| 84 | AC | RIO BRANCO (1392) | 1 | 781 | — | 3743 | 2045148 | 156226454554227624477440 | — | 5 (3) |  |  |
+| 85 | AC | RIO BRANCO (1392) | 1 | 784 | — | 3751 | 2044975 | 459256082884374861340871 | — | 7 (3) |  |  |
+| 86 | AC | RIO BRANCO (1392) | 1 | 814 | — | 3778 | 2045070 | 297640521314625148401937 | — | 12 (3) |  |  |
+| 87 | AC | RIO BRANCO (1392) | 1 | 821 | — | 2313 | 2045105 | 166327137501386598078694 | — | 6 (3) |  |  |
+| 88 | AC | RIO BRANCO (1392) | 9 | 21 | — | 1376 | 2046398 | 489547735632318152275193 | — | 4 (3) |  |  |
+| 89 | AC | RIO BRANCO (1392) | 9 | 47 | — | 1082 | 2046118 | 408739454660014783884809 | — | 5 (3) |  |  |
+| 90 | AC | RIO BRANCO (1392) | 9 | 55 | — | 1112 | 2045922 | 287527183848887879843753 | — | 6 (3) |  |  |
+| 91 | AC | RIO BRANCO (1392) | 9 | 65 | — | 1139 | 2251404 | 812880784101740415524554 | — | 6 (3) |  |  |
+| 92 | AC | RIO BRANCO (1392) | 9 | 73 | — | 1155 | 2047046 | 843183660738221923670062 | — | 6 (3) |  |  |
+| 93 | AC | RIO BRANCO (1392) | 9 | 86 | — | 1198 | 2042834 | 4799220554690407693987 | — | 4 (3) |  |  |
+| 94 | AC | RIO BRANCO (1392) | 9 | 105 | — | 1627 | 2042577 | 661365302186276675114649 | — | 13 (3) |  |  |
+| 95 | AC | RIO BRANCO (1392) | 9 | 113 | — | 1325 | 2046403 | 883587375908550806798400 | — | 13 (4) |  |  |
+| 96 | AC | RIO BRANCO (1392) | 9 | 116 | — | 1015 | 2044932 | 974496790917010310800744 | — | 11 (5) |  |  |
+| 97 | AC | RIO BRANCO (1392) | 9 | 123 | — | 1600 | 2258685 | 711870270591975849733840 | — | 7 (3) |  |  |
+| 98 | AC | RIO BRANCO (1392) | 9 | 128 | — | 1295 | 2048002 | 136012246515308312754300 | — | 6 (3) |  |  |
+| 99 | AC | RIO BRANCO (1392) | 9 | 129 | — | 1198 | 2044981 | 65305286408758187981040 | — | 10 (3) |  |  |
+| 100 | AC | RIO BRANCO (1392) | 9 | 154 | — | 1570 | 2277484 | 620961508664154316983338 | — | 6 (3) |  |  |
+
+Mostrando 100 de 37.785 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.8 🔴 L08 — Votos no concluidos
+
+**Objetivo.** Cuenta los votos que empezaron y no terminaron: elector que salió de la cabina o voto cancelado por el miembro de mesa.
+
+**Método.** Lee en el log los votos interrumpidos y compara la tasa de la sección con la del municipio y la de las secciones vecinas.
+
+**Criterio de señalización.** Anomalía estadística: tasa de votos no concluidos muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5 y prueba beta-binomial con tasa de falsos descubrimientos del 1 %), con 5 casos o más.
+
+**Limitaciones y explicaciones alternativas.** Electores con dificultades, personas mayores y problemas del teclado explican parte de los casos.
+
+> 📊 **Resultado:** 🔴 **96 anomalía(s)** en 499.176 unidades analizadas (0,019%) · 🟡 0 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🔴 Votos no concluidos por encima del patrón | 96 |
+
+*Observado: votos no concluidos. Referencia: puntuación z; detalle: q.*
+
+#### 🔴 Urnas con anomalía — lista completa (96)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | FEIJÓ (1139) | 7 | 55 | 52 | 1228 | 2285878 | 588835482889230705669500 | — | 15 | z = 20,5 | q = 0 |
+| 2 | AM | GUAJARÁ (2020) | 45 | 70 | — | 1120 | 2040907 | 953578448312053666396153 | — | 22 | z = 22,2 | q = 1,3e-05 |
+| 3 | AM | BARREIRINHA (2119) | 26 | 46 | — | 1325 | 2308037 | 941174880176306414553885 | — | 12 | z = 18,2 | q = 0,0027 |
+| 4 | AM | BORBA (2178) | 15 | 66 | — | 1074 | 2342383 | 765038841359160778561467 | — | 10 | z = 21,3 | q = 0,00033 |
+| 5 | AM | MANICORÉ (2577) | 16 | 65 | — | 1066 | 2016216 | 554828521770570609544478 | — | 6 | z = 19,1 | q = 0,00059 |
+| 6 | AM | NHAMUNDÁ (2631) | 43 | 40 | — | 1066 | 2470644 | 707231981581297959860447 | — | 10 | z = 11,6 | q = 0,0036 |
+| 7 | BA | AMARGOSA (33197) | 36 | 88 | — | 1023 | 2153696 | 83795521037307863392800 | — | 12 | z = 27,9 | q = 2,6e-05 |
+| 8 | BA | ANTAS (33316) | 82 | 209 | — | 1139 | 2273183 | 651143822351117005385927 | — | 8 | z = 15,4 | q = 1,1e-05 |
+| 9 | BA | BOTUPORÃ (33839) | 168 | 97 | — | 1104 | 1794902 | 275766670125083069421482 | — | 36 | z = 19,9 | q = 0 |
+| 10 | BA | CAMAMU (34150) | 78 | 43 | — | 1236 | 1770721 | 174854783202191410900641 | — | 6 | z = 21,9 | q = 8,7e-05 |
+| 11 | BA | CIPÓ (34576) | 79 | 232 | — | 1228 | 2354936 | 639811244386431913836199 | — | 6 | z = 17,8 | q = 0,0006 |
+| 12 | BA | CORRENTINA (34851) | 124 | 81 | 101 | 1180 | 1795470 | 322199993907344876868492 | — | 33 | z = 34,4 | q = 3e-05 |
+| 13 | BA | CRUZ DAS ALMAS (34959) | 142 | 143 | — | 1279 | 2156130 | 825041525607584762110927 | — | 14 | z = 33,3 | q = 0 |
+| 14 | BA | ESPLANADA (35114) | 21 | 41 | — | 1082 | 2247193 | 548679932693862733387348 | — | 8 | z = 21,7 | q = 0,00028 |
+| 15 | BA | IBICOARA (35432) | 169 | 25 | — | 1015 | 2305592 | 137063824908350714782171 | — | 10 | z = 29,1 | q = 0 |
+| 16 | BA | IBIPEBA (35475) | 176 | 143 | — | 1333 | 2309641 | 598783297433276353255393 | — | 6 | z = 33,9 | q = 1,1e-05 |
+| 17 | BA | SANTA RITA DE CÁSSIA (35491) | 97 | 57 | 160 | 1198 | 2227386 | 516591633133816153025236 | — | 8 | z = 17,5 | q = 8,7e-05 |
+| 18 | BA | ITIÚBA (36412) | 149 | 80 | — | 1252 | 2424469 | 943830507355093486883060 | — | 5 | z = 32,3 | q = 0,00059 |
+| 19 | BA | MACARANI (36951) | 91 | 87 | — | 1023 | 2225357 | 971171303578218428636974 | — | 12 | z = 15,7 | q = 0,00014 |
+| 20 | BA | MACAÚBAS (36978) | 65 | 103 | — | 1244 | 2310206 | 414038835941698571820352 | — | 17 | z = 33,0 | q = 4,5e-06 |
+| 21 | BA | MEDEIROS NETO (37230) | 153 | 77 | — | 1244 | 2388169 | 458822719872040177421071 | — | 13 | z = 21,2 | q = 0,0015 |
+| 22 | BA | PAULO AFONSO (37818) | 181 | 303 | — | 1287 | 1764358 | 397415994720822429840627 | — | 23 | z = 36,7 | q = 0 |
+| 23 | BA | QUEIMADAS (38172) | 106 | 75 | — | 1023 | 2243048 | 192694233808162373876585 | — | 5 | z = 16,0 | q = 0,0068 |
+| 24 | BA | SANTA BÁRBARA (38512) | 160 | 86 | — | 1201 | 1811821 | 158466378713931108827156 | — | 5 | z = 28,7 | q = 0,00012 |
+| 25 | BA | TABOCAS DO BREJO VELHO (39179) | 190 | 91 | — | 1074 | 1793800 | 826154562234634000966073 | — | 38 | z = 27,9 | q = 6,3e-08 |
+| 26 | BA | SÃO GABRIEL (39896) | 95 | 230 | — | 1120 | 2310203 | 234641621432864812462465 | — | 7 | z = 30,5 | q = 1,2e-05 |
+| 27 | CE | GRAÇA (13064) | 79 | 159 | — | 1147 | 1818135 | 610109049461366125199247 | — | 21 | z = 28,4 | q = 0 |
+| 28 | CE | AIUABA (13072) | 101 | 25 | 27 | 1236 | 2246980 | 771097465801185554070078 | — | 11 | z = 15,9 | q = 1,1e-06 |
+| 29 | CE | FORTIM (13501) | 8 | 180 | 326 | 1139 | 2452515 | 493137145960318688051692 | — | 31 | z = 35,1 | q = 2,5e-06 |
+| 30 | CE | CATARINA (13714) | 60 | 225 | — | 1058 | 2246964 | 781220657304167025552979 | — | 15 | z = 16,8 | q = 1,8e-07 |
+| 31 | CE | ITAPIPOCA (14290) | 17 | 78 | — | 1414 | 2236169 | 177701549050265338435866 | — | 16 | z = 47,0 | q = 0,0027 |
+| 32 | CE | SALITRE (15440) | 38 | 112 | 163 | 1147 | 2042924 | 810990198290943969723956 | — | 10 | z = 15,5 | q = 1,4e-05 |
+| 33 | CE | SANTA QUITÉRIA (15458) | 54 | 128 | — | 1511 | 2210441 | 607139718418329138203486 | — | 7 | z = 23,3 | q = 0,0081 |
+| 34 | ES | JAGUARÉ (57134) | 41 | 104 | — | 1040 | 2392912 | 908429433810887207198173 | — | 6 | z = 37,7 | q = 2,6e-05 |
+| 35 | GO | DOVERLÂNDIA (96750) | 6 | 70 | 58 | 1023 | 2001883 | 5766499878403103804949 | — | 9 | z = 12,9 | q = 0 |
+| 36 | MA | BURITICUPU (7340) | 95 | 272 | 276 | 1635 | 2082804 | 760494659276623579689320 | — | 9 | z = 15,2 | q = 0,0048 |
+| 37 | MA | FORMOSA DA SERRA NEGRA (7560) | 105 | 156 | — | 1155 | 2074885 | 794343899903204265191147 | — | 14 | z = 25,9 | q = 2,3e-05 |
+| 38 | MA | GOVERNADOR LUIZ ROCHA (7625) | 60 | 126 | — | 1139 | 2130505 | 502292398880474592155729 | — | 6 | z = 14,0 | q = 1,7e-05 |
+| 39 | MA | ESPERANTINÓPOLIS (7773) | 61 | 46 | — | 1350 | 2100576 | 890542838059884744471027 | — | 12 | z = 33,1 | q = 8,7e-08 |
+| 40 | MA | GRAJAÚ (7935) | 15 | 35 | — | 1112 | 2309536 | 283290047021149888744460 | — | 7 | z = 55,8 | q = 0 |
+| 41 | MA | OLHO D'ÁGUA DAS CUNHÃS (8478) | 87 | 73 | 186 | 1279 | 2074622 | 600993427398648327727000 | — | 29 | z = 19,3 | q = 1,2e-06 |
+| 42 | MA | PEDREIRAS (8613) | 9 | 182 | — | 1120 | 2310965 | 974996842185784907031701 | — | 5 | z = 21,8 | q = 0,0027 |
+| 43 | MA | SÃO LUÍS (9210) | 1 | 693 | — | 2348 | 1756792 | 142025644714730779786208 | — | 11 | z = 33,4 | q = 0,0022 |
+| 44 | MG | SÃO JOÃO DA LAGOA (40703) | 94 | 146 | — | 1031 | 2123560 | 587865613362745916469802 | — | 5 | z = 18,6 | q = 0,0019 |
+| 45 | MG | BELO HORIZONTE (41238) | 28 | 132 | — | 1775 | 2324088 | 976999495468099564170106 | — | 6 | z = 54,8 | q = 9,5e-05 |
+| 46 | MG | GAMELEIRAS (42102) | 180 | 169 | — | 1112 | 2128395 | 604725104478807327070115 | — | 7 | z = 14,2 | q = 0 |
+| 47 | MG | COIMBRA (43338) | 282 | 25 | — | 1015 | 1775261 | 30099727235026358623824 | — | 5 | z = 13,4 | q = 0,00028 |
+| 48 | MG | JORDÂNIA (47295) | 144 | 35 | — | 1058 | 2134249 | 875268632052858052106278 | — | 19 | z = 26,2 | q = 5,9e-06 |
+| 49 | MG | MONTE AZUL (48577) | 180 | 182 | — | 1546 | 2062852 | 342599216583548525005722 | — | 25 | z = 52,6 | q = 7,4e-11 |
+| 50 | MG | MONTE SANTO DE MINAS (48631) | 182 | 71 | — | 1155 | 2036960 | 929279522636739923435251 | — | 24 | z = 35,0 | q = 1,5e-05 |
+| 51 | MG | PIUMHI (50296) | 220 | 34 | — | 1040 | 1752035 | 870919529644647261240832 | — | 6 | z = 19,8 | q = 0,0024 |
+| 52 | MG | RUBELITA (51292) | 244 | 6 | — | 1023 | 2091790 | 757065414991452211182137 | — | 8 | z = 7,1 | q = 0,005 |
+| 53 | MG | SALINAS (51390) | 244 | 60 | — | 1120 | 2013022 | 341824763043060557600122 | — | 18 | z = 26,4 | q = 6,3e-08 |
+| 54 | MT | ARAPUTANGA (89893) | 41 | 51 | — | 1023 | 2458941 | 570896034668888950231677 | — | 9 | z = 17,4 | q = 0,00033 |
+| 55 | MT | JUÍNA (98310) | 35 | 192 | — | 1210 | 2283797 | 374013319535041237085496 | — | 6 | z = 21,1 | q = 0,0023 |
+| 56 | MT | SORRISO (98930) | 43 | 322 | — | 1201 | 2006171 | 855246485045438800237940 | — | 6 | z = 36,0 | q = 0,0018 |
+| 57 | PA | ALMEIRIM (4090) | 55 | 95 | — | 1031 | 1809540 | 367126546149238451001341 | — | 23 | z = 31,1 | q = 5,6e-07 |
+| 58 | PA | CAPANEMA (4430) | 25 | 31 | — | 1155 | 2297377 | 9769325568475068235039 | — | 10 | z = 39,4 | q = 4,6e-06 |
+| 59 | PA | CURUÇÁ (4570) | 9 | 3 | — | 1015 | 2430006 | 691768020205769395653670 | — | 28 | z = 51,1 | q = 0,00014 |
+| 60 | PA | ITAITUBA (4715) | 34 | 601 | 663 | 2887 | 2470311 | 872852525129875401688567 | — | 6 | z = 27,9 | q = 0,00019 |
+| 61 | PA | PEIXE-BOI (5118) | 25 | 312 | — | 1112 | 2329222 | 488317044432605377627929 | — | 7 | z = 18,1 | q = 1,4e-05 |
+| 62 | PA | SÃO DOMINGOS DO CAPIM (5436) | 50 | 57 | — | 1309 | 1762116 | 86843202283549564705269 | — | 9 | z = 31,6 | q = 0 |
+| 63 | PA | SÃO FRANCISCO DO PARÁ (5479) | 5 | 159 | — | 1112 | 2192231 | 205175631891028799835521 | — | 5 | z = 28,8 | q = 4,7e-05 |
+| 64 | PB | MATURÉIA (19984) | 30 | 115 | — | 1066 | 2445293 | 745395454975819249006443 | — | 32 | z = 15,1 | q = 1,1e-06 |
+| 65 | PB | ITATUBA (20451) | 8 | 67 | — | 1040 | 2167281 | 223610418715744017261126 | — | 10 | z = 12,2 | q = 0,0023 |
+| 66 | PB | SÃO SEBASTIÃO DO UMBUZEIRO (22055) | 29 | 96 | — | 1104 | 2329363 | 721285012870108681322009 | — | 28 | z = 16,9 | q = 1,1e-05 |
+| 67 | PE | PASSIRA (25097) | 91 | 42 | — | 1120 | 2222204 | 295803795192132739743846 | — | 19 | z = 45,6 | q = 4,7e-06 |
+| 68 | PE | SÃO LOURENÇO DA MATA (25739) | 13 | 76 | — | 1198 | 2195054 | 184858337878148792289948 | — | 7 | z = 28,7 | q = 0,00034 |
+| 69 | PE | SERRA TALHADA (25771) | 71 | 193 | — | 1449 | 2344656 | 777937824726410163080980 | — | 12 | z = 33,8 | q = 0,00025 |
+| 70 | PI | BRASILEIRA (10006) | 11 | 177 | — | 1155 | 2357025 | 632881988769184230567955 | — | 32 | z = 20,0 | q = 0 |
+| 71 | PI | OEIRAS (11398) | 5 | 245 | — | 1333 | 2073776 | 576912585966129762475744 | — | 11 | z = 25,7 | q = 0,0045 |
+| 72 | PI | PIO IX (11630) | 29 | 61 | — | 1198 | 2196729 | 60119593617148197440763 | — | 22 | z = 30,7 | q = 0,00039 |
+| 73 | PI | SÃO RAIMUNDO NONATO (12114) | 13 | 273 | — | 1740 | 2035186 | 988138984318185910621375 | — | 6 | z = 25,6 | q = 6,6e-05 |
+| 74 | PR | SÃO JOSÉ DA BOA VISTA (78832) | 20 | 88 | — | 1023 | 1826487 | 803694240050613680506796 | — | 6 | z = 18,5 | q = 1,8e-06 |
+| 75 | RJ | BELFORD ROXO (58041) | 154 | 75 | — | 1112 | 2224973 | 583846621563467701444499 | — | 7 | z = 60,1 | q = 0,0083 |
+| 76 | RJ | ITAPERUNA (58432) | 107 | 153 | — | 1287 | 2434197 | 576343344131581604715968 | — | 9 | z = 31,6 | q = 0,0016 |
+| 77 | RJ | RIO DE JANEIRO (60011) | 10 | 164 | — | 1511 | 1839747 | 210728165663547474407936 | — | 8 | z = 55,4 | q = 0,00051 |
+| 78 | RJ | RIO DE JANEIRO (60011) | 120 | 85 | — | 1112 | 2060021 | 836906949843842313166728 | — | 5 | z = 48,6 | q = 6,6e-05 |
+| 79 | RJ | RIO DE JANEIRO (60011) | 243 | 127 | — | 1120 | 2164388 | 321811324056176092745057 | — | 6 | z = 38,8 | q = 1,8e-05 |
+| 80 | RN | BOA SAÚDE (17035) | 53 | 85 | — | 1090 | 2062715 | 964864070343661951392248 | — | 6 | z = 10,5 | q = 0,0018 |
+| 81 | RS | CAMAQUÃ (85693) | 12 | 216 | — | 1333 | 1803292 | 333462245698473545741715 | — | 7 | z = 24,9 | q = 0,0036 |
+| 82 | RS | SÃO LOURENÇO DO SUL (88790) | 80 | 80 | — | 1023 | 2334143 | 566412124299045992805590 | — | 6 | z = 36,2 | q = 0 |
+| 83 | RS | TRÊS COROAS (89370) | 149 | 69 | — | 1023 | 1845546 | 633099045093701403901740 | — | 11 | z = 30,1 | q = 2,1e-07 |
+| 84 | SC | CHAPECÓ (80810) | 94 | 387 | — | 1597 | 2431418 | 662173266566214723988569 | — | 6 | z = 36,9 | q = 0,0019 |
+| 85 | SC | LAGES (81833) | 21 | 11 | — | 1201 | 2454825 | 516476691168809193687260 | — | 5 | z = 36,9 | q = 0,0058 |
+| 86 | SC | RIO NEGRINHO (82953) | 74 | 70 | — | 1155 | 1823638 | 237416728420817703245071 | — | 17 | z = 40,0 | q = 7,1e-08 |
+| 87 | SP | ARUJÁ (61778) | 335 | 109 | — | 1996 | 1784794 | 290232379578264003743880 | — | 8 | z = 49,6 | q = 2,5e-06 |
+| 88 | SP | OUROESTE (62383) | 302 | 6 | — | 1015 | 2302973 | 365685026062526875194464 | — | 5 | z = 17,6 | q = 0 |
+| 89 | SP | DUMONT (63932) | 293 | 354 | — | 1058 | 2198931 | 465360524761844860425384 | — | 6 | z = 19,1 | q = 0 |
+| 90 | SP | GUARULHOS (64777) | 394 | 313 | — | 1503 | 2123574 | 999033662110675168920687 | — | 5 | z = 83,1 | q = 0,0019 |
+| 91 | SP | ITAPIRA (65536) | 54 | 102 | — | 1244 | 2131799 | 962975279284595142192913 | — | 5 | z = 38,1 | q = 0,00017 |
+| 92 | SP | SÃO BERNARDO DO CAMPO (70750) | 296 | 390 | — | 1457 | 1782707 | 634410533936507267518946 | — | 5 | z = 43,3 | q = 0,0037 |
+| 93 | SP | SÃO PAULO (71072) | 257 | 279 | — | 1252 | 2011374 | 755605414772478436052014 | — | 5 | z = 25,8 | q = 0,005 |
+| 94 | SP | SÃO PAULO (71072) | 372 | 683 | — | 2208 | 2065748 | 826380257612917531657350 | — | 7 | z = 85,3 | q = 0,00043 |
+| 95 | TO | ARAGUATINS (92436) | 10 | 118 | — | 1201 | 2253911 | 447651484133835367374127 | — | 8 | z = 17,0 | q = 0,00059 |
+| 96 | TO | ARAPOEMA (92452) | 31 | 11 | — | 1023 | 2454684 | 11933190433337599790743 | — | 8 | z = 14,8 | q = 1,1e-06 |
+
+### B.9 🔴 L09 — Intentos de cierre
+
+**Objetivo.** Busca intentos de cerrar la votación antes del horario o más de una vez.
+
+**Método.** Lee en el log cada comando de cierre, la hora y si fue confirmado o cancelado.
+
+**Criterio de señalización.** Anomalía estadística: intento de cierre antes de la hora en que la urna libera el cierre (17 h de Brasilia en las dos vueltas, según la configuración registrada en el propio log). Informativo: más de un intento de cierre después de esa hora.
+
+**Limitaciones y explicaciones alternativas.** Una tecla presionada por error genera intentos cancelados. El acta los registra.
+
+> 📊 **Resultado:** 🔴 **14.865 anomalía(s)** en 499.176 unidades analizadas (2,978%) · 🟡 20.451 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Varios intentos de cierre (informativo) | 20.451 |
+| 🔴 Intento de cierre antes del horario | 14.865 |
+
+*Observado: intentos de cierre. Referencia: hora en que la urna libera el cierre.*
+
+#### 🔴 Urnas con anomalía — lista completa (14.865)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | CAPIXABA (1015) | 2 | 68 | — | 1015 | 2270042 | 925714226375020771913336 | — | 1 | 15:00 |  |
+| 2 | AC | CAPIXABA (1015) | 2 | 103 | — | 1236 | 2256067 | 541976962453372786859320 | — | 1 | 15:00 |  |
+| 3 | AC | PORTO ACRE (1023) | 1 | 577 | — | 1015 | 2047917 | 712982423398010005895797 | — | 1 | 15:00 |  |
+| 4 | AC | PORTO ACRE (1023) | 1 | 616 | — | 1139 | 2295846 | 935104202396076880515485 | — | 1 | 15:00 |  |
+| 5 | AC | PORTO ACRE (1023) | 1 | 630 | — | 1210 | 2252104 | 359346108351794056762708 | — | 2 | 15:00 |  |
+| 6 | AC | SANTA ROSA DO PURUS (1031) | 3 | 60 | — | 1015 | 2043561 | 641597066313543781679493 | — | 1 | 15:00 |  |
+| 7 | AC | SANTA ROSA DO PURUS (1031) | 3 | 76 | — | 1015 | 2042735 | 106143251759303731659576 | — | 1 | 15:00 |  |
+| 8 | AC | SANTA ROSA DO PURUS (1031) | 3 | 122 | — | 1015 | 2048228 | 348567797683417307344606 | — | 1 | 15:00 |  |
+| 9 | AC | SANTA ROSA DO PURUS (1031) | 3 | 125 | — | 1082 | 2046024 | 843517625833584266026318 | — | 1 | 15:00 |  |
+| 10 | AC | SANTA ROSA DO PURUS (1031) | 3 | 152 | — | 1082 | 2046136 | 591092256908689054200092 | — | 1 | 15:00 |  |
+| 11 | AC | SANTA ROSA DO PURUS (1031) | 3 | 157 | — | 1082 | 2045356 | 35436244052405549337160 | — | 1 | 15:00 |  |
+| 12 | AC | SANTA ROSA DO PURUS (1031) | 3 | 170 | — | 1015 | 2046507 | 692002278318737161552043 | — | 1 | 15:00 |  |
+| 13 | AC | SANTA ROSA DO PURUS (1031) | 3 | 172 | — | 1023 | 2046496 | 661799466315985446970165 | — | 1 | 15:00 |  |
+| 14 | AC | MARECHAL THAUMATURGO (1040) | 4 | 331 | — | 1015 | 2256522 | 651809248164180230100690 | — | 1 | 15:00 |  |
+| 15 | AC | BRASILÉIA (1058) | 6 | 24 | — | 2046 | 2270041 | 195585778100261401584954 | — | 1 | 15:00 |  |
+| 16 | AC | CRUZEIRO DO SUL (1074) | 4 | 379 | — | 2151 | 2261663 | 295173047141533315695053 | — | 1 | 15:00 |  |
+| 17 | AC | CRUZEIRO DO SUL (1074) | 4 | 409 | — | 1155 | 2294167 | 375981724005503487169475 | — | 1 | 15:00 |  |
+| 18 | AC | CRUZEIRO DO SUL (1074) | 4 | 419 | — | 1295 | 2258600 | 426486844310089731195878 | — | 1 | 15:00 |  |
+| 19 | AC | FEIJÓ (1139) | 7 | 73 | 77 | 1295 | 2264563 | 104087927257227973228421 | — | 1 | 15:00 |  |
+| 20 | AC | RIO BRANCO (1392) | 1 | 45 | — | 3875 | 2046533 | 348145174561973749494621 | — | 1 | 15:00 |  |
+| 21 | AC | RIO BRANCO (1392) | 1 | 85 | — | 1295 | 2045022 | 14812124866457525686313 | — | 1 | 15:00 |  |
+| 22 | AC | RIO BRANCO (1392) | 1 | 711 | — | 3506 | 2047988 | 105721915847837985421558 | — | 1 | 15:00 |  |
+| 23 | AC | RIO BRANCO (1392) | 9 | 45 | — | 1082 | 2046610 | 873486705607539787223304 | — | 1 | 15:00 |  |
+| 24 | AC | RIO BRANCO (1392) | 9 | 235 | — | 1201 | 2046436 | 721971660353754751870750 | — | 1 | 15:00 |  |
+| 25 | AC | RIO BRANCO (1392) | 9 | 244 | — | 1333 | 2048051 | 651264556346329355197848 | — | 1 | 15:00 |  |
+| 26 | AC | SENA MADUREIRA (1457) | 3 | 30 | — | 1155 | 2048094 | 146947358304081913863051 | — | 1 | 15:00 |  |
+| 27 | AC | SENA MADUREIRA (1457) | 3 | 104 | — | 1309 | 2045103 | 86341614944856899754532 | — | 1 | 15:00 |  |
+| 28 | AC | SENA MADUREIRA (1457) | 3 | 149 | — | 1287 | 2045093 | 894422252291749077683038 | — | 1 | 15:00 |  |
+| 29 | AC | TARAUACÁ (1473) | 5 | 20 | — | 1112 | 2313725 | 95064230293433309484865 | — | 2 | 15:00 |  |
+| 30 | AC | TARAUACÁ (1473) | 5 | 73 | 102 / 139 | 1368 | 2283470 | 317286138373593940850648 | — | 1 | 15:00 |  |
+| 31 | AC | TARAUACÁ (1473) | 5 | 121 | — | 1538 | 2272148 | 650620991584215420995611 | — | 1 | 15:00 |  |
+| 32 | AC | PLÁCIDO DE CASTRO (1511) | 8 | 4 | — | 1023 | 2044236 | 370125813688492699120378 | — | 1 | 15:00 |  |
+| 33 | AC | PLÁCIDO DE CASTRO (1511) | 8 | 61 | 269 | 1724 | 2046538 | 26690555853290572001634 | — | 1 | 15:00 |  |
+| 34 | AC | PLÁCIDO DE CASTRO (1511) | 8 | 75 | — | 1082 | 2044909 | 663054700817091383502805 | — | 1 | 15:00 |  |
+| 35 | AL | ARAPIRACA (27057) | 22 | 31 | — | 1597 | 2473295 | 262962583475600108481795 | — | 3 | 17:00 |  |
+| 36 | AL | ARAPIRACA (27057) | 22 | 343 | — | 1872 | 2456754 | 909326788588284807659109 | — | 1 | 17:00 |  |
+| 37 | AL | ARAPIRACA (27057) | 22 | 469 | — | 1155 | 2447363 | 929528695940069114399150 | — | 1 | 17:00 |  |
+| 38 | AL | ARAPIRACA (27057) | 22 | 488 | — | 1155 | 2438572 | 909326707138021119598621 | — | 1 | 17:00 |  |
+| 39 | AL | ARAPIRACA (27057) | 22 | 565 | — | 1635 | 2444767 | 81144501215075377963158 | — | 1 | 17:00 |  |
+| 40 | AL | ARAPIRACA (27057) | 22 | 589 | — | 1716 | 2064791 | 404376401734313645504292 | — | 1 | 17:00 |  |
+| 41 | AL | ARAPIRACA (27057) | 55 | 68 | 69 | 1228 | 2071464 | 757865050978017844301112 | — | 1 | 17:00 |  |
+| 42 | AL | ARAPIRACA (27057) | 55 | 127 | — | 1090 | 2103161 | 929582922602197001864249 | — | 1 | 17:00 |  |
+| 43 | AL | ARAPIRACA (27057) | 55 | 137 | — | 1104 | 2059654 | 606350674770815451306139 | — | 1 | 17:00 |  |
+| 44 | AL | ARAPIRACA (27057) | 55 | 310 | — | 1260 | 2073439 | 636653972720743272967321 | — | 1 | 17:00 |  |
+| 45 | AL | ARAPIRACA (27057) | 55 | 341 | — | 1309 | 2072548 | 959885615995066552747520 | — | 1 | 17:00 |  |
+| 46 | AL | CAMPESTRE (27081) | 53 | 162 | — | 1040 | 2443062 | 351703083682787958758620 | — | 1 | 17:00 |  |
+| 47 | AL | BARRA DE SANTO ANTÔNIO (27090) | 17 | 147 | — | 1120 | 2432827 | 18585153976846093964196 | — | 1 | 17:00 |  |
+| 48 | AL | BATALHA (27138) | 29 | 16 | — | 1074 | 2052990 | 979410705011188454776951 | — | 1 | 17:00 |  |
+| 49 | AL | CACIMBINHAS (27235) | 46 | 8 | — | 1074 | 1772854 | 926986809281671289925178 | — | 1 | 17:00 |  |
+| 50 | AL | CACIMBINHAS (27235) | 46 | 10 | — | 1015 | 1768929 | 916885985380479471077713 | — | 1 | 17:00 |  |
+| 51 | AL | CACIMBINHAS (27235) | 46 | 62 | — | 1015 | 1815335 | 563350207696656204561137 | — | 1 | 17:00 |  |
+| 52 | AL | CAJUEIRO (27251) | 5 | 117 | — | 1015 | 2038448 | 531608462057448476543595 | — | 1 | 17:00 |  |
+| 53 | AL | CAJUEIRO (27251) | 5 | 133 | — | 1040 | 2036507 | 349789973778811044720284 | — | 1 | 17:00 |  |
+| 54 | AL | CANAPI (27316) | 27 | 12 | — | 1015 | 1774219 | 199010489691562827104291 | — | 1 | 17:00 |  |
+| 55 | AL | CAPELA (27332) | 6 | 163 | — | 1058 | 2052817 | 490615337086970213720027 | — | 1 | 17:00 |  |
+| 56 | AL | CHÃ PRETA (27375) | 28 | 61 | — | 1031 | 2449121 | 608862136987222045009082 | — | 1 | 17:00 |  |
+| 57 | AL | COITÉ DO NÓIA (27391) | 45 | 123 | — | 1023 | 1765298 | 11584575524543005760591 | — | 1 | 17:00 |  |
+| 58 | AL | COLÔNIA LEOPOLDINA (27413) | 16 | 123 | — | 1074 | 2038438 | 611234171741711969350534 | — | 1 | 17:00 |  |
+| 59 | AL | CORURIPE (27456) | 7 | 4 | — | 1104 | 2471944 | 456722892069103831979813 | — | 1 | 17:00 |  |
+| 60 | AL | CORURIPE (27456) | 7 | 5 | — | 1015 | 2468243 | 577934122681438999060733 | — | 1 | 17:00 |  |
+| 61 | AL | CORURIPE (27456) | 7 | 81 | — | 1333 | 2432025 | 113388787511884134516635 | — | 1 | 17:00 |  |
+| 62 | AL | CORURIPE (27456) | 7 | 96 | — | 1015 | 2443742 | 93186383709206426077581 | — | 1 | 17:00 |  |
+| 63 | AL | CORURIPE (27456) | 7 | 150 | — | 1180 | 2027679 | 2277440319886135371354 | — | 1 | 17:00 |  |
+| 64 | AL | DELMIRO GOUVEIA (27472) | 40 | 20 | — | 1040 | 1766646 | 61434202468258059598912 | — | 1 | 17:00 |  |
+| 65 | AL | DELMIRO GOUVEIA (27472) | 40 | 51 | — | 1473 | 1814985 | 707898167824981082481463 | — | 1 | 17:00 |  |
+| 66 | AL | DELMIRO GOUVEIA (27472) | 40 | 111 | — | 1066 | 1763423 | 425070697089810252896532 | — | 2 | 17:00 |  |
+| 67 | AL | DELMIRO GOUVEIA (27472) | 40 | 247 | — | 1538 | 1699889 | 212949447791983318698610 | — | 1 | 17:00 |  |
+| 68 | AL | DOIS RIACHOS (27499) | 46 | 46 | — | 1090 | 1764305 | 100304043625048580010027 | — | 1 | 17:00 |  |
+| 69 | AL | DOIS RIACHOS (27499) | 46 | 52 | — | 1031 | 1763890 | 645758217063365771676690 | — | 3 | 17:00 |  |
+| 70 | AL | FEIRA GRANDE (27510) | 49 | 74 | — | 1023 | 2072546 | 619288540769326493384404 | — | 1 | 17:00 |  |
+| 71 | AL | FELIZ DESERTO (27537) | 7 | 135 | — | 1015 | 2432202 | 435920287260850758597198 | — | 1 | 17:00 |  |
+| 72 | AL | GIRAU DO PONCIANO (27570) | 44 | 30 | — | 1295 | 2446457 | 242196451429950845337155 | — | 1 | 17:00 |  |
+| 73 | AL | IBATEGUARA (27596) | 16 | 12 | — | 1015 | 2014758 | 37676324457216073805040 | — | 1 | 17:00 |  |
+| 74 | AL | IGACI (27618) | 45 | 64 | — | 1090 | 1759181 | 203003061819342912194191 | — | 1 | 17:00 |  |
+| 75 | AL | IGREJA NOVA (27634) | 37 | 123 | — | 1074 | 2442062 | 565254124849602368810752 | — | 1 | 17:00 |  |
+| 76 | AL | INHAPI (27650) | 39 | 107 | — | 1066 | 1773818 | 119331971225892913588819 | — | 1 | 17:00 |  |
+| 77 | AL | JACARÉ DOS HOMENS (27677) | 29 | 34 | — | 1066 | 2441529 | 97622744633399175310090 | — | 2 | 17:00 |  |
+| 78 | AL | JACUÍPE (27693) | 14 | 1 | — | 1015 | 2069748 | 995250102902426445194755 | — | 1 | 17:00 |  |
+| 79 | AL | JACUÍPE (27693) | 14 | 12 | — | 1074 | 2472100 | 470098769550918173174538 | — | 1 | 17:00 |  |
+| 80 | AL | JUNDIÁ (27774) | 14 | 16 | — | 1015 | 2443144 | 136064861729257136047895 | — | 1 | 17:00 |  |
+| 81 | AL | JUNQUEIRO (27790) | 34 | 213 | — | 1074 | 2438470 | 670032252305701329283943 | — | 1 | 17:00 |  |
+| 82 | AL | MACEIÓ (27855) | 1 | 115 | 116 | 1228 | 2033527 | 408151113803101485395145 | — | 1 | 17:00 |  |
+| 83 | AL | MACEIÓ (27855) | 1 | 253 | — | 1660 | 2072779 | 994010851986533288271793 | — | 1 | 17:00 |  |
+| 84 | AL | MACEIÓ (27855) | 1 | 374 | — | 1830 | 2070445 | 610272817348644889900102 | — | 1 | 17:00 |  |
+| 85 | AL | MACEIÓ (27855) | 1 | 389 | — | 1724 | 2073316 | 196030192782370059002095 | — | 1 | 17:00 |  |
+| 86 | AL | MACEIÓ (27855) | 1 | 410 | — | 1864 | 2053042 | 266737698861519258259310 | — | 1 | 17:00 |  |
+| 87 | AL | MACEIÓ (27855) | 1 | 445 | — | 1970 | 2069479 | 539464530416346558815479 | — | 1 | 17:00 |  |
+| 88 | AL | MACEIÓ (27855) | 1 | 469 | — | 1988 | 2072093 | 630474400296626264370692 | — | 1 | 17:00 |  |
+| 89 | AL | MACEIÓ (27855) | 1 | 474 | 523 / 524 / 543 | 2186 | 2072856 | 660777954499552098113154 | — | 1 | 17:00 |  |
+| 90 | AL | MACEIÓ (27855) | 2 | 24 | — | 1074 | 2038693 | 751697336675115814230174 | — | 1 | 17:00 |  |
+| 91 | AL | MACEIÓ (27855) | 2 | 71 | — | 1821 | 2062834 | 468768067340243534935245 | — | 1 | 17:00 |  |
+| 92 | AL | MACEIÓ (27855) | 2 | 89 | — | 1201 | 2442209 | 509172055370602245141812 | — | 1 | 17:00 |  |
+| 93 | AL | MACEIÓ (27855) | 2 | 101 | — | 1228 | 2071965 | 448566642264465024178472 | — | 1 | 17:00 |  |
+| 94 | AL | MACEIÓ (27855) | 2 | 144 | — | 1589 | 2070409 | 24324830611361914235186 | — | 1 | 17:00 |  |
+| 95 | AL | MACEIÓ (27855) | 2 | 145 | — | 1309 | 2071253 | 812203738190503126406431 | — | 1 | 17:00 |  |
+| 96 | AL | MACEIÓ (27855) | 2 | 154 | — | 2062 | 2070412 | 276849157936301180059695 | — | 1 | 17:00 |  |
+| 97 | AL | MACEIÓ (27855) | 2 | 187 | — | 1392 | 2438829 | 196041612901105364846472 | — | 1 | 17:00 |  |
+| 98 | AL | MACEIÓ (27855) | 2 | 231 | — | 1090 | 2037714 | 246546743494291845987997 | — | 1 | 17:00 |  |
+| 99 | AL | MACEIÓ (27855) | 3 | 40 | — | 1082 | 2037044 | 357668632960061713823938 | — | 1 | 17:00 |  |
+| 100 | AL | MACEIÓ (27855) | 3 | 42 | — | 1082 | 2030920 | 923325422817656543802793 | — | 3 | 17:00 |  |
+
+Mostrando 100 de 14.865 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (20.451)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | CAPIXABA (1015) | 2 | 101 | — | 1228 | 2250802 | 814603014280158336604909 | — | 2 |  |  |
+| 2 | AC | PORTO ACRE (1023) | 1 | 598 | — | 1066 | 2295851 | 36114999929125217600488 | — | 2 |  |  |
+| 3 | AC | PORTO ACRE (1023) | 1 | 627 | — | 1201 | 2256083 | 359346809151035654199370 | — | 4 |  |  |
+| 4 | AC | SANTA ROSA DO PURUS (1031) | 3 | 95 | 140 | 1058 | 2047850 | 742507921023510426336993 | — | 2 |  |  |
+| 5 | AC | SANTA ROSA DO PURUS (1031) | 3 | 96 | 124 | 1066 | 2046432 | 207153491569995673921967 | — | 2 |  |  |
+| 6 | AC | MARECHAL THAUMATURGO (1040) | 4 | 161 | 505 | 1066 | 2294029 | 389182000815119263792756 | — | 2 |  |  |
+| 7 | AC | MARECHAL THAUMATURGO (1040) | 4 | 384 | — | 1147 | 2279772 | 490293768348435914270925 | — | 2 |  |  |
+| 8 | AC | BRASILÉIA (1058) | 6 | 1 | — | 1066 | 2293976 | 33969145584422996245717 | — | 2 |  |  |
+| 9 | AC | BRASILÉIA (1058) | 6 | 14 | 17 | 1082 | 2256994 | 286494796709592676801601 | — | 2 |  |  |
+| 10 | AC | BRASILÉIA (1058) | 6 | 89 | — | 1210 | 2273891 | 973363529748152314636086 | — | 2 |  |  |
+| 11 | AC | CRUZEIRO DO SUL (1074) | 4 | 123 | — | 1155 | 2293921 | 244668807678835615548486 | — | 2 |  |  |
+| 12 | AC | CRUZEIRO DO SUL (1074) | 4 | 155 | — | 2127 | 2283690 | 527496514028951021251517 | — | 3 |  |  |
+| 13 | AC | CRUZEIRO DO SUL (1074) | 4 | 159 | — | 2151 | 2270246 | 365880795712717031243334 | — | 2 |  |  |
+| 14 | AC | CRUZEIRO DO SUL (1074) | 4 | 204 | — | 1791 | 2250874 | 638507251935954017750140 | — | 2 |  |  |
+| 15 | AC | CRUZEIRO DO SUL (1074) | 4 | 227 | — | 2186 | 2261846 | 931537025465707954372177 | — | 2 |  |  |
+| 16 | AC | CRUZEIRO DO SUL (1074) | 4 | 257 | — | 1481 | 2297086 | 779921071349714278172758 | — | 2 |  |  |
+| 17 | AC | CRUZEIRO DO SUL (1074) | 4 | 269 | — | 1210 | 2283662 | 163860758944731475687466 | — | 2 |  |  |
+| 18 | AC | CRUZEIRO DO SUL (1074) | 4 | 297 | — | 1333 | 2251087 | 608204180788542060326654 | — | 2 |  |  |
+| 19 | AC | CRUZEIRO DO SUL (1074) | 4 | 301 | — | 2291 | 2251101 | 648608027692032195086832 | — | 11 |  |  |
+| 20 | AC | CRUZEIRO DO SUL (1074) | 4 | 415 | — | 2240 | 2266680 | 769820745844846901745195 | — | 2 |  |  |
+| 21 | AC | RODRIGUES ALVES (1082) | 4 | 475 | — | 1279 | 2251320 | 435887838298789235937450 | — | 2 |  |  |
+| 22 | AC | MÂNCIO LIMA (1090) | 4 | 103 | — | 1139 | 2266773 | 344278763912491975924491 | — | 2 |  |  |
+| 23 | AC | MÂNCIO LIMA (1090) | 4 | 190 | — | 1147 | 2260972 | 768420483254006241814975 | — | 2 |  |  |
+| 24 | AC | MÂNCIO LIMA (1090) | 4 | 335 | — | 1147 | 2273132 | 41248079893100328402693 | — | 2 |  |  |
+| 25 | AC | JORDÃO (1104) | 5 | 46 | — | 1112 | 2264107 | 591114536392813012642834 | — | 2 |  |  |
+| 26 | AC | ACRELÂNDIA (1120) | 8 | 83 | — | 1015 | 2048054 | 64494953170824903400773 | — | 2 |  |  |
+| 27 | AC | FEIJÓ (1139) | 7 | 4 | — | 1031 | 2278939 | 265603708467551219868652 | — | 2 |  |  |
+| 28 | AC | FEIJÓ (1139) | 7 | 6 | — | 1040 | 2264767 | 23279681443444938576593 | — | 2 |  |  |
+| 29 | AC | FEIJÓ (1139) | 7 | 31 | — | 1147 | 2272197 | 174794491348726457013701 | — | 2 |  |  |
+| 30 | AC | FEIJÓ (1139) | 7 | 32 | — | 1058 | 2266464 | 962673397827141841161774 | — | 2 |  |  |
+| 31 | AC | FEIJÓ (1139) | 7 | 58 | — | 1031 | 2261730 | 23279259133278200574170 | — | 2 |  |  |
+| 32 | AC | FEIJÓ (1139) | 7 | 87 | — | 1171 | 2275127 | 407017738687281076293002 | — | 2 |  |  |
+| 33 | AC | FEIJÓ (1139) | 7 | 91 | — | 1198 | 2256403 | 740451487021731918142882 | — | 2 |  |  |
+| 34 | AC | RIO BRANCO (1392) | 1 | 38 | — | 1139 | 2043736 | 802791890507507590022520 | — | 2 |  |  |
+| 35 | AC | RIO BRANCO (1392) | 1 | 43 | — | 1074 | 2044925 | 873498481514721376815849 | — | 2 |  |  |
+| 36 | AC | RIO BRANCO (1392) | 1 | 95 | — | 1961 | 2039516 | 499660678114905398230728 | — | 2 |  |  |
+| 37 | AC | RIO BRANCO (1392) | 1 | 97 | — | 2569 | 2046072 | 136024532478517427106314 | — | 2 |  |  |
+| 38 | AC | RIO BRANCO (1392) | 1 | 379 | — | 1465 | 2044838 | 277438028685563163106059 | — | 2 |  |  |
+| 39 | AC | RIO BRANCO (1392) | 1 | 406 | — | 2089 | 2045138 | 469357486542528070868854 | — | 2 |  |  |
+| 40 | AC | RIO BRANCO (1392) | 1 | 440 | — | 1996 | 2043721 | 529963162148936184837013 | — | 2 |  |  |
+| 41 | AC | RIO BRANCO (1392) | 1 | 460 | — | 2542 | 2048158 | 277438059548102541260618 | — | 2 |  |  |
+| 42 | AC | RIO BRANCO (1392) | 1 | 476 | — | 2690 | 2044952 | 398650907360620131199301 | — | 2 |  |  |
+| 43 | AC | RIO BRANCO (1392) | 1 | 515 | — | 1066 | 2048000 | 338044406726201032728861 | — | 2 |  |  |
+| 44 | AC | RIO BRANCO (1392) | 1 | 551 | — | 2763 | 2048098 | 671478677287536595743869 | — | 2 |  |  |
+| 45 | AC | RIO BRANCO (1392) | 1 | 638 | — | 3298 | 2269575 | 873498502314403429814647 | — | 2 |  |  |
+| 46 | AC | RIO BRANCO (1392) | 1 | 689 | — | 3433 | 2044955 | 913802005228590811042161 | — | 2 |  |  |
+| 47 | AC | RIO BRANCO (1392) | 1 | 698 | — | 3468 | 2044985 | 125923170649637941049910 | — | 2 |  |  |
+| 48 | AC | RIO BRANCO (1392) | 1 | 796 | — | 2810 | 2044067 | 610872538846359890148934 | — | 2 |  |  |
+| 49 | AC | RIO BRANCO (1392) | 1 | 800 | — | 3751 | 2045102 | 843195561669672533451299 | — | 2 |  |  |
+| 50 | AC | RIO BRANCO (1392) | 1 | 812 | — | 3506 | 2047830 | 388549395223731261009430 | — | 2 |  |  |
+| 51 | AC | RIO BRANCO (1392) | 1 | 829 | — | 3778 | 2048227 | 125923974529796633944475 | — | 2 |  |  |
+| 52 | AC | RIO BRANCO (1392) | 1 | 842 | — | 3778 | 2045139 | 24913243019911042302489 | — | 2 |  |  |
+| 53 | AC | RIO BRANCO (1392) | 1 | 849 | — | 3743 | 2045124 | 600771593277404097376317 | — | 2 |  |  |
+| 54 | AC | RIO BRANCO (1392) | 9 | 35 | — | 1040 | 2279911 | 267325029910524833653318 | — | 2 |  |  |
+| 55 | AC | RIO BRANCO (1392) | 9 | 90 | — | 1210 | 2046123 | 146113778668013088534301 | — | 2 |  |  |
+| 56 | AC | RIO BRANCO (1392) | 9 | 131 | — | 1317 | 2046288 | 540153954456321828543706 | — | 2 |  |  |
+| 57 | AC | RIO BRANCO (1392) | 9 | 141 | — | 1619 | 2045281 | 125911603014680063778145 | — | 2 |  |  |
+| 58 | AC | RIO BRANCO (1392) | 9 | 180 | — | 1260 | 2265602 | 772476428045553667829820 | — | 2 |  |  |
+| 59 | AC | RIO BRANCO (1392) | 9 | 183 | — | 1589 | 2270045 | 297628272797373129071862 | — | 2 |  |  |
+| 60 | AC | RIO BRANCO (1392) | 9 | 233 | — | 1090 | 2048203 | 944193666975623806471301 | — | 2 |  |  |
+| 61 | AC | RIO BRANCO (1392) | 9 | 280 | — | 1899 | 2269491 | 812880559694503587004795 | — | 2 |  |  |
+| 62 | AC | RIO BRANCO (1392) | 9 | 338 | — | 2127 | 2261065 | 439042796129859601419140 | — | 2 |  |  |
+| 63 | AC | RIO BRANCO (1392) | 9 | 465 | — | 1902 | 2270392 | 822981152998335290559278 | — | 2 |  |  |
+| 64 | AC | SENA MADUREIRA (1457) | 3 | 25 | — | 1139 | 2046182 | 389371076728197132209484 | — | 2 |  |  |
+| 65 | AC | SENA MADUREIRA (1457) | 3 | 61 | — | 1015 | 2046452 | 419674945831926431910787 | — | 2 |  |  |
+| 66 | AC | SENA MADUREIRA (1457) | 3 | 62 | — | 1520 | 2046389 | 561189206246288602171123 | — | 2 |  |  |
+| 67 | AC | SENA MADUREIRA (1457) | 3 | 80 | — | 1112 | 2048089 | 742907307734129519395814 | — | 2 |  |  |
+| 68 | AC | SENA MADUREIRA (1457) | 3 | 113 | — | 1180 | 2047922 | 96442583745140638571320 | — | 2 |  |  |
+| 69 | AC | SENA MADUREIRA (1457) | 3 | 146 | — | 1066 | 2044839 | 237856269125763503274586 | — | 2 |  |  |
+| 70 | AC | SENA MADUREIRA (1457) | 3 | 151 | — | 1562 | 2044233 | 66139617808199892814303 | — | 2 |  |  |
+| 71 | AC | TARAUACÁ (1473) | 5 | 3 | — | 1015 | 2294034 | 438498767927416267806939 | — | 2 |  |  |
+| 72 | AC | TARAUACÁ (1473) | 5 | 11 | — | 1171 | 2271938 | 337488511917229763691625 | — | 2 |  |  |
+| 73 | AC | TARAUACÁ (1473) | 5 | 26 | — | 1171 | 2270250 | 64761868490497621716864 | — | 2 |  |  |
+| 74 | AC | TARAUACÁ (1473) | 5 | 34 | — | 1074 | 2264349 | 802135456073216038708606 | — | 3 |  |  |
+| 75 | AC | TARAUACÁ (1473) | 5 | 42 | — | 1350 | 2256856 | 590014096552264226073896 | — | 2 |  |  |
+| 76 | AC | XAPURI (1490) | 2 | 27 | — | 1082 | 2267217 | 730995642257461698614517 | — | 2 |  |  |
+| 77 | AC | XAPURI (1490) | 2 | 52 | — | 1260 | 2256478 | 791501369765806864032774 | — | 2 |  |  |
+| 78 | AC | SENADOR GUIOMARD (1538) | 8 | 31 | — | 1066 | 2044845 | 813069132476941305715708 | — | 2 |  |  |
+| 79 | AC | SENADOR GUIOMARD (1538) | 8 | 97 | — | 1481 | 2045195 | 227110628029839141812288 | — | 2 |  |  |
+| 80 | AC | SENADOR GUIOMARD (1538) | 8 | 200 | — | 1210 | 2047072 | 510039697100891375816440 | — | 2 |  |  |
+| 81 | AC | SENADOR GUIOMARD (1538) | 8 | 265 | — | 1457 | 2047886 | 307918455354870194692637 | — | 2 |  |  |
+| 82 | AC | MANOEL URBANO (1554) | 3 | 89 | — | 1252 | 2046261 | 478280025244521023840650 | — | 2 |  |  |
+| 83 | AC | ASSIS BRASIL (1570) | 6 | 28 | — | 1015 | 2250730 | 305196329964453411494848 | — | 2 |  |  |
+| 84 | AC | ASSIS BRASIL (1570) | 6 | 43 | — | 1031 | 2274464 | 204186819554740259768632 | — | 6 |  |  |
+| 85 | AL | PARIPUEIRA (27006) | 17 | 12 | — | 1015 | 2456834 | 125196419206553150466744 | — | 2 |  |  |
+| 86 | AL | PARIPUEIRA (27006) | 17 | 94 | — | 1031 | 2037376 | 519035581745826115250619 | — | 2 |  |  |
+| 87 | AL | ÁGUA BRANCA (27014) | 39 | 16 | — | 1015 | 1667581 | 629482357420195621210677 | — | 2 |  |  |
+| 88 | AL | ÁGUA BRANCA (27014) | 39 | 41 | — | 1228 | 1804471 | 710391108635252849879132 | — | 2 |  |  |
+| 89 | AL | ANADIA (27030) | 48 | 134 | — | 1210 | 2450386 | 11917756560770699547055 | — | 2 |  |  |
+| 90 | AL | ANADIA (27030) | 48 | 203 | — | 1252 | 2473665 | 809896318339495080051127 | — | 2 |  |  |
+| 91 | AL | ARAPIRACA (27057) | 22 | 32 | — | 1651 | 2473662 | 10437447750952010841619 | — | 2 |  |  |
+| 92 | AL | ARAPIRACA (27057) | 22 | 50 | — | 1155 | 2071231 | 30639386352516519164743 | — | 2 |  |  |
+| 93 | AL | ARAPIRACA (27057) | 22 | 53 | — | 1155 | 2071047 | 596295277008094100961191 | — | 2 |  |  |
+| 94 | AL | ARAPIRACA (27057) | 22 | 54 | — | 1155 | 2072877 | 283164073777270270305812 | — | 2 |  |  |
+| 95 | AL | ARAPIRACA (27057) | 22 | 351 | — | 1872 | 2444908 | 313467049229385506587566 | — | 2 |  |  |
+| 96 | AL | ARAPIRACA (27057) | 22 | 352 | — | 1333 | 2443535 | 909326742088257809203747 | — | 2 |  |  |
+| 97 | AL | ARAPIRACA (27057) | 22 | 363 | — | 1872 | 2435286 | 515487533149190157447655 | — | 2 |  |  |
+| 98 | AL | ARAPIRACA (27057) | 22 | 402 | — | 1589 | 2471044 | 818417399379256604845359 | — | 2 |  |  |
+| 99 | AL | ARAPIRACA (27057) | 22 | 452 | — | 1570 | 2073411 | 404376331088349754203335 | — | 2 |  |  |
+| 100 | AL | ARAPIRACA (27057) | 22 | 497 | — | 1589 | 2073477 | 151851910563735048051757 | — | 2 |  |  |
+
+Mostrando 100 de 20.451 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.10 🔴 L10 — Hora de la zerésima y del encendido de la urna
+
+**Objetivo.** Verifica la hora en que la urna fue encendida e imprimió la zerésima, el informe que muestra que empezó sin ningún voto.
+
+**Método.** Lee en el log la hora de encendido de la urna, la de la zerésima y la del primer voto.
+
+**Criterio de señalización.** Anomalía estadística: zerésima después del primer voto, o urna sin zerésima en el día. Informativo: zerésima antes de las 6 h o 1 hora o más después del inicio oficial de la votación (8 h de Brasilia), en hora local.
+
+**Limitaciones y explicaciones alternativas.** La urna de contingencia imprime su zerésima a la hora del cambio. Un reloj equivocado cambia todos los horarios.
+
+> 📊 **Resultado:** 🔴 **54 anomalía(s)** en 499.176 unidades analizadas (0,011%) · 🟡 2.833 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Zerésima fuera del horario (informativo) | 2.833 |
+| 🔴 Sin zerésima en el día | 54 |
+
+*Observado: hora de la zerésima. Referencia: hora del primer voto o del encendido de la urna.*
+
+#### 🔴 Urnas con anomalía — lista completa (54)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | BA | AMARGOSA (33197) | 36 | 3 | — | 1015 | 2212056 | 235210239348604937384540 | — | — | 12:32 |  |
+| 2 | BA | SÁTIRO DIAS (38938) | 44 | 158 | 165 | 1295 | 2231478 | 310403318222773894514961 | — | — | 14:01 |  |
+| 3 | BA | VITÓRIA DA CONQUISTA (39659) | 41 | 169 | — | 1724 | 2051935 | 90129093200183087388199 | — | — | 11:53 |  |
+| 4 | PA | BARCARENA (4251) | 65 | 34 | — | 1210 | 2398947 | 425639422276387174295306 | — | — | 15:32 |  |
+| 5 | PR | CORUMBATAÍ DO SUL (75280) | 133 | 30 | — | 1066 | 2021395 | 598322597392714970066720 | — | — | 09:39 |  |
+| 6 | PR | CURITIBA (75353) | 178 | 671 | — | 2194 | 2327179 | 204566200926361865369193 | — | — | 08:44 |  |
+| 7 | SC | ABELARDO LUZ (80012) | 71 | 50 | — | 1333 | 2180030 | 336693337979783756063612 | — | — | 10:02 |  |
+| 8 | SC | BLUMENAU (80470) | 88 | 22 | — | 1058 | 2370331 | 807324805960816694142578 | — | — | 08:59 |  |
+| 9 | SC | BLUMENAU (80470) | 88 | 32 | — | 1066 | 2367504 | 484192488728341112849009 | — | — | 09:00 |  |
+| 10 | SC | ARABUTÃ (80489) | 90 | 29 | — | 1058 | 2177622 | 555018550238761862962095 | — | — | 16:52 |  |
+| 11 | SC | BRUSQUE (80551) | 86 | 69 | — | 1481 | 2191675 | 493671494647436759595962 | — | — | 16:24 |  |
+| 12 | SC | RIQUEZA (80560) | 41 | 137 | — | 1040 | 2048486 | 56344050929355177404891 | — | — | 14:14 |  |
+| 13 | SC | SANGÃO (81000) | 33 | 50 | — | 1023 | 2190970 | 815135814580993805030843 | — | — | 11:37 |  |
+| 14 | SC | ERVAL VELHO (81019) | 85 | 157 | — | 1015 | 2180529 | 2711005173716205664034 | — | — | 11:28 |  |
+| 15 | SC | GASPAR (81175) | 64 | 29 | — | 1120 | 1699625 | 239409236318567189826137 | — | — | 16:32 |  |
+| 16 | SC | GASPAR (81175) | 64 | 105 | — | 1228 | 1678454 | 265212264552229499209776 | — | — | 09:41 |  |
+| 17 | SC | GASPAR (81175) | 64 | 121 | — | 1120 | 1678015 | 411227419736140508484809 | — | — | 09:34 |  |
+| 18 | SC | GASPAR (81175) | 64 | 132 | — | 1210 | 1680667 | 411227415136511159279030 | — | — | 08:55 |  |
+| 19 | SC | GASPAR (81175) | 64 | 139 | — | 1376 | 1776208 | 239409239818136291921529 | — | — | 10:41 |  |
+| 20 | SC | GUABIRUBA (81230) | 5 | 164 | — | 1171 | 2022308 | 256980257626912972371443 | — | — | 11:49 |  |
+| 21 | SC | IMBITUBA (81434) | 73 | 63 | — | 1058 | 1681275 | 979179978188014896842135 | — | — | 08:43 |  |
+| 22 | SC | ITAIÓPOLIS (81590) | 38 | 1 | — | 1015 | 1782561 | 498358492318263706345727 | — | — | 11:33 |  |
+| 23 | SC | FLOR DO SERTÃO (81604) | 58 | 73 | — | 1058 | 2172583 | 488171481835714827123473 | — | — | 10:22 |  |
+| 24 | SC | ITAJAÍ (81612) | 97 | 27 | — | 1112 | 2469445 | 421082425235513335124235 | — | — | 09:34 |  |
+| 25 | SC | LAGES (81833) | 104 | 39 | — | 1066 | 2443265 | 395292398112252453860491 | — | — | 14:19 |  |
+| 26 | SC | LAGUNA (81850) | 20 | 60 | — | 1244 | 2190130 | 61420067090280807259765 | — | — | 12:03 |  |
+| 27 | SC | LAURO MÜLLER (81892) | 23 | 22 | — | 1058 | 1664003 | 502097503042552767059775 | — | — | 10:08 |  |
+| 28 | SC | PALMITOS (82376) | 41 | 42 | — | 1058 | 2003550 | 106849104534050510535142 | — | — | 16:01 |  |
+| 29 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 62 | — | 1155 | 1680318 | 35533034614063625385101 | — | — | 13:38 |  |
+| 30 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 74 | — | 1163 | 1679944 | 187048187068212336254474 | — | — | 09:15 |  |
+| 31 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 143 | — | 1180 | 1677842 | 298159293879251148270791 | — | — | 11:31 |  |
+| 32 | SC | RIO DO SUL (82910) | 26 | 97 | — | 1015 | 2003314 | 725252728578650996818927 | — | — | 13:48 |  |
+| 33 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 76 | — | 1139 | 1651603 | 448935442851303722017882 | — | — | 11:54 |  |
+| 34 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 177 | — | 1430 | 1681481 | 722963724581368495852589 | — | — | 11:53 |  |
+| 35 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 244 | — | 1414 | 1678819 | 712862711968865261491896 | — | — | 10:10 |  |
+| 36 | SC | SÃO JOAQUIM (83259) | 28 | 5 | — | 1023 | 1660109 | 16603010614514773961463 | — | — | 09:38 |  |
+| 37 | SC | SÃO JOSÉ (83275) | 84 | 255 | — | 1317 | 2250011 | 692069697651811143210706 | — | — | 15:27 |  |
+| 38 | SC | SCHROEDER (83437) | 17 | 311 | — | 1015 | 2454467 | 537237534733543943025100 | — | — | 14:06 |  |
+| 39 | SC | TANGARÁ (83534) | 47 | 42 | — | 1015 | 1803918 | 416046417914473299458369 | — | — | 09:06 |  |
+| 40 | SC | TUBARÃO (83674) | 33 | 220 | — | 1392 | 2002447 | 320286320331626176244519 | — | — | 08:30 |  |
+| 41 | SC | URUSSANGA (83739) | 34 | 69 | — | 1058 | 1680270 | 502815508048243790642566 | — | — | 17:28 |  |
+| 42 | SC | URUSSANGA (83739) | 34 | 82 | — | 1112 | 1678602 | 805845804078571515566109 | — | — | 13:20 |  |
+| 43 | SP | GUARULHOS (64777) | 185 | 235 | — | 1287 | 2330646 | 443564445677101318208761 | — | — | 16:06 |  |
+| 44 | SP | GUARULHOS (64777) | 185 | 388 | — | 1473 | 1803354 | 948514949809220840773077 | — | — | 10:39 |  |
+| 45 | SP | GUARULHOS (64777) | 393 | 155 | — | 1198 | 2463274 | 847507845083754032839769 | — | — | 16:06 |  |
+| 46 | SP | RIBEIRÃO PIRES (69671) | 183 | 307 | — | 1325 | 2013654 | 401538402997640320427804 | — | — | 09:23 |  |
+| 47 | SP | SANTO ANTÔNIO DO JARDIM (70637) | 91 | 55 | — | 1015 | 1668896 | 637837636160934704377526 | — | — | 10:36 |  |
+| 48 | SP | SÃO PAULO (71072) | 258 | 558 | — | 1481 | 2010001 | 563797569486978948105014 | — | — | 12:55 |  |
+| 49 | SP | SÃO PAULO (71072) | 350 | 463 | — | 2216 | 1829376 | 775839779713365896768888 | — | — | 11:26 |  |
+| 50 | SP | SÃO PAULO (71072) | 381 | 607 | — | 1422 | 2077389 | 775871772550812899807800 | — | — | 09:22 |  |
+| 51 | SP | SUMARÉ (71498) | 362 | 140 | — | 1970 | 1677292 | 675258678932765812699922 | — | — | 11:35 |  |
+| 52 | SP | TABOÃO DA SERRA (71579) | 324 | 131 | — | 1147 | 2131520 | 836268830729569004042399 | — | — | 15:33 |  |
+| 53 | SP | TABOÃO DA SERRA (71579) | 324 | 204 | — | 1104 | 1833848 | 664551666301838695114246 | — | — | 14:51 |  |
+| 54 | SP | TABOÃO DA SERRA (71579) | 324 | 237 | — | 1244 | 2137808 | 391824398885783817842042 | — | — | 11:15 |  |
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (2.833)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | BUJARI (1007) | 9 | 1 | — | 1104 | 2468149 | 997198101523282243858675 | — | 05:33 | 04:38 |  |
+| 2 | AC | BUJARI (1007) | 9 | 2 | — | 1104 | 2257895 | 259724477549919157073129 | — | 05:23 | 04:41 |  |
+| 3 | AC | BUJARI (1007) | 9 | 3 | — | 1104 | 2269941 | 290128622453908868562978 | — | 05:15 | 04:45 |  |
+| 4 | AC | BUJARI (1007) | 9 | 4 | — | 1104 | 2268088 | 886087321812779447971015 | — | 05:44 | 04:44 |  |
+| 5 | AC | BUJARI (1007) | 9 | 5 | — | 1112 | 2260219 | 532552085777093923543822 | — | 05:06 | 04:07 |  |
+| 6 | AC | BUJARI (1007) | 9 | 6 | — | 1112 | 2295752 | 17300679925923812909568 | — | 05:26 | 04:05 |  |
+| 7 | AC | BUJARI (1007) | 9 | 7 | — | 1023 | 2294208 | 279926048051208339759928 | — | 05:48 | 05:45 |  |
+| 8 | AC | BUJARI (1007) | 9 | 8 | — | 1023 | 2269638 | 77906953331211473719103 | — | 05:42 | 05:14 |  |
+| 9 | AC | BUJARI (1007) | 9 | 9 | — | 1023 | 2256823 | 310330307755268213853503 | — | 05:39 | 00:14 |  |
+| 10 | AC | BUJARI (1007) | 9 | 10 | — | 1023 | 2272456 | 997198066323221404886863 | — | 05:49 | 05:46 |  |
+| 11 | AC | BUJARI (1007) | 9 | 120 | — | 1112 | 2262807 | 209219435544678748094241 | — | 05:21 | 04:03 |  |
+| 12 | AC | BUJARI (1007) | 9 | 136 | — | 1023 | 2280706 | 7299962391925921021864 | — | 05:41 | 05:38 |  |
+| 13 | AC | BUJARI (1007) | 9 | 137 | — | 1112 | 2297079 | 492148560140360883874122 | — | 05:51 | 03:58 |  |
+| 14 | AC | BUJARI (1007) | 9 | 163 | — | 1040 | 2262721 | 199118031510800173040007 | — | 05:18 | 05:15 |  |
+| 15 | AC | BUJARI (1007) | 9 | 186 | — | 1112 | 2266286 | 37502341194926160064002 | — | 05:27 | 04:09 |  |
+| 16 | AC | BUJARI (1007) | 9 | 192 | — | 1058 | 2256198 | 138512073204697187856873 | — | 05:19 | 05:14 |  |
+| 17 | AC | BUJARI (1007) | 9 | 200 | — | 1066 | 2278632 | 562855743047353324292896 | — | 05:51 | 05:48 |  |
+| 18 | AC | BUJARI (1007) | 9 | 201 | — | 1074 | 2261568 | 855784146576857292863177 | — | 05:44 | 05:42 |  |
+| 19 | AC | BUJARI (1007) | 9 | 202 | — | 1058 | 2266509 | 471946871538680709431691 | — | 05:13 | 05:10 |  |
+| 20 | AC | BUJARI (1007) | 9 | 208 | — | 1058 | 2270259 | 926491985183871987493897 | — | 05:26 | 05:22 |  |
+| 21 | AC | BUJARI (1007) | 9 | 212 | — | 1082 | 2294204 | 492148966640720786425523 | — | 05:24 | 05:02 |  |
+| 22 | AC | BUJARI (1007) | 9 | 237 | — | 1082 | 2260251 | 108209268680390272309923 | — | 05:11 | 05:07 |  |
+| 23 | AC | BUJARI (1007) | 9 | 242 | — | 1090 | 2266763 | 724471406642459804838371 | — | 05:30 | 05:26 |  |
+| 24 | AC | BUJARI (1007) | 9 | 252 | — | 1090 | 2273241 | 300229053300911731209851 | — | 05:22 | 05:17 |  |
+| 25 | AC | BUJARI (1007) | 9 | 304 | — | 1112 | 2269608 | 391138103209284013306358 | — | 05:49 | 04:16 |  |
+| 26 | AC | BUJARI (1007) | 9 | 305 | — | 1104 | 2256294 | 926491748262486956426884 | — | 05:44 | 04:46 |  |
+| 27 | AC | BUJARI (1007) | 9 | 310 | — | 1066 | 2264232 | 441643784314358799645574 | — | 05:47 | 05:44 |  |
+| 28 | AC | BUJARI (1007) | 9 | 411 | — | 1090 | 2273179 | 88007620978017059695216 | — | 05:31 | 05:21 |  |
+| 29 | AC | BUJARI (1007) | 9 | 412 | — | 1112 | 2266654 | 613360264631820455804780 | — | 05:33 | 04:11 |  |
+| 30 | AC | BUJARI (1007) | 9 | 413 | — | 1074 | 2273127 | 360835126406318441162843 | — | 05:26 | 05:21 |  |
+| 31 | AC | BUJARI (1007) | 9 | 419 | — | 1104 | 2264605 | 158714573685389642293753 | — | 05:42 | 04:49 |  |
+| 32 | AC | BUJARI (1007) | 9 | 440 | — | 1023 | 2296935 | 27401662852912615149045 | — | 05:37 | 05:34 |  |
+| 33 | AC | BUJARI (1007) | 9 | 441 | — | 1112 | 2280801 | 492148243499052359575691 | — | 05:19 | 04:09 |  |
+| 34 | AC | BUJARI (1007) | 9 | 475 | — | 1104 | 2262625 | 906289301540833221438360 | — | 05:44 | 04:54 |  |
+| 35 | AC | BUJARI (1007) | 9 | 477 | — | 1112 | 2252294 | 411340039591365664620460 | — | 05:53 | 03:55 |  |
+| 36 | AC | BUJARI (1007) | 9 | 479 | — | 1104 | 2276047 | 249623089474649929938324 | — | 05:44 | 04:48 |  |
+| 37 | AC | CAPIXABA (1015) | 2 | 65 | — | 1015 | 2257627 | 713693684854842769921235 | — | 05:38 | 05:35 |  |
+| 38 | AC | CAPIXABA (1015) | 2 | 66 | — | 1015 | 2292145 | 531875619836470426372239 | — | 05:43 | 05:31 |  |
+| 39 | AC | CAPIXABA (1015) | 2 | 67 | — | 1015 | 2269442 | 491471681832780077850951 | — | 05:45 | 05:18 |  |
+| 40 | AC | CAPIXABA (1015) | 2 | 68 | — | 1015 | 2270042 | 925714226375020771913336 | — | 05:44 | 05:22 |  |
+| 41 | AC | CAPIXABA (1015) | 2 | 69 | — | 1023 | 2277684 | 380360797621565158908644 | — | 05:29 | 05:26 |  |
+| 42 | AC | CAPIXABA (1015) | 2 | 70 | — | 1023 | 2264727 | 461168951429312979176455 | — | 05:17 | 05:14 |  |
+| 43 | AC | CAPIXABA (1015) | 2 | 71 | — | 1023 | 2269616 | 713693315754987215881631 | — | 05:15 | 05:12 |  |
+| 44 | AC | CAPIXABA (1015) | 2 | 72 | — | 1023 | 2256806 | 834805543466128451531403 | — | 05:15 | 05:12 |  |
+| 45 | AC | CAPIXABA (1015) | 2 | 73 | — | 1058 | 2262809 | 642986461747549674806554 | — | 05:35 | 05:29 |  |
+| 46 | AC | CAPIXABA (1015) | 2 | 74 | — | 1058 | 2283441 | 269148195409637190103891 | — | 05:27 | 05:24 |  |
+| 47 | AC | CAPIXABA (1015) | 2 | 75 | — | 1058 | 2269707 | 693491736052413915052401 | — | 05:34 | 05:31 |  |
+| 48 | AC | CAPIXABA (1015) | 2 | 77 | — | 1058 | 2272147 | 279249536810667177928226 | — | 05:16 | 05:12 |  |
+| 49 | AC | CAPIXABA (1015) | 2 | 78 | — | 1058 | 2268447 | 572279946240310603731636 | — | 05:19 | 05:16 |  |
+| 50 | AC | CAPIXABA (1015) | 2 | 79 | — | 1066 | 2267970 | 945916429577356220689569 | — | 05:14 | 05:11 |  |
+| 51 | AC | CAPIXABA (1015) | 2 | 80 | — | 1066 | 2264243 | 622784188145319918110459 | — | 05:24 | 05:21 |  |
+| 52 | AC | CAPIXABA (1015) | 2 | 81 | — | 1066 | 2262740 | 693491367852070175943028 | — | 05:29 | 05:27 |  |
+| 53 | AC | CAPIXABA (1015) | 2 | 82 | — | 1066 | 2266382 | 905512686973196266790197 | — | 05:44 | 05:35 |  |
+| 54 | AC | CAPIXABA (1015) | 2 | 87 | 112 | 1104 | 2289949 | 996421328898179630641220 | — | 05:30 | 05:28 |  |
+| 55 | AC | CAPIXABA (1015) | 2 | 88 | — | 1112 | 2263093 | 592481031058442882983690 | — | 05:30 | 05:21 |  |
+| 56 | AC | CAPIXABA (1015) | 2 | 89 | — | 1112 | 2250882 | 400562958939748733289355 | — | 05:26 | 05:24 |  |
+| 57 | AC | CAPIXABA (1015) | 2 | 90 | — | 1120 | 2294371 | 168138799015970097586947 | — | 05:32 | 05:29 |  |
+| 58 | AC | CAPIXABA (1015) | 2 | 91 | — | 1120 | 2283762 | 683390424867585302557017 | — | 05:47 | 05:44 |  |
+| 59 | AC | CAPIXABA (1015) | 2 | 92 | — | 1120 | 2264096 | 986320838597356758612702 | — | 05:11 | 05:08 |  |
+| 60 | AC | CAPIXABA (1015) | 2 | 93 | — | 1120 | 2264191 | 673289631666394187535263 | — | 05:35 | 05:29 |  |
+| 61 | AC | CAPIXABA (1015) | 2 | 94 | — | 1015 | 2283599 | 349956419633660513922226 | — | 05:50 | 05:47 |  |
+| 62 | AC | CAPIXABA (1015) | 2 | 95 | — | 1015 | 2259026 | 420764608641090598493860 | — | 05:49 | 05:46 |  |
+| 63 | AC | CAPIXABA (1015) | 2 | 101 | — | 1228 | 2250802 | 814603014280158336604909 | — | 05:46 | 05:42 |  |
+| 64 | AC | CAPIXABA (1015) | 2 | 102 | — | 1236 | 2264220 | 945916256493563892999618 | — | 05:19 | 05:11 |  |
+| 65 | AC | CAPIXABA (1015) | 2 | 103 | — | 1236 | 2256067 | 541976962453372786859320 | — | 05:20 | 05:17 |  |
+| 66 | AC | CAPIXABA (1015) | 2 | 105 | — | 1023 | 2256836 | 885310527287952048594758 | — | 05:18 | 05:09 |  |
+| 67 | AC | CAPIXABA (1015) | 2 | 106 | — | 1236 | 2297023 | 834805582682496399575812 | — | 05:23 | 05:16 |  |
+| 68 | AC | CAPIXABA (1015) | 2 | 107 | — | 1015 | 2277703 | 481370349647420134475311 | — | 05:46 | 05:21 |  |
+| 69 | AC | CAPIXABA (1015) | 2 | 109 | — | 1066 | 2272446 | 723794802571907069895440 | — | 05:36 | 05:32 |  |
+| 70 | AC | CAPIXABA (1015) | 2 | 111 | — | 1120 | 2266666 | 552077826954980192638756 | — | 05:19 | 05:16 |  |
+| 71 | AC | PORTO ACRE (1023) | 1 | 576 | — | 1015 | 2044888 | 904801500417855000680216 | — | 05:25 | 05:21 |  |
+| 72 | AC | PORTO ACRE (1023) | 1 | 577 | — | 1015 | 2047917 | 712982423398010005895797 | — | 05:41 | 05:20 |  |
+| 73 | AC | PORTO ACRE (1023) | 1 | 578 | — | 1015 | 2046411 | 450356270972138929489196 | — | 05:20 | 05:16 |  |
+| 74 | AC | PORTO ACRE (1023) | 1 | 579 | — | 1015 | 2042067 | 238134163250729490616759 | — | 05:27 | 05:24 |  |
+| 75 | AC | PORTO ACRE (1023) | 1 | 580 | — | 1015 | 2046177 | 642275652791629713570627 | — | 05:19 | 05:16 |  |
+| 76 | AC | PORTO ACRE (1023) | 1 | 581 | — | 1015 | 2046443 | 763487889103623326752952 | — | 05:42 | 05:23 |  |
+| 77 | AC | PORTO ACRE (1023) | 1 | 582 | — | 1015 | 2047980 | 419952641768083357598540 | — | 05:44 | 05:24 |  |
+| 78 | AC | PORTO ACRE (1023) | 1 | 583 | — | 1023 | 2043632 | 420053762469516615771986 | — | 05:28 | 04:17 |  |
+| 79 | AC | PORTO ACRE (1023) | 1 | 584 | — | 1023 | 2258570 | 682679133995422507550993 | — | 05:13 | 04:20 |  |
+| 80 | AC | PORTO ACRE (1023) | 1 | 585 | — | 1023 | 2266212 | 369447923163454586350709 | — | 05:20 | 04:24 |  |
+| 81 | AC | PORTO ACRE (1023) | 1 | 586 | — | 1023 | 2278605 | 470558141574308304002534 | — | 05:21 | 04:30 |  |
+| 82 | AC | PORTO ACRE (1023) | 1 | 587 | — | 1023 | 2294350 | 803891582307988587320546 | — | 05:22 | 04:32 |  |
+| 83 | AC | PORTO ACRE (1023) | 1 | 588 | — | 1023 | 2044878 | 399750284266387267178811 | — | 05:25 | 04:36 |  |
+| 84 | AC | PORTO ACRE (1023) | 1 | 589 | — | 1031 | 2046228 | 76518073134294940403472 | — | 05:22 | 05:19 |  |
+| 85 | AC | PORTO ACRE (1023) | 1 | 590 | — | 1031 | 2046127 | 116922191938004720187339 | — | 05:31 | 05:28 |  |
+| 86 | AC | PORTO ACRE (1023) | 1 | 591 | — | 1031 | 2258139 | 985609177824183837685131 | — | 05:37 | 05:34 |  |
+| 87 | AC | PORTO ACRE (1023) | 1 | 592 | — | 1031 | 2254550 | 874598170013747333078485 | — | 05:43 | 05:40 |  |
+| 88 | AC | PORTO ACRE (1023) | 1 | 593 | — | 1031 | 2266159 | 409851813566153875129947 | — | 05:42 | 05:39 |  |
+| 89 | AC | PORTO ACRE (1023) | 1 | 594 | — | 1031 | 2270255 | 581669108184495775270368 | — | 05:32 | 05:29 |  |
+| 90 | AC | PORTO ACRE (1023) | 1 | 595 | — | 1031 | 2272846 | 197730820045529439380906 | — | 05:42 | 05:39 |  |
+| 91 | AC | PORTO ACRE (1023) | 1 | 596 | — | 1040 | 2280424 | 803891548606802248904496 | — | 05:29 | 05:26 |  |
+| 92 | AC | PORTO ACRE (1023) | 1 | 597 | 841 | 1040 | 2268616 | 318942160857668197893790 | — | 05:38 | 05:35 |  |
+| 93 | AC | PORTO ACRE (1023) | 1 | 598 | — | 1066 | 2295851 | 36114999929125217600488 | — | 05:26 | 05:22 |  |
+| 94 | AC | PORTO ACRE (1023) | 1 | 599 | — | 1066 | 2101335 | 935104002619261828156750 | — | 05:26 | 05:22 |  |
+| 95 | AC | PORTO ACRE (1023) | 1 | 600 | — | 1066 | 2047854 | 803891345206946192715926 | — | 05:20 | 05:16 |  |
+| 96 | AC | PORTO ACRE (1023) | 1 | 601 | — | 1074 | 2048224 | 834194488909874509429242 | — | 05:39 | 05:34 |  |
+| 97 | AC | PORTO ACRE (1023) | 1 | 602 | — | 1074 | 2252138 | 965407721322864028125191 | — | 05:44 | 05:39 |  |
+| 98 | AC | PORTO ACRE (1023) | 1 | 603 | — | 1074 | 2264266 | 167427038442084560641485 | — | 05:42 | 05:36 |  |
+| 99 | AC | PORTO ACRE (1023) | 1 | 604 | — | 1082 | 2264382 | 66417046732473279750108 | — | 05:29 | 05:04 |  |
+| 100 | AC | PORTO ACRE (1023) | 1 | 605 | — | 1082 | 2297020 | 712982808797796430082716 | — | 05:23 | 05:21 |  |
+
+Mostrando 100 de 2.833 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.11 🔴 L11 — Reloj de la urna
+
+**Objetivo.** Verifica si el reloj de la urna estaba en hora y si fue ajustado durante el día.
+
+**Método.** Compara la hora del log con las horas de la zerésima, del boletín y de la recepción por el TSE, y busca ajustes de fecha y hora en el log.
+
+**Criterio de señalización.** Informativo: diferencia de 15 minutos o más entre el log y el boletín (apertura, cierre o emisión), o ajuste del reloj en el día fuera de la votación. Anomalía estadística: ajuste del reloj, o retroceso del reloj de más de 1 minuto, durante la votación, con votos antes y después.
+
+**Limitaciones y explicaciones alternativas.** Un reloj desajustado es una causa conocida y altera los horarios de todas las demás pruebas.
+
+> 📊 **Resultado:** 🔴 **99 anomalía(s)** en 499.176 unidades analizadas (0,020%) · 🟡 237 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Reloj: diferencia con el boletín o ajuste fuera de la votación (informativo) | 237 |
+| 🔴 Reloj ajustado durante la votación | 99 |
+
+*Observado: ajustes del reloj durante la votación o diferencia log × boletín. Referencia: ajustes fuera de la votación.*
+
+#### 🔴 Urnas con anomalía — lista completa (99)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AM | MANAUS (2550) | 58 | 728 | — | 1953 | 2018706 | 495772145378948251294808 | — | 1 |  |  |
+| 2 | BA | BONITO (33804) | 69 | 105 | — | 1058 | 2048876 | 924433561377061967788282 | — | 1 |  |  |
+| 3 | BA | BONITO (33804) | 69 | 110 | — | 1040 | 2195984 | 207261367605509720537581 | — | 1 |  |  |
+| 4 | BA | CANÁPOLIS (34215) | 99 | 37 | — | 1090 | 1769841 | 448306425893905017004617 | — | 1 |  |  |
+| 5 | BA | CANÁPOLIS (34215) | 99 | 40 | — | 1120 | 1779862 | 125174406861272855257754 | — | 1 |  |  |
+| 6 | BA | CORDEIROS (34797) | 60 | 30 | — | 1015 | 2051064 | 58547268979237465779735 | — | 1 |  |  |
+| 7 | BA | SALVADOR (38490) | 6 | 24 | — | 1023 | 2424916 | 144680724683698687745831 | — | 1 |  |  |
+| 8 | BA | SALVADOR (38490) | 6 | 35 | — | 1023 | 2314634 | 518317274820067645251543 | — | 1 |  |  |
+| 9 | BA | SALVADOR (38490) | 13 | 5 | — | 1015 | 2351763 | 417381968668753142497541 | — | 1 |  |  |
+| 10 | BA | SALVADOR (38490) | 13 | 10 | — | 1023 | 2274482 | 346674411361473165087357 | — | 1 |  |  |
+| 11 | BA | SALVADOR (38490) | 13 | 12 | — | 1023 | 2273535 | 437583729270933750558999 | — | 1 |  |  |
+| 12 | BA | SALVADOR (38490) | 13 | 42 | — | 1066 | 2392328 | 488088981972030577853149 | — | 1 |  |  |
+| 13 | BA | SALVADOR (38490) | 16 | 96 | — | 1112 | 2428947 | 972970260763541671453627 | — | 1 |  |  |
+| 14 | BA | SALVADOR (38490) | 16 | 155 | — | 1058 | 2393954 | 932566921273438229263905 | — | 1 |  |  |
+| 15 | BA | SALVADOR (38490) | 16 | 505 | — | 1708 | 2351791 | 760849763656357339219047 | — | 1 |  |  |
+| 16 | BA | SALVADOR (38490) | 17 | 331 | — | 1708 | 2343482 | 94193685375833631740493 | — | 1 |  |  |
+| 17 | BA | UTINGA (39551) | 69 | 83 | — | 1031 | 2097755 | 476088367691340444095033 | — | 1 |  |  |
+| 18 | BA | WAGNER (39675) | 69 | 70 | — | 1090 | 2195884 | 492790989880613738177104 | — | 1 |  |  |
+| 19 | BA | WAGNER (39675) | 69 | 74 | 76 | 1031 | 2225392 | 977538903428044503047717 | — | 1 |  |  |
+| 20 | MG | CONTAGEM (43710) | 90 | 497 | — | 1023 | 2253033 | 3163767404210744279490 | — | 1 |  |  |
+| 21 | MG | ITACARAMBI (46418) | 148 | 13 | — | 1023 | 2099317 | 65831069938956309905464 | — | 1 |  |  |
+| 22 | MS | BATAGUASSU (90379) | 6 | 44 | — | 1031 | 2152292 | 300896025902927895492060 | — | 1 |  |  |
+| 23 | PA | BELÉM (4278) | 73 | 291 | — | 2755 | 2148530 | 20184941146070007457726 | — | 1 |  |  |
+| 24 | PE | BEZERROS (23370) | 35 | 90 | — | 1414 | 1755533 | 732049362693906281240378 | — | 1 |  |  |
+| 25 | PE | CUSTÓDIA (24015) | 65 | 21 | — | 1040 | 2320791 | 971194221554389497537812 | — | 1 |  |  |
+| 26 | PE | CUSTÓDIA (24015) | 65 | 65 | — | 1066 | 2296763 | 274124245424458480598160 | — | 1 |  |  |
+| 27 | PE | RECIFE (25313) | 9 | 497 | — | 1724 | 2342454 | 154114913552559405341524 | — | 1 |  |  |
+| 28 | PI | ALTO LONGÁ (10057) | 47 | 108 | — | 1120 | 1651163 | 725577728771718053044156 | — | 1 |  |  |
+| 29 | PI | PAULISTANA (11550) | 38 | 3 | — | 1023 | 2196673 | 364645696064002391090421 | — | 1 |  |  |
+| 30 | PI | PAULISTANA (11550) | 38 | 65 | — | 1023 | 2034692 | 102019075638504292225371 | — | 1 |  |  |
+| 31 | PI | PAULISTANA (11550) | 38 | 108 | — | 1465 | 2194482 | 374746343145819038215072 | — | 1 |  |  |
+| 32 | PR | BARBOSA FERRAZ (74470) | 133 | 21 | — | 1031 | 2090741 | 133776133246070668746805 | — | 1 |  |  |
+| 33 | RJ | SÃO GONÇALO (58971) | 87 | 15 | — | 1040 | 2194465 | 603693225948896185696748 | — | 1 |  |  |
+| 34 | RJ | SÃO GONÇALO (58971) | 87 | 30 | — | 1066 | 2188483 | 462279677403418005588863 | — | 1 |  |  |
+| 35 | RJ | SÃO GONÇALO (58971) | 87 | 32 | — | 1066 | 2221463 | 926825357649766183369262 | — | 1 |  |  |
+| 36 | RJ | SÃO GONÇALO (58971) | 87 | 36 | — | 1066 | 2156705 | 371370246594715360417835 | — | 1 |  |  |
+| 37 | RJ | SÃO GONÇALO (58971) | 87 | 41 | — | 1260 | 2230368 | 462279857003702534903006 | — | 1 |  |  |
+| 38 | RJ | SÃO GONÇALO (58971) | 87 | 45 | — | 1082 | 2229562 | 189451017275491392907981 | — | 1 |  |  |
+| 39 | RJ | SÃO GONÇALO (58971) | 87 | 87 | — | 1120 | 2229134 | 179350502848608352306517 | — | 1 |  |  |
+| 40 | RJ | SÃO GONÇALO (58971) | 87 | 134 | — | 1236 | 2229510 | 947027687580802388085395 | — | 1 |  |  |
+| 41 | RJ | SÃO GONÇALO (58971) | 87 | 137 | — | 1260 | 2226834 | 330966406619329138441326 | — | 1 |  |  |
+| 42 | RJ | SÃO GONÇALO (58971) | 87 | 179 | — | 1139 | 2226615 | 967229530296823673242521 | — | 1 |  |  |
+| 43 | RJ | SÃO GONÇALO (58971) | 87 | 182 | — | 1236 | 2025648 | 118744985411904596984776 | — | 1 |  |  |
+| 44 | RJ | SÃO GONÇALO (58971) | 87 | 184 | — | 1120 | 2172702 | 633996725063530387702207 | — | 1 |  |  |
+| 45 | RJ | SÃO GONÇALO (58971) | 87 | 220 | — | 1295 | 2121078 | 674300997250608261856892 | — | 1 |  |  |
+| 46 | RJ | SÃO GONÇALO (58971) | 87 | 258 | — | 1317 | 2220550 | 68239475067524832475014 | — | 1 |  |  |
+| 47 | RJ | SÃO GONÇALO (58971) | 87 | 272 | — | 1325 | 2221485 | 714704609532021033124232 | — | 1 |  |  |
+| 48 | RJ | RIO DE JANEIRO (60011) | 204 | 266 | — | 1520 | 1825912 | 372399636122473521453133 | — | 1 |  |  |
+| 49 | SC | TAIÓ (83518) | 46 | 38 | — | 1023 | 1650872 | 609354601787676952745689 | — | 2 |  |  |
+| 50 | SC | TAIÓ (83518) | 46 | 42 | — | 1023 | 1804719 | 356829357762232262090620 | — | 2 |  |  |
+| 51 | SC | TAIÓ (83518) | 46 | 113 | — | 1287 | 1828007 | 599253598186685016556479 | — | 2 |  |  |
+| 52 | SP | ANDRADINA (61417) | 9 | 141 | — | 1163 | 1804753 | 209719685289657185132451 | — | 1 |  |  |
+| 53 | SP | ANDRADINA (61417) | 9 | 152 | — | 1163 | 1794924 | 825981489651298378424407 | — | 1 |  |  |
+| 54 | SP | BARUERI (62138) | 199 | 165 | — | 1171 | 2347400 | 120883188694719107566283 | — | 1 |  |  |
+| 55 | SP | BARUERI (62138) | 199 | 575 | — | 1058 | 2336876 | 80479572190606214294330 | — | 1 |  |  |
+| 56 | SP | CONCHAS (63479) | 41 | 88 | — | 1031 | 1677345 | 684707126925517490429410 | — | 1 |  |  |
+| 57 | SP | ITU (65790) | 59 | 366 | — | 1490 | 1678060 | 147348498010642487876409 | — | 1 |  |  |
+| 58 | SP | JANDIRA (66010) | 304 | 48 | — | 1040 | 2310172 | 881959044053123923901056 | — | 1 |  |  |
+| 59 | SP | JANDIRA (66010) | 304 | 140 | — | 1180 | 2304232 | 922363293266958789123131 | — | 1 |  |  |
+| 60 | SP | JANDIRA (66010) | 304 | 149 | — | 1198 | 2143317 | 3171369165767885825491 | — | 1 |  |  |
+| 61 | SP | MOCOCA (67113) | 73 | 11 | — | 1171 | 1834548 | 542836723971017047809582 | — | 1 |  |  |
+| 62 | SP | PINHALZINHO (68675) | 136 | 92 | — | 1015 | 1789265 | 121408976420410597003577 | — | 1 |  |  |
+| 63 | SP | PINHALZINHO (68675) | 136 | 100 | — | 1023 | 1780243 | 747670830582887821564369 | — | 1 |  |  |
+| 64 | SP | RIO CLARO (69795) | 288 | 61 | — | 1066 | 1674348 | 256587782664867450978522 | — | 1 |  |  |
+| 65 | SP | SANTA BÁRBARA D'OESTE (70173) | 186 | 191 | — | 1317 | 1759203 | 79538904203341589556420 | — | 1 |  |  |
+| 66 | SP | SANTA BÁRBARA D'OESTE (70173) | 186 | 273 | — | 1228 | 1837446 | 221053220918119968521066 | — | 1 |  |  |
+| 67 | SP | SANTO ANTÔNIO DO JARDIM (70637) | 91 | 55 | — | 1015 | 1668896 | 637837636160934704377526 | — | 1 |  |  |
+| 68 | SP | SÃO PAULO (71072) | 259 | 61 | — | 1058 | 2367306 | 8152534385555399812340 | — | 1 |  |  |
+| 69 | SP | SÃO PAULO (71072) | 352 | 187 | — | 1139 | 1650307 | 392023812969893255108581 | — | 1 |  |  |
+| 70 | ZZ | BOSTON (29416) | 1 | 47 | 3571 | 1023 | 1650576 | 454156501720803541901400 | — | 1 |  |  |
+| 71 | ZZ | BOSTON (29416) | 1 | 48 | 3552 | 1023 | 1653151 | 504661665425016635116194 | — | 1 |  |  |
+| 72 | ZZ | BOSTON (29416) | 1 | 49 | 3543 | 1023 | 1699974 | 807691078755519807956428 | — | 1 |  |  |
+| 73 | ZZ | BOSTON (29416) | 1 | 50 | 3531 | 1023 | 1667203 | 141025493589083713790511 | — | 1 |  |  |
+| 74 | ZZ | BOSTON (29416) | 1 | 733 | 1196 | 1023 | 1664245 | 211732217792817127494582 | — | 1 |  |  |
+| 75 | ZZ | CAMBERRA (29491) | 1 | 744 | 3174 | 1031 | 1679786 | 599870945988701539644439 | — | 1 |  |  |
+| 76 | ZZ | DUBLIN (29661) | 1 | 3216 | 527 | 1015 | 1679202 | 294940537082580808048252 | — | 1 |  |  |
+| 77 | ZZ | FRANKFURT (29696) | 1 | 1595 | 1610 | 1031 | 1829214 | 20013763118580403094799 | — | 1 |  |  |
+| 78 | ZZ | FRANKFURT (29696) | 1 | 1602 | 1615 | 1031 | 1824486 | 939104808609429030967546 | — | 1 |  |  |
+| 79 | ZZ | LISBOA (29955) | 1 | 618 | 2961 | 1031 | 1666324 | 865297353651544510222402 | — | 1 |  |  |
+| 80 | ZZ | LISBOA (29955) | 1 | 3565 | 3220 | 1080 | 1672453 | 350146109114472512626765 | — | 1 |  |  |
+| 81 | ZZ | LONDRES (29971) | 1 | 1621 | 3550 | 1015 | 1805193 | 5211904391802632821738 | — | 1 |  |  |
+| 82 | ZZ | LOS ANGELES (29980) | 1 | 674 | 3710 | 1023 | 1672960 | 530764002884613626212238 | — | 1 |  |  |
+| 83 | ZZ | LOS ANGELES (29980) | 1 | 3651 | 3777 | 1244 | 1651618 | 722683051288345686171801 | — | 1 |  |  |
+| 84 | ZZ | MIAMI (30112) | 1 | 841 | 2956 | 1058 | 1650594 | 158426269146793839067458 | — | 1 |  |  |
+| 85 | ZZ | MIAMI (30112) | 1 | 1162 | 1168 | 1058 | 1699956 | 249335082713067099614557 | — | 2 |  |  |
+| 86 | ZZ | MILÃO (30120) | 1 | 445 | 469 / 3725 | 1040 | 1679550 | 107221290989503546866171 | — | 1 |  |  |
+| 87 | ZZ | MILÃO (30120) | 1 | 447 | 2985 | 1040 | 1650488 | 167827571095395463878323 | — | 1 |  |  |
+| 88 | ZZ | MILÃO (30120) | 1 | 448 | 3035 | 1040 | 1667752 | 582069106037835182011758 | — | 1 |  |  |
+| 89 | ZZ | PARIS (30287) | 1 | 786 | 1136 | 1066 | 1673867 | 50316904547702409874387 | — | 1 |  |  |
+| 90 | ZZ | PORTO (30341) | 1 | 1857 | 3847 | 1015 | 1677817 | 899600841013607370203473 | — | 2 |  |  |
+| 91 | ZZ | PORTO (30341) | 1 | 3103 | 3384 | 1015 | 1651505 | 616872365654286737885166 | — | 1 |  |  |
+| 92 | ZZ | SÃO FRANCISCO (30503) | 1 | 550 | 3133 | 1015 | 1667828 | 837894631370889042300010 | — | 1 |  |  |
+| 93 | ZZ | SYDNEY (30562) | 1 | 1949 | 3590 | 1015 | 1671853 | 409251591594834614029465 | — | 1 |  |  |
+| 94 | ZZ | SYDNEY (30562) | 1 | 1960 | 3864 | 1031 | 1668113 | 459756797909331688022009 | — | 1 |  |  |
+| 95 | ZZ | WASHINGTON (30783) | 1 | 459 | 3718 | 1031 | 1679527 | 666377669502445082604054 | — | 2 |  |  |
+| 96 | ZZ | WASHINGTON (30783) | 1 | 784 | 1250 | 1031 | 1664730 | 504761138586426580354725 | — | 1 |  |  |
+| 97 | ZZ | WASHINGTON (30783) | 1 | 1555 | — | 1031 | 1681124 | 878498330023763366317592 | — | 1 |  |  |
+| 98 | ZZ | FARO (30961) | 1 | 693 | 3563 | 1015 | 1673322 | 815292319707458063811046 | — | 1 |  |  |
+| 99 | ZZ | ORLANDO (99490) | 1 | 1027 | 3933 | 1015 | 1673975 | 31014054347445785970997 | — | 1 |  |  |
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (237)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | MARECHAL THAUMATURGO (1040) | 4 | 163 | — | 1082 | 2266068 | 65950909683813745682926 | — | 0 min | 1 |  |
+| 2 | AL | PENEDO (28339) | 13 | 105 | — | 1430 | 2474057 | 194859839692310493962069 | — | 169 min | 0 |  |
+| 3 | AP | VITÓRIA DO JARI (6122) | 7 | 181 | — | 1023 | 2017683 | 899066653833648031769186 | — | 0 min | 1 |  |
+| 4 | BA | EUNÁPOLIS (30058) | 188 | 325 | — | 1716 | 2218676 | 672720635500262201484559 | — | 56 min | 0 |  |
+| 5 | BA | AMARGOSA (33197) | 36 | 3 | — | 1015 | 2212056 | 235210239348604937384540 | — | 0 min | 2 |  |
+| 6 | BA | APORÁ (33375) | 44 | 176 | — | 1171 | 2233881 | 868958103141004169098326 | — | 0 min | 1 |  |
+| 7 | BA | ARACI (33413) | 123 | 116 | — | 1252 | 1765638 | 133969952957017181182544 | — | 0 min | 2 |  |
+| 8 | BA | ARACI (33413) | 123 | 125 | — | 1325 | 1766903 | 164272948460301707518219 | — | 0 min | 1 |  |
+| 9 | BA | CANÁPOLIS (34215) | 99 | 35 | 196 | 1082 | 1815381 | 387700147787665736584910 | — | 0 min | 1 |  |
+| 10 | BA | CANÁPOLIS (34215) | 99 | 36 | — | 1090 | 1751458 | 14063887850310642322312 | — | 0 min | 1 |  |
+| 11 | BA | CANÁPOLIS (34215) | 99 | 38 | — | 1112 | 1826095 | 993861088448030006483592 | — | 0 min | 1 |  |
+| 12 | BA | CANAVIEIRAS (34258) | 116 | 137 | — | 1155 | 2177112 | 708052777162516604001924 | — | 0 min | 1 |  |
+| 13 | BA | CANAVIEIRAS (34258) | 116 | 138 | — | 1155 | 2176720 | 31385213095512349124269 | — | 0 min | 1 |  |
+| 14 | BA | CANAVIEIRAS (34258) | 116 | 199 | — | 1120 | 2172107 | 495931203908911705831958 | — | 0 min | 1 |  |
+| 15 | BA | CORONEL JOÃO SÁ (34835) | 52 | 136 | — | 1023 | 2309682 | 60963027442453520715652 | — | 0 min | 1 |  |
+| 16 | BA | ELÍSIO MEDRADO (35050) | 107 | 10 | — | 1066 | 2171155 | 296215364702820333223384 | — | 0 min | 1 |  |
+| 17 | BA | ELÍSIO MEDRADO (35050) | 107 | 11 | — | 1066 | 2155987 | 831669012256783070560026 | — | 0 min | 1 |  |
+| 18 | BA | ELÍSIO MEDRADO (35050) | 107 | 15 | — | 1066 | 2170702 | 801366424953936399898937 | — | 0 min | 1 |  |
+| 19 | BA | ELÍSIO MEDRADO (35050) | 107 | 16 | — | 1015 | 2209041 | 488134211421282566074558 | — | 0 min | 1 |  |
+| 20 | BA | ELÍSIO MEDRADO (35050) | 107 | 65 | — | 1015 | 2156247 | 255811228098927676549017 | — | 0 min | 1 |  |
+| 21 | BA | IRARÁ (35912) | 74 | 104 | — | 1066 | 1766838 | 47497574363130292663192 | — | 0 min | 1 |  |
+| 22 | BA | ITABELA (35947) | 189 | 133 | — | 1090 | 2238848 | 257389883426177521253483 | — | 0 min | 1 |  |
+| 23 | BA | ITABELA (35947) | 189 | 134 | — | 1090 | 2053068 | 398703137740596103633129 | — | 0 min | 1 |  |
+| 24 | BA | ITABELA (35947) | 189 | 135 | — | 1104 | 2049693 | 883652739989822713461280 | — | 0 min | 1 |  |
+| 25 | BA | ITAMBÉ (36170) | 201 | 24 | — | 1082 | 2227563 | 673896251247432945267159 | — | 0 min | 1 |  |
+| 26 | BA | ITAMBÉ (36170) | 201 | 35 | — | 1120 | 2216132 | 673896432247305292358524 | — | 0 min | 1 |  |
+| 27 | BA | ITAMBÉ (36170) | 201 | 38 | 40 | 1015 | 2231396 | 683997771648525063722238 | — | 0 min | 1 |  |
+| 28 | BA | ITAMBÉ (36170) | 201 | 41 | — | 1163 | 2155830 | 976826361177027445793068 | — | 0 min | 1 |  |
+| 29 | BA | ITAMBÉ (36170) | 201 | 46 | 47 | 1198 | 2212436 | 938922936954952147693016 | — | 0 min | 1 |  |
+| 30 | BA | JEREMOABO (36633) | 51 | 32 | — | 1066 | 1795192 | 988744412405216416068831 | — | 0 min | 1 |  |
+| 31 | BA | JEREMOABO (36633) | 51 | 35 | 37 | 1678 | 1772679 | 776623533084724062098206 | — | 0 min | 1 |  |
+| 32 | BA | JEREMOABO (36633) | 51 | 41 | — | 1120 | 1759426 | 948340339201720841388776 | — | 0 min | 1 |  |
+| 33 | BA | LICÍNIO DE ALMEIDA (36897) | 117 | 93 | — | 1023 | 2212343 | 61199065992571986418611 | — | 0 min | 1 |  |
+| 34 | BA | LICÍNIO DE ALMEIDA (36897) | 117 | 94 | — | 1023 | 2195796 | 141907218500825197006999 | — | 0 min | 1 |  |
+| 35 | BA | MACAJUBA (36935) | 87 | 13 | — | 1031 | 2195542 | 821015224887275922786212 | — | 0 min | 1 |  |
+| 36 | BA | MACAJUBA (36935) | 87 | 19 | — | 1058 | 2225823 | 386671444243500316787065 | — | 0 min | 1 |  |
+| 37 | BA | MEDEIROS NETO (37230) | 153 | 162 | — | 1376 | 2427183 | 24579755583949907072284 | — | 0 min | 1 |  |
+| 38 | BA | MEDEIROS NETO (37230) | 153 | 166 | — | 1279 | 2393055 | 246701418905119977591499 | — | 0 min | 1 |  |
+| 39 | BA | MORRO DO CHAPÉU (37354) | 55 | 82 | 106 | 1520 | 2304165 | 768466546975915454889816 | — | 0 min | 1 |  |
+| 40 | BA | MORRO DO CHAPÉU (37354) | 55 | 84 | 83 | 1724 | 2302355 | 586648583657330078968687 | — | 0 min | 1 |  |
+| 41 | BA | MORRO DO CHAPÉU (37354) | 55 | 88 | — | 1600 | 2315080 | 616951054460850569420216 | — | 0 min | 1 |  |
+| 42 | BA | MORRO DO CHAPÉU (37354) | 55 | 91 | — | 1597 | 2311887 | 576547312356141440528054 | — | 0 min | 2 |  |
+| 43 | BA | MORRO DO CHAPÉU (37354) | 55 | 131 | — | 1830 | 2312495 | 637153040331447313452790 | — | 0 min | 1 |  |
+| 44 | BA | MUCURI (37419) | 35 | 260 | — | 1074 | 2290864 | 102686709931930268880316 | — | 0 min | 1 |  |
+| 45 | BA | NILO PEÇANHA (37532) | 32 | 108 | — | 1040 | 1768433 | 604203574495372538063109 | — | 325 min | 0 |  |
+| 46 | BA | PARIPIRANGA (37770) | 52 | 9 | — | 1350 | 2354453 | 143671135484435331008776 | — | 0 min | 1 |  |
+| 47 | BA | PARIPIRANGA (37770) | 52 | 10 | — | 1350 | 2308528 | 961853033666537615504866 | — | 0 min | 1 |  |
+| 48 | BA | PARIPIRANGA (37770) | 52 | 12 | — | 1031 | 2302838 | 466803756416059455127038 | — | 0 min | 1 |  |
+| 49 | BA | PARIPIRANGA (37770) | 52 | 13 | — | 1031 | 2349444 | 426499821412825075387126 | — | 0 min | 1 |  |
+| 50 | BA | PARIPIRANGA (37770) | 52 | 17 | — | 1031 | 2304224 | 113368955881650324980652 | — | 0 min | 1 |  |
+| 51 | BA | QUIJINGUE (38199) | 102 | 104 | 294 | 1368 | 2310392 | 19332548996964574461972 | — | 0 min | 1 |  |
+| 52 | BA | QUIJINGUE (38199) | 102 | 105 | — | 1368 | 2353638 | 221453869017842542890717 | — | 0 min | 1 |  |
+| 53 | BA | QUIJINGUE (38199) | 102 | 108 | — | 1082 | 2354053 | 484079456043261425313182 | — | 0 min | 1 |  |
+| 54 | BA | QUIJINGUE (38199) | 102 | 111 | — | 1082 | 2274473 | 312362580826192079001428 | — | 0 min | 1 |  |
+| 55 | BA | RIACHÃO DO JACUÍPE (38270) | 114 | 58 | — | 1074 | 2231058 | 524812755392051352399628 | — | 0 min | 1 |  |
+| 56 | BA | RIACHÃO DO JACUÍPE (38270) | 114 | 84 | — | 1147 | 2231450 | 686428682508560487407828 | — | 0 min | 1 |  |
+| 57 | BA | RIACHÃO DO JACUÍPE (38270) | 114 | 85 | 86 | 1104 | 2227617 | 353195466875905112113831 | — | 0 min | 1 |  |
+| 58 | BA | RIACHÃO DO JACUÍPE (38270) | 114 | 88 | — | 1074 | 2226446 | 696529130309472360031246 | — | 0 min | 1 |  |
+| 59 | BA | RUY BARBOSA (38458) | 87 | 62 | — | 1147 | 2219968 | 773710410256153493458259 | — | 0 min | 1 |  |
+| 60 | BA | RUY BARBOSA (38458) | 87 | 63 | — | 1147 | 2219517 | 66639813985869900163063 | — | 0 min | 1 |  |
+| 61 | BA | RUY BARBOSA (38458) | 87 | 65 | — | 1163 | 2195584 | 460679437425353061820289 | — | 0 min | 1 |  |
+| 62 | BA | SALVADOR (38490) | 1 | 232 | — | 1198 | 2429330 | 659776266836092596143498 | — | 0 min | 1 |  |
+| 63 | BA | SALVADOR (38490) | 1 | 240 | — | 1198 | 2427107 | 679978136838718866386425 | — | 0 min | 1 |  |
+| 64 | BA | SALVADOR (38490) | 1 | 363 | — | 1813 | 2414537 | 851796870992385253342275 | — | 0 min | 1 |  |
+| 65 | BA | SALVADOR (38490) | 5 | 339 | — | 1490 | 2339455 | 205275670178906533562244 | — | 0 min | 1 |  |
+| 66 | BA | SALVADOR (38490) | 5 | 359 | — | 1708 | 2343859 | 114366721328167418424940 | — | 0 min | 1 |  |
+| 67 | BA | SALVADOR (38490) | 17 | 432 | — | 1856 | 2343522 | 73991869299022462061227 | — | 0 min | 1 |  |
+| 68 | BA | SALVADOR (38490) | 18 | 155 | — | 1120 | 2413786 | 316326300655836730729765 | — | 0 min | 1 |  |
+| 69 | BA | SALVADOR (38490) | 18 | 392 | 393 | 1406 | 2427725 | 861881983306419787451104 | — | 0 min | 1 |  |
+| 70 | BA | SALVADOR (38490) | 18 | 396 | 397 | 1406 | 2314985 | 417336972361845135123506 | — | 0 min | 1 |  |
+| 71 | BA | SALVADOR (38490) | 18 | 408 | — | 1449 | 2352509 | 427437667062873405998829 | — | 0 min | 1 |  |
+| 72 | BA | SALVADOR (38490) | 18 | 480 | 481 | 1538 | 2423850 | 366831284232996605026907 | — | 0 min | 1 |  |
+| 73 | BA | SANTANA (38652) | 99 | 69 | — | 1198 | 1771080 | 911153322325966739704892 | — | 0 min | 1 |  |
+| 74 | BA | SANTANA (38652) | 99 | 70 | — | 1210 | 1823914 | 173779664151526137851794 | — | 0 min | 1 |  |
+| 75 | BA | SANTANA (38652) | 99 | 86 | — | 1325 | 1843687 | 577719798691428209690052 | — | 0 min | 1 |  |
+| 76 | BA | SANTANA (38652) | 99 | 151 | — | 1023 | 1768456 | 62668613940848312457865 | — | 0 min | 1 |  |
+| 77 | BA | SENHOR DO BONFIM (39012) | 45 | 167 | — | 1481 | 2402296 | 458828737698865736632415 | — | 0 min | 1 |  |
+| 78 | BA | SENHOR DO BONFIM (39012) | 45 | 192 | — | 1740 | 2402482 | 287111222681479314990017 | — | 0 min | 1 |  |
+| 79 | BA | SENHOR DO BONFIM (39012) | 45 | 246 | — | 1600 | 2414543 | 85191200761157487596914 | — | 0 min | 1 |  |
+| 80 | BA | SENHOR DO BONFIM (39012) | 45 | 268 | — | 1252 | 2405384 | 388121867487236842606971 | — | 0 min | 1 |  |
+| 81 | BA | SENHOR DO BONFIM (39012) | 45 | 287 | — | 1740 | 2424347 | 115494624360406358512035 | — | 0 min | 1 |  |
+| 82 | BA | SERRINHA (39098) | 150 | 175 | 341 | 1732 | 1765658 | 917635042961652693127782 | — | 0 min | 1 |  |
+| 83 | BA | SERRINHA (39098) | 150 | 176 | — | 1740 | 1768751 | 150059392485916477430134 | — | 0 min | 1 |  |
+| 84 | BA | SIMÕES FILHO (39136) | 33 | 257 | — | 1490 | 1656695 | 717925711738152475009687 | — | 0 min | 1 |  |
+| 85 | BA | TEOFILÂNDIA (39292) | 123 | 13 | 14 | 1031 | 1764813 | 893445294305227156786698 | — | 0 min | 1 |  |
+| 86 | BA | TEOFILÂNDIA (39292) | 123 | 52 | — | 1244 | 1795822 | 974253549503574192148312 | — | 0 min | 1 |  |
+| 87 | BA | URUÇUCA (39535) | 198 | 55 | 76 | 1031 | 2165883 | 628922526938106766867313 | — | 0 min | 1 |  |
+| 88 | BA | UTINGA (39551) | 69 | 45 | 46 | 1082 | 2197526 | 940735779269080464416703 | — | 0 min | 1 |  |
+| 89 | CE | CAMOCIM (13510) | 32 | 10 | — | 1392 | 1817981 | 240867312388134837610075 | — | 0 min | 1 |  |
+| 90 | CE | CAMOCIM (13510) | 32 | 58 | — | 1384 | 1659458 | 230766466507667888147111 | — | 0 min | 1 |  |
+| 91 | CE | CAMOCIM (13510) | 32 | 184 | — | 1384 | 1660044 | 927635018976674753692467 | — | 0 min | 1 |  |
+| 92 | CE | MARANGUAPE (14559) | 4 | 35 | — | 2585 | 2260479 | 799723556376738704898617 | — | 0 min | 1 |  |
+| 93 | GO | BONFINÓPOLIS (92029) | 141 | 294 | — | 1066 | 2346577 | 315179564330511769393832 | — | 0 min | 1 |  |
+| 94 | GO | GOIANÁPOLIS (93670) | 3 | 681 | — | 1066 | 2368023 | 55038263129011079023491 | — | 0 min | 1 |  |
+| 95 | GO | GOIÂNIA (93734) | 1 | 156 | — | 1384 | 2361231 | 913502016182568141343279 | — | 0 min | 1 |  |
+| 96 | GO | GOIÂNIA (93734) | 136 | 224 | — | 1325 | 2377816 | 529648285219490802939435 | — | 0 min | 1 |  |
+| 97 | MA | BARÃO DE GRAJAÚ (7293) | 21 | 59 | — | 1228 | 2292334 | 303355646916498373613237 | — | 0 min | 1 |  |
+| 98 | MA | IMPERATRIZ (8036) | 33 | 877 | — | 2739 | 2099915 | 551409537231943317327839 | — | 0 min | 1 |  |
+| 99 | MA | IMPERATRIZ (8036) | 65 | 511 | — | 1538 | 2102093 | 106907737985206361405544 | — | 0 min | 1 |  |
+| 100 | MA | PEDRO DO ROSÁRIO (8060) | 106 | 214 | — | 1201 | 2084144 | 842259531399674604977898 | — | 0 min | 1 |  |
+
+Mostrando 100 de 237 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.12 🔴 L12 — Modelo, versión del software y código de carga
+
+**Objetivo.** Verifica el modelo de la urna, la versión del programa y el código de carga registrados en el log.
+
+**Método.** Compara el log con el boletín de urna y con las listas oficiales de urnas, versiones y cargas.
+
+**Criterio de señalización.** Anomalía estadística: versión del programa distinta de la usada por la gran mayoría de las urnas de la vuelta, número de urna del boletín ausente del log, o primera urna del día con carga hecha para otro municipio, zona o sección. Informativo: urna de contingencia con carga de otra sección.
+
+**Limitaciones y explicaciones alternativas.** Depende de las listas oficiales publicadas por el TSE para cada sección.
+
+> 📊 **Resultado:** 🔴 **5 anomalía(s)** en 499.176 unidades analizadas (0,001%) · 🟡 10 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+Versión de referencia del programa: 1.ª vuelta: `10.23.0.0`.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Contingencia con carga de otra sección (informativo) | 10 |
+| 🔴 Código de carga distinto del boletín | 5 |
+
+*Observado: versión del programa o números de las urnas en el log. Referencia: versión de referencia.*
+
+#### 🔴 Urnas con anomalía — lista completa (5)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AL | ARAPIRACA (27057) | 22 | 581 | — | 1635 | 2073355 | 757811871869006947153249 | — | 464982468995231581665191 |  |  |
+| 2 | MG | NANUQUE (48852) | 190 | 107 | 96 | 1023 | 2080458 | 145986007534804395284859 | — | 519623511271753679983240 |  |  |
+| 3 | PR | CURITIBA (75353) | 3 | 495 | — | 1058 | 2320515 | 255058797790135151522313 | — | 255058257780317989897007 |  |  |
+| 4 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 56 | — | 1171 | 1654161 | 440135456841996344395314 | — | 298620295338121647449668 |  |  |
+| 5 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 57 | — | 1180 | 1653250 | 389529504035706771346888 | — | 672458676976664407100588 |  |  |
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (10)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | BA | JACARACI (36498) | 92 | 26 | — | 1201 | 2035842 | 59190051993667549883920 | — | 2049600;2035842 |  |  |
+| 2 | BA | SALVADOR (38490) | 6 | 80 | — | 1341 | 2381105 | 589024584605120732235174 | — | 2424675;2381105 |  |  |
+| 3 | BA | TEIXEIRA DE FREITAS (39934) | 183 | 175 | — | 1392 | 2429118 | 247022246387953006410646 | — | 2423907;2424441;2429118 |  |  |
+| 4 | GO | PADRE BERNARDO (95095) | 131 | 65 | — | 1031 | 1804744 | 416282417182369892474086 | — | 1841176;1813645;1804744 |  |  |
+| 5 | MG | PERDÕES (49972) | 216 | 33 | — | 1112 | 1655519 | 271018270571419341923310 | — | 1840795;1655519 |  |  |
+| 6 | PR | NOVA SANTA ROSA (79790) | 124 | 102 | — | 1015 | 1660950 | 546021548981151169263005 | — | 1755998;1660950 |  |  |
+| 7 | RJ | RIO DE JANEIRO (60011) | 185 | 48 | — | 1082 | 1669425 | 301650302335392652959644 | — | 1791535;1669425 |  |  |
+| 8 | RJ | RIO DE JANEIRO (60011) | 185 | 49 | — | 1082 | 1665201 | 432963432827478320385371 | — | 1771758;1665201 |  |  |
+| 9 | SE | ARACAJU (31054) | 2 | 601 | — | 2593 | 1655195 | 730695737573737515508089 | — | 1781539;1655195 |  |  |
+| 10 | SP | TABOÃO DA SERRA (71579) | 416 | 330 | — | 1392 | 1699598 | 179626175434954695012190 | — | 1833625;1699598 |  |  |
+
+</details>
+
+### B.13 🔴 L13 — Biometría detallada
+
+**Objetivo.** Detalla el uso de la biometría: huella reconocida en el 1.er intento, después de varios intentos o habilitación sin huella.
+
+**Método.** Cuenta en el log los intentos de huella de cada elector y el resultado, y compara la sección con el municipio y con las secciones vecinas.
+
+**Criterio de señalización.** Anomalía estadística: tasa de liberación sin huella muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5 y prueba beta-binomial con tasa de falsos descubrimientos del 1 %), en secciones con 30 votos o más. Informativo: 20 % o más de los electores con 4 intentos de huella o más.
+
+**Limitaciones y explicaciones alternativas.** Complementa la prueba 10, que usa el boletín. Lectores defectuosos y electores sin biometría explican muchos casos.
+
+> 📊 **Resultado:** 🔴 **727 anomalía(s)** en 499.176 unidades analizadas (0,146%) · 🟡 12.993 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+>
+> Los eventos 🟡 se registran por transparencia y verificación, pero no alcanzaron el criterio de anomalía.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🟡 Muchos electores con 4+ intentos de huella (informativo) | 12.993 |
+| 🔴 Liberación sin huella por encima del patrón | 727 |
+
+*Observado: proporción de electores. Referencia: puntuación z; detalle: q.*
+
+#### 🔴 Urnas con anomalía — lista completa (727)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | BUJARI (1007) | 9 | 441 | — | 1112 | 2280801 | 492148243499052359575691 | — | 35,6% | z = 6,7 | q = 0,0037 |
+| 2 | AC | PORTO ACRE (1023) | 1 | 621 | — | 1163 | 2261303 | 288639078344800738479808 | — | 27,8% | z = 5,9 | q = 0,0016 |
+| 3 | AC | RIO BRANCO (1392) | 1 | 824 | — | 3344 | 2045176 | 994610294416391775163144 | — | 40,5% | z = 10,9 | q = 0,0056 |
+| 4 | AC | SENA MADUREIRA (1457) | 3 | 155 | — | 1031 | 2046924 | 874220862489246613778303 | — | 30,5% | z = 5,3 | q = 0,0084 |
+| 5 | AC | SENADOR GUIOMARD (1538) | 8 | 268 | — | 1031 | 2043629 | 45392523828107130854248 | — | 34,0% | z = 9,7 | q = 2,4e-05 |
+| 6 | AC | ASSIS BRASIL (1570) | 6 | 150 | — | 1350 | 2266388 | 446510887778929650057995 | — | 50,0% | z = 7,7 | q = 0,0041 |
+| 7 | AL | PARIPUEIRA (27006) | 17 | 178 | — | 1040 | 2449561 | 791863256073782052367607 | — | 34,8% | z = 16,6 | q = 2,8e-09 |
+| 8 | AL | ARAPIRACA (27057) | 55 | 301 | — | 1252 | 2071237 | 81198462265369738814027 | — | 38,0% | z = 9,0 | q = 0,0016 |
+| 9 | AL | ARAPIRACA (27057) | 55 | 339 | — | 1295 | 2063979 | 343724816634506500596077 | — | 44,4% | z = 11,0 | q = 7,7e-06 |
+| 10 | AL | BARRA DE SANTO ANTÔNIO (27090) | 17 | 176 | — | 1066 | 2444953 | 937777176468621932703359 | — | 27,3% | z = 5,6 | q = 0,0067 |
+| 11 | AL | CAJUEIRO (27251) | 5 | 150 | — | 1058 | 2435957 | 349789783978920514924498 | — | 60,8% | z = 15,7 | q = 0 |
+| 12 | AL | CAMPO ALEGRE (27278) | 47 | 140 | — | 1210 | 2474156 | 651370024061163126932788 | — | 43,8% | z = 15,8 | q = 1,8e-09 |
+| 13 | AL | CARNEIROS (27359) | 19 | 275 | — | 1058 | 1774631 | 95115316407489399898756 | — | 33,8% | z = 7,1 | q = 0,00066 |
+| 14 | AL | CORURIPE (27456) | 7 | 146 | — | 1180 | 2442742 | 840661870303405099676755 | — | 34,3% | z = 8,0 | q = 0,00022 |
+| 15 | AL | DELMIRO GOUVEIA (27472) | 40 | 12 | — | 1040 | 1677076 | 970525971910366951670580 | — | 93,7% | z = 19,2 | q = 3,3e-10 |
+| 16 | AL | DOIS RIACHOS (27499) | 46 | 142 | — | 1015 | 1670703 | 908384499489028269248942 | — | 57,0% | z = 6,7 | q = 3e-08 |
+| 17 | AL | GIRAU DO PONCIANO (27570) | 44 | 179 | — | 1236 | 2457745 | 110883681389220638971015 | — | 43,5% | z = 10,4 | q = 3,1e-05 |
+| 18 | AL | LIMOEIRO DE ANADIA (27839) | 47 | 139 | — | 1392 | 2038523 | 217626502807813717429480 | — | 41,4% | z = 8,9 | q = 0,00066 |
+| 19 | AL | MACEIÓ (27855) | 1 | 536 | — | 2020 | 2053271 | 832494158380314677382601 | — | 39,3% | z = 12,2 | q = 1,6e-05 |
+| 20 | AL | MACEIÓ (27855) | 3 | 428 | — | 1333 | 2447456 | 226355601224786090393715 | — | 37,3% | z = 8,7 | q = 0,0041 |
+| 21 | AL | MACEIÓ (27855) | 3 | 429 | — | 1333 | 2473741 | 84941576010998863168315 | — | 39,9% | z = 9,5 | q = 0,00059 |
+| 22 | AL | MARAGOGI (27898) | 14 | 214 | — | 1163 | 2072077 | 162867856966299719096781 | — | 39,4% | z = 8,3 | q = 0,00025 |
+| 23 | AL | MARIBONDO (27952) | 48 | 196 | — | 1040 | 2072200 | 2116382759390595099631 | — | 28,7% | z = 6,5 | q = 0,00081 |
+| 24 | AL | MURICI (28096) | 9 | 193 | — | 1171 | 2472057 | 489547530789844039864794 | — | 52,5% | z = 15,2 | q = 2e-07 |
+| 25 | AL | OLHO D'ÁGUA DAS FLORES (28134) | 11 | 119 | — | 1058 | 1675105 | 431361586879789458766861 | — | 64,3% | z = 11,7 | q = 0 |
+| 26 | AL | PORTO CALVO (28452) | 14 | 89 | — | 1287 | 2073524 | 868137410141763241338264 | — | 27,5% | z = 5,0 | q = 0,0017 |
+| 27 | AL | RIO LARGO (28533) | 15 | 254 | — | 1244 | 2122575 | 968558931831699978738851 | — | 43,9% | z = 12,6 | q = 0,0083 |
+| 28 | AL | SANTA LUZIA DO NORTE (28576) | 8 | 89 | — | 1015 | 2473458 | 480836035379244757828342 | — | 22,8% | z = 5,2 | q = 0,0071 |
+| 29 | AL | SÃO JOSÉ DA TAPERA (28673) | 51 | 112 | — | 1112 | 1768258 | 670713050464271558382388 | — | 46,9% | z = 6,3 | q = 0,0064 |
+| 30 | AL | SÃO LUÍS DO QUITUNDE (28690) | 17 | 177 | — | 1198 | 2034068 | 346918695951630178616614 | — | 36,1% | z = 8,7 | q = 0,0049 |
+| 31 | AL | CRAÍBAS (28894) | 31 | 154 | — | 1104 | 1823129 | 99441973324405283528849 | — | 58,2% | z = 8,1 | q = 0,0005 |
+| 32 | AL | TEOTÔNIO VILELA (28932) | 34 | 269 | — | 1139 | 2455687 | 273592866648566500074121 | — | 51,3% | z = 17,7 | q = 8,4e-06 |
+| 33 | AM | AUTAZES (2070) | 35 | 162 | — | 1457 | 2335406 | 534829265296418088306046 | — | 36,8% | z = 8,6 | q = 0,0048 |
+| 34 | AM | BOCA DO ACRE (2151) | 14 | 75 | — | 1341 | 2017237 | 352486393717837012024452 | — | 53,2% | z = 11,8 | q = 3,1e-05 |
+| 35 | AM | COARI (2259) | 8 | 174 | — | 1562 | 2036568 | 936181937104030106002667 | — | 30,4% | z = 5,6 | q = 0,0074 |
+| 36 | AM | ITACOATIARA (2410) | 3 | 289 | — | 2054 | 2346262 | 258258986052373607510943 | — | 55,3% | z = 11,6 | q = 0,0015 |
+| 37 | AM | ITACOATIARA (2410) | 3 | 290 | — | 2127 | 2335768 | 743107557801141268192871 | — | 55,1% | z = 11,5 | q = 0,004 |
+| 38 | AM | MANACAPURU (2534) | 6 | 288 | — | 1678 | 2460770 | 719337330912410428191427 | — | 44,1% | z = 9,0 | q = 0,0064 |
+| 39 | AM | MANACAPURU (2534) | 6 | 297 | — | 1872 | 2356499 | 396105979531080682422057 | — | 44,4% | z = 9,0 | q = 0,0063 |
+| 40 | AM | MANAUS (2550) | 1 | 965 | 971 | 2208 | 1834079 | 495760274157997725335141 | — | 41,5% | z = 8,1 | q = 0,0068 |
+| 41 | AM | MANAUS (2550) | 1 | 969 | — | 2208 | 1788618 | 142225365797622161261524 | — | 57,6% | z = 12,1 | q = 4,1e-06 |
+| 42 | AM | MANAUS (2550) | 32 | 944 | — | 2208 | 2017126 | 425085951758438936708891 | — | 40,9% | z = 10,9 | q = 2,3e-07 |
+| 43 | AM | MANAUS (2550) | 40 | 611 | — | 1775 | 1787751 | 293757015181939064923110 | — | 31,7% | z = 8,2 | q = 0,0017 |
+| 44 | AM | MANAUS (2550) | 58 | 1057 | — | 2097 | 1787399 | 445267675425805187309030 | — | 51,3% | z = 15,0 | q = 0,0067 |
+| 45 | AM | MANAUS (2550) | 63 | 799 | — | 2135 | 1787471 | 122087373545262883635493 | — | 63,2% | z = 15,1 | q = 8,3e-07 |
+| 46 | AM | MANAUS (2550) | 63 | 801 | — | 2178 | 2086117 | 111986945274829803890809 | — | 50,5% | z = 11,5 | q = 0,0019 |
+| 47 | AM | MANAUS (2550) | 63 | 803 | — | 2135 | 1761974 | 647239697377629106304787 | — | 55,3% | z = 12,9 | q = 0,00026 |
+| 48 | AM | NOVA OLINDA DO NORTE (2658) | 35 | 164 | — | 1171 | 2337859 | 251201205200755893928786 | — | 34,7% | z = 10,3 | q = 2,8e-05 |
+| 49 | AM | PRESIDENTE FIGUEIREDO (98418) | 51 | 110 | — | 1090 | 2358595 | 705216861545867841299931 | — | 27,3% | z = 8,7 | q = 0,0025 |
+| 50 | AP | MACAPÁ (6050) | 10 | 427 | — | 1678 | 2344154 | 71614342417389929148651 | — | 41,4% | z = 10,0 | q = 0,00026 |
+| 51 | AP | SANTANA (6157) | 6 | 255 | — | 1074 | 2019517 | 108976182940186318192881 | — | 54,5% | z = 12,8 | q = 0,00014 |
+| 52 | BA | EUNÁPOLIS (30058) | 188 | 378 | — | 1759 | 2232667 | 925245564625505000926377 | — | 34,7% | z = 9,4 | q = 0,004 |
+| 53 | BA | DIAS D'ÁVILA (30872) | 186 | 21 | — | 1163 | 1656846 | 877118120146608880456316 | — | 96,4% | z = 17,0 | q = 0,00023 |
+| 54 | BA | DIAS D'ÁVILA (30872) | 186 | 91 | — | 1015 | 1669609 | 917522651220700455084186 | — | 91,4% | z = 15,9 | q = 0,0068 |
+| 55 | BA | DIAS D'ÁVILA (30872) | 186 | 102 | — | 1198 | 1656971 | 735704048202626252047305 | — | 98,8% | z = 17,5 | q = 3,5e-06 |
+| 56 | BA | DIAS D'ÁVILA (30872) | 186 | 116 | — | 1198 | 1657553 | 271158091353256138369637 | — | 96,2% | z = 16,9 | q = 0,00024 |
+| 57 | BA | FILADÉLFIA (30910) | 149 | 133 | — | 1023 | 2413827 | 647100278916753730166133 | — | 25,3% | z = 5,2 | q = 0,0071 |
+| 58 | BA | JOÃO DOURADO (30996) | 199 | 63 | — | 1031 | 2315482 | 621133379183230931053291 | — | 47,3% | z = 12,8 | q = 1,2e-07 |
+| 59 | BA | ALAGOINHAS (33138) | 163 | 275 | — | 1708 | 2227638 | 956779175945358885818438 | — | 36,8% | z = 8,4 | q = 0,0044 |
+| 60 | BA | ALAGOINHAS (33138) | 163 | 437 | — | 1473 | 2246012 | 583042921729736200315472 | — | 41,3% | z = 9,7 | q = 0,00014 |
+| 61 | BA | ALAGOINHAS (33138) | 163 | 447 | — | 1945 | 2226415 | 653749065736010333493512 | — | 41,7% | z = 9,8 | q = 0,00016 |
+| 62 | BA | ALCOBAÇA (33154) | 112 | 333 | — | 1031 | 2427441 | 248262053614012313132385 | — | 39,8% | z = 7,0 | q = 1,7e-06 |
+| 63 | BA | AMARGOSA (33197) | 36 | 40 | — | 1147 | 2155544 | 750462031500552823114285 | — | 33,9% | z = 7,7 | q = 1,2e-05 |
+| 64 | BA | AMÉLIA RODRIGUES (33219) | 192 | 199 | — | 1058 | 1755158 | 572351284915105079654034 | — | 53,5% | z = 8,2 | q = 3,5e-08 |
+| 65 | BA | ANTAS (33316) | 82 | 207 | — | 1252 | 2278192 | 418719364627929168802949 | — | 31,9% | z = 9,4 | q = 0,0058 |
+| 66 | BA | ARAMARI (33430) | 163 | 28 | — | 1090 | 2245633 | 598043618228447611414128 | — | 38,9% | z = 10,5 | q = 0,0036 |
+| 67 | BA | BARRA DA ESTIVA (33553) | 169 | 178 | — | 1031 | 2288515 | 391689852236798393601707 | — | 34,8% | z = 12,4 | q = 9,9e-05 |
+| 68 | BA | BARREIRAS (33634) | 70 | 37 | — | 1023 | 2238793 | 27351001486857692008752 | — | 38,8% | z = 13,2 | q = 0,00066 |
+| 69 | BA | BARREIRAS (33634) | 70 | 526 | — | 1821 | 2238932 | 694018942040459528199517 | — | 39,7% | z = 13,6 | q = 4,6e-05 |
+| 70 | BA | BARRO PRETO (33650) | 136 | 6 | — | 1058 | 2176581 | 823978487087696509509884 | — | 54,8% | z = 9,7 | q = 2,4e-05 |
+| 71 | BA | BOA VISTA DO TUPIM (33758) | 42 | 217 | — | 1040 | 2198897 | 347084364890574276002050 | — | 40,9% | z = 9,3 | q = 2,3e-07 |
+| 72 | BA | BOM JESUS DA SERRA (33782) | 59 | 352 | — | 1120 | 2015636 | 991433830274279982142643 | — | 49,8% | z = 5,6 | q = 0,0007 |
+| 73 | BA | BRUMADO (33910) | 90 | 236 | — | 1333 | 2308682 | 326695379141311505962374 | — | 44,1% | z = 9,7 | q = 8,7e-06 |
+| 74 | BA | CABACEIRAS DO PARAGUAÇU (33960) | 131 | 165 | — | 1066 | 2231691 | 867527921032639881946546 | — | 33,0% | z = 7,7 | q = 0,0037 |
+| 75 | BA | CACULÉ (33995) | 93 | 17 | — | 1015 | 2198555 | 925988762343665758977998 | — | 36,4% | z = 7,4 | q = 0,0036 |
+| 76 | BA | CAETITÉ (34037) | 63 | 171 | — | 1015 | 2208712 | 46979738656855337043093 | — | 42,7% | z = 8,9 | q = 0,00049 |
+| 77 | BA | CAMACAN (34118) | 133 | 17 | — | 1058 | 2176924 | 339296171062348987177665 | — | 28,7% | z = 7,9 | q = 0,00047 |
+| 78 | BA | CAMAÇARI (34134) | 170 | 21 | — | 1040 | 1838872 | 691427949001025402224558 | — | 48,2% | z = 11,1 | q = 0,0014 |
+| 79 | BA | CAMAÇARI (34134) | 170 | 237 | — | 1279 | 1750313 | 75265237909969276916032 | — | 50,2% | z = 11,8 | q = 0,00044 |
+| 80 | BA | CAMAÇARI (34134) | 170 | 238 | — | 1236 | 1766397 | 933851205495910399436903 | — | 52,2% | z = 12,4 | q = 0,00016 |
+| 81 | BA | CAMAÇARI (34134) | 171 | 266 | — | 1023 | 1767566 | 368105627831664060019150 | — | 44,6% | z = 9,8 | q = 0,0049 |
+| 82 | BA | CAMAÇARI (34134) | 171 | 407 | — | 1295 | 1767536 | 802549938955493695613901 | — | 50,5% | z = 11,6 | q = 0,00016 |
+| 83 | BA | CAMAÇARI (34134) | 171 | 435 | — | 1066 | 1766095 | 954064071770305940395824 | — | 46,0% | z = 10,2 | q = 0,0021 |
+| 84 | BA | CAMAÇARI (34134) | 171 | 439 | — | 1384 | 1782655 | 34872590995245488299911 | — | 44,7% | z = 9,8 | q = 0,0048 |
+| 85 | BA | CAMPO FORMOSO (34193) | 53 | 308 | — | 1015 | 2406313 | 909258054988959575312828 | — | 37,2% | z = 7,9 | q = 0,00053 |
+| 86 | BA | CANAVIEIRAS (34258) | 116 | 229 | — | 1325 | 2177636 | 819163127540284982450851 | — | 40,3% | z = 8,2 | q = 0,0084 |
+| 87 | BA | CANAVIEIRAS (34258) | 116 | 231 | — | 1325 | 2176228 | 273709779186377707357455 | — | 41,5% | z = 8,5 | q = 0,0031 |
+| 88 | BA | CANDEIAS (34290) | 127 | 326 | — | 1040 | 1680929 | 755775828016481019853204 | — | 95,1% | z = 20,5 | q = 0 |
+| 89 | BA | CANSANÇÃO (34355) | 50 | 324 | 350 | 1031 | 2310329 | 514186362515989976013113 | — | 40,8% | z = 6,7 | q = 0,00078 |
+| 90 | BA | CARINHANHA (34410) | 125 | 1 | — | 1015 | 2212508 | 122090238084540225101764 | — | 40,9% | z = 6,7 | q = 0,00017 |
+| 91 | BA | CATU (34495) | 129 | 258 | — | 1490 | 2155199 | 317253724304298592308755 | — | 38,0% | z = 10,2 | q = 0,00063 |
+| 92 | BA | CONCEIÇÃO DA FEIRA (34630) | 108 | 98 | — | 1023 | 1766933 | 368033873763891562555296 | — | 52,7% | z = 6,8 | q = 9,1e-06 |
+| 93 | BA | CONCEIÇÃO DO COITÉ (34673) | 132 | 180 | — | 1066 | 2244224 | 405592052404189797308129 | — | 42,4% | z = 7,3 | q = 0,00066 |
+| 94 | BA | CONCEIÇÃO DO COITÉ (34673) | 132 | 181 | — | 1015 | 2234855 | 587310341522571661787150 | — | 41,4% | z = 7,0 | q = 0,0014 |
+| 95 | BA | CONDE (34711) | 21 | 178 | — | 1015 | 2179288 | 155340617209100638663961 | — | 39,7% | z = 8,6 | q = 9,5e-06 |
+| 96 | BA | CRUZ DAS ALMAS (34959) | 142 | 256 | — | 1490 | 2154525 | 198778383709839137869842 | — | 41,9% | z = 10,6 | q = 0,00011 |
+| 97 | BA | ESPLANADA (35114) | 21 | 126 | — | 1066 | 2244706 | 639588527813627323750022 | — | 39,5% | z = 6,1 | q = 8e-05 |
+| 98 | BA | FEIRA DE SANTANA (35157) | 154 | 378 | — | 1090 | 1757279 | 980186624613873695680384 | — | 55,7% | z = 13,0 | q = 5,5e-06 |
+| 99 | BA | FEIRA DE SANTANA (35157) | 154 | 379 | — | 1163 | 1764086 | 565944315802204732583191 | — | 54,0% | z = 12,4 | q = 2,4e-05 |
+| 100 | BA | FEIRA DE SANTANA (35157) | 155 | 196 | — | 1120 | 1767431 | 980197365543558223155246 | — | 48,0% | z = 9,0 | q = 5,3e-05 |
+
+Mostrando 100 de 727 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+<details>
+<summary><b>🟡 Eventos informativos — lista completa (12.993)</b></summary>
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | AC | PORTO WALTER (1066) | 4 | 314 | — | 1082 | 2280822 | 23146801808847252321750 | — | 22,4% |  |  |
+| 2 | AC | PORTO WALTER (1066) | 4 | 321 | — | 1112 | 2271874 | 912035437815164083162479 | — | 23,3% |  |  |
+| 3 | AC | PORTO WALTER (1066) | 4 | 467 | — | 1120 | 2278602 | 891833443013696317304327 | — | 31,2% |  |  |
+| 4 | AC | PORTO WALTER (1066) | 4 | 476 | — | 1023 | 2254373 | 740318252298288522703949 | — | 22,5% |  |  |
+| 5 | AC | PORTO WALTER (1066) | 4 | 477 | — | 1040 | 2291272 | 710015332095464685444601 | — | 29,0% |  |  |
+| 6 | AC | MÂNCIO LIMA (1090) | 4 | 466 | — | 1058 | 2256986 | 233167676912061132597636 | — | 21,6% |  |  |
+| 7 | AC | JORDÃO (1104) | 5 | 52 | — | 1040 | 2294139 | 449699013277558678203865 | — | 22,0% |  |  |
+| 8 | AC | JORDÃO (1104) | 5 | 122 | — | 1040 | 2250531 | 803235254413223685745402 | — | 25,5% |  |  |
+| 9 | AC | JORDÃO (1104) | 5 | 137 | — | 1112 | 2270269 | 843639915417870478309479 | — | 22,6% |  |  |
+| 10 | AC | ASSIS BRASIL (1570) | 6 | 149 | — | 1341 | 2266316 | 416207777975153208442117 | — | 23,1% |  |  |
+| 11 | AC | ASSIS BRASIL (1570) | 6 | 161 | — | 1350 | 2269923 | 375803992871966208977173 | — | 24,1% |  |  |
+| 12 | AL | ÁGUA BRANCA (27014) | 39 | 5 | — | 1023 | 1815429 | 235543787581164223427562 | — | 21,3% |  |  |
+| 13 | AL | ÁGUA BRANCA (27014) | 39 | 64 | — | 1023 | 1766636 | 801200668717993191410872 | — | 30,1% |  |  |
+| 14 | AL | ÁGUA BRANCA (27014) | 39 | 126 | — | 1279 | 1674756 | 326452215469419519090784 | — | 20,6% |  |  |
+| 15 | AL | PARICONHA (27022) | 39 | 18 | — | 1163 | 1772501 | 810601767851553188386249 | — | 28,2% |  |  |
+| 16 | AL | PARICONHA (27022) | 39 | 20 | — | 1163 | 1774199 | 648984782234358064425477 | — | 23,5% |  |  |
+| 17 | AL | PARICONHA (27022) | 39 | 26 | — | 1163 | 1802873 | 345954147704051104665788 | — | 23,5% |  |  |
+| 18 | AL | PARICONHA (27022) | 39 | 34 | — | 1163 | 1816102 | 881308534358055523413189 | — | 20,3% |  |  |
+| 19 | AL | ESTRELA DE ALAGOAS (27049) | 46 | 134 | — | 1198 | 1768552 | 41498780890390273460792 | — | 22,9% |  |  |
+| 20 | AL | ATALAIA (27073) | 6 | 16 | — | 1139 | 2071442 | 39269769790412433734099 | — | 23,8% |  |  |
+| 21 | AL | ATALAIA (27073) | 6 | 85 | — | 1414 | 2071327 | 948360050470014504969238 | — | 20,0% |  |  |
+| 22 | AL | ATALAIA (27073) | 6 | 103 | — | 1422 | 2456142 | 594825018335962879255948 | — | 20,2% |  |  |
+| 23 | AL | BATALHA (27138) | 29 | 2 | — | 1015 | 2034924 | 151228372329411657780786 | — | 20,3% |  |  |
+| 24 | AL | CANAPI (27316) | 27 | 2 | — | 1171 | 1814560 | 441535665716189694332022 | — | 29,3% |  |  |
+| 25 | AL | CANAPI (27316) | 27 | 4 | — | 1171 | 1769154 | 593050036231550055630571 | — | 26,6% |  |  |
+| 26 | AL | CANAPI (27316) | 27 | 11 | — | 1015 | 1768955 | 623353802134433626674337 | — | 28,3% |  |  |
+| 27 | AL | CANAPI (27316) | 27 | 14 | — | 1015 | 1669548 | 997090504871042267088663 | — | 24,9% |  |  |
+| 28 | AL | CANAPI (27316) | 27 | 15 | — | 1015 | 1674574 | 471838095919678676195098 | — | 23,4% |  |  |
+| 29 | AL | CANAPI (27316) | 27 | 16 | — | 1015 | 1672860 | 330424060105540902468448 | — | 20,0% |  |  |
+| 30 | AL | CANAPI (27316) | 27 | 17 | — | 1015 | 1672851 | 582949422430672361498360 | — | 24,6% |  |  |
+| 31 | AL | CANAPI (27316) | 27 | 22 | — | 1147 | 1814065 | 340525705708349701843044 | — | 25,3% |  |  |
+| 32 | AL | CANAPI (27316) | 27 | 23 | — | 1147 | 1815342 | 997090460373626724618704 | — | 20,0% |  |  |
+| 33 | AL | CANAPI (27316) | 27 | 24 | — | 1040 | 1764568 | 906181482364552214345653 | — | 20,7% |  |  |
+| 34 | AL | CANAPI (27316) | 27 | 28 | — | 1147 | 1775452 | 108101129184758695365795 | — | 22,5% |  |  |
+| 35 | AL | CANAPI (27316) | 27 | 29 | — | 1015 | 1822947 | 855676986059520246089207 | — | 21,1% |  |  |
+| 36 | AL | CANAPI (27316) | 27 | 107 | — | 1015 | 1815535 | 976888833171546928096783 | — | 24,7% |  |  |
+| 37 | AL | CANAPI (27316) | 27 | 110 | — | 1163 | 1668679 | 976888138671143585192028 | — | 24,6% |  |  |
+| 38 | AL | CANAPI (27316) | 27 | 111 | — | 1163 | 1666760 | 310222581705041778821120 | — | 23,8% |  |  |
+| 39 | AL | CANAPI (27316) | 27 | 122 | — | 1163 | 1775065 | 219212661288543854386916 | — | 22,7% |  |  |
+| 40 | AL | CANAPI (27316) | 27 | 124 | — | 1163 | 1767978 | 411232084008711321120343 | — | 22,2% |  |  |
+| 41 | AL | CANAPI (27316) | 27 | 142 | — | 1171 | 1766624 | 108101698877086959328005 | — | 20,2% |  |  |
+| 42 | AL | CANAPI (27316) | 27 | 152 | — | 1015 | 1763321 | 562747225923071235244612 | — | 22,2% |  |  |
+| 43 | AL | CANAPI (27316) | 27 | 153 | — | 1180 | 1820182 | 865777638653322072246905 | — | 22,5% |  |  |
+| 44 | AL | CANAPI (27316) | 27 | 155 | — | 1180 | 1815755 | 724363714239851184564036 | — | 28,7% |  |  |
+| 45 | AL | CANAPI (27316) | 27 | 156 | — | 1015 | 1772845 | 269717362493344132693558 | — | 26,3% |  |  |
+| 46 | AL | CANAPI (27316) | 27 | 165 | — | 1163 | 1674026 | 380929387812966506706221 | — | 28,3% |  |  |
+| 47 | AL | CARNEIROS (27359) | 19 | 245 | — | 1015 | 1813243 | 499155503776279064813516 | — | 21,8% |  |  |
+| 48 | AL | CARNEIROS (27359) | 19 | 251 | — | 1015 | 1752424 | 196125833646620377532463 | — | 20,3% |  |  |
+| 49 | AL | CARNEIROS (27359) | 19 | 256 | — | 1031 | 1769202 | 367842557363397894477207 | — | 20,7% |  |  |
+| 50 | AL | CARNEIROS (27359) | 19 | 258 | — | 1031 | 1768824 | 14307421128031211874656 | — | 26,0% |  |  |
+| 51 | AL | CARNEIROS (27359) | 19 | 262 | — | 1040 | 1768045 | 812387636679447556621814 | — | 23,2% |  |  |
+| 52 | AL | CARNEIROS (27359) | 19 | 264 | — | 1040 | 1762810 | 287034323726749028349542 | — | 23,0% |  |  |
+| 53 | AL | COITÉ DO NÓIA (27391) | 45 | 116 | — | 1015 | 1766632 | 738756554496432747479495 | — | 22,8% |  |  |
+| 54 | AL | COITÉ DO NÓIA (27391) | 45 | 120 | — | 1023 | 1766637 | 112594342734229187553438 | — | 24,3% |  |  |
+| 55 | AL | COITÉ DO NÓIA (27391) | 45 | 121 | — | 1023 | 1773854 | 728655068195783427581004 | — | 25,1% |  |  |
+| 56 | AL | COITÉ DO NÓIA (27391) | 45 | 123 | — | 1023 | 1765298 | 11584575524543005760591 | — | 21,9% |  |  |
+| 57 | AL | COITÉ DO NÓIA (27391) | 45 | 125 | — | 1023 | 1767375 | 546837328477586672204581 | — | 25,8% |  |  |
+| 58 | AL | COITÉ DO NÓIA (27391) | 45 | 126 | — | 1023 | 1773250 | 708453590193693422880980 | — | 27,0% |  |  |
+| 59 | AL | COITÉ DO NÓIA (27391) | 45 | 127 | — | 1023 | 1765885 | 839766834106771353963874 | — | 22,6% |  |  |
+| 60 | AL | COITÉ DO NÓIA (27391) | 45 | 129 | — | 1023 | 1670380 | 253908476248093656908629 | — | 37,4% |  |  |
+| 61 | AL | COITÉ DO NÓIA (27391) | 45 | 130 | — | 1023 | 1670263 | 920675222715323407167200 | — | 31,9% |  |  |
+| 62 | AL | COITÉ DO NÓIA (27391) | 45 | 133 | — | 1031 | 1816419 | 304413938011852615550777 | — | 20,8% |  |  |
+| 63 | AL | COITÉ DO NÓIA (27391) | 45 | 156 | — | 1040 | 1821778 | 21685129683149051610669 | — | 24,5% |  |  |
+| 64 | AL | DELMIRO GOUVEIA (27472) | 40 | 14 | — | 1040 | 1772847 | 162444673229681838193781 | — | 20,1% |  |  |
+| 65 | AL | DELMIRO GOUVEIA (27472) | 40 | 20 | — | 1040 | 1766646 | 61434202468258059598912 | — | 24,3% |  |  |
+| 66 | AL | DELMIRO GOUVEIA (27472) | 40 | 36 | — | 1112 | 1774141 | 687696559930039318179398 | — | 27,6% |  |  |
+| 67 | AL | DELMIRO GOUVEIA (27472) | 40 | 42 | — | 1490 | 1774431 | 414969918295255614540593 | — | 21,8% |  |  |
+| 68 | AL | DELMIRO GOUVEIA (27472) | 40 | 52 | — | 1376 | 1767682 | 637191209817549451932175 | — | 23,1% |  |  |
+| 69 | AL | DELMIRO GOUVEIA (27472) | 40 | 102 | — | 1368 | 1673445 | 394767701104240065000063 | — | 20,9% |  |  |
+| 70 | AL | DELMIRO GOUVEIA (27472) | 40 | 133 | — | 1430 | 1767925 | 697797328642760542965660 | — | 23,5% |  |  |
+| 71 | AL | DELMIRO GOUVEIA (27472) | 40 | 134 | — | 1538 | 1768147 | 61434801679650356621495 | — | 26,4% |  |  |
+| 72 | AL | DELMIRO GOUVEIA (27472) | 40 | 139 | — | 1392 | 1668301 | 384666675711388651746834 | — | 20,8% |  |  |
+| 73 | AL | DELMIRO GOUVEIA (27472) | 40 | 141 | — | 1376 | 1768416 | 71535559677974290269123 | — | 30,3% |  |  |
+| 74 | AL | DELMIRO GOUVEIA (27472) | 40 | 247 | — | 1538 | 1699889 | 212949447791983318698610 | — | 24,9% |  |  |
+| 75 | AL | DOIS RIACHOS (27499) | 46 | 41 | — | 1112 | 1763301 | 686162074983623766267303 | — | 22,3% |  |  |
+| 76 | AL | DOIS RIACHOS (27499) | 46 | 44 | — | 1090 | 1774959 | 413435131156883927542329 | — | 20,1% |  |  |
+| 77 | AL | DOIS RIACHOS (27499) | 46 | 46 | — | 1090 | 1764305 | 100304043625048580010027 | — | 21,7% |  |  |
+| 78 | AL | DOIS RIACHOS (27499) | 46 | 74 | — | 1139 | 1676433 | 39697967302259812272023 | — | 26,9% |  |  |
+| 79 | AL | IGACI (27618) | 45 | 1 | — | 1228 | 1766541 | 738356843938290233876023 | — | 27,4% |  |  |
+| 80 | AL | IGACI (27618) | 45 | 2 | — | 1228 | 1752957 | 41487261669552548729502 | — | 29,5% |  |  |
+| 81 | AL | IGACI (27618) | 45 | 8 | — | 1228 | 1816117 | 990982871064455786639477 | — | 24,0% |  |  |
+| 82 | AL | IGACI (27618) | 45 | 9 | — | 1090 | 1767357 | 586841578423997871847801 | — | 24,0% |  |  |
+| 83 | AL | IGACI (27618) | 45 | 12 | — | 1090 | 1813172 | 879770169252885925332773 | — | 24,5% |  |  |
+| 84 | AL | IGACI (27618) | 45 | 13 | — | 1325 | 1774597 | 415124810906373315106990 | — | 24,1% |  |  |
+| 85 | AL | IGACI (27618) | 45 | 15 | — | 1325 | 1650792 | 556538552720879792149808 | — | 20,2% |  |  |
+| 86 | AL | IGACI (27618) | 45 | 19 | — | 1090 | 1774518 | 394922452888780828592890 | — | 21,8% |  |  |
+| 87 | AL | IGACI (27618) | 45 | 20 | — | 1104 | 1806472 | 102093245259447403225723 | — | 23,4% |  |  |
+| 88 | AL | IGACI (27618) | 45 | 23 | — | 1104 | 1774385 | 738356209822423290637015 | — | 31,1% |  |  |
+| 89 | AL | IGACI (27618) | 45 | 25 | — | 1201 | 1774064 | 324215010581457969765542 | — | 20,0% |  |  |
+| 90 | AL | IGACI (27618) | 45 | 26 | — | 1104 | 1807653 | 869669663835033430759494 | — | 24,8% |  |  |
+| 91 | AL | IGACI (27618) | 45 | 30 | — | 1147 | 1822203 | 516134729700021247166008 | — | 25,4% |  |  |
+| 92 | AL | IGACI (27618) | 45 | 37 | — | 1104 | 1775000 | 213104190147690137511163 | — | 24,3% |  |  |
+| 93 | AL | IGACI (27618) | 45 | 39 | — | 1198 | 1768340 | 758558953601701603830731 | — | 23,1% |  |  |
+| 94 | AL | IGACI (27618) | 45 | 40 | — | 1325 | 1847930 | 273710559553172409716315 | — | 20,7% |  |  |
+| 95 | AL | IGACI (27618) | 45 | 42 | — | 1147 | 1814270 | 465629964972871612665586 | — | 22,2% |  |  |
+| 96 | AL | IGACI (27618) | 45 | 50 | — | 1201 | 1761901 | 738356087899755386437053 | — | 21,9% |  |  |
+| 97 | AL | IGACI (27618) | 45 | 54 | — | 1228 | 1805915 | 102093893909353877260786 | — | 22,0% |  |  |
+| 98 | AL | IGACI (27618) | 45 | 55 | — | 1317 | 1816017 | 920275829691129227137721 | — | 20,6% |  |  |
+| 99 | AL | IGACI (27618) | 45 | 56 | — | 1244 | 1771676 | 869669870385011211662878 | — | 28,6% |  |  |
+| 100 | AL | IGACI (27618) | 45 | 59 | — | 1317 | 1807570 | 243407586423380392651779 | — | 22,4% |  |  |
+
+Mostrando 100 de 12.993 filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.
+
+</details>
+
+### B.14 🔴 L14 — Votos del log × boletín de urna
+
+**Objetivo.** Verifica si el número de votos registrados en el log es igual a la comparecencia del boletín de urna.
+
+**Método.** Cuenta los votos concluidos en el log (sumando las urnas, si hubo cambio) y los compara con la comparecencia del boletín.
+
+**Criterio de señalización.** Anomalía estadística: cualquier diferencia entre los votos concluidos en el log (sumando las urnas, si hubo cambio) y la comparecencia del boletín. Informativo: log ausente o ilegible en una sección que votó en urna.
+
+**Limitaciones y explicaciones alternativas.** Un log incompleto o dañado también genera diferencia; en ese caso queda registrado como falla del archivo.
+
+> 📊 **Resultado:** 🔴 **10 anomalía(s)** en 499.176 unidades analizadas (0,002%) · 🟡 0 evento(s) informativo(s).
+>
+> **Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.
+
+**Distribución por categoría**
+
+| Categoría | Cantidad |
+|---|---:|
+| 🔴 Votos del log ≠ comparecencia del boletín | 10 |
+
+*Observado: votos en el log. Referencia: comparecencia en el boletín.*
+
+#### 🔴 Urnas con anomalía — lista completa (10)
+
+| # | UF | Municipio | Zona | Sección | Secciones agregadas | Local | Nº de urna | Cód. carga | Cargo | Observado | Referencia | Detalle |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| 1 | BA | TEIXEIRA DE FREITAS (39934) | 183 | 175 | — | 1392 | 2429118 | 247022246387953006410646 | — | 236 | 272 |  |
+| 2 | ES | SERRA (56995) | 53 | 211 | — | 1155 | 1650564 | 21870384505547474408193 | — | 264 | 265 |  |
+| 3 | MG | DIVINÓPOLIS (44458) | 103 | 221 | — | 1147 | 2392288 | 947036942446689270248573 | — | 224 | 225 |  |
+| 4 | RJ | SÃO GONÇALO (58971) | 87 | 184 | — | 1120 | 2172702 | 633996725063530387702207 | — | 256 | 258 |  |
+| 5 | RN | ASSÚ (16039) | 29 | 28 | — | 1015 | 2052352 | 119024119676959962792784 | — | 241 | 242 |  |
+| 6 | RS | SARANDI (89036) | 83 | 44 | — | 1643 | 1651842 | 530942538690992066201573 | — | 278 | 279 |  |
+| 7 | SP | COTIA (63614) | 227 | 305 | — | 1163 | 2142439 | 866895681587230811061413 | — | 289 | 290 |  |
+| 8 | SP | FRANCA (64254) | 291 | 346 | — | 1155 | 1839536 | 91601301078595756423014 | — | 277 | 278 |  |
+| 9 | SP | SÃO PAULO (71072) | 2 | 35 | — | 1023 | 2253783 | 210243219910136804398610 | — | 232 | 247 |  |
+| 10 | SP | SÃO PAULO (71072) | 260 | 37 | — | 1031 | 2264610 | 280988261533820268342672 | — | 284 | 285 |  |
+
+
 ---
 
-*Documento generado automáticamente por el motor de auditoría estadística v2.1.0. Una anomalía estadística no es prueba de fraude.*
+*Documento generado automáticamente por el motor de auditoría estadística v3.1.0. Una anomalía estadística no es prueba de fraude.*
