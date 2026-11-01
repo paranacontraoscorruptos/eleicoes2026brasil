@@ -798,17 +798,34 @@
   }
   document.addEventListener("avisos", () => faixaTopo());
 
+  // Menu do alto. Página nova que não estiver em nenhum grupo entra sozinha no último.
+  const MENU1 = ["home", "r1", "r2", "tests", "lookup", "atlas", "sim", "map", "faq", "downloads"];
+  // em cima no computador; Perguntas só a partir de 1270 px (abaixo disso fica no grupo de baixo); no celular, só nos grupos
+  const MENU1_LARGO = { map: "so-pc", faq: "so-largo" };
+  const MENU2 = [["g_res", ["vary", "late", "map", "states", "list", "charts"]], ["g_con", ["query", "places", "verify", "ballot", "saved"]],
+    ["g_ent", ["faq", "glossary", "anatomy", "replicate", "limits"]], ["g_mais", ["updates", "proofs", "press", "embed", "devs"]]];
+  function menuItens() {
+    const href = Object.fromEntries(PAGINAS.concat(MAIS));
+    const usados = new Set(MENU1.concat(...MENU2.map((g) => g[1])));
+    const sobra = Object.keys(href).filter((k) => !usados.has(k));
+    const grupos = MENU2.map(([g, ks], i) => [g, (i === MENU2.length - 1 ? ks.concat(sobra) : ks).filter((k) => href[k])]);
+    return { href, um: MENU1.filter((k) => href[k]), grupos, largo: MENU1_LARGO };
+  }
+
   function montarCabecalho() {
     const L = t();
     marca();
     faixaTopo(L);
-    $("#nav").innerHTML = '<span class="nav-hover" aria-hidden="true"></span><span class="nav-ind" aria-hidden="true"></span>'
-      + PAGINAS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${i}">${esc(L.nav[k])}</a>`).join("")
-      // no celular as ferramentas ficam no menu lateral; no computador, na segunda fileira (#nav2)
-      + `<div class="nav-more" style="--i:${PAGINAS.length}"><div class="nav-sub" id="nav-sub"><span class="nav-sub-t">${esc(L.nav.more_title)}</span>${MAIS.map(([k, h], i) => `<a href="${h}" data-nav="${k}" style="--i:${PAGINAS.length + i + 1}">${icone(ICO_MAIS[k])}<span>${esc(L.nav[k])}</span></a>`).join("")}</div></div>
-        <button class="nav-a11y" type="button" data-a11y>${icone("a11y")} ${esc(L.ax_title)}</button>`;
+    // menu: fileira principal ao lado da marca; embaixo, as demais páginas em grupos (no celular, tudo no menu lateral)
+    const M = menuItens(); let n = 0;
+    const item = (k, cls) => `<a href="${M.href[k]}" data-nav="${k}"${cls ? ` class="${cls}"` : ""} style="--i:${n++}">${esc(L.nav[k])}</a>`;
+    // no celular, map e faq aparecem só uma vez (no grupo)
+    $("#nav").innerHTML = M.um.map((k) => item(k, M.largo[k] || "")).join("")
+      + `<div class="nav-more">${M.grupos.map(([g, ks]) => `<div class="nav-g" role="group" aria-label="${esc(L.nav[g])}"><span class="nav-sub-t" style="--i:${n++}">${esc(L.nav[g])}</span>${ks.map((k) => item(k)).join("")}</div>`).join("")}</div>
+        <button class="nav-a11y" type="button" data-a11y style="--i:${n++}">${icone("a11y")} ${esc(L.ax_title)}</button>`;
     $("#nav2").setAttribute("aria-label", L.nav.more_title);
-    $("#nav2").innerHTML = `<div class="nav2-in">${MAIS.map(([k, h]) => `<a href="${h}" data-nav="${k}">${icone(ICO_MAIS[k])}<span>${esc(L.nav[k])}</span></a>`).join("")}</div>`;
+    const it2 = (k) => `<a href="${M.href[k]}" data-nav="${k}"${M.largo[k] ? ' class="so-estreito"' : ""}>${esc(L.nav[k])}</a>`;
+    $("#nav2").innerHTML = `<div class="nav2-in">${M.grupos.map(([g, ks]) => [g, ks.filter((k) => M.largo[k] !== "so-pc")]).map(([g, ks]) => `<div class="mg" role="group" aria-label="${esc(L.nav[g])}"><span class="mg-c"><span class="mg-t">${esc(L.nav[g])}</span>${it2(ks[0])}</span>${ks.slice(1).map(it2).join("")}</div>`).join("")}</div>`;
     $("#lang").innerHTML = LANGS.map((l) => `<button type="button" data-lang="${l}" aria-pressed="${l === state.lang}">${l}</button>`).join("");
     $("#lang").setAttribute("aria-label", L.lang);
     $("#theme-btn").setAttribute("aria-label", L.theme); $("#theme-btn").title = L.theme;

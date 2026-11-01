@@ -626,7 +626,7 @@
     ["#/incorporar", /\b(?:incorporar|embed)\b/], ["#/dados", /\b(?:programadores|developers|desarrolladores)\b/], ["#/provas", /\b(?:provas e copias|proofs and copies|pruebas y copias)\b/],
     ["#/downloads", /\b(?:downloads?|descargas)\b/], ["#/testes", /\b(?:testes|tests|pruebas)\b/], ["#/graficos", /\b(?:graficos|charts|graficas)\b/], ["#/glossario", /\b(?:glossario|glossary|glosario)\b/],
     ["#/limitacoes", /\b(?:limitacoes|limitations|limitaciones)\b/], ["#/replicar", /\b(?:replicar|replicate|replication|replicacion)\b/], ["#/atualizacoes", /\b(?:atualizacoes|updates|actualizaciones|novidades|news)\b/],
-    ["#/lista", /\b(?:lista de secoes|secoes sinalizadas|secoes marcadas|flagged sections|secciones senaladas|lista)\b/], ["#/variacao", /\b(?:variacao|variation|variacion)\b/], ["#/mapa", /\b(?:mapa|map)\b/],
+    ["#/lista", /\b(?:lista de secoes|secoes sinalizadas|secoes marcadas|flagged sections|secciones senaladas|lista)\b/], ["#/variacao", /\b(?:variacao|variation|variacion|comparar turnos|compare rounds|comparar vueltas)\b/], ["#/mapa", /\b(?:mapa|map)\b/],
     ["#/", /\b(?:inicio|home|pagina inicial|homepage|pagina principal|inicial)\b/], ["lugar", /\b(?:pagina|page)\b/]];
   // tipo de site pedido: "site de ranking", "site comparando Curitiba e Londrina", "site em formato de apresentação"
   const TIPOS_SITE = [["comparativo", /\b(?:comparativo|comparativa|comparacao|comparando|compara|compare|comparar|comparing|comparison|comparacion|lado a lado|side by side|versus|vs)\b/],

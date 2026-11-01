@@ -1412,9 +1412,9 @@ Object.assign(window.I18N.ES, {
 });
 
 // Votos do 1º para o 2º turno (Presidente) e testes V1 a V6 do Adendo A do Relatório Técnico do 2º turno
-Object.assign(window.I18N.PT.nav, { vary: "1º → 2º turno" });
-Object.assign(window.I18N.EN.nav, { vary: "Round 1 → 2" });
-Object.assign(window.I18N.ES.nav, { vary: "1.ª → 2.ª vuelta" });
+Object.assign(window.I18N.PT.nav, { vary: "Comparar turnos", g_res: "Resultados", g_con: "Consultas", g_ent: "Entenda", g_mais: "Mais" });
+Object.assign(window.I18N.EN.nav, { vary: "Compare rounds", g_res: "Results", g_con: "Lookups", g_ent: "Learn", g_mais: "More" });
+Object.assign(window.I18N.ES.nav, { vary: "Comparar vueltas", g_res: "Resultados", g_con: "Consultas", g_ent: "Entienda", g_mais: "Más" });
 window.I18N.PT.pg2.vary = ["Votos do 1º para o 2º turno", "Quanto Lula e Flávio Bolsonaro ganharam ou perderam em cada estado, município e seção, e onde a variação foge do padrão."];
 window.I18N.EN.pg2.vary = ["Votes from round 1 to round 2", "How many votes Lula and Flávio Bolsonaro gained or lost in each state, municipality and section, and where the change departs from the pattern."];
 window.I18N.ES.pg2.vary = ["Votos de la 1.ª a la 2.ª vuelta", "Cuánto ganaron o perdieron Lula y Flávio Bolsonaro en cada estado, municipio y sección, y dónde la variación se aparta del patrón."];
