@@ -70,7 +70,7 @@ try:
 except ImportError:  # pragma: no cover
     plt = None
 
-VERSAO_MOTOR = "3.1.0"
+VERSAO_MOTOR = "3.1.1"
 
 # =============================================================================
 # 1. CONFIGURAÇÃO
@@ -4284,9 +4284,9 @@ TESTES_LOG = {
         "ES": {"nome": "Cortes de energía e interrupciones", "objetivo": "Encuentra cortes de energía, apagados y reinicios de la urna durante la votación.", "metodo": "Lee en el log los eventos de batería, apagado y reencendido y mide cuánto tiempo la urna estuvo detenida.", "criterio": "Informativo: interrupción registrada durante la votación (urna apagada o funcionando con batería). Anomalía estadística: voto grabado con hora dentro del período en que la misma urna estaba apagada, o 3 reencendidos o más durante la votación.", "limites": "Cortes de luz y batería baja ocurren, sobre todo en lugares alejados. El acta registra los hechos."},
     },
     "L06": {
-        "PT": {"nome": "Troca de urna", "objetivo": "Confere as trocas de urna durante a votação e se os votos das duas urnas somam o que está no boletim.", "metodo": "Identifica no log a urna original e a de contingência (número e hora de cada uma) e soma os votos gravados em cada.", "criterio": "Informativo: troca de urna registrada. Anomalia estatística: voto gravado na urna anterior depois do primeiro voto da urna nova. A soma dos votos das urnas comparada com o boletim fica no teste L14.", "limites": "O log não diz o motivo da troca; a ata da mesa registra."},
-        "EN": {"nome": "Machine replacement", "objetivo": "Checks machine replacements during voting and whether the votes of the two machines add up to the report.", "metodo": "Identifies in the log the original machine and the contingency one (number and time of each) and adds up the votes recorded in each.", "criterio": "Informational: machine replacement logged. Statistical anomaly: a vote recorded in the previous machine after the first vote of the new one. The sum of the machines' votes compared with the tally sheet is in test L14.", "limites": "The log does not say why the machine was replaced; the polling station minutes do."},
-        "ES": {"nome": "Cambio de urna", "objetivo": "Verifica los cambios de urna durante la votación y si los votos de las dos urnas suman lo que dice el boletín.", "metodo": "Identifica en el log la urna original y la de contingencia (número y hora de cada una) y suma los votos registrados en cada una.", "criterio": "Informativo: cambio de urna registrado. Anomalía estadística: voto grabado en la urna anterior después del primer voto de la urna nueva. La suma de los votos de las urnas comparada con el boletín está en la prueba L14.", "limites": "El log no dice el motivo del cambio; el acta de la mesa lo registra."},
+        "PT": {"nome": "Troca de urna", "objetivo": "Confere as trocas de urna durante a votação e se os votos das duas urnas somam o que está no boletim.", "metodo": "Identifica no log a urna original e a de contingência (número e hora de cada uma), pela hora dos votos de cada urna e não pela ordem em que aparecem no log (a urna anterior é a que recebeu o último voto mais cedo), e soma os votos gravados em cada.", "criterio": "Informativo: troca de urna registrada. Anomalia estatística: voto gravado na urna anterior depois do primeiro voto da urna nova. A soma dos votos das urnas comparada com o boletim fica no teste L14.", "limites": "O log não diz o motivo da troca; a ata da mesa registra."},
+        "EN": {"nome": "Machine replacement", "objetivo": "Checks machine replacements during voting and whether the votes of the two machines add up to the report.", "metodo": "Identifies in the log the original machine and the contingency one (number and time of each), by the time of each machine's votes and not by the order in which they appear in the log (the previous machine is the one whose last vote came first), and adds up the votes recorded in each.", "criterio": "Informational: machine replacement logged. Statistical anomaly: a vote recorded in the previous machine after the first vote of the new one. The sum of the machines' votes compared with the tally sheet is in test L14.", "limites": "The log does not say why the machine was replaced; the polling station minutes do."},
+        "ES": {"nome": "Cambio de urna", "objetivo": "Verifica los cambios de urna durante la votación y si los votos de las dos urnas suman lo que dice el boletín.", "metodo": "Identifica en el log la urna original y la de contingencia (número y hora de cada una), por la hora de los votos de cada urna y no por el orden en que aparecen en el log (la urna anterior es la que recibió el último voto más temprano), y suma los votos registrados en cada una.", "criterio": "Informativo: cambio de urna registrado. Anomalía estadística: voto grabado en la urna anterior después del primer voto de la urna nueva. La suma de los votos de las urnas comparada con el boletín está en la prueba L14.", "limites": "El log no dice el motivo del cambio; el acta de la mesa lo registra."},
     },
     "L07": {
         "PT": {"nome": "Tentativas repetidas (já votou, não encontrado, impedido)", "objetivo": "Conta as tentativas de liberar eleitores que já votaram, que não foram encontrados na seção ou que estão impedidos de votar.", "metodo": "Soma no log as mensagens de eleitor que já votou, título não encontrado e eleitor impedido, e compara a taxa da seção com a do município e a das seções vizinhas.", "criterio": "Anomalia estatística: taxa de tentativas muito acima do grupo de referência (escore z robusto ≥ 3,5 e teste beta-binomial com taxa de falsas descobertas de 1%), com 5 tentativas ou mais. Informativo: 3 tentativas ou mais seguidas com o mesmo resultado, sem voto entre elas.", "limites": "Erro ao digitar o número do título gera tentativas. O log não mostra o nome do eleitor."},
@@ -4304,9 +4304,9 @@ TESTES_LOG = {
         "ES": {"nome": "Intentos de cierre", "objetivo": "Busca intentos de cerrar la votación antes del horario o más de una vez.", "metodo": "Lee en el log cada comando de cierre, la hora y si fue confirmado o cancelado.", "criterio": "Anomalía estadística: intento de cierre antes de la hora en que la urna libera el cierre (17 h de Brasilia en las dos vueltas, según la configuración registrada en el propio log). Informativo: más de un intento de cierre después de esa hora.", "limites": "Una tecla presionada por error genera intentos cancelados. El acta los registra."},
     },
     "L10": {
-        "PT": {"nome": "Hora da zerésima e da ligação da urna", "objetivo": "Confere a hora em que a urna foi ligada e imprimiu a zerésima, o relatório que mostra que ela começou sem nenhum voto.", "metodo": "Lê no log a hora de ligar a urna, a da zerésima e a do primeiro voto.", "criterio": "Anomalia estatística: zerésima depois do primeiro voto, ou urna sem zerésima no dia. Informativo: zerésima antes das 6h ou 1 hora ou mais depois do início oficial da votação (8h de Brasília), na hora local.", "limites": "Urna de contingência imprime a sua zerésima na hora da troca. Relógio errado muda todos os horários."},
-        "EN": {"nome": "Time of the zero report and power-on", "objetivo": "Checks when the machine was switched on and printed the zero report (zerésima), which shows it started with no votes.", "metodo": "Reads in the log the time the machine was switched on, the time of the zero report and the time of the first vote.", "criterio": "Statistical anomaly: zero report after the first vote, or no zero report on the day. Informational: zero report before 6 am or 1 hour or more after the official start of voting (8 am Brasília time), in local time.", "limites": "A contingency machine prints its own zero report at the time of the replacement. A wrong clock shifts every time."},
-        "ES": {"nome": "Hora de la zerésima y del encendido de la urna", "objetivo": "Verifica la hora en que la urna fue encendida e imprimió la zerésima, el informe que muestra que empezó sin ningún voto.", "metodo": "Lee en el log la hora de encendido de la urna, la de la zerésima y la del primer voto.", "criterio": "Anomalía estadística: zerésima después del primer voto, o urna sin zerésima en el día. Informativo: zerésima antes de las 6 h o 1 hora o más después del inicio oficial de la votación (8 h de Brasilia), en hora local.", "limites": "La urna de contingencia imprime su zerésima a la hora del cambio. Un reloj equivocado cambia todos los horarios."},
+        "PT": {"nome": "Hora da zerésima e da ligação da urna", "objetivo": "Confere a hora em que a urna foi ligada e imprimiu a zerésima, o relatório que mostra que ela começou sem nenhum voto.", "metodo": "Lê no log a hora da 1ª zerésima da seção, a hora em que a urna que a imprimiu foi ligada e a do primeiro voto do dia.", "criterio": "Anomalia estatística: zerésima depois do primeiro voto, ou seção sem zerésima no log. Informativo: zerésima antes das 6h ou 1 hora ou mais depois do início oficial da votação (8h de Brasília), na hora local.", "limites": "Quando a urna é trocada antes do primeiro voto, a zerésima da seção é a da urna substituída; a urna de contingência não imprime outra. Relógio errado muda todos os horários."},
+        "EN": {"nome": "Time of the zero report and power-on", "objetivo": "Checks when the machine was switched on and printed the zero report (zerésima), which shows it started with no votes.", "metodo": "Reads in the log the time of the section's first zero report, the time the machine that printed it was switched on and the time of the first vote of the day.", "criterio": "Statistical anomaly: zero report after the first vote, or no zero report in the section's log. Informational: zero report before 6 am or 1 hour or more after the official start of voting (8 am Brasília time), in local time.", "limites": "When the machine is replaced before the first vote, the section's zero report is the one from the replaced machine; the contingency machine does not print another. A wrong clock shifts every time."},
+        "ES": {"nome": "Hora de la zerésima y del encendido de la urna", "objetivo": "Verifica la hora en que la urna fue encendida e imprimió la zerésima, el informe que muestra que empezó sin ningún voto.", "metodo": "Lee en el log la hora de la 1.ª zerésima de la sección, la hora de encendido de la urna que la imprimió y la del primer voto del día.", "criterio": "Anomalía estadística: zerésima después del primer voto, o sección sin zerésima en el log. Informativo: zerésima antes de las 6 h o 1 hora o más después del inicio oficial de la votación (8 h de Brasilia), en hora local.", "limites": "Cuando la urna se cambia antes del primer voto, la zerésima de la sección es la de la urna sustituida; la urna de contingencia no imprime otra. Un reloj equivocado cambia todos los horarios."},
     },
     "L11": {
         "PT": {"nome": "Relógio da urna", "objetivo": "Verifica se o relógio da urna estava certo e se foi ajustado durante o dia.", "metodo": "Compara a hora do log com as horas da zerésima, do boletim e do recebimento pelo TSE e procura ajustes de data e hora no log.", "criterio": "Informativo: diferença de 15 minutos ou mais entre o log e o boletim (abertura, encerramento ou emissão), ou ajuste de relógio no dia fora da votação. Anomalia estatística: ajuste de relógio, ou volta do relógio de mais de 1 minuto, durante a votação, com votos antes e depois.", "limites": "Relógio desregulado é causa conhecida e mexe nos horários de todos os outros testes."},
@@ -4781,6 +4781,9 @@ def log_medidas(r: dict, ctx: dict) -> dict:
     ev = r["ev"]
     urnas = r["u"]
     m.update(n_votos=n, n_urnas=len(urnas), n_urnas_voto=sum(1 for u in urnas if u[3] > 0))
+    # 1ª urna do dia: a que gravou o 1º voto (os votos vêm em ordem de hora). A ordem das urnas no log nem sempre é a do
+    # dia: a urna de contingência pode vir antes da original quando foi ligada mais cedo (v3.1.1)
+    u1 = int(vu[0]) if (vu and n) else 0
     sd = [c in LOG_SEM_DIGITAL for c in lib]
     m["n_sem_digital"] = int(sum(sd))
     m["n_cpf"] = r["vd"].count("C")
@@ -4847,8 +4850,9 @@ def log_medidas(r: dict, ctx: dict) -> dict:
     for e in evs:
         if e[1] == "ligada":
             prim_lig.setdefault(e[2], e[0])
-    # religamento: urna ligada de novo durante a votação (a 1ª ligação de uma urna de contingência não conta)
-    relig = [e for e in evs if e[1] == "ligada" and jan(e[0]) and not (e[2] > 0 and prim_lig.get(e[2]) == e[0])]
+    # religamento: urna ligada de novo durante a votação. A 1ª ligação de cada urna não conta (a da urna de contingência
+    # é a troca, não um religamento), qualquer que seja a ordem das urnas no log (v3.1.1)
+    relig = [e for e in evs if e[1] == "ligada" and jan(e[0]) and prim_lig.get(e[2]) != e[0]]
     m["n_religamentos"] = len(relig)
     m["n_bateria"] = sum(1 for e in evs if e[1] == "bateria" and jan(e[0]))
     m["n_desligada"] = len(deslig)
@@ -4860,14 +4864,17 @@ def log_medidas(r: dict, ctx: dict) -> dict:
         parada += prox - e[0]
         v_parada += sum(1 for i in range(n) if e[0] < t[i] < prox and (not vu or int(vu[i]) == e[2]))
     m["v_urna_desligada"], m["seg_parada"] = v_parada, parada
-    # L06: troca de urna (votos em mais de uma urna) e voto na urna anterior depois do 1º voto da nova
+    # L06: troca de urna (votos em mais de uma urna) e voto na urna anterior depois do 1º voto da nova.
+    # Urna anterior = a que recebeu o último voto mais cedo (a que saiu); a nova é a que continuou. Pela hora dos
+    # votos de cada urna, não pela ordem em que as urnas aparecem no log (v3.1.1)
     sobre = 0
     if vu and m["n_urnas_voto"] > 1:
-        prim = {}
+        prim, ult = {}, {}
         for i in range(n):
             prim.setdefault(vu[i], t[i])
+            ult[vu[i]] = t[i]
         for i in range(n):
-            if any(t[i] > prim[u2] for u2 in prim if u2 > vu[i]):
+            if any(ult[u2] > ult[vu[i]] and t[i] > prim[u2] for u2 in prim):
                 sobre += 1
     m["v_sobreposto"] = sobre
     # L07: tentativas (já votou, não encontrado, impedido) e sequências sem voto entre elas
@@ -4895,10 +4902,13 @@ def log_medidas(r: dict, ctx: dict) -> dict:
     m["n_enc_depois"] = sum(1 for x in menus if x >= cfg)
     hc = next((e[1].split(":", 1)[1] for e in evs if e[1].startswith("enc_cedo:")), "")
     m["enc_liberado_as"] = hc
-    # L10: zerésima, ligação e primeiro voto da 1ª urna do dia
-    zer = next((e[0] for e in evs if e[1] == "zer" and e[2] == 0), None)
-    lig = next((e[0] for e in evs if e[1] == "ligada" and e[2] == 0), urnas[0][1] if urnas else None)
-    v1 = next((t[i] for i in range(n) if not vu or vu[i] == "0"), None)
+    # L10: zerésima do dia (a 1ª da seção, de qualquer urna: quando a urna é trocada antes do 1º voto, a zerésima é a da
+    # urna substituída), ligação da urna que a imprimiu e 1º voto do dia. Não depende da ordem das urnas no log (v3.1.1)
+    zer_e = next((e for e in evs if e[1] == "zer"), None)
+    zer = zer_e[0] if zer_e else None
+    uz = zer_e[2] if zer_e else u1
+    lig = next((e[0] for e in evs if e[1] == "ligada" and e[2] == uz), urnas[uz][1] if uz < len(urnas) else None)
+    v1 = t[0] if n else None
     m["t_zeresima"], m["t_ligada"], m["t_primeiro_voto"] = zer, lig, v1
     m["zer_ausente"] = zer is None and v1 is not None
     m["zer_depois_voto"] = zer is not None and v1 is not None and zer > v1

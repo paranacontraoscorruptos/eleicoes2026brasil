@@ -6,10 +6,10 @@
 |---|---|
 | Identificador do documento | `0c116341d59b07729062529a4cafa35e` |
 | Data de emissão | 01/11/2026 |
-| Versão do motor de análise | 3.1.0 |
-| SHA-256 do núcleo analítico | `d2dfca3edae23bb85dab8b2e8b89ac8ea1a70186e1eee91410ef18622500c819` |
+| Versão do motor de análise | 3.1.1 |
+| SHA-256 do núcleo analítico | `927d77294994f2cab419011a296588f0372913f0f49125bba269f29ee1d54582` |
 
-> 🧾 **Status de Integridade (Determinismo Técnico):** Primeira execução com estes arquivos de entrada. O núcleo analítico (15 metodologias, sem data, hora ou duração) foi registrado como **relatório de homologação**, com SHA-256 `d2dfca3edae23bb85dab8b2e8b89ac8ea1a70186e1eee91410ef18622500c819`. Toda nova execução com os mesmos arquivos será comparada a este registro.
+> 🧾 **Status de Integridade (Determinismo Técnico):** Primeira execução com estes arquivos de entrada. O núcleo analítico (15 metodologias, sem data, hora ou duração) foi registrado como **relatório de homologação**, com SHA-256 `927d77294994f2cab419011a296588f0372913f0f49125bba269f29ee1d54582`. Toda nova execução com os mesmos arquivos será comparada a este registro.
 
 **Legenda de cores:** 🔴 Anomalia estatística (urna listada para verificação) · 🟡 Evento informativo (registrado para conferência, sem atingir o critério de anomalia) · 🟢 Nenhuma ocorrência · ⚠️ Falha na execução do teste · ⚪ Não aplicável nesta execução
 
@@ -93,12 +93,12 @@ O motor tem 35 testes: 15 nos Boletins de Urna (testes 1 a 15), 6 de variação 
 | 🔴 L02. Tempo de cada voto (votos rápidos e em rajada) | Logs das urnas | 3 | 44 | 499.176 |
 | 🔴 L03. Liberações sem digital em sequência | Logs das urnas | 320 | 2.799 | 499.176 |
 | 🟡 L04. Votos depois do “todos já votaram? SIM” | Logs das urnas | 0 | 1.505 | 499.176 |
-| 🔴 L05. Falta de energia e interrupções | Logs das urnas | 2.397 | 80.036 | 499.176 |
-| 🔴 L06. Troca de urna | Logs das urnas | 55 | 2.046 | 499.176 |
+| 🔴 L05. Falta de energia e interrupções | Logs das urnas | 2.396 | 80.028 | 499.176 |
+| 🔴 L06. Troca de urna | Logs das urnas | 2 | 2.099 | 499.176 |
 | 🔴 L07. Tentativas repetidas (já votou, não encontrado, impedido) | Logs das urnas | 138 | 37.785 | 499.176 |
 | 🔴 L08. Votos não concluídos | Logs das urnas | 96 | 0 | 499.176 |
 | 🔴 L09. Tentativas de encerramento | Logs das urnas | 14.865 | 20.451 | 499.176 |
-| 🔴 L10. Hora da zerésima e da ligação da urna | Logs das urnas | 54 | 2.833 | 499.176 |
+| 🔴 L10. Hora da zerésima e da ligação da urna | Logs das urnas | 1 | 2.837 | 499.176 |
 | 🔴 L11. Relógio da urna | Logs das urnas | 99 | 237 | 499.176 |
 | 🔴 L12. Modelo, versão do software e código de carga | Logs das urnas | 5 | 10 | 499.176 |
 | 🔴 L13. Biometria detalhada | Logs das urnas | 727 | 12.993 | 499.176 |
@@ -230,9 +230,9 @@ O **hash do manifesto** é o SHA-512 da lista ordenada "nome;tamanho;sha512" de 
 
 |  |  |
 |---|---|
-| Início do processamento | 01/11/2026 12:13:16 |
-| Conclusão do processamento | 01/11/2026 12:37:39 |
-| Duração total | 0h 24min 23s |
+| Início do processamento | 01/11/2026 15:58:53 |
+| Conclusão do processamento | 01/11/2026 16:21:29 |
+| Duração total | 0h 22min 35s |
 | Fuso horário de referência | America/Sao_Paulo (UTC−03:00) |
 | Sistema operacional | Linux 6.18.44-fc-v185 (x86_64) |
 | Python | 3.13.16 |
@@ -6532,7 +6532,7 @@ A classificação ideológica é premissa analítica do autor, utilizada exclusi
 
 A análise é integralmente reprodutível: com os mesmos arquivos de entrada (hash do manifesto idêntico) e o mesmo código-fonte, os resultados são idênticos. Os arquivos produzidos, com os respectivos hashes SHA-512, são listados abaixo; o arquivo `manifesto_saida.sha512` registra os hashes de todos os arquivos, inclusive deste relatório.
 
-**Verificação de determinismo.** O núcleo analítico (resultados das 15 análises e das urnas listadas, sem data, hora ou duração) está em `dados/nucleo_analitico.json`; o seu SHA-256 é `d2dfca3edae23bb85dab8b2e8b89ac8ea1a70186e1eee91410ef18622500c819`. O registro de homologação (baseline) destes arquivos de entrada fica em `.determinismo/5eb98193f64b3eb4`. Números reais são registrados com 6 algarismos significativos, o que neutraliza o ruído de arredondamento de ponto flutuante sem afetar nenhum resultado.
+**Verificação de determinismo.** O núcleo analítico (resultados das 15 análises e das urnas listadas, sem data, hora ou duração) está em `dados/nucleo_analitico.json`; o seu SHA-256 é `927d77294994f2cab419011a296588f0372913f0f49125bba269f29ee1d54582`. O registro de homologação (baseline) destes arquivos de entrada fica em `.determinismo/79c67490e3dd7d8d`. Números reais são registrados com 6 algarismos significativos, o que neutraliza o ruído de arredondamento de ponto flutuante sem afetar nenhum resultado.
 
 **Comando de execução:** `python auditoria_eleicoes_2026.py --dados <...> --saida <...> --logs <...>`
 
@@ -6544,14 +6544,14 @@ A análise é integralmente reprodutível: com os mesmos arquivos de entrada (ha
 | `dados/integridade_arquivos.csv` | `5e6d8082e60ed6c3750e82cbddfe8c41ad8a927e65cd266f7c0a531fd6e3befa979f8b38b5ddd8de9d51e835aaee9e3fdbb4744ea905db20c2e50bad68375f31` |
 | `dados/klimek_indicadores.csv` | `ccaf221187d8e476eabce16fe9ee56c6ef8a7b1eec5a73b2004afb96f5a02bd5deb521485cae95ef966d91dd934ff2beaa69a364d69a5dfa3f6dd24489a11de8` |
 | `dados/logs_falhas.csv` | `4572c0ebbb7c872b94640f45e0ab2fc5cad92edee3f212d904439d38bb98008efaecf8900daf3b3a4c222f86848bb9e6535d2a8fb48e826ba90fe32f08c42a9f` |
-| `dados/logs_sinalizacoes.csv` | `c397522f70c0c6ea2bd7e3490f26b462691a3e5583dd596259d156803efb60208bf22e4ec0ef2ba94fb03e970384275421feaf0aa02ed085ecd14b764f7fc9bb` |
-| `dados/resumo_testes.csv` | `74d096543dc9787f9756ba3a0d8d9f71355c11db58eb0cf7485f57056aa496e0be58b9375bd62bf205414aef492664bfc5ca71bef55ea7f13bf7bb7e054fb583` |
+| `dados/logs_sinalizacoes.csv` | `46766b4c8fafefe4ab0737d95da6d7b810d1520abd12a430f706c28e78c539a2fed5c92efb780efd95f0660eeba974d7f595cb658c073145b312a1de63a4dbf0` |
+| `dados/resumo_testes.csv` | `7060ce8630edb6ba4e434cfe8d44c9f13f20f825a3f35f2c16d6d365e84fa9f9d1d6255d9343041326f5986b2f1e9bb54e5377acf989a3bdeec0a7928d97aed0` |
 | `dados/secoes_convergentes.csv` | `f8ede62ad24d363dedba153d6ee977afb798f71d65b3d1f306ae449cdb9422d2b3a0ebffcdb128dc2517bfaee4f76787120d01a0d5051ba6d8f97c186fcdf555` |
 | `dados/secoes_sinalizadas.csv` | `973dbb789e1e5f61d3a60c305b66786bad9e0aaf05a8c950aba93a29baf0b5157af02b8a44f30f120a107c10f4aae623a09493ccee40af3e196844eae4c1d360` |
 | `dados/sinalizacoes_por_uf.csv` | `fa3e55b9b867031ac87df04f8b4382d644d22f6ae6ee98742c30ed736f9901cc42d24731cacaee7ff59f266b671857e5c55b3c0ae2ceead408635a5f97746d44` |
 | `dados/unanimidade_por_candidato.csv` | `f147824d070ec69e65a4b008c31d861b459ee28a3d7b8c6c7cb87adde64ba3cd3312bbc8040896d5c680ab2f5eab24c840e31773987679faeb372c54f769521e` |
 | `dados/busca_urnas.json` | `d734c9cdb169cc4756560228e7b0cb0ec98690aef8f55017cd98ca94e5c294015c6f19e73fa476b5312cd192b11cfae4418dddbe7633a0ea614b3139d1a19621` |
-| `dados/nucleo_analitico.json` | `ae52a8412f7d3421084a5bea54014855f78357d76785916f1cf8d73314891f3aaca6846a558d4caa29dd304233bdb6dfdadcd682adb216ed67279b40d34c01f8` |
+| `dados/nucleo_analitico.json` | `c498311521e9d6f8eb08d423c5bede434b147ad6e8f1e5f5d47854db4c7f6997456925504d6b95d306d2e5e3fa535915d152fd46ae929343a154b5139e973713` |
 | `graficos/klimek_1t_13_brasil.png` | `2fe5b9c40e6efe63746a832af7ec21068661c7d52c22740f48407de035591f3a5e14436d418f26867144a196d379fc8c8a5612e32a74c904f8b73a8b5b249eec` |
 | `graficos/klimek_1t_13_por_uf.png` | `cf811e62abc2a34fb61ce8ee87373475d44bee2352bf624672a053b74765e879ed63beda5872817d269abbc506c6a18334088b409ed99727dd211829cfa046ed` |
 | `graficos/klimek_1t_22_brasil.png` | `ad2b75c49dcde5401f011ee6fa3f220d856634f004483569befc934fa12d37a35483eed4993120776837f52c58fe94687957cb8305c7bfd0d8cffe666bb09e6c` |
@@ -6603,12 +6603,12 @@ Seções com log lido: 499.176 (1º turno: 499.176). Seções que votaram em urn
 | L02 — Tempo de cada voto (votos rápidos e em rajada) | 🔴 | 3 | 44 | 499.176 |
 | L03 — Liberações sem digital em sequência | 🔴 | 320 | 2.799 | 499.176 |
 | L04 — Votos depois do “todos já votaram? SIM” | 🟡 | 0 | 1.505 | 499.176 |
-| L05 — Falta de energia e interrupções | 🔴 | 2.397 | 80.036 | 499.176 |
-| L06 — Troca de urna | 🔴 | 55 | 2.046 | 499.176 |
+| L05 — Falta de energia e interrupções | 🔴 | 2.396 | 80.028 | 499.176 |
+| L06 — Troca de urna | 🔴 | 2 | 2.099 | 499.176 |
 | L07 — Tentativas repetidas (já votou, não encontrado, impedido) | 🔴 | 138 | 37.785 | 499.176 |
 | L08 — Votos não concluídos | 🔴 | 96 | 0 | 499.176 |
 | L09 — Tentativas de encerramento | 🔴 | 14.865 | 20.451 | 499.176 |
-| L10 — Hora da zerésima e da ligação da urna | 🔴 | 54 | 2.833 | 499.176 |
+| L10 — Hora da zerésima e da ligação da urna | 🔴 | 1 | 2.837 | 499.176 |
 | L11 — Relógio da urna | 🔴 | 99 | 237 | 499.176 |
 | L12 — Modelo, versão do software e código de carga | 🔴 | 5 | 10 | 499.176 |
 | L13 — Biometria detalhada | 🔴 | 727 | 12.993 | 499.176 |
@@ -7116,7 +7116,7 @@ Mostrando 100 de 1.505 linhas, as primeiras na ordem do teste. A lista completa 
 
 **Limitações e explicações alternativas.** Falta de luz e bateria fraca acontecem, principalmente em locais afastados. A ata registra as ocorrências.
 
-> 📊 **Resultado:** 🔴 **2.397 anomalia(s)** em 499.176 unidades analisadas (0,480%) · 🟡 80.036 evento(s) informativo(s).
+> 📊 **Resultado:** 🔴 **2.396 anomalia(s)** em 499.176 unidades analisadas (0,480%) · 🟡 80.028 evento(s) informativo(s).
 >
 > **O que significa:** cada seção da lista 🔴 abaixo atingiu, no log da urna, o critério deste teste. É uma anomalia estatística: indica prioridade de verificação documental (ata da mesa, boletim impresso, registros da urna) e não indica a causa.
 >
@@ -7126,12 +7126,12 @@ Mostrando 100 de 1.505 linhas, as primeiras na ordem do teste. A lista completa 
 
 | Categoria | Quantidade |
 |---|---:|
-| 🟡 Interrupção durante a votação (informativo) | 80.036 |
-| 🔴 Voto com a urna desligada ou 3+ religamentos | 2.397 |
+| 🟡 Interrupção durante a votação (informativo) | 80.028 |
+| 🔴 Voto com a urna desligada ou 3+ religamentos | 2.396 |
 
 *Observado: religamentos / avisos de bateria / votos com a urna desligada. Referência: tempo parada.*
 
-#### 🔴 Urnas com anomalia — lista completa (2.397)
+#### 🔴 Urnas com anomalia — lista completa (2.396)
 
 | # | UF | Município | Zona | Seção | Seções agregadas | Local | Nº da urna | Cód. carga | Cargo | Observado | Referência | Detalhe |
 |---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
@@ -7236,10 +7236,10 @@ Mostrando 100 de 1.505 linhas, as primeiras na ordem do teste. A lista completa 
 | 99 | BA | DIAS D'ÁVILA (30872) | 186 | 181 | 182 | 1180 | 1676688 | 644895644893261231853709 | — | 11 / 0 / 0 | 0 min |  |
 | 100 | BA | FILADÉLFIA (30910) | 149 | 132 | — | 1163 | 2427075 | 182554707170015329867220 | — | 3 / 1 / 0 | 6 min |  |
 
-Mostrando 100 de 2.397 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
+Mostrando 100 de 2.396 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
 
 <details>
-<summary><b>🟡 Eventos informativos — lista completa (80.036)</b></summary>
+<summary><b>🟡 Eventos informativos — lista completa (80.028)</b></summary>
 
 | # | UF | Município | Zona | Seção | Seções agregadas | Local | Nº da urna | Cód. carga | Cargo | Observado | Referência | Detalhe |
 |---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
@@ -7344,7 +7344,7 @@ Mostrando 100 de 2.397 linhas, as primeiras na ordem do teste. A lista completa 
 | 99 | AC | RIO BRANCO (1392) | 1 | 268 | — | 1929 | 2045019 | 4711489958510199611435 | — | 0 / 3 / 0 | 0 min |  |
 | 100 | AC | RIO BRANCO (1392) | 1 | 271 | — | 1139 | 2048013 | 216832999379952826779408 | — | 0 / 1 / 0 | 0 min |  |
 
-Mostrando 100 de 80.036 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
+Mostrando 100 de 80.028 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
 
 </details>
 
@@ -7352,13 +7352,13 @@ Mostrando 100 de 80.036 linhas, as primeiras na ordem do teste. A lista completa
 
 **Objetivo.** Confere as trocas de urna durante a votação e se os votos das duas urnas somam o que está no boletim.
 
-**Método.** Identifica no log a urna original e a de contingência (número e hora de cada uma) e soma os votos gravados em cada.
+**Método.** Identifica no log a urna original e a de contingência (número e hora de cada uma), pela hora dos votos de cada urna e não pela ordem em que aparecem no log (a urna anterior é a que recebeu o último voto mais cedo), e soma os votos gravados em cada.
 
 **Critério de sinalização.** Informativo: troca de urna registrada. Anomalia estatística: voto gravado na urna anterior depois do primeiro voto da urna nova. A soma dos votos das urnas comparada com o boletim fica no teste L14.
 
 **Limitações e explicações alternativas.** O log não diz o motivo da troca; a ata da mesa registra.
 
-> 📊 **Resultado:** 🔴 **55 anomalia(s)** em 499.176 unidades analisadas (0,011%) · 🟡 2.046 evento(s) informativo(s).
+> 📊 **Resultado:** 🔴 **2 anomalia(s)** em 499.176 unidades analisadas (0,000%) · 🟡 2.099 evento(s) informativo(s).
 >
 > **O que significa:** cada seção da lista 🔴 abaixo atingiu, no log da urna, o critério deste teste. É uma anomalia estatística: indica prioridade de verificação documental (ata da mesa, boletim impresso, registros da urna) e não indica a causa.
 >
@@ -7368,73 +7368,20 @@ Mostrando 100 de 80.036 linhas, as primeiras na ordem do teste. A lista completa
 
 | Categoria | Quantidade |
 |---|---:|
-| 🟡 Troca de urna (informativo) | 2.046 |
-| 🔴 Voto na urna anterior depois da troca | 55 |
+| 🟡 Troca de urna (informativo) | 2.099 |
+| 🔴 Voto na urna anterior depois da troca | 2 |
 
 *Observado: votos na urna anterior depois da troca, ou urnas com votos. Referência: números das urnas no log.*
 
-#### 🔴 Urnas com anomalia — lista completa (55)
+#### 🔴 Urnas com anomalia — lista completa (2)
 
 | # | UF | Município | Zona | Seção | Seções agregadas | Local | Nº da urna | Cód. carga | Cargo | Observado | Referência | Detalhe |
 |---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
-| 1 | BA | AMARGOSA (33197) | 36 | 3 | — | 1015 | 2212056 | 235210239348604937384540 | — | 200 | 2212056;2154663 |  |
-| 2 | BA | SÁTIRO DIAS (38938) | 44 | 158 | 165 | 1295 | 2231478 | 310403318222773894514961 | — | 98 | 2231478;2246331 |  |
-| 3 | BA | VITÓRIA DA CONQUISTA (39659) | 41 | 169 | — | 1724 | 2051935 | 90129093200183087388199 | — | 207 | 2051935;2155361 |  |
-| 4 | PA | BARCARENA (4251) | 65 | 34 | — | 1210 | 2398947 | 425639422276387174295306 | — | 76 | 2398947;2285262 |  |
-| 5 | PR | CAMBÉ (74713) | 78 | 261 | — | 1481 | 1673448 | 828219828150329917696059 | — | 18 | 1653959;1673448 |  |
-| 6 | PR | CORUMBATAÍ DO SUL (75280) | 133 | 30 | — | 1066 | 2021395 | 598322597392714970066720 | — | 217 | 2021395;2075828 |  |
-| 7 | PR | CURITIBA (75353) | 178 | 671 | — | 2194 | 2327179 | 204566200926361865369193 | — | 242 | 2327179;2274234 |  |
-| 8 | RJ | RIO DE JANEIRO (60011) | 214 | 24 | — | 1074 | 1671769 | 705639700369045687973182 | — | 5 | 1769516;1671769 |  |
-| 9 | SC | ABELARDO LUZ (80012) | 71 | 50 | — | 1333 | 2180030 | 336693337979783756063612 | — | 211 | 2180030;2192087 |  |
-| 10 | SC | BLUMENAU (80470) | 88 | 22 | — | 1058 | 2370331 | 807324805960816694142578 | — | 264 | 2370331;2460303 |  |
-| 11 | SC | BLUMENAU (80470) | 88 | 32 | — | 1066 | 2367504 | 484192488728341112849009 | — | 318 | 2367504;2438318 |  |
-| 12 | SC | ARABUTÃ (80489) | 90 | 29 | — | 1058 | 2177622 | 555018550238761862962095 | — | 23 | 2177622;2000391 |  |
-| 13 | SC | BRUSQUE (80551) | 86 | 69 | — | 1481 | 2191675 | 493671494647436759595962 | — | 12 | 2191675;2179626 |  |
-| 14 | SC | RIQUEZA (80560) | 41 | 137 | — | 1040 | 2048486 | 56344050929355177404891 | — | 116 | 2048486;2182505 |  |
-| 15 | SC | SANGÃO (81000) | 33 | 50 | — | 1023 | 2190970 | 815135814580993805030843 | — | 195 | 2190970;2181402 |  |
-| 16 | SC | ERVAL VELHO (81019) | 85 | 157 | — | 1015 | 2180529 | 2711005173716205664034 | — | 170 | 2180529;2022410 |  |
-| 17 | SC | GASPAR (81175) | 64 | 29 | — | 1120 | 1699625 | 239409236318567189826137 | — | 32 | 1699625;1769522 |  |
-| 18 | SC | GASPAR (81175) | 64 | 105 | — | 1228 | 1678454 | 265212264552229499209776 | — | 284 | 1678454;1845544 |  |
-| 19 | SC | GASPAR (81175) | 64 | 121 | — | 1120 | 1678015 | 411227419736140508484809 | — | 281 | 1678015;1801681 |  |
-| 20 | SC | GASPAR (81175) | 64 | 132 | — | 1210 | 1680667 | 411227415136511159279030 | — | 307 | 1680667;1829394 |  |
-| 21 | SC | GASPAR (81175) | 64 | 139 | — | 1376 | 1776208 | 239409239818136291921529 | — | 258 | 1776208;1662848 |  |
-| 22 | SC | GUABIRUBA (81230) | 5 | 164 | — | 1171 | 2022308 | 256980257626912972371443 | — | 241 | 2022308;2189969 |  |
-| 23 | SC | IMBITUBA (81434) | 73 | 63 | — | 1058 | 1681275 | 979179978188014896842135 | — | 269 | 1681275;1778025 |  |
-| 24 | SC | ITAIÓPOLIS (81590) | 38 | 1 | — | 1015 | 1782561 | 498358492318263706345727 | — | 223 | 1782561;1846012 |  |
-| 25 | SC | FLOR DO SERTÃO (81604) | 58 | 73 | — | 1058 | 2172583 | 488171481835714827123473 | — | 196 | 2172583;2192117 |  |
-| 26 | SC | ITAJAÍ (81612) | 97 | 27 | — | 1112 | 2469445 | 421082425235513335124235 | — | 174 | 2469445;2459642 |  |
-| 27 | SC | LAGES (81833) | 104 | 39 | — | 1066 | 2443265 | 395292398112252453860491 | — | 128 | 2443265;2454650 |  |
-| 28 | SC | LAGUNA (81850) | 20 | 60 | — | 1244 | 2190130 | 61420067090280807259765 | — | 151 | 2190130;2190925 |  |
-| 29 | SC | LAURO MÜLLER (81892) | 23 | 22 | — | 1058 | 1664003 | 502097503042552767059775 | — | 113 | 1664003;1680788 |  |
-| 30 | SC | PALMITOS (82376) | 41 | 42 | — | 1058 | 2003550 | 106849104534050510535142 | — | 21 | 2003550;2191781 |  |
-| 31 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 62 | — | 1155 | 1680318 | 35533034614063625385101 | — | 116 | 1674913;1680318;1681056 |  |
-| 32 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 74 | — | 1163 | 1679944 | 187048187068212336254474 | — | 202 | 1679944;1829329 |  |
-| 33 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 143 | — | 1180 | 1677842 | 298159293879251148270791 | — | 186 | 1677842;1677360 |  |
-| 34 | SC | RIO DO SUL (82910) | 26 | 97 | — | 1015 | 2003314 | 725252728578650996818927 | — | 98 | 2003314;2013431 |  |
-| 35 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 76 | — | 1139 | 1651603 | 448935442851303722017882 | — | 145 | 1651603;1806154 |  |
-| 36 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 177 | — | 1430 | 1681481 | 722963724581368495852589 | — | 181 | 1681481;1681382 |  |
-| 37 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 244 | — | 1414 | 1678819 | 712862711968865261491896 | — | 189 | 1678819;1660831 |  |
-| 38 | SC | SÃO JOAQUIM (83259) | 28 | 5 | — | 1023 | 1660109 | 16603010614514773961463 | — | 227 | 1660109;1674213 |  |
-| 39 | SC | SÃO JOSÉ (83275) | 84 | 255 | — | 1317 | 2250011 | 692069697651811143210706 | — | 38 | 2250011;2397851 |  |
-| 40 | SC | SCHROEDER (83437) | 17 | 311 | — | 1015 | 2454467 | 537237534733543943025100 | — | 115 | 2454467;2368653 |  |
-| 41 | SC | TANGARÁ (83534) | 47 | 42 | — | 1015 | 1803918 | 416046417914473299458369 | — | 225 | 1803918;1679723 |  |
-| 42 | SC | URUSSANGA (83739) | 34 | 69 | — | 1058 | 1680270 | 502815508048243790642566 | — | 12 | 1680270;1821965 |  |
-| 43 | SC | URUSSANGA (83739) | 34 | 82 | — | 1112 | 1678602 | 805845804078571515566109 | — | 121 | 1678602;1838314 |  |
-| 44 | SP | GUARULHOS (64777) | 185 | 235 | — | 1287 | 2330646 | 443564445677101318208761 | — | 50 | 2330646;2127069 |  |
-| 45 | SP | GUARULHOS (64777) | 185 | 388 | — | 1473 | 1803354 | 948514949809220840773077 | — | 244 | 1803354;1803198 |  |
-| 46 | SP | GUARULHOS (64777) | 393 | 155 | — | 1198 | 2463274 | 847507845083754032839769 | — | 34 | 2463274;2147043 |  |
-| 47 | SP | RIBEIRÃO PIRES (69671) | 183 | 307 | — | 1325 | 2013654 | 401538402997640320427804 | — | 240 | 2013654;2136488 |  |
-| 48 | SP | SANTO ANTÔNIO DO JARDIM (70637) | 91 | 55 | — | 1015 | 1668896 | 637837636160934704377526 | — | 191 | 1668896;1782675 |  |
-| 49 | SP | SÃO PAULO (71072) | 258 | 558 | — | 1481 | 2010001 | 563797569486978948105014 | — | 167 | 2010001;2056517 |  |
-| 50 | SP | SÃO PAULO (71072) | 350 | 463 | — | 2216 | 1829376 | 775839779713365896768888 | — | 224 | 1829376;1831846 |  |
-| 51 | SP | SÃO PAULO (71072) | 381 | 607 | — | 1422 | 2077389 | 775871772550812899807800 | — | 219 | 2077389;2055972 |  |
-| 52 | SP | SUMARÉ (71498) | 362 | 140 | — | 1970 | 1677292 | 675258678932765812699922 | — | 210 | 1677292;1783759 |  |
-| 53 | SP | TABOÃO DA SERRA (71579) | 324 | 131 | — | 1147 | 2131520 | 836268830729569004042399 | — | 31 | 2131520;2386995 |  |
-| 54 | SP | TABOÃO DA SERRA (71579) | 324 | 204 | — | 1104 | 1833848 | 664551666301838695114246 | — | 135 | 1833848;1670183 |  |
-| 55 | SP | TABOÃO DA SERRA (71579) | 324 | 237 | — | 1244 | 2137808 | 391824398885783817842042 | — | 183 | 2137808;2124305 |  |
+| 1 | PR | CAMBÉ (74713) | 78 | 261 | — | 1481 | 1673448 | 828219828150329917696059 | — | 18 | 1653959;1673448 |  |
+| 2 | RJ | RIO DE JANEIRO (60011) | 214 | 24 | — | 1074 | 1671769 | 705639700369045687973182 | — | 5 | 1769516;1671769 |  |
 
 <details>
-<summary><b>🟡 Eventos informativos — lista completa (2.046)</b></summary>
+<summary><b>🟡 Eventos informativos — lista completa (2.099)</b></summary>
 
 | # | UF | Município | Zona | Seção | Seções agregadas | Local | Nº da urna | Cód. carga | Cargo | Observado | Referência | Detalhe |
 |---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
@@ -7539,7 +7486,7 @@ Mostrando 100 de 80.036 linhas, as primeiras na ordem do teste. A lista completa
 | 99 | BA | ACAJUTIBA (33057) | 21 | 104 | — | 1074 | 2177582 | 680093687418051264478557 | — | 2 | 2239725;2177582 |  |
 | 100 | BA | ADUSTINA (33065) | 52 | 44 | — | 1015 | 2354912 | 188975184020727893789343 | — | 2 | 2310103;2354912 |  |
 
-Mostrando 100 de 2.046 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
+Mostrando 100 de 2.099 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
 
 </details>
 
@@ -8154,13 +8101,13 @@ Mostrando 100 de 20.451 linhas, as primeiras na ordem do teste. A lista completa
 
 **Objetivo.** Confere a hora em que a urna foi ligada e imprimiu a zerésima, o relatório que mostra que ela começou sem nenhum voto.
 
-**Método.** Lê no log a hora de ligar a urna, a da zerésima e a do primeiro voto.
+**Método.** Lê no log a hora da 1ª zerésima da seção, a hora em que a urna que a imprimiu foi ligada e a do primeiro voto do dia.
 
-**Critério de sinalização.** Anomalia estatística: zerésima depois do primeiro voto, ou urna sem zerésima no dia. Informativo: zerésima antes das 6h ou 1 hora ou mais depois do início oficial da votação (8h de Brasília), na hora local.
+**Critério de sinalização.** Anomalia estatística: zerésima depois do primeiro voto, ou seção sem zerésima no log. Informativo: zerésima antes das 6h ou 1 hora ou mais depois do início oficial da votação (8h de Brasília), na hora local.
 
-**Limitações e explicações alternativas.** Urna de contingência imprime a sua zerésima na hora da troca. Relógio errado muda todos os horários.
+**Limitações e explicações alternativas.** Quando a urna é trocada antes do primeiro voto, a zerésima da seção é a da urna substituída; a urna de contingência não imprime outra. Relógio errado muda todos os horários.
 
-> 📊 **Resultado:** 🔴 **54 anomalia(s)** em 499.176 unidades analisadas (0,011%) · 🟡 2.833 evento(s) informativo(s).
+> 📊 **Resultado:** 🔴 **1 anomalia(s)** em 499.176 unidades analisadas (0,000%) · 🟡 2.837 evento(s) informativo(s).
 >
 > **O que significa:** cada seção da lista 🔴 abaixo atingiu, no log da urna, o critério deste teste. É uma anomalia estatística: indica prioridade de verificação documental (ata da mesa, boletim impresso, registros da urna) e não indica a causa.
 >
@@ -8170,72 +8117,19 @@ Mostrando 100 de 20.451 linhas, as primeiras na ordem do teste. A lista completa
 
 | Categoria | Quantidade |
 |---|---:|
-| 🟡 Zerésima fora do horário (informativo) | 2.833 |
-| 🔴 Sem zerésima no dia | 54 |
+| 🟡 Zerésima fora do horário (informativo) | 2.837 |
+| 🔴 Sem zerésima no dia | 1 |
 
 *Observado: hora da zerésima. Referência: hora do primeiro voto ou da ligação da urna.*
 
-#### 🔴 Urnas com anomalia — lista completa (54)
+#### 🔴 Urnas com anomalia — lista completa (1)
 
 | # | UF | Município | Zona | Seção | Seções agregadas | Local | Nº da urna | Cód. carga | Cargo | Observado | Referência | Detalhe |
 |---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
-| 1 | BA | AMARGOSA (33197) | 36 | 3 | — | 1015 | 2212056 | 235210239348604937384540 | — | — | 12:32 |  |
-| 2 | BA | SÁTIRO DIAS (38938) | 44 | 158 | 165 | 1295 | 2231478 | 310403318222773894514961 | — | — | 14:01 |  |
-| 3 | BA | VITÓRIA DA CONQUISTA (39659) | 41 | 169 | — | 1724 | 2051935 | 90129093200183087388199 | — | — | 11:53 |  |
-| 4 | PA | BARCARENA (4251) | 65 | 34 | — | 1210 | 2398947 | 425639422276387174295306 | — | — | 15:32 |  |
-| 5 | PR | CORUMBATAÍ DO SUL (75280) | 133 | 30 | — | 1066 | 2021395 | 598322597392714970066720 | — | — | 09:39 |  |
-| 6 | PR | CURITIBA (75353) | 178 | 671 | — | 2194 | 2327179 | 204566200926361865369193 | — | — | 08:44 |  |
-| 7 | SC | ABELARDO LUZ (80012) | 71 | 50 | — | 1333 | 2180030 | 336693337979783756063612 | — | — | 10:02 |  |
-| 8 | SC | BLUMENAU (80470) | 88 | 22 | — | 1058 | 2370331 | 807324805960816694142578 | — | — | 08:59 |  |
-| 9 | SC | BLUMENAU (80470) | 88 | 32 | — | 1066 | 2367504 | 484192488728341112849009 | — | — | 09:00 |  |
-| 10 | SC | ARABUTÃ (80489) | 90 | 29 | — | 1058 | 2177622 | 555018550238761862962095 | — | — | 16:52 |  |
-| 11 | SC | BRUSQUE (80551) | 86 | 69 | — | 1481 | 2191675 | 493671494647436759595962 | — | — | 16:24 |  |
-| 12 | SC | RIQUEZA (80560) | 41 | 137 | — | 1040 | 2048486 | 56344050929355177404891 | — | — | 14:14 |  |
-| 13 | SC | SANGÃO (81000) | 33 | 50 | — | 1023 | 2190970 | 815135814580993805030843 | — | — | 11:37 |  |
-| 14 | SC | ERVAL VELHO (81019) | 85 | 157 | — | 1015 | 2180529 | 2711005173716205664034 | — | — | 11:28 |  |
-| 15 | SC | GASPAR (81175) | 64 | 29 | — | 1120 | 1699625 | 239409236318567189826137 | — | — | 16:32 |  |
-| 16 | SC | GASPAR (81175) | 64 | 105 | — | 1228 | 1678454 | 265212264552229499209776 | — | — | 09:41 |  |
-| 17 | SC | GASPAR (81175) | 64 | 121 | — | 1120 | 1678015 | 411227419736140508484809 | — | — | 09:34 |  |
-| 18 | SC | GASPAR (81175) | 64 | 132 | — | 1210 | 1680667 | 411227415136511159279030 | — | — | 08:55 |  |
-| 19 | SC | GASPAR (81175) | 64 | 139 | — | 1376 | 1776208 | 239409239818136291921529 | — | — | 10:41 |  |
-| 20 | SC | GUABIRUBA (81230) | 5 | 164 | — | 1171 | 2022308 | 256980257626912972371443 | — | — | 11:49 |  |
-| 21 | SC | IMBITUBA (81434) | 73 | 63 | — | 1058 | 1681275 | 979179978188014896842135 | — | — | 08:43 |  |
-| 22 | SC | ITAIÓPOLIS (81590) | 38 | 1 | — | 1015 | 1782561 | 498358492318263706345727 | — | — | 11:33 |  |
-| 23 | SC | FLOR DO SERTÃO (81604) | 58 | 73 | — | 1058 | 2172583 | 488171481835714827123473 | — | — | 10:22 |  |
-| 24 | SC | ITAJAÍ (81612) | 97 | 27 | — | 1112 | 2469445 | 421082425235513335124235 | — | — | 09:34 |  |
-| 25 | SC | LAGES (81833) | 104 | 39 | — | 1066 | 2443265 | 395292398112252453860491 | — | — | 14:19 |  |
-| 26 | SC | LAGUNA (81850) | 20 | 60 | — | 1244 | 2190130 | 61420067090280807259765 | — | — | 12:03 |  |
-| 27 | SC | LAURO MÜLLER (81892) | 23 | 22 | — | 1058 | 1664003 | 502097503042552767059775 | — | — | 10:08 |  |
-| 28 | SC | PALMITOS (82376) | 41 | 42 | — | 1058 | 2003550 | 106849104534050510535142 | — | — | 16:01 |  |
-| 29 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 62 | — | 1155 | 1680318 | 35533034614063625385101 | — | — | 13:38 |  |
-| 30 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 74 | — | 1163 | 1679944 | 187048187068212336254474 | — | — | 09:15 |  |
-| 31 | SC | BALNEÁRIO PIÇARRAS (82511) | 68 | 143 | — | 1180 | 1677842 | 298159293879251148270791 | — | — | 11:31 |  |
-| 32 | SC | RIO DO SUL (82910) | 26 | 97 | — | 1015 | 2003314 | 725252728578650996818927 | — | — | 13:48 |  |
-| 33 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 76 | — | 1139 | 1651603 | 448935442851303722017882 | — | — | 11:54 |  |
-| 34 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 177 | — | 1430 | 1681481 | 722963724581368495852589 | — | — | 11:53 |  |
-| 35 | SC | SÃO FRANCISCO DO SUL (83194) | 27 | 244 | — | 1414 | 1678819 | 712862711968865261491896 | — | — | 10:10 |  |
-| 36 | SC | SÃO JOAQUIM (83259) | 28 | 5 | — | 1023 | 1660109 | 16603010614514773961463 | — | — | 09:38 |  |
-| 37 | SC | SÃO JOSÉ (83275) | 84 | 255 | — | 1317 | 2250011 | 692069697651811143210706 | — | — | 15:27 |  |
-| 38 | SC | SCHROEDER (83437) | 17 | 311 | — | 1015 | 2454467 | 537237534733543943025100 | — | — | 14:06 |  |
-| 39 | SC | TANGARÁ (83534) | 47 | 42 | — | 1015 | 1803918 | 416046417914473299458369 | — | — | 09:06 |  |
-| 40 | SC | TUBARÃO (83674) | 33 | 220 | — | 1392 | 2002447 | 320286320331626176244519 | — | — | 08:30 |  |
-| 41 | SC | URUSSANGA (83739) | 34 | 69 | — | 1058 | 1680270 | 502815508048243790642566 | — | — | 17:28 |  |
-| 42 | SC | URUSSANGA (83739) | 34 | 82 | — | 1112 | 1678602 | 805845804078571515566109 | — | — | 13:20 |  |
-| 43 | SP | GUARULHOS (64777) | 185 | 235 | — | 1287 | 2330646 | 443564445677101318208761 | — | — | 16:06 |  |
-| 44 | SP | GUARULHOS (64777) | 185 | 388 | — | 1473 | 1803354 | 948514949809220840773077 | — | — | 10:39 |  |
-| 45 | SP | GUARULHOS (64777) | 393 | 155 | — | 1198 | 2463274 | 847507845083754032839769 | — | — | 16:06 |  |
-| 46 | SP | RIBEIRÃO PIRES (69671) | 183 | 307 | — | 1325 | 2013654 | 401538402997640320427804 | — | — | 09:23 |  |
-| 47 | SP | SANTO ANTÔNIO DO JARDIM (70637) | 91 | 55 | — | 1015 | 1668896 | 637837636160934704377526 | — | — | 10:36 |  |
-| 48 | SP | SÃO PAULO (71072) | 258 | 558 | — | 1481 | 2010001 | 563797569486978948105014 | — | — | 12:55 |  |
-| 49 | SP | SÃO PAULO (71072) | 350 | 463 | — | 2216 | 1829376 | 775839779713365896768888 | — | — | 11:26 |  |
-| 50 | SP | SÃO PAULO (71072) | 381 | 607 | — | 1422 | 2077389 | 775871772550812899807800 | — | — | 09:22 |  |
-| 51 | SP | SUMARÉ (71498) | 362 | 140 | — | 1970 | 1677292 | 675258678932765812699922 | — | — | 11:35 |  |
-| 52 | SP | TABOÃO DA SERRA (71579) | 324 | 131 | — | 1147 | 2131520 | 836268830729569004042399 | — | — | 15:33 |  |
-| 53 | SP | TABOÃO DA SERRA (71579) | 324 | 204 | — | 1104 | 1833848 | 664551666301838695114246 | — | — | 14:51 |  |
-| 54 | SP | TABOÃO DA SERRA (71579) | 324 | 237 | — | 1244 | 2137808 | 391824398885783817842042 | — | — | 11:15 |  |
+| 1 | SP | SÃO PAULO (71072) | 2 | 35 | — | 1023 | 2253783 | 210243219910136804398610 | — | — | 11:07 |  |
 
 <details>
-<summary><b>🟡 Eventos informativos — lista completa (2.833)</b></summary>
+<summary><b>🟡 Eventos informativos — lista completa (2.837)</b></summary>
 
 | # | UF | Município | Zona | Seção | Seções agregadas | Local | Nº da urna | Cód. carga | Cargo | Observado | Referência | Detalhe |
 |---:|---|---|---:|---:|---|---|---|---|---|---|---|---|
@@ -8340,7 +8234,7 @@ Mostrando 100 de 20.451 linhas, as primeiras na ordem do teste. A lista completa
 | 99 | AC | PORTO ACRE (1023) | 1 | 604 | — | 1082 | 2264382 | 66417046732473279750108 | — | 05:29 | 05:04 |  |
 | 100 | AC | PORTO ACRE (1023) | 1 | 605 | — | 1082 | 2297020 | 712982808797796430082716 | — | 05:23 | 05:21 |  |
 
-Mostrando 100 de 2.833 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
+Mostrando 100 de 2.837 linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.
 
 </details>
 
@@ -8920,4 +8814,4 @@ Mostrando 100 de 12.993 linhas, as primeiras na ordem do teste. A lista completa
 
 ---
 
-*Documento gerado automaticamente pelo motor de auditoria estatística v3.1.0. Anomalia estatística não é prova de fraude.*
+*Documento gerado automaticamente pelo motor de auditoria estatística v3.1.1. Anomalia estatística não é prova de fraude.*

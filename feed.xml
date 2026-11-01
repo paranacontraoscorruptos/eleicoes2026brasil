@@ -7,7 +7,23 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sun, 01 Nov 2026 15:45:00 -0300</lastBuildDate>
+  <lastBuildDate>Sun, 01 Nov 2026 16:24:00 -0300</lastBuildDate>
+  <item>
+    <title>Correção no motor (v3.1.1): testes L05, L06 e L10 do 1º turno</title>
+    <link>https://paranacontraoscorruptos.org/#/logs</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-01-19</guid>
+    <pubDate>Sun, 01 Nov 2026 16:24:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>O motor v3.1.0 tomava a primeira urna listada no log como a primeira urna do dia. Em seções com troca de urna, a urna de contingência às vezes aparece antes da original no log, e isso gerou sinalizações erradas. O motor v3.1.1 usa a hora dos votos de cada urna (a urna anterior é a que parou de receber votos primeiro) e a 1ª zerésima da seção, de qualquer urna. A auditoria do 1º turno foi rodada de novo e o relatório técnico foi refeito: o teste L06 (troca de urna) passou de 55 para 2 anomalias estatísticas; o L10 (zerésima), de 54 para 1; o L05 (interrupções), de 2.397 para 2.396. Os outros testes não mudaram.</description>
+  </item>
+  <item>
+    <title>Logs das urnas: página Apontamentos em destaque</title>
+    <link>https://paranacontraoscorruptos.org/#/logs/destaques</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-01-18</guid>
+    <pubDate>Sun, 01 Nov 2026 16:23:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Um botão no topo da página Logs das urnas abre os apontamentos dos testes do log que mais merecem conferência no 1º turno. Em vermelho (prioridade alta): o log que não bate com o boletim de urna (L14) e a carga da urna diferente (L12). Em amarelo (prioridade média): relógio ajustado durante a votação (L11), tentativas fora do padrão (L07), votos com a urna marcada como desligada (L05) e votos em duas urnas ao mesmo tempo (L06). Cada seção abre o mesmo painel da lista.</description>
+  </item>
   <item>
     <title>Votos depois do horário: o site passa a mostrar só os votos 1 hora ou mais depois do horário oficial</title>
     <link>https://paranacontraoscorruptos.org/#/encerramento-tardio</link>

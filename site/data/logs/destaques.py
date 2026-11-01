@@ -1,11 +1,12 @@
-"""Achados em destaque dos testes L (logs das urnas), 1º turno: a subpágina "Achados em destaque" da página Logs das urnas.
+"""Apontamentos em destaque dos testes L (logs das urnas), 1º turno: a subpágina "Apontamentos em destaque" da página Logs das urnas.
 
-Lê as listas de cada teste (site/data/logs/t1/teste/Lxx.json, geradas por detalhes.py) e separa os achados que mais
+Lê as listas de cada teste (site/data/logs/t1/teste/Lxx.json, geradas por detalhes.py) e separa os apontamentos que mais
 merecem conferência, em dois grupos:
   prioridade alta (a)  o log da urna não bate com o boletim de urna (L14, L12)
-  prioridade média (m) eventos raros que pedem conferência com a ata da mesa (L11, L07, L05 com voto na urna desligada)
+  prioridade média (m) eventos raros que pedem conferência com a ata da mesa (L11, L07, L05 com voto na urna desligada,
+                       L06 com voto na urna anterior depois da troca)
 Grava site/data/logs/t1/destaques.json:
-  g[]  um grupo por achado: k (chave), teste, p (a ou m), c (colunas do teste), l (seções, na ordem da página), n, x (números do texto)
+  g[]  um grupo por apontamento: k (chave), teste, p (a ou m), c (colunas do teste), l (seções, na ordem da página), n, x (números do texto)
 Rodar depois de gerar.py e detalhes.py:  python3 site/data/logs/destaques.py
 Só números tirados das listas do site; nenhum número de título e nenhum .logjez ou logd.dat.
 """
@@ -31,6 +32,7 @@ GRUPOS = [
     ("tentativas", "L07", "m", lambda l, c: l[4] == "a", lambda l, c: -razao(l, c)),
     ("desligada", "L05", "m", lambda l, c: l[4] == "a" and (l[col(c, "v_urna_desligada")] or 0) > 0,
      lambda l, c: -(l[col(c, "v_urna_desligada")] or 0)),
+    ("troca", "L06", "m", lambda l, c: l[4] == "a", lambda l, c: -(l[col(c, "v_sobreposto")] or 0)),
 ]
 
 
@@ -48,6 +50,8 @@ def main():
             x["uma_por_voto"] = sum(1 for l in ls if razao(l, c) >= 0.8)
         if teste == "L05":
             x["votos"] = sum(l[col(c, "v_urna_desligada")] for l in ls)
+        if teste == "L06":
+            x["votos"] = sum(l[col(c, "v_sobreposto")] for l in ls)
         if teste == "L11":
             x["exterior"] = sum(1 for l in ls if l[0] == "ZZ")
         saida.append({"k": k, "teste": teste, "p": p, "c": c, "l": ls, "n": len(ls), "x": x})

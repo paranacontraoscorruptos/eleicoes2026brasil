@@ -172,12 +172,16 @@ def detalhe(r, sinais, m):
     s0 = sinais[0]
     testes = {s["teste"] for s in sinais}
     completo = bool(testes & {"L06", "L12"})
-    lig = primeiro("ligada", 0)
+    # marcos do dia como o motor v3.1.1 conta (L10): 1ª zerésima da seção, de qualquer urna, e a ligação da urna que a
+    # imprimiu (sem zerésima, a urna do 1º voto); não depende da ordem das urnas no log
+    u1 = int(vu[0]) if (vu and n) else 0
+    zer_e = next((e for e in ev if e[1] == "zer"), None)
+    lig = primeiro("ligada", zer_e[2] if zer_e else u1)
     # urnas: [número, 1º registro do dia, último registro, votos, versão, modelo(, carga, município, zona e seção da carga)];
     # com uma urna só (e sem L06/L12), basta a versão e o modelo ("vm": o número é o do boletim, "nu")
     D = {"u": [list(x[:10] if completo else x[:6]) for x in r["u"]] if len(r["u"]) > 1 or completo else None,
          "vm": [r["u"][0][4], r["u"][0][5]] if r["u"] else ["", ""],
-         "m": [lig if lig is not None else (r["u"][0][1] if r["u"] else None), primeiro("zer", 0), primeiro("pronta"), t[0] if n else None,
+         "m": [lig if lig is not None else (r["u"][0][1] if r["u"] else None), zer_e[0] if zer_e else None, primeiro("pronta"), t[0] if n else None,
                t[-1] if n else None, ultimo("enc_confirmado"), primeiro("bu_impresso")],
          "fim": fim, "n": n, "sd": sum(sd), "nu": s0["nr_urna"]}
     if D["u"] is None:
@@ -262,10 +266,12 @@ def detalhe(r, sinais, m):
     if "L06" in testes:
         sob = []
         if vu:
-            prim = {}
+            prim, ult = {}, {}
             for i in range(n):
                 prim.setdefault(vu[i], t[i])
-            sob = [i for i in range(n) if any(t[i] > prim[u2] for u2 in prim if u2 > vu[i])]
+                ult[vu[i]] = t[i]
+            # urna anterior = a que recebeu o último voto mais cedo; a nova é a que continuou (como o motor v3.1.1)
+            sob = [i for i in range(n) if any(ult[u2] > ult[vu[i]] and t[i] > prim[u2] for u2 in prim)]
         D["L06"] = {"sob": partes(corte(sob, 200, 50)), "nsob": len(sob)}
     if "L07" in testes:
         cods = ("ja_votou", "nao_encontrado", "impedido")

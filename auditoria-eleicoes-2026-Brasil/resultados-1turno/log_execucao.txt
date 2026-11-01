@@ -1,178 +1,149 @@
-[12:13:16] Auditoria Estatística dos Boletins de Urna — Eleições 2026 (motor v3.1.0)
-[12:13:16] Memória física: 15.7 GB; limite do DuckDB: 7.1 GB.
-[12:13:16] Arquivos de Boletim de Urna encontrados: 28 (AC, AL, AM, AP, BA, CE, DF, ES, GO, MA, MG, MS, MT, PA, PB, PE, PI, PR, RJ, RN, RO, RR, RS, SC, SE, SP, TO, ZZ)
-[12:13:16] Baixando arquivos oficiais de correspondência (CESP) para 28 UF/turno...
-[12:13:19]   CESP_1t_AC_041020261259.zip obtido.
-[12:13:19]   CESP_1t_AL_041020261259.zip obtido.
-[12:13:20]   CESP_1t_AM_041020261259.zip obtido.
-[12:13:21]   CESP_1t_AP_041020261259.zip obtido.
-[12:13:24]   CESP_1t_BA_041020261259.zip obtido.
-[12:13:27]   CESP_1t_CE_041020261259.zip obtido.
-[12:13:28]   CESP_1t_DF_041020261259.zip obtido.
-[12:13:29]   CESP_1t_ES_041020261259.zip obtido.
-[12:13:31]   CESP_1t_GO_041020261259.zip obtido.
-[12:13:33]   CESP_1t_MA_041020261259.zip obtido.
-[12:13:38]   CESP_1t_MG_041020261259.zip obtido.
-[12:13:40]   CESP_1t_MS_041020261259.zip obtido.
-[12:13:41]   CESP_1t_MT_041020261259.zip obtido.
-[12:13:42]   CESP_1t_PA_041020261259.zip obtido.
-[12:13:46]   CESP_1t_PB_041020261259.zip obtido.
-[12:13:47]   CESP_1t_PE_041020261259.zip obtido.
-[12:13:49]   CESP_1t_PI_041020261259.zip obtido.
-[12:13:51]   CESP_1t_PR_041020261259.zip obtido.
-[12:13:54]   CESP_1t_RJ_041020261259.zip obtido.
-[12:13:57]   CESP_1t_RN_041020261259.zip obtido.
-[12:13:58]   CESP_1t_RO_041020261259.zip obtido.
-[12:13:59]   CESP_1t_RR_041020261259.zip obtido.
-[12:14:01]   CESP_1t_RS_041020261259.zip obtido.
-[12:14:04]   CESP_1t_SC_041020261259.zip obtido.
-[12:14:07]   CESP_1t_SE_041020261259.zip obtido.
-[12:14:09]   CESP_1t_SP_041020261259.zip obtido.
-[12:14:11]   CESP_1t_TO_041020261259.zip obtido.
-[12:14:13]   CESP_1t_ZZ_041020261259.zip obtido.
-[12:14:13] Calculando hashes SHA-512 e conferindo com os hashes oficiais do TSE...
-[12:14:13]   bweb_1t_AC_051020261403.zip: CONFERE
-[12:14:13]   bweb_1t_AL_051020261403.zip: CONFERE
-[12:14:14]   bweb_1t_AM_051020261403.zip: CONFERE
-[12:14:15]   bweb_1t_AP_051020261403.zip: CONFERE
-[12:14:16]   bweb_1t_BA_051020261403.zip: CONFERE
-[12:14:17]   bweb_1t_CE_051020261403.zip: CONFERE
-[12:14:18]   bweb_1t_DF_051020261403.zip: CONFERE
-[12:14:19]   bweb_1t_ES_051020261403.zip: CONFERE
-[12:14:20]   bweb_1t_GO_051020261403.zip: CONFERE
-[12:14:21]   bweb_1t_MA_051020261403.zip: CONFERE
-[12:14:23]   bweb_1t_MG_051020261403.zip: CONFERE
-[12:14:24]   bweb_1t_MS_051020261403.zip: CONFERE
-[12:14:24]   bweb_1t_MT_051020261403.zip: CONFERE
-[12:14:25]   bweb_1t_PA_051020261403.zip: CONFERE
-[12:14:26]   bweb_1t_PB_051020261403.zip: CONFERE
-[12:14:27]   bweb_1t_PE_051020261403.zip: CONFERE
-[12:14:28]   bweb_1t_PI_051020261403.zip: CONFERE
-[12:14:30]   bweb_1t_PR_051020261403.zip: CONFERE
-[12:14:32]   bweb_1t_RJ_051020261403.zip: CONFERE
-[12:14:33]   bweb_1t_RN_051020261403.zip: CONFERE
-[12:14:33]   bweb_1t_RO_051020261403.zip: CONFERE
-[12:14:34]   bweb_1t_RR_051020261403.zip: CONFERE
-[12:14:35]   bweb_1t_RS_051020261403.zip: CONFERE
-[12:14:36]   bweb_1t_SC_051020261403.zip: CONFERE
-[12:14:37]   bweb_1t_SE_051020261403.zip: CONFERE
-[12:14:40]   bweb_1t_SP_051020261403.zip: CONFERE
-[12:14:41]   bweb_1t_TO_051020261403.zip: CONFERE
-[12:14:41]   bweb_1t_ZZ_051020261403.zip: CONFERE
-[12:14:41]   CESP_1t_AC_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_AL_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_AM_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_AP_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_BA_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_CE_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_DF_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_ES_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_GO_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_MA_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_MG_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_MS_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_MT_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_PA_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_PB_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_PE_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_PI_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_PR_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_RJ_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_RN_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_RO_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_RR_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_RS_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_SC_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_SE_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_SP_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_TO_041020261259.zip: CONFERE
-[12:14:41]   CESP_1t_ZZ_041020261259.zip: CONFERE
-[12:14:41] Carregando Boletins de Urna no banco analítico (DuckDB)...
-[12:14:43]   bweb_1t_AC_051020261403.zip: 258.052 registros (2s)
-[12:14:47]   bweb_1t_AL_051020261403.zip: 685.455 registros (4s)
-[12:14:54]   bweb_1t_AM_051020261403.zip: 1.073.532 registros (7s)
-[12:14:55]   bweb_1t_AP_051020261403.zip: 267.474 registros (1s)
-[12:15:25]   bweb_1t_BA_051020261403.zip: 4.225.183 registros (29s)
-[12:15:36]   bweb_1t_CE_051020261403.zip: 2.751.489 registros (11s)
-[12:15:41]   bweb_1t_DF_051020261403.zip: 1.188.269 registros (5s)
-[12:15:46]   bweb_1t_ES_051020261403.zip: 1.179.742 registros (5s)
-[12:15:59]   bweb_1t_GO_051020261403.zip: 2.133.284 registros (13s)
-[12:16:08]   bweb_1t_MA_051020261403.zip: 1.924.028 registros (9s)
-[12:16:54]   bweb_1t_MG_051020261403.zip: 6.339.455 registros (46s)
-[12:16:58]   bweb_1t_MS_051020261403.zip: 749.206 registros (4s)
-[12:17:01]   bweb_1t_MT_051020261403.zip: 891.997 registros (4s)
-[12:17:15]   bweb_1t_PA_051020261403.zip: 2.385.016 registros (14s)
-[12:17:20]   bweb_1t_PB_051020261403.zip: 1.075.721 registros (5s)
-[12:17:38]   bweb_1t_PE_051020261403.zip: 2.808.375 registros (18s)
-[12:17:42]   bweb_1t_PI_051020261403.zip: 922.913 registros (4s)
-[12:18:05]   bweb_1t_PR_051020261403.zip: 3.640.079 registros (23s)
-[12:18:50]   bweb_1t_RJ_051020261403.zip: 7.122.339 registros (45s)
-[12:18:54]   bweb_1t_RN_051020261403.zip: 747.317 registros (3s)
-[12:18:56]   bweb_1t_RO_051020261403.zip: 537.631 registros (2s)
-[12:18:57]   bweb_1t_RR_051020261403.zip: 192.871 registros (1s)
-[12:19:21]   bweb_1t_RS_051020261403.zip: 3.649.489 registros (24s)
-[12:19:30]   bweb_1t_SC_051020261403.zip: 2.118.318 registros (9s)
-[12:19:33]   bweb_1t_SE_051020261403.zip: 661.549 registros (3s)
-[12:21:24]   bweb_1t_SP_051020261403.zip: 17.891.697 registros (112s)
-[12:21:27]   bweb_1t_TO_051020261403.zip: 426.458 registros (2s)
-[12:21:27]   bweb_1t_ZZ_051020261403.zip: 12.035 registros (0s)
-[12:21:30] Correspondências oficiais carregadas para 28 pares turno/UF.
-[12:21:30] Consolidando boletins por seção e cargo...
-[12:22:19]   499.206 seções; 2.490.804 boletins seção–cargo.
-[12:22:19] Teste 01 — Fechamento do Boletim...
-[12:22:26]   unidades=2.490.804 sinalizações=0 informativos=0 (7s)
-[12:22:26] Teste 02 — Inconsistência de Totais...
-[12:22:27]   unidades=2.490.804 sinalizações=0 informativos=0 (1s)
-[12:22:27] Teste 03 — Unanimidade na Seção...
-[12:22:36]   unidades=1.992.870 sinalizações=20 informativos=39 (9s)
-[12:22:36] Teste 04 — Abstenção Zero...
-[12:22:36]   unidades=499.206 sinalizações=2 informativos=0 (0s)
-[12:22:36] Teste 05 — Excesso de Brancos e Nulos...
-[12:23:16]   unidades=2.490.244 sinalizações=105 informativos=0 (40s)
-[12:23:16] Teste 06 — Voto Cruzado Extremo...
-[12:23:28]   unidades=994.167 sinalizações=1.166 informativos=0 (12s)
-[12:23:28] Teste 07 — Paradoxo de Legenda...
-[12:23:40]   unidades=995.429 sinalizações=9 informativos=0 (12s)
-[12:23:40] Teste 08 — Contraste de Vizinhança...
-[12:23:45]   unidades=902.557 sinalizações=24 informativos=0 (5s)
-[12:23:45] Teste 09 — Seções com Resultados Idênticos...
-[12:23:48]   unidades=1.990.390 sinalizações=2 informativos=0 (3s)
-[12:23:48] Teste 10 — Baixa Validação Biométrica...
-[12:23:54]   unidades=499.060 sinalizações=212 informativos=0 (6s)
-[12:23:54] Teste 11 — Horários Atípicos...
-[12:24:36]   unidades=499.176 sinalizações=43.128 informativos=214 (41s)
-[12:24:36] Teste 12 — Troca de Urna e Votação em Cédula...
-[12:24:37]   unidades=499.206 sinalizações=21 informativos=3.042 (1s)
-[12:24:37] Teste 13 — Teste do 2º Dígito (Mebane)...
-[12:25:56]   unidades=120 sinalizações=0 informativos=0 (79s)
-[12:25:56] Teste 14 — Teste do Último Dígito (Beber-Scacco)...
-[12:25:56]   unidades=248 sinalizações=0 informativos=0 (0s)
-[12:25:56] Teste 15 — Impressão Digital Eleitoral (Klimek)...
-[12:26:09]   unidades=58 sinalizações=0 informativos=8 (14s)
-[12:26:11] Variação entre turnos (V1 a V6): requer os Boletins de Urna do 1º e do 2º turno; não aplicada.
-[12:26:11] Logs das urnas — testes L01 a L14...
-[12:35:12]   L01 Votos depois do horário oficial: unidades=499.176 anomalias=15.269 informativos=22.920
-[12:35:12]   L02 Tempo de cada voto (votos rápidos e em rajada): unidades=499.176 anomalias=3 informativos=44
-[12:35:12]   L03 Liberações sem digital em sequência: unidades=499.176 anomalias=320 informativos=2.799
-[12:35:12]   L04 Votos depois do “todos já votaram? SIM”: unidades=499.176 anomalias=0 informativos=1.505
-[12:35:12]   L05 Falta de energia e interrupções: unidades=499.176 anomalias=2.397 informativos=80.036
-[12:35:12]   L06 Troca de urna: unidades=499.176 anomalias=55 informativos=2.046
-[12:35:12]   L07 Tentativas repetidas (já votou, não encontrado, impedido): unidades=499.176 anomalias=138 informativos=37.785
-[12:35:12]   L08 Votos não concluídos: unidades=499.176 anomalias=96 informativos=0
-[12:35:12]   L09 Tentativas de encerramento: unidades=499.176 anomalias=14.865 informativos=20.451
-[12:35:12]   L10 Hora da zerésima e da ligação da urna: unidades=499.176 anomalias=54 informativos=2.833
-[12:35:12]   L11 Relógio da urna: unidades=499.176 anomalias=99 informativos=237
-[12:35:12]   L12 Modelo, versão do software e código de carga: unidades=499.176 anomalias=5 informativos=10
-[12:35:12]   L13 Biometria detalhada: unidades=499.176 anomalias=727 informativos=12.993
-[12:35:12]   L14 Votos do log × boletim de urna: unidades=499.176 anomalias=10 informativos=0
-[12:35:12]   (541s)
-[12:35:12] Exportando tabelas de resultados...
-[12:37:39] ====================================================================================================
-[12:37:39] [REGISTRO DE HOMOLOGAÇÃO] Primeira execução com estes dados de entrada: o núcleo analítico foi registrado.
-[12:37:39]   SHA-256 do núcleo analítico: d2dfca3edae23bb85dab8b2e8b89ac8ea1a70186e1eee91410ef18622500c819
-[12:37:39]   Registro: /home/user/audit_t1/resultados/.determinismo/5eb98193f64b3eb4
-[12:37:39]   As próximas execuções com os mesmos arquivos serão comparadas a este registro.
-[12:37:39] ====================================================================================================
-[12:37:41] Relatório gerado: Relatorio_Tecnico_Auditoria_Eleicoes_2026_PT.md
-[12:37:42] Relatório gerado: Relatorio_Tecnico_Auditoria_Eleicoes_2026_EN.md
-[12:37:43] Relatório gerado: Relatorio_Tecnico_Auditoria_Eleicoes_2026_ES.md
+[15:58:53] Auditoria Estatística dos Boletins de Urna — Eleições 2026 (motor v3.1.1)
+[15:58:53] Memória física: 15.7 GB; limite do DuckDB: 7.1 GB.
+[15:58:53] Arquivos de Boletim de Urna encontrados: 28 (AC, AL, AM, AP, BA, CE, DF, ES, GO, MA, MG, MS, MT, PA, PB, PE, PI, PR, RJ, RN, RO, RR, RS, SC, SE, SP, TO, ZZ)
+[15:58:53] Calculando hashes SHA-512 e conferindo com os hashes oficiais do TSE...
+[15:58:53]   bweb_1t_AC_051020261403.zip: CONFERE
+[15:58:53]   bweb_1t_AL_051020261403.zip: CONFERE
+[15:58:54]   bweb_1t_AM_051020261403.zip: CONFERE
+[15:58:54]   bweb_1t_AP_051020261403.zip: CONFERE
+[15:58:54]   bweb_1t_BA_051020261403.zip: CONFERE
+[15:58:55]   bweb_1t_CE_051020261403.zip: CONFERE
+[15:58:55]   bweb_1t_DF_051020261403.zip: CONFERE
+[15:58:55]   bweb_1t_ES_051020261403.zip: CONFERE
+[15:58:55]   bweb_1t_GO_051020261403.zip: CONFERE
+[15:58:56]   bweb_1t_MA_051020261403.zip: CONFERE
+[15:58:57]   bweb_1t_MG_051020261403.zip: CONFERE
+[15:58:57]   bweb_1t_MS_051020261403.zip: CONFERE
+[15:58:57]   bweb_1t_MT_051020261403.zip: CONFERE
+[15:58:57]   bweb_1t_PA_051020261403.zip: CONFERE
+[15:58:58]   bweb_1t_PB_051020261403.zip: CONFERE
+[15:58:58]   bweb_1t_PE_051020261403.zip: CONFERE
+[15:58:58]   bweb_1t_PI_051020261403.zip: CONFERE
+[15:58:59]   bweb_1t_PR_051020261403.zip: CONFERE
+[15:59:00]   bweb_1t_RJ_051020261403.zip: CONFERE
+[15:59:00]   bweb_1t_RN_051020261403.zip: CONFERE
+[15:59:00]   bweb_1t_RO_051020261403.zip: CONFERE
+[15:59:00]   bweb_1t_RR_051020261403.zip: CONFERE
+[15:59:01]   bweb_1t_RS_051020261403.zip: CONFERE
+[15:59:01]   bweb_1t_SC_051020261403.zip: CONFERE
+[15:59:01]   bweb_1t_SE_051020261403.zip: CONFERE
+[15:59:04]   bweb_1t_SP_051020261403.zip: CONFERE
+[15:59:04]   bweb_1t_TO_051020261403.zip: CONFERE
+[15:59:04]   bweb_1t_ZZ_051020261403.zip: CONFERE
+[15:59:04]   CESP_1t_AC_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_AL_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_AM_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_AP_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_BA_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_CE_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_DF_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_ES_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_GO_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_MA_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_MG_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_MS_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_MT_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_PA_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_PB_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_PE_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_PI_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_PR_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_RJ_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_RN_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_RO_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_RR_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_RS_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_SC_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_SE_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_SP_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_TO_041020261259.zip: CONFERE
+[15:59:04]   CESP_1t_ZZ_041020261259.zip: CONFERE
+[15:59:04] Carregando Boletins de Urna no banco analítico (DuckDB)...
+[15:59:06]   bweb_1t_AC_051020261403.zip: 258.052 registros (2s)
+[15:59:10]   bweb_1t_AL_051020261403.zip: 685.455 registros (4s)
+[15:59:15]   bweb_1t_AM_051020261403.zip: 1.073.532 registros (5s)
+[15:59:16]   bweb_1t_AP_051020261403.zip: 267.474 registros (1s)
+[15:59:43]   bweb_1t_BA_051020261403.zip: 4.225.183 registros (26s)
+[15:59:53]   bweb_1t_CE_051020261403.zip: 2.751.489 registros (11s)
+[15:59:58]   bweb_1t_DF_051020261403.zip: 1.188.269 registros (5s)
+[16:00:03]   bweb_1t_ES_051020261403.zip: 1.179.742 registros (5s)
+[16:00:13]   bweb_1t_GO_051020261403.zip: 2.133.284 registros (11s)
+[16:00:23]   bweb_1t_MA_051020261403.zip: 1.924.028 registros (9s)
+[16:01:02]   bweb_1t_MG_051020261403.zip: 6.339.455 registros (39s)
+[16:01:05]   bweb_1t_MS_051020261403.zip: 749.206 registros (3s)
+[16:01:09]   bweb_1t_MT_051020261403.zip: 891.997 registros (4s)
+[16:01:22]   bweb_1t_PA_051020261403.zip: 2.385.016 registros (12s)
+[16:01:26]   bweb_1t_PB_051020261403.zip: 1.075.721 registros (4s)
+[16:01:42]   bweb_1t_PE_051020261403.zip: 2.808.375 registros (16s)
+[16:01:46]   bweb_1t_PI_051020261403.zip: 922.913 registros (4s)
+[16:02:09]   bweb_1t_PR_051020261403.zip: 3.640.079 registros (23s)
+[16:02:51]   bweb_1t_RJ_051020261403.zip: 7.122.339 registros (42s)
+[16:02:54]   bweb_1t_RN_051020261403.zip: 747.317 registros (3s)
+[16:02:56]   bweb_1t_RO_051020261403.zip: 537.631 registros (2s)
+[16:02:57]   bweb_1t_RR_051020261403.zip: 192.871 registros (1s)
+[16:03:21]   bweb_1t_RS_051020261403.zip: 3.649.489 registros (24s)
+[16:03:30]   bweb_1t_SC_051020261403.zip: 2.118.318 registros (8s)
+[16:03:32]   bweb_1t_SE_051020261403.zip: 661.549 registros (3s)
+[16:05:13]   bweb_1t_SP_051020261403.zip: 17.891.697 registros (101s)
+[16:05:15]   bweb_1t_TO_051020261403.zip: 426.458 registros (2s)
+[16:05:15]   bweb_1t_ZZ_051020261403.zip: 12.035 registros (0s)
+[16:05:18] Correspondências oficiais carregadas para 28 pares turno/UF.
+[16:05:18] Consolidando boletins por seção e cargo...
+[16:06:03]   499.206 seções; 2.490.804 boletins seção–cargo.
+[16:06:03] Teste 01 — Fechamento do Boletim...
+[16:06:09]   unidades=2.490.804 sinalizações=0 informativos=0 (6s)
+[16:06:09] Teste 02 — Inconsistência de Totais...
+[16:06:10]   unidades=2.490.804 sinalizações=0 informativos=0 (1s)
+[16:06:10] Teste 03 — Unanimidade na Seção...
+[16:06:18]   unidades=1.992.870 sinalizações=20 informativos=39 (9s)
+[16:06:18] Teste 04 — Abstenção Zero...
+[16:06:19]   unidades=499.206 sinalizações=2 informativos=0 (0s)
+[16:06:19] Teste 05 — Excesso de Brancos e Nulos...
+[16:06:56]   unidades=2.490.244 sinalizações=105 informativos=0 (38s)
+[16:06:56] Teste 06 — Voto Cruzado Extremo...
+[16:07:08]   unidades=994.167 sinalizações=1.166 informativos=0 (12s)
+[16:07:08] Teste 07 — Paradoxo de Legenda...
+[16:07:19]   unidades=995.429 sinalizações=9 informativos=0 (11s)
+[16:07:19] Teste 08 — Contraste de Vizinhança...
+[16:07:24]   unidades=902.557 sinalizações=24 informativos=0 (5s)
+[16:07:24] Teste 09 — Seções com Resultados Idênticos...
+[16:07:28]   unidades=1.990.390 sinalizações=2 informativos=0 (4s)
+[16:07:28] Teste 10 — Baixa Validação Biométrica...
+[16:07:34]   unidades=499.060 sinalizações=212 informativos=0 (6s)
+[16:07:34] Teste 11 — Horários Atípicos...
+[16:08:16]   unidades=499.176 sinalizações=43.128 informativos=214 (42s)
+[16:08:16] Teste 12 — Troca de Urna e Votação em Cédula...
+[16:08:17]   unidades=499.206 sinalizações=21 informativos=3.042 (1s)
+[16:08:17] Teste 13 — Teste do 2º Dígito (Mebane)...
+[16:09:32]   unidades=120 sinalizações=0 informativos=0 (76s)
+[16:09:32] Teste 14 — Teste do Último Dígito (Beber-Scacco)...
+[16:09:33]   unidades=248 sinalizações=0 informativos=0 (0s)
+[16:09:33] Teste 15 — Impressão Digital Eleitoral (Klimek)...
+[16:09:45]   unidades=58 sinalizações=0 informativos=8 (13s)
+[16:09:46] Variação entre turnos (V1 a V6): requer os Boletins de Urna do 1º e do 2º turno; não aplicada.
+[16:09:46] Logs das urnas — testes L01 a L14...
+[16:19:05]   L01 Votos depois do horário oficial: unidades=499.176 anomalias=15.269 informativos=22.920
+[16:19:05]   L02 Tempo de cada voto (votos rápidos e em rajada): unidades=499.176 anomalias=3 informativos=44
+[16:19:05]   L03 Liberações sem digital em sequência: unidades=499.176 anomalias=320 informativos=2.799
+[16:19:05]   L04 Votos depois do “todos já votaram? SIM”: unidades=499.176 anomalias=0 informativos=1.505
+[16:19:05]   L05 Falta de energia e interrupções: unidades=499.176 anomalias=2.396 informativos=80.028
+[16:19:05]   L06 Troca de urna: unidades=499.176 anomalias=2 informativos=2.099
+[16:19:05]   L07 Tentativas repetidas (já votou, não encontrado, impedido): unidades=499.176 anomalias=138 informativos=37.785
+[16:19:05]   L08 Votos não concluídos: unidades=499.176 anomalias=96 informativos=0
+[16:19:05]   L09 Tentativas de encerramento: unidades=499.176 anomalias=14.865 informativos=20.451
+[16:19:05]   L10 Hora da zerésima e da ligação da urna: unidades=499.176 anomalias=1 informativos=2.837
+[16:19:05]   L11 Relógio da urna: unidades=499.176 anomalias=99 informativos=237
+[16:19:05]   L12 Modelo, versão do software e código de carga: unidades=499.176 anomalias=5 informativos=10
+[16:19:05]   L13 Biometria detalhada: unidades=499.176 anomalias=727 informativos=12.993
+[16:19:05]   L14 Votos do log × boletim de urna: unidades=499.176 anomalias=10 informativos=0
+[16:19:05]   (559s)
+[16:19:05] Exportando tabelas de resultados...
+[16:21:29] ====================================================================================================
+[16:21:29] [REGISTRO DE HOMOLOGAÇÃO] Primeira execução com estes dados de entrada: o núcleo analítico foi registrado.
+[16:21:29]   SHA-256 do núcleo analítico: 927d77294994f2cab419011a296588f0372913f0f49125bba269f29ee1d54582
+[16:21:29]   Registro: /home/user/audit_t1/resultados_v311b/.determinismo/79c67490e3dd7d8d
+[16:21:29]   As próximas execuções com os mesmos arquivos serão comparadas a este registro.
+[16:21:29] ====================================================================================================
+[16:21:30] Relatório gerado: Relatorio_Tecnico_Auditoria_Eleicoes_2026_PT.md
+[16:21:31] Relatório gerado: Relatorio_Tecnico_Auditoria_Eleicoes_2026_EN.md
+[16:21:32] Relatório gerado: Relatorio_Tecnico_Auditoria_Eleicoes_2026_ES.md
