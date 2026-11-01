@@ -619,7 +619,7 @@
     const m = r.m, n = m.linhas.length;
     $("#cq-info").textContent = r.info ? r.info(n) : `${E.cq_turno_info(E.cq_turno_ops[r.turno || 0])} · ${E.cq_linhas(nf(n), nf(r.ms))}` + (m.cortado ? ` · ${E.cq_cortado(nf(n))}` : "");
     $("#cq-dl").hidden = !n;
-    if (!n) { box.innerHTML = `${voltarHtml()}<p class="muted">${esc(E.cq_vazio)}</p>`; return; }
+    if (!n) { box.innerHTML = `${voltarHtml()}<p class="muted">${esc(E.cq_g ? E.cq_g.vazio : E.cq_vazio)}</p>`; return; }
     const np = Math.ceil(n / r.pp);
     r.pag = Math.min(Math.max(0, r.pag), np - 1);
     const ident = m.colunas.map(identCol), ini = r.pag * r.pp, fim = Math.min(n, ini + r.pp);
@@ -1410,27 +1410,34 @@
       const E = X(), q = A.state.query, sel = new Set((q.get("ufs") || "").split(",").filter(Boolean));
       const ufs = ufsLoc();
       if (["0", "1", "2"].includes(q.get("turno"))) cq.turno = +q.get("turno");
+      const G = E.cq_g;
       return `${cabecalho(E.cq_title, E.cq_sub, false)}
+        <section class="card cq-p cq-guia"><h2>${icone("help")} ${esc(G.t)}</h2><p>${esc(G.p)}</p>
+          <ol class="cq-passos">${G.passos.map(([a, b]) => `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join("")}</ol>
+          <div class="cq-guia-ex"><p><b>${esc(G.ex_t)}:</b> ${esc(G.ex_q)}</p><p class="small muted">${esc(G.ex_n)}</p>
+            <button class="btn btn-primary" type="button" id="cq-guia-b">${icone("play")} ${esc(G.ex_b)}</button></div>
+          <details class="cq-glos"><summary>${esc(G.glos_t)}</summary><dl>${G.glos.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}</dl></details></section>
         <section class="card cq-p"><h2>${esc(E.cq_p1)}</h2><p class="small muted">${esc(E.cq_p1_note)}</p>
           <div class="cq-ufs" id="cq-ufs">${ufs.map((u) => `<label class="cq-uf${cq.carregados.has(u) ? " ok" : ""}"><input type="checkbox" value="${u}"${sel.has(u) || cq.carregados.has(u) ? " checked" : ""}${cq.carregados.has(u) ? " disabled" : ""}><span>${u}</span></label>`).join("")}</div>
           <div class="btn-row"><button class="btn btn-sm btn-ghost" type="button" id="cq-todos">${esc(E.cq_todos)}</button><button class="btn btn-sm btn-ghost" type="button" id="cq-nenhum">${esc(E.cq_nenhum)}</button>
             <button class="btn btn-primary" type="button" id="cq-carregar">${icone("download")} ${esc(E.cq_carregar)}</button></div>
           <p class="small" id="cq-status" aria-live="polite">${cq.carregados.size ? esc(E.cq_carregado([...cq.carregados].join(", "), nf(cq.secoes))) : ""}</p><div class="cq-prog" hidden><span id="cq-prog"></span></div></section>
-        <section class="card cq-p"><h2>${esc(E.cq_p2)}</h2>
+        <section class="card cq-p"><h2>${esc(E.cq_p2)}</h2><p class="small muted">${esc(G.p2_n)}</p>
           ${seletorTurno("form")}<p class="small muted cq-turnos-n">${esc(E.cq_turno_nota)}</p>
           <form class="cq-form" id="cq-form">
-            <div class="filters"><label><span>${esc(E.cq_tab)}</span><select name="tab">${Object.keys(E.cq_desc_tab).map((k) => `<option value="${k}">${k} — ${esc(E.cq_desc_tab[k])}</option>`).join("")}</select></label>
-              <label><span>${esc(E.cq_agrupar)}</span><select name="grupo"></select></label>
-              <label><span>${esc(E.cq_medida)}</span><select name="medida"></select></label>
-              <label><span>${esc(E.cq_ordenar)}</span><select name="ordem"></select></label>
-              <label><span>&nbsp;</span><select name="dir"><option value="DESC">${esc(E.cq_desc)}</option><option value="ASC">${esc(E.cq_asc)}</option></select></label>
-              <label><span>${esc(E.cq_limite)}</span><input type="number" name="lim" min="1" max="1000000" value="100000"></label></div>
+            <div class="filters"><label><span>${esc(E.cq_tab)}</span><select name="tab">${Object.keys(E.cq_desc_tab).map((k) => `<option value="${k}">${k} — ${esc(E.cq_desc_tab[k])}</option>`).join("")}</select><small class="cq-dica">${esc(G.dica.tab)}</small></label>
+              <label><span>${esc(E.cq_agrupar)}</span><select name="grupo"></select><small class="cq-dica">${esc(G.dica.grupo)}</small></label>
+              <label><span>${esc(E.cq_medida)}</span><select name="medida"></select><small class="cq-dica">${esc(G.dica.medida)}</small></label>
+              <label><span>${esc(E.cq_ordenar)}</span><select name="ordem"></select><small class="cq-dica">${esc(G.dica.ordem)}</small></label>
+              <label><span>&nbsp;</span><select name="dir"><option value="DESC">${esc(E.cq_desc)}</option><option value="ASC">${esc(E.cq_asc)}</option></select><small class="cq-dica">${esc(G.dica.dir)}</small></label>
+              <label><span>${esc(E.cq_limite)}</span><input type="number" name="lim" min="1" max="1000000" value="100000"><small class="cq-dica">${esc(G.dica.lim)}</small></label></div>
             <details class="cq-cols"><summary>${esc(E.cq_cols)} (<span id="cq-ncols">${esc(E.cq_todas)}</span>)</summary><div id="cq-colbox"></div></details>
-            <h3 class="small">${esc(E.cq_filtros)}</h3><div id="cq-filtros"></div><button class="btn btn-sm btn-ghost" type="button" id="cq-addf">${icone("plus")} ${esc(E.cq_add_f)}</button>
-            <div class="btn-row cq-gerar"><button class="btn" type="submit">${icone("code")} ${esc(E.cq_montar)}</button></div>
+            <h3 class="small">${esc(E.cq_filtros)}</h3><p class="small muted cq-fn">${esc(G.filtros_n)}</p><div id="cq-filtros"></div><button class="btn btn-sm btn-ghost" type="button" id="cq-addf">${icone("plus")} ${esc(E.cq_add_f)}</button>
+            <div class="cq-frase" role="status" aria-live="polite"><b>${esc(G.frase_t)}</b><p id="cq-frase">${esc(G.sem_estado)}</p></div>
+            <div class="btn-row cq-gerar"><button class="btn btn-primary" type="submit">${icone("code")} ${esc(E.cq_montar)}</button></div>
           </form>
-          <h3 class="small">${esc(E.cq_exemplos)}</h3><div class="cq-ex">${E.cq_ex.map(([r], i) => `<button class="chipq" type="button" data-ex="${i}">${esc(r)}</button>`).join("")}</div>
-          <label class="cq-sql-l"><span>${esc(E.cq_sql)}</span><textarea id="cq-sql" rows="7" spellcheck="false">${esc(q.get("q") || (cq.res && cq.res.sql) || E.cq_ex[0][1])}</textarea></label>
+          <h3 class="small">${esc(E.cq_exemplos)}</h3><p class="small muted">${esc(G.ex_n2)}</p><div class="cq-ex">${E.cq_ex.map(([r], i) => `<button class="chipq" type="button" data-ex="${i}">${esc(r)}</button>`).join("")}</div>
+          <label class="cq-sql-l"><span>${esc(E.cq_sql)}</span><small class="cq-dica">${esc(G.sql_n)}</small><textarea id="cq-sql" rows="7" spellcheck="false">${esc(q.get("q") || (cq.res && cq.res.sql) || E.cq_ex[0][1])}</textarea></label>
           <div class="btn-row"><button class="btn btn-primary" type="button" id="cq-rodar">${icone("play")} ${esc(E.cq_rodar)}</button><button class="btn btn-sm btn-ghost" type="button" id="cq-link">${icone("link")} ${esc(E.cq_link)}</button></div>
           <details class="cq-ref"><summary>${esc(E.cq_tabelas_t)}</summary><div id="cq-ref"></div></details></section>
         <section class="card cq-p" id="cq-res-c"><h2>${esc(E.cq_p3)}</h2>${seletorTurno("res")}<p class="small muted" id="cq-info"></p><div id="cq-res"></div>
@@ -1464,15 +1471,51 @@
 
       // construtor visual
       const colsDe = (tab) => cq.colunas[tab] || [];
-      function opcoes(sel, lista, vazio) { sel.innerHTML = (vazio ? `<option value="">${esc(vazio)}</option>` : "") + lista.map((c) => `<option value="${c}">${c}</option>`).join(""); }
+      const G = E.cq_g;
+      const descCol = (c) => E.cq_col[/^v\d+$/.test(c) ? "vNN" : c] || "";
+      const rotCol = (c) => (c === "(auto)" ? G.dica.auto : `${c}${descCol(c) ? ` — ${descCol(c)}` : ""}`);
+      function opcoes(sel, lista, vazio) { sel.innerHTML = (vazio ? `<option value="">${esc(vazio)}</option>` : "") + lista.map((c) => `<option value="${c}">${esc(rotCol(c))}</option>`).join(""); }
+      // exemplo de valor para cada coluna do filtro
+      function exemploValor(c) {
+        const ph = G.ph;
+        if (c === "uf") return ph.txt; if (c === "municipio" || c === "nome") return ph.mun; if (c === "turno") return ph.turno;
+        if (/^(abertura|encerramento|fim|ultimo_voto)$/.test(c)) return ph.hora; if (c === "teste" || c === "id") return ph.teste; if (c === "nivel") return ph.nivel;
+        return /^(endereco|bairro|categoria|agregadas|cod_mun|codigo|numero)$/.test(c) ? "" : ph.num;
+      }
+      // a busca em linguagem simples, refeita a cada mudança no formulário
+      function frase() {
+        const el = $("#cq-frase"); if (!el) return;
+        if (!cq.colunas.secoes) { el.textContent = G.sem_estado; return; }
+        const tab = f.elements.tab.value, cs = colsDe(tab), grupo = f.elements.grupo.value, med = f.elements.medida.value, ord = f.elements.ordem.value;
+        const dir = f.elements.dir.value === "ASC" ? E.cq_asc : E.cq_desc;
+        const lim = Math.max(1, Math.min(1000000, parseInt(f.elements.lim.value, 10) || 100000));
+        const partes = [`${G.mostrar} ${G.tabs[tab] || tab}${cs.includes("turno") ? ` ${G.turno[cq.turno]}` : ""}`];
+        const fs = $$("#cq-filtros .cq-f").map((d) => { const v = d.querySelector(".cq-fv").value.trim(); return v ? `${d.querySelector(".cq-fc").value} ${G.ops[d.querySelector(".cq-fo").value]} ${v}` : null; }).filter(Boolean);
+        if (fs.length) partes.push(`${G.onde} ${fs.join(` ${G.e} `)}`);
+        if (grupo) {
+          const [fn, col] = med === "count" ? ["count"] : med.split(":");
+          partes.push(G.agrup(grupo, fn === "count" ? G.contar : fn === "avg" ? G.media(col) : G.soma(col)));
+          partes.push(ord && ord !== "(auto)" && ord === grupo ? G.ord(grupo, dir) : G.ordCalc(dir));
+        } else {
+          const marc = $$("#cq-colbox input:checked").map((i) => i.value), tot = $$("#cq-colbox input").length;
+          if (marc.length && marc.length < tot) partes.push(G.cols(marc.join(", ")));
+          if (ord && ord !== "(auto)") partes.push(G.ord(ord, dir));
+        }
+        partes.push(G.lim(nf(lim)));
+        el.textContent = `${partes.join(", ")}.`;
+      }
       function linhaFiltro() {
         const cs = colsDe(f.elements.tab.value);
         const d = document.createElement("div");
         d.className = "cq-f";
-        d.innerHTML = `<select class="cq-fc">${cs.map((c) => `<option>${c}</option>`).join("")}</select><select class="cq-fo">${Object.entries(E.cq_ops).map(([k, r]) => `<option value="${k}">${esc(r)}</option>`).join("")}</select>
+        d.innerHTML = `<select class="cq-fc" aria-label="${esc(E.cq_filtros)}">${cs.map((c) => `<option value="${c}">${esc(rotCol(c))}</option>`).join("")}</select><select class="cq-fo">${Object.entries(E.cq_ops).map(([k, r]) => `<option value="${k}">${esc(r)}</option>`).join("")}</select>
           <input class="cq-fv" type="text" aria-label="valor"><button class="icon-btn" type="button" aria-label="${esc(t().close || "x")}">${icone("close")}</button>`;
-        d.querySelector("button").addEventListener("click", () => d.remove());
+        const fc = d.querySelector(".cq-fc"), fv = d.querySelector(".cq-fv");
+        const ph = () => { fv.placeholder = exemploValor(fc.value); };
+        fc.addEventListener("change", ph); ph();
+        d.querySelector("button").addEventListener("click", () => { d.remove(); frase(); });
         $("#cq-filtros").append(d);
+        return d;
       }
       function montarForm() {
         const tab = f.elements.tab.value, cs = colsDe(tab);
@@ -1480,12 +1523,27 @@
         const num = cs.filter((c) => /^(aptos|comparecimento|faltosos|validos|brancos|nulos|sinalizada|secoes|votos|v\d+|lat|lon|zona|secao|local|turno)$/.test(c));
         f.elements.medida.innerHTML = `<option value="count">${esc(E.cq_contar)}</option>` + num.map((c) => `<option value="sum:${c}">${esc(E.cq_somar)} ${c}</option><option value="avg:${c}">${esc(E.cq_media)} ${c}</option>`).join("");
         opcoes(f.elements.ordem, ["(auto)"].concat(cs), "");
-        f.elements.ordem.querySelector("option").remove();
         $("#cq-colbox").innerHTML = cs.map((c) => `<label class="cq-col"><input type="checkbox" value="${c}" checked><span>${c}</span></label>`).join("");
         $("#cq-filtros").innerHTML = "";
+        frase();
         $("#cq-ref").innerHTML = Object.keys(cq.colunas).map((k) => `<h4>${k} <small class="muted">${esc(E.cq_desc_tab[k] || "")}</small></h4><p class="small">${cq.colunas[k].map((c) => `<code>${c}</code> ${esc(E.cq_col[/^v\d+$/.test(c) ? "vNN" : c] || "")}`).join(" · ")}</p>`).join("");
       }
       f.elements.tab.addEventListener("change", montarForm);
+      ["input", "change"].forEach((ev) => f.addEventListener(ev, (e) => { if (e.target !== f.elements.tab) frase(); }));
+      // exemplo guiado: carrega o Paraná, preenche os campos e roda
+      $("#cq-guia-b").addEventListener("click", async () => {
+        const pr = $('#cq-ufs input[value="PR"]');
+        if (pr && !pr.disabled) pr.checked = true;
+        if (!cq.carregados.has("PR")) await carregar();
+        if (!cq.colunas.secoes) return;
+        mudarTurno(2, false);
+        f.elements.tab.value = "secoes"; montarForm();
+        const d = linhaFiltro(); d.querySelector(".cq-fc").value = "sinalizada"; d.querySelector(".cq-fo").value = "="; d.querySelector(".cq-fv").value = "1";
+        f.elements.grupo.value = "municipio"; f.elements.medida.value = "count"; f.elements.ordem.value = "(auto)"; f.elements.dir.value = "DESC";
+        frase();
+        f.querySelector("button[type=submit]").click();
+        status(G.ex_ok);
+      });
       $("#cq-addf").addEventListener("click", () => { if (!cq.colunas.secoes) { status(E.cq_antes); return; } linhaFiltro(); });
       $("#cq-colbox").addEventListener("change", () => { const n = $$("#cq-colbox input:checked").length, tot = $$("#cq-colbox input").length; $("#cq-ncols").textContent = n === tot ? E.cq_todas : String(n); });
       f.addEventListener("submit", (e) => {
@@ -1548,7 +1606,7 @@
         cq.turno = n;
         try { localStorage.setItem("cq_turno", String(n)); } catch (e) { /* sem armazenamento */ }
         $$(".cq-turnos [data-turno]").forEach((b) => b.setAttribute("aria-checked", String(+b.dataset.turno === n)));
-        linkConsulta();
+        linkConsulta(); frase();
         if (rodarJa !== false && cq.res && cq.carregados.size) rodar();
       }
       $$(".cq-turnos").forEach((g) => g.addEventListener("click", (e) => { const b = e.target.closest("[data-turno]"); if (b) mudarTurno(+b.dataset.turno); }));
