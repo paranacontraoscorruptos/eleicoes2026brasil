@@ -2191,9 +2191,37 @@ curl -s ${base}SHA256SUMS.txt | head`;
     audDlg(E.dl_t, `<p class="aud-lock">${icone("lock")}</p>${E.dl_p(nf(n)).map((x) => `<p>${esc(x)}</p>`).join("")}${audBarra()}
       <p class="btn-row aud-acoes"><button class="btn btn-primary" type="button" data-aud-ok>${esc(E.aud_ok)}</button><button class="btn btn-ghost" type="button" data-aud>${icone("list")} ${esc(E.dl_ver)}</button></p>`, "dl-dlg");
   }
+  // Downloads pausados também fora da página Downloads (Resultados, 1º → 2º turno, teste 11, Urnas que fecharam tarde,
+  // Kit de imprensa, Provas e cópias, Atlas): relatórios, dados e motor publicados pelo site e o .zip do repositório.
+  // Ficam livres: carimbos .ots, manifestos SHA256SUMS, imagens, links para ver o código no GitHub e os arquivos que a
+  // própria pessoa gera no navegador (CSV de consulta, imagem, PDF). O link perde o endereço (nem o botão direito baixa).
+  const RE_PAUSA = /^(\.?\/)?(auditoria-eleicoes-2026-Brasil|site\/data\/(complementar|anomalias))\//;
+  const RE_ZIP = /^https:\/\/github\.com\/[^?#]+\/archive\/refs\/heads\/[^/?#]+\.zip$/;
+  function dlPausado(h) {
+    if (!h || /\.ots$|SHA256SUMS\.txt$/.test(h)) return false;
+    return RE_PAUSA.test(h) || RE_ZIP.test(h);
+  }
+  function dlTravar(raiz) {
+    if (!A.DL_PAUSA || !raiz || !raiz.querySelectorAll) return;
+    const ls = raiz.matches && raiz.matches("a[href]") ? [raiz] : raiz.querySelectorAll("a[href]");
+    ls.forEach((a) => {
+      if (!dlPausado(a.getAttribute("href"))) return;
+      a.removeAttribute("href"); a.removeAttribute("download");
+      a.setAttribute("data-dl-bloq", ""); a.setAttribute("role", "button"); a.setAttribute("tabindex", "0");
+      a.classList.add("dl-travado");
+    });
+  }
+  if (A.DL_PAUSA && window.MutationObserver) {
+    dlTravar(document.body);
+    new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) dlTravar(n); })))
+      .observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("keydown", (ev) => {
+      if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches && ev.target.matches("a[data-dl-bloq]")) { ev.preventDefault(); dlBloqueado(); }
+    }, true);
+  }
   // cliques: botões de download pausados, "saiba mais" e, por segurança, qualquer link de arquivo que sobrar na página Downloads
   document.addEventListener("click", (ev) => {
-    if (ev.target.closest("[data-dl-bloq]")) { ev.preventDefault(); dlBloqueado(); return; }
+    if (ev.target.closest("[data-dl-bloq]")) { ev.preventDefault(); ev.stopPropagation(); dlBloqueado(); return; }
     const a = ev.target.closest("[data-aud]");
     if (a) { ev.preventDefault(); const d = a.closest("dialog"); if (d) d.close(); audJanela(); return; }
     const l = ev.target.closest("#main a[download], #main a[href$='.zip']");

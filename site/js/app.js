@@ -1278,6 +1278,6 @@
 
   const paginas = {};
   window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, nTestes, txtTestes, consultarSecao, votosTurno, icone, json, tabela, tile, barras, barrasCartao, barrasTurno, chip, chipStatus,
-    status, botCta, linkAtlas, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
+    status, botCta, linkAtlas, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, DL_PAUSA, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
   document.addEventListener("DOMContentLoaded", iniciar);
 })();

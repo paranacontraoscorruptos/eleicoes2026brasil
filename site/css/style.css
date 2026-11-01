@@ -110,6 +110,8 @@ body::before {
 }
 a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
 a:hover { color: var(--accent-hover); }
+a.dl-travado { cursor: pointer; }
+a.dl-travado:not(.btn) { color: var(--accent); text-decoration: underline; }
 ::selection { background: var(--yellow); color: var(--yellow-ink); }
 code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); padding: .1em .38em; border-radius: 6px; border: 1px solid var(--line); overflow-wrap: anywhere; }
 code.wrap { word-break: break-all; }
