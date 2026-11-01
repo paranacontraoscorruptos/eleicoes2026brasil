@@ -498,7 +498,7 @@
       return `<article class="test-card" id="${tid}">
         <details${foco === tid ? " open" : ""}>
           <summary><span class="tnum">${numTeste(tid)}</span><span class="tmain"><span class="tname">${esc(tx.nome)}</span><span class="ttype">${esc(tipoTeste(tid))}</span>
-            <span class="tsimple">${esc(X.simples[state.lang][tid])}</span><span class="tres">${res(r1, 1)}${res(r2, 2)}</span>${cp ? `<span class="tprev small">${esc(L.ex.enc_resumo(cpn(1), cpn(2)))}</span>` : ""}</span></summary>
+            <span class="tsimple">${esc(X.simples[state.lang][tid])}</span><span class="tres">${res(r1, 1)}${res(r2, 2)}</span>${cp ? `<span class="tprev small">${esc(L.ex.enc_resumo(cpn(1), cpn(2), nf(r1.sinal + cp.turnos[1].sinalizadas), nf(r2.sinal + cp.turnos[2].sinalizadas)))}</span>` : ""}</span></summary>
           <div class="tbody">
             <h3>${esc(L.f_obj)}</h3><p>${esc(tx.objetivo)}</p>
             <h3>${esc(L.f_met)}</h3><p>${esc(tx.metodo)}</p>${prev}${prevVh}
