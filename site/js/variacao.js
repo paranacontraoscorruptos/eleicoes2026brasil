@@ -108,7 +108,7 @@
       return `<article class="vr-teste card">
         <p class="vr-teste-h"><span class="vr-id">${id}</span><span class="small muted">${esc(L.nivel[NIVEL[id]])}</span></p>
         <h3>${esc(L.nomes[id])}</h3><p class="small">${esc(L.curto[id])}</p>
-        <p class="vr-teste-res">${chip(cor, `${L.an}: ${nf(c.a)} · ${L.inf}: ${nf(c.i)}`)}${c.unidades != null ? ` <span class="small muted">${esc(L.un(nf(c.unidades)))}</span>` : ""}</p>
+        <p class="vr-teste-res">${chip(cor, `${L.an}: ${nf(c.a)} · ${L.inf}: ${nf(c.i)}`)}${c.unidades != null ? ` <span class="small muted">${esc(L.un(nf(c.unidades), NIVEL[id]))}</span>` : ""}</p>
         ${comComo ? `<details><summary>${esc(L.como_btn)}</summary><p class="small">${esc(L.como[id])}</p></details>` : ""}</article>`;
     }).join("")}</div>`;
   }

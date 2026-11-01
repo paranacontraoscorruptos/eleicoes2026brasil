@@ -11,6 +11,9 @@
   const FUNCS_V = { V1: [["executar_variacao", 3487, 3489], FN_TT, FN_DL], V2: [["executar_variacao", 3490, 3492], FN_TT, FN_DL], V3: [["executar_variacao", 3493, 3504], FN_DL],
     V4: [["executar_variacao", 3505, 3526], FN_DL], V5: [["executar_variacao", 3527, 3538]], V6: [["executar_variacao", 3539, 3548]] };
   const NIVEL_V = { V1: "uf", V2: "municipio", V3: "secao", V4: "secao", V5: "secao", V6: "secao" };
+  // O que cada teste T conta: s = seção; sc = seção em um cargo; sp = seção em um par de cargos (T06); c = candidato em um estado
+  const UN_T = { T01: "sc", T02: "sc", T03: "sc", T04: "s", T05: "sc", T06: "sp", T07: "sc", T08: "sc", T09: "sc", T10: "s", T11: "s", T12: "s", T13: "c", T14: "c", T15: "c" };
+  const unTip = (Z, a, i, k) => Z.un_tip(nf(a), nf(i), Z.un_t[k]) + (Z.un_x[k] ? " " + Z.un_x[k] : "");
   const TESTES_V = ["V1", "V2", "V3", "V4", "V5", "V6"];
   const TESTES_L = ["L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10", "L11", "L12", "L13", "L14"];
   // downloads pausados enquanto a auditoria completa (35 testes) não termina: os botões abrem o aviso (extras.js)
@@ -482,7 +485,8 @@
     const cards = Object.keys(R.testes_txt[state.lang]).sort().map((tid) => {
       const tx = R.testes_txt[state.lang][tid];
       const r1 = R.turnos["1"].testes.find((x) => x.id === tid), r2 = R.turnos["2"].testes.find((x) => x.id === tid);
-      const res = (r, n) => `<span class="res"><span class="muted">${esc(L.round(n))}:</span> ${chip(status(r), `${nf(r.sinal)} / ${nf(r.info)}`)}</span>`;
+      const ZT = window.T35[state.lang] || window.T35.PT, uk = UN_T[tid] || "s";
+      const res = (r, n) => `<span class="res" title="${esc(unTip(ZT, r.sinal, r.info, uk))}"><span class="muted">${esc(L.round(n))}:</span> ${chip(status(r), `${nf(r.sinal)} / ${nf(r.info)} ${ZT.un_t[uk]}`)}</span>`;
       const codigo = X.funcs[tid].map((f) => `<a href="${BLOB}#L${f.ini}-L${f.fim}" target="_blank" rel="noopener"><code>${esc(f.nome)}</code></a>`).join(" · ");
       const cp = tid === "T11" && R.complementar && R.complementar.encerramento_tardio, cpn = (n) => nf(cp.turnos[n].sinalizadas);
       const prev = cp ? `<div class="note enc-nota"><h3>${icone("help")} ${esc(L.ex.enc_t)}</h3><p>${esc(L.ex.enc_nota(cpn(1), cpn(2)))}</p>
@@ -515,7 +519,7 @@
       const codigo = FUNCS_V[id].map(([nm, a, b]) => `<a href="${BLOB_V}#L${a}-L${b}" target="_blank" rel="noopener"><code>${esc(nm)}</code></a>`).join(" · ");
       return `<article class="test-card tc-v" id="${id}"><details${foco === id ? " open" : ""}>
         <summary><span class="tnum">${id}</span><span class="tmain"><span class="tname">${esc(VR.nomes[id])}</span><span class="ttype">${esc(id === "V5" || id === "V6" ? L.det : L.stat)} · ${esc(Z.nivel[NIVEL_V[id]])}</span>
-          <span class="tsimple">${esc(VR.curto[id])}</span><span class="tres"><span class="res"><span class="muted">${esc(Z.res_v)}:</span> ${chip(cor, `${nf(c.a)} / ${nf(c.i)}`)}</span></span></span></summary>
+          <span class="tsimple">${esc(VR.curto[id])}</span><span class="tres"><span class="res" title="${esc(unTip(Z, c.a, c.i, NIVEL_V[id]))}"><span class="muted">${esc(Z.res_v)}:</span> ${chip(cor, `${nf(c.a)} / ${nf(c.i)} ${Z.un_t[NIVEL_V[id]]}`)}</span></span></span></summary>
         <div class="tbody">${corpo(Z.V[id]).map(([h, p]) => sec(h, p)).join("")}
           <p class="btn-row">${perguntar(id)} <a class="btn btn-sm" href="#/variacao">${icone("chart")} ${esc(Z.v_ver)}</a> ${simular(id)}
           <span class="small">${icone("code")} ${esc(L.f_code)}: ${codigo}</span></p></div></details></article>`;
