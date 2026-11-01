@@ -1,5 +1,5 @@
 /* Simulador de anomalias — interface. Página educativa: o visitante altera dados FICTÍCIOS e vê como cada um dos
-   15 testes reage, com explicação simples e técnica, missões, modo livre, provas com nota, prova final, boletim e
+   35 testes reage (T01–T15 dos boletins, V1–V6 da variação entre turnos e L01–L14 dos logs, estes com critérios preliminares), com explicação simples e técnica, missões, modo livre, provas com nota, prova final, boletim e
    perguntas e respostas. Nada desta página pode ser compartilhado, copiado, impresso ou exportado. */
 (function () {
   "use strict";
@@ -7,10 +7,16 @@
   const { esc, icone, $, $$ } = A;
   const L = () => window.SIM_TXT[A.state.lang] || window.SIM_TXT.PT;
   const U = () => L().ui;
-  const ORDEM = ["T01", "T02", "T11", "T12", "T03", "T04", "T05", "T06", "T07", "T10", "T08", "T09", "T13", "T14", "T15"];
-  const GRUPOS = [["boletim", ["T01", "T02", "T11", "T12"]], ["secao", ["T03", "T04", "T05", "T06", "T07", "T10"]], ["local", ["T08", "T09"]], ["cidade", ["T13", "T14", "T15"]]];
-  const LIBERA_PROVA = 6, NOTA_MIN = 7, Q_PROVA = 10, Q_FINAL = 30, TEMPO_PROVA = 15 * 60, TEMPO_FINAL = 45 * 60;
-  const num = (id) => +id.slice(1);
+  const TV = ["V1", "V2", "V3", "V4", "V5", "V6"], TL = ["L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10", "L11", "L12", "L13", "L14"];
+  const ORDEM = ["T01", "T02", "T11", "T12", "T03", "T04", "T05", "T06", "T07", "T10", "T08", "T09", "T13", "T14", "T15"].concat(TV, TL);
+  const GRUPOS = [["boletim", ["T01", "T02", "T11", "T12"]], ["secao", ["T03", "T04", "T05", "T06", "T07", "T10"]], ["local", ["T08", "T09"]], ["cidade", ["T13", "T14", "T15"]],
+    ["variacao", TV], ["log", TL]];
+  const LIBERA_PROVA = 6, NOTA_MIN = 7, Q_PROVA = 10, Q_FINAL = 30, TEMPO_PROVA = 15 * 60, TEMPO_FINAL = 45 * 60, FINAL_MIN = 15;
+  const num = (id) => (id[0] === "T" ? +id.slice(1) : id);
+  const novo = (id) => id[0] !== "T";
+  const nM = (id) => M.T[id].missoes.length;   // 12 missões nos testes T; 6 nos testes V e L
+  const libera = (id) => Math.min(LIBERA_PROVA, Math.ceil(nM(id) / 2));
+  const T35 = () => (window.T35 && (window.T35[A.state.lang] || window.T35.PT)) || null;
 
   // ===================================================================================================
   // Progresso (só neste navegador)
@@ -68,7 +74,7 @@
   // Controles de cada teste (os rótulos vêm dos textos do idioma)
   // ===================================================================================================
   const RHO = { k: "rho", t: "sel", op: ["p", "m", "a"], opk: "rho" };
-  const CTL = {
+  const CTL = Object.assign({
     T03: [{ k: "n", t: "num", min: 0, max: 400, re: 1 }, { k: "a", t: "num", min: 0, max: (s) => s.n }, { k: "m", t: "num", min: 5, max: 99 }, RHO],
     T04: [{ k: "ap", t: "num", min: 0, max: 500, re: 1 }, { k: "co", t: "num", min: 0, max: (s) => s.ap }, { k: "m", t: "num", min: 40, max: 99 }, RHO],
     T05: [{ k: "tot", t: "num", min: 0, max: 500, re: 1 }, { k: "br", t: "num", min: 0, max: (s) => s.tot }, { k: "nu", t: "num", min: 0, max: (s) => s.tot }, { k: "m", t: "num", min: 1, max: 30 }, RHO],
@@ -89,7 +95,7 @@
       { k: "transf", t: "num", min: 0, max: 100 }, { k: "ref", t: "sel", op: ["modelo", "uniforme"] }],
     T15: [{ k: "S", t: "sel", op: ["600", "1200", "3000"], num: 1 }, { k: "forca", t: "num", min: 10, max: 90 }, { k: "enc", t: "num", min: 0, max: 100 },
       { k: "alvo", t: "num", min: 80, max: 100 }, { k: "modo", t: "sel", op: ["espalhado", "zona"] }, { k: "mob", t: "num", min: 0, max: 60 }],
-  };
+  }, M.CTL2 || {});
   const rotulo = (id, k) => { const T = L()[id]; return (T.campos && T.campos[k]) || U().c[k] || k; };
   function opRot(id, c, v) { const T = L()[id]; const m = (c.opk ? U()[c.opk] : T.op && T.op[c.k]) || {}; return m[v] != null ? m[v] : v; }
   function controle(id, c, s) {
@@ -244,7 +250,37 @@
       <text x="${x(0.5)}" y="${H}" class="sim-tk sim-tk-b">${esc(T.eixo_x)}</text><text x="14" y="${y(0.5)}" class="sim-tk sim-tk-b" transform="rotate(-90 14 ${y(0.5)})">${esc(T.eixo_y)}</text></svg>
       <div class="sim-kv">${(T.kv(s, r, F()) || []).map(([k, val]) => `<div><span>${esc(k)}</span><b>${val}</b></div>`).join("")}</div></div>`;
   }
+  // --- visuais dos testes V e L ---
+  const kvHtml = (T, s, r) => (T.kv ? `<div class="sim-kv">${(T.kv(s, r, F()) || []).map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join("")}</div>` : "");
+  function visBarras(id, s, r) {   // V1–V4: 1º turno, grupo de referência, esperado e observado no 2º turno
+    const T = L()[id], v = r.v, cor = r.nivel === "anom" ? "sim-vb-x" : r.nivel === "info" ? "sim-vb-i" : "sim-vb-o";
+    const ln = (rot, p, cls) => `<div class="sim-vb"><span>${esc(rot)}</span><span class="sim-vb-b"><i class="${cls}" style="width:${Math.max(0, Math.min(100, 100 * p)).toFixed(1)}%"></i></span><b>${p == null || !isFinite(p) ? "—" : fpct(p, 1)}</b></div>`;
+    const v4 = id === "V4", p1 = v4 ? v.c1 / Math.max(1, v.ap) : s.a1 / 100;
+    return `<div class="sim-vis"><p class="sim-vis-t">${esc(T.vis)}</p><div class="sim-vbs">${ln(T.vl[0], p1, "sim-vb-1")}${ln(T.vl[1], s.g1 / 100, "sim-vb-g")}${ln(T.vl[2], s.g2 / 100, "sim-vb-g")}
+      ${v.pe != null ? ln(T.vl[3], v.pe, "sim-vb-e") : ""}${ln(T.vl[4], v4 ? v.c2 / Math.max(1, v.ap) : s.a2 / 100, cor)}</div>${kvHtml(T, s, r)}</div>`;
+  }
+  function visTeto(id, s, r) {   // V5: ganho de cada finalista × votos disponíveis
+    const T = L()[id], v = r.v, mx = Math.max(1, v.teto, Math.abs(v.gA), Math.abs(v.gB)) * 1.1;
+    const ln = (rot, x, cls) => `<div class="sim-vb"><span>${esc(rot)}</span><span class="sim-vb-b"><i class="${cls}" style="width:${((100 * Math.max(0, x)) / mx).toFixed(1)}%"></i></span><b>${fn(x)}</b></div>`;
+    return `<div class="sim-vis"><p class="sim-vis-t">${esc(T.vis)}</p><div class="sim-vbs">${ln(T.vl[0], v.teto, "sim-vb-g")}${ln(T.vl[1], v.gA, v.kA ? "sim-vb-i" : "sim-vb-1")}${ln(T.vl[2], v.gB, v.kB ? "sim-vb-i" : "sim-vb-e")}</div>${kvHtml(T, s, r)}</div>`;
+  }
+  function visRegua(id, s, r) {   // seção comparada com 40 seções fictícias do município e vizinhas
+    const T = L()[id], u = U(), g = r.v.regua, fm = { min: (x) => `${fn(x, 0)} min`, s: (x) => `${fn(x, 0)} s`, pct: (x) => `${fn(x, 1)}%` }[g.un];
+    const hi = Math.max(...g.vals, g.alvo) * 1.15 || 1;
+    return `<div class="sim-vis"><p class="sim-vis-t">${esc(T.vis)}</p>${faixaPontos(g.vals, g.alvo, { lo: 0, hi, media: r.v.med, sinal: r.nivel === "anom", rotAlvo: u.secao_t + " 42", rotMedia: `${u.mediana} ${fm(r.v.med)}`, fmt: fm, rot: T.vis })}${kvHtml(T, s, r)}</div>`;
+  }
+  function visLinha(id, s, r) {   // linha do tempo do dia (hora local), com os eventos do log
+    const T = L()[id], x0 = 5 * 3600, x1 = 21 * 3600, x = (t) => 30 + ((Math.min(x1, Math.max(x0, t)) - x0) / (x1 - x0)) * (W - 60);
+    const mk = (T.marcas ? T.marcas(s, r, F()) : []).filter((m) => m.t != null);
+    const cls = { x: "sim-mk-x", i: "sim-mk-i", o: "sim-mk-o" };
+    return `<div class="sim-vis"><p class="sim-vis-t">${esc(T.vis)}</p><svg viewBox="0 0 ${W} 120" class="sim-svg" role="img" aria-label="${esc(T.vis)}">
+      <rect x="${x(8 * 3600)}" y="40" width="${x(17 * 3600) - x(8 * 3600)}" height="34" rx="6" class="sim-janela"/><line x1="30" x2="${W - 30}" y1="74" y2="74" class="sim-eixo"/>
+      ${[6, 8, 10, 12, 14, 16, 17, 18, 20].map((h) => `<text x="${x(h * 3600)}" y="92" class="sim-tk">${h}h</text>`).join("")}
+      ${mk.map((m, i) => `<g class="${cls[m.k] || cls.o}"><line x1="${x(m.t)}" x2="${x(m.t)}" y1="${i % 2 ? 30 : 22}" y2="74"/><circle cx="${x(m.t)}" cy="74" r="5"/><text x="${x(m.t)}" y="${i % 2 ? 26 : 16}" class="sim-tk sim-tk-b">${esc(m.rot)}</text></g>`).join("")}</svg>${kvHtml(T, s, r)}</div>`;
+  }
+  function visKv(id, s, r) { const T = L()[id]; return `<div class="sim-vis"><p class="sim-vis-t">${esc(T.vis)}</p>${kvHtml(T, s, r)}</div>`; }
   function visual(id, s, r) {
+    if (novo(id)) return ({ transf: visBarras, comp: visBarras, teto: visTeto, regua: visRegua, linha: visLinha, kv: visKv }[M.T[id].vis] || visKv)(id, s, r);
     if (["T03", "T04", "T05", "T07", "T10"].includes(id)) return visSecao(id, s, r);
     return ({ T06: visT06, T08: visT08, T09: visT09, T11: visT11, T12: visT12, T15: visT15, T13: (a, b) => visDig("T13", a, b), T14: (a, b) => visDig("T14", a, b) }[id] || (() => ""))(s, r);
   }
@@ -259,6 +295,7 @@
   function simples(id, s, r) { const p = L()[id].simples(s, r, F()); return p.map((x) => `<p>${x}</p>`).join(""); }
   const lin = (k, v) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`;
   function calculo(id, s, r) {
+    if (novo(id)) return (L()[id].tec ? L()[id].tec(s, r, F()) : []).map(([k, v]) => lin(k, v)).join("");
     const t = U().tl, v = r.v, P = M.P, out = [];
     const bb = () => { out.push(lin(t.grupo, `G = ${v.G} · m̂ = ${fn(v.mref, 4)} · ρ̂ = ${fn(v.rho, 4)}`), lin(t.ab, `α = ${fn(v.a, 2)} · β = ${fn(v.b, 2)}`)); };
     const bh = (Mx) => out.push(lin(t.bh, `q = min(1, p × M) = min(1, ${sci(v.lp)} × ${fn(Mx)}) = ${sci(v.lq)}`), lin(t.crit, `q < ${fn(P.ALFA_FDR, 2)} → ${v.q < P.ALFA_FDR ? t.sim : t.nao}`));
@@ -321,11 +358,12 @@
     return out.join("");
   }
   function tecnica(id, s, r) {
-    const R = A.state.R, tx = R && R.testes_txt && (R.testes_txt[A.state.lang] || R.testes_txt.PT)[id], t = U().tl;
-    return `${tx ? `<h4>${esc(t.metodo)}</h4><p>${esc(tx.metodo)}</p><p><b>${esc(t.criterio)}:</b> ${esc(tx.criterio)}</p>` : ""}
+    const R = A.state.R, z = novo(id) && T35(), t = U().tl;
+    const tx = z ? { metodo: z[id[0]][id][1], criterio: z[id[0]][id][2], limites: z[id[0]][id][3] } : R && R.testes_txt && (R.testes_txt[A.state.lang] || R.testes_txt.PT)[id];
+    return `${tx ? `<h4>${esc(id[0] === "L" ? t.metodo_l || t.metodo : id[0] === "V" ? t.metodo_v || t.metodo : t.metodo)}</h4><p>${esc(tx.metodo)}</p><p><b>${esc(t.criterio)}:</b> ${esc(tx.criterio)}</p>` : ""}
       <h4>${esc(t.calc)}</h4><table class="sim-calc"><tbody>${calculo(id, s, r)}</tbody></table>
       ${tx ? `<p class="small muted"><b>${esc(t.limites)}:</b> ${esc(tx.limites)}</p>` : ""}
-      <p class="small muted">${esc(U().nota_bh)}</p>`;
+      ${id[0] === "L" && z ? `<p class="small t35-prelim">${icone("help")} ${esc(z.prelim)}</p>` : id[0] === "T" || id === "V1" || id === "V2" || id === "V3" || id === "V4" ? `<p class="small muted">${esc(U().nota_bh)}</p>` : ""}`;
   }
 
   // ===================================================================================================
@@ -368,15 +406,15 @@
       box.innerHTML = `<div class="sim-feito-in"><b>${icone("trophy")} ${esc(U().cumprida)}</b><p>${tx[2]}</p>
         <div class="sim-acoes">${prox != null ? `<a class="btn btn-primary btn-sm" href="#/simulador/${ST.id}/m/${prox}">${esc(U().proxima)}</a>` : ""}
         <button class="btn btn-sm" type="button" data-sim-refazer>${esc(U().refazer)}</button>
-        ${feitas(ST.id).length >= LIBERA_PROVA ? `<a class="btn btn-sm" href="#/simulador/${ST.id}/prova">${icone("timer")} ${esc(U().ir_prova)}</a>` : ""}</div></div>`;
+        ${feitas(ST.id).length >= libera(ST.id) ? `<a class="btn btn-sm" href="#/simulador/${ST.id}/prova">${icone("timer")} ${esc(U().ir_prova)}</a>` : ""}</div></div>`;
       box.hidden = false;
       const li = $(`.sim-mlist [data-mi="${ST.i}"]`); if (li) li.classList.add("sim-ok");
       const pr = $("#sim-prog"); if (pr) pr.innerHTML = progressoTeste(ST.id);
       box.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
   }
-  function proxima(id, i) { const f = new Set(feitas(id)); for (let k = 1; k <= 12; k++) { const j = (i + k) % 12; if (!f.has(j)) return j; } return i + 1 < 12 ? i + 1 : null; }
-  const progressoTeste = (id) => { const n = feitas(id).length; return `<span class="sim-pbar"><span style="width:${(100 * n) / 12}%"></span></span><span>${esc(U().missoes_n(n, 12))}</span>`; };
+  function proxima(id, i) { const n = nM(id), f = new Set(feitas(id)); for (let k = 1; k <= n; k++) { const j = (i + k) % n; if (!f.has(j)) return j; } return i + 1 < n ? i + 1 : null; }
+  const progressoTeste = (id) => { const n = feitas(id).length, t = nM(id); return `<span class="sim-pbar"><span style="width:${(100 * n) / t}%"></span></span><span>${esc(U().missoes_n(n, t))}</span>`; };
 
   // ===================================================================================================
   // Páginas
@@ -394,20 +432,20 @@
       <section class="sim-intro grid2"><div class="card"><h2>${esc(u.para_que)}</h2><ul class="checks">${u.para_que_l.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>
         <div class="card"><h2>${esc(u.como)}</h2><ol class="sim-passos">${u.como_l.map((x) => `<li>${esc(x)}</li>`).join("")}</ol></div></section>
       <section class="sim-tipos"><h2>${esc(u.tipos_t)}</h2><div class="grid3">${["s", "a", "d"].map((k) => `<div class="card sim-tipo sim-tipo-${k}"><b>${esc(u.tipos[k])}</b><p>${esc(u.tipos_d[k])}</p></div>`).join("")}</div></section>
-      <section class="sim-painel card"><div><h2>${icone("trophy")} ${esc(u.boletim)}</h2><p>${esc(u.boletim_resumo(ORDEM.reduce((t, id) => t + feitas(id).length, 0), 180, pf, 15))}</p>
+      <section class="sim-painel card"><div><h2>${icone("trophy")} ${esc(u.boletim)}</h2><p>${esc(u.boletim_resumo(ORDEM.reduce((t, id) => t + feitas(id).length, 0), ORDEM.reduce((t, id) => t + nM(id), 0), pf, ORDEM.length))}</p>
         ${nf.total != null ? `<p><b>${esc(u.nota_final)}: ${fn(nf.total, 1)}</b></p>` : ""}</div>
         <div class="sim-acoes"><a class="btn btn-sm" href="#/simulador/boletim">${esc(u.ver_boletim)}</a><a class="btn btn-sm" href="#/simulador/perguntas">${icone("help")} ${esc(u.perguntas)}</a>
-        <a class="btn btn-sm ${pf >= 15 ? "btn-primary" : ""}" href="#/simulador/final">${pf >= 15 ? icone("timer") : icone("lock")} ${esc(u.prova_final)}</a></div></section>
+        <a class="btn btn-sm ${pf >= FINAL_MIN ? "btn-primary" : ""}" href="#/simulador/final">${pf >= FINAL_MIN ? icone("timer") : icone("lock")} ${esc(u.prova_final)}</a></div></section>
       ${GRUPOS.map(([g, ids]) => `<section class="sim-grupo"><h2>${esc(u.niveis[g])}</h2><p class="muted">${esc(u.niveis_d[g])}</p><div class="sim-cards">${ids.map(cartao).join("")}</div></section>`).join("")}`;
   }
 
   function cabecalhoTeste(id, aba) {
-    const u = U(), T = L()[id], nt = notaDe(id), lib = feitas(id).length >= LIBERA_PROVA;
+    const u = U(), T = L()[id], nt = notaDe(id), lib = feitas(id).length >= libera(id), z = T35();
     const tab = (k, h, rot, ic) => `<a class="sim-aba${aba === k ? " on" : ""}" href="${h}"${aba === k ? ' aria-current="page"' : ""}>${ic ? icone(ic) : ""}${esc(rot)}</a>`;
     return `${migalha([[nomeT(id)]])}<header class="page-head sim-thead"><span class="sim-tag">${esc(u.niveis[M.T[id].nivel])}</span><h1>${esc(nomeT(id))}</h1><p class="lead">${esc(T.curto)}</p>
       <div class="sim-prog" id="sim-prog">${progressoTeste(id)}</div>${nt ? `<span class="sim-nota ${nt.melhor >= NOTA_MIN ? "sim-nota-ok" : "sim-nota-x"}">${esc(u.nota)} ${fn(nt.melhor, 1)}</span>` : ""}</header>
       <nav class="sim-abas" aria-label="${esc(u.abas)}">${tab("missoes", `#/simulador/${id}`, u.aba_missoes)}${tab("livre", `#/simulador/${id}/livre`, u.aba_livre)}${tab("prova", `#/simulador/${id}/prova`, u.aba_prova, lib ? "timer" : "lock")}${tab("faq", `#/simulador/${id}/perguntas`, u.aba_faq)}</nav>
-      ${aviso()}`;
+      ${aviso()}${id[0] === "L" && z ? `<p class="small t35-prelim">${icone("help")} ${esc(z.prelim)}</p>` : ""}`;
   }
   function listaMissoes(id, atual) {
     const u = U(), T = L()[id], f = new Set(feitas(id));
@@ -422,7 +460,7 @@
   }
   function paginaMissao(id, i) {
     const u = U(), T = L()[id], m = M.T[id].missoes[i], tx = T.m[i];
-    const cab = `<div class="sim-missao card"><div class="sim-missao-h"><span class="sim-chip sim-chip-${m.t}">${esc(u.tipos[m.t])}</span><span class="small muted">${esc(u.missao_n(i + 1, 12))}</span></div>
+    const cab = `<div class="sim-missao card"><div class="sim-missao-h"><span class="sim-chip sim-chip-${m.t}">${esc(u.tipos[m.t])}</span><span class="small muted">${esc(u.missao_n(i + 1, nM(id)))}</span></div>
       <h2>${esc(tx[0])}</h2><p>${tx[1]}</p><div class="sim-acoes"><button type="button" class="btn btn-sm" data-sim-dica>${esc(u.dica)}</button><button type="button" class="btn btn-sm btn-ghost" data-sim-refazer>${esc(u.restaurar)}</button></div>
       <div id="sim-feito" class="sim-feito" hidden></div></div>`;
     return `${cabecalhoTeste(id, "missoes")}<div class="sim-lay"><aside>${listaMissoes(id, i)}</aside><div class="sim-main">${areaTrabalho(id, cab)}</div></div>`;
@@ -450,7 +488,7 @@
   // ===================================================================================================
   let EX = null, relogio = null;
   const embaralhar = (arr, r) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  const RESP = { T03: ["anom", "info", "ok", "na"], T11: ["anom", "info", "ok"], T12: ["anom", "info", "ok"], T15: ["insp", "ok"] };
+  const RESP = Object.assign({ T03: ["anom", "info", "ok", "na"], T11: ["anom", "info", "ok"], T12: ["anom", "info", "ok"], T15: ["insp", "ok"] }, M.RESP2 || {});
   function qConceito(id, q, r) {
     const ops = embaralhar([0, 1, 2, 3], r);
     return { tipo: "conceito", id, texto: q[0], opcoes: ops.map((k) => q[1 + k]), certa: ops.indexOf(0), explic: q[5] };
@@ -489,8 +527,8 @@
   }
   function paginaProva(id) {
     const u = U();
-    if (id !== "final" && feitas(id).length < LIBERA_PROVA) return `${cabProva(id)}<section class="card sim-bloq">${icone("lock")}<h2>${esc(u.prova_bloq_t)}</h2><p>${esc(u.prova_bloq(LIBERA_PROVA, feitas(id).length))}</p><a class="btn btn-primary btn-sm" href="#/simulador/${id}">${esc(u.aba_missoes)}</a></section>`;
-    if (id === "final" && provasFeitas() < 15) return `${cabProva(id)}<section class="card sim-bloq">${icone("lock")}<h2>${esc(u.prova_bloq_t)}</h2><p>${esc(u.final_bloq(provasFeitas(), 15))}</p><a class="btn btn-primary btn-sm" href="#/simulador/boletim">${esc(u.ver_boletim)}</a></section>`;
+    if (id !== "final" && feitas(id).length < libera(id)) return `${cabProva(id)}<section class="card sim-bloq">${icone("lock")}<h2>${esc(u.prova_bloq_t)}</h2><p>${esc(u.prova_bloq(libera(id), feitas(id).length))}</p><a class="btn btn-primary btn-sm" href="#/simulador/${id}">${esc(u.aba_missoes)}</a></section>`;
+    if (id === "final" && provasFeitas() < FINAL_MIN) return `${cabProva(id)}<section class="card sim-bloq">${icone("lock")}<h2>${esc(u.prova_bloq_t)}</h2><p>${esc(u.final_bloq(provasFeitas(), FINAL_MIN))}</p><a class="btn btn-primary btn-sm" href="#/simulador/boletim">${esc(u.ver_boletim)}</a></section>`;
     return `${cabProva(id)}<section id="sim-prova" class="sim-prova"></section>`;
   }
   function telaRegras(id) {
@@ -569,7 +607,7 @@
       <section class="card sim-nota-final ${nf.total != null && nf.total >= NOTA_MIN ? "sim-ok-box" : ""}"><span class="sim-nota-grande">${nf.total != null ? fn(nf.total, 1) : "—"}</span>
         <div><b>${esc(u.nota_final)}: ${esc(geral)}</b><p>${esc(u.formula(fn(nf.med, 1), fin ? fn(fin.melhor, 1) : "—"))}</p></div></section>
       <div class="table-wrap"><table class="sim-tab sim-bol"><thead><tr><th>${esc(u.teste)}</th><th>${esc(u.missoes)}</th><th>${esc(u.melhor)}</th><th>${esc(u.ultima)}</th><th>${esc(u.tent)}</th><th>${esc(u.situacao)}</th></tr></thead><tbody>
-      ${ORDEM.map((id) => { const nt = notaDe(id); return `<tr><th><a href="#/simulador/${id}">${esc(nomeT(id))}</a></th><td>${feitas(id).length}/12</td><td>${nt ? fn(nt.melhor, 1) : "—"}</td><td>${nt ? fn(nt.ultima, 1) : "—"}</td><td>${nt ? nt.tent : 0}</td><td>${sit(nt)}</td></tr>`; }).join("")}
+      ${ORDEM.map((id) => { const nt = notaDe(id); return `<tr><th><a href="#/simulador/${id}">${esc(nomeT(id))}</a></th><td>${feitas(id).length}/${nM(id)}</td><td>${nt ? fn(nt.melhor, 1) : "—"}</td><td>${nt ? fn(nt.ultima, 1) : "—"}</td><td>${nt ? nt.tent : 0}</td><td>${sit(nt)}</td></tr>`; }).join("")}
       <tr class="sim-tot"><th><a href="#/simulador/final">${esc(u.prova_final)}</a></th><td>—</td><td>${fin ? fn(fin.melhor, 1) : "—"}</td><td>${fin ? fn(fin.ultima, 1) : "—"}</td><td>${fin ? fin.tent : 0}</td><td>${sit(fin)}</td></tr></tbody></table></div>
       <p class="small muted">${esc(u.so_aqui)}</p><div class="sim-acoes"><button type="button" class="btn btn-sm btn-ghost" data-sim-apagar>${esc(u.apagar)}</button></div>`;
   }
@@ -642,7 +680,7 @@
   // Rotas e eventos
   // ===================================================================================================
   function html(p) {
-    const u = U(), sub = p[1], id = sub && /^T\d\d$/.test(sub) ? sub : null;
+    const u = U(), sub = p[1], id = sub && /^(T\d\d|V\d|L\d\d)$/.test(sub) && L()[sub] ? sub : null;
     if (emQuadro || new URLSearchParams(location.search).get("embed") === "1") return `<section class="card sim-bloq">${icone("shield")}<h2>${esc(u.bloq_t)}</h2><p>${esc(u.so_no_site)}</p><a class="btn btn-primary" href="${esc(location.origin + location.pathname + "#/simulador")}" target="_top" rel="noopener">${esc(u.abrir_site)}</a></section>`;
     ST = null;
     if (sub === "perguntas") return paginaFaq();
@@ -653,7 +691,7 @@
     if (p[2] === "prova") { ST = { prova: id }; return paginaProva(id); }
     if (p[2] === "perguntas") return paginaFaqTeste(id);
     let i = p[2] === "m" ? +p[3] : null;
-    if (i == null || !(i >= 0 && i < 12)) { const f = new Set(feitas(id)); i = [...Array(12).keys()].find((k) => !f.has(k)); if (i == null) i = 0; }
+    if (i == null || !(i >= 0 && i < nM(id))) { const f = new Set(feitas(id)); i = [...Array(nM(id)).keys()].find((k) => !f.has(k)); if (i == null) i = 0; }
     ST = { id, modo: "missao", i };
     return paginaMissao(id, i);
   }

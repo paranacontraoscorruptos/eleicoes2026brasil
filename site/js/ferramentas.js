@@ -193,7 +193,7 @@
     const c = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: !site && tit && tit !== L.brand ? tit : L.hero_title, linhas: [] };
     if (R) {
       const T2 = R.turnos["2"], P2 = T2.presidente;
-      c.linhas = [[L.st_secoes, A.nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${A.nf(T2.secoes_sinalizadas)} (${A.pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
+      c.linhas = [[L.st_secoes, A.nf(T2.entrada.secoes)], [L.st_testes, A.txtTestes()], [L.st_sinal, `${A.nf(T2.secoes_sinalizadas)} (${A.pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
         [L.st_aptos, A.nf(P2.aptos)], [L.st_comp, `${A.nf(P2.comparecimento)} (${A.pct(P2.comparecimento / P2.aptos)})`]];
       c.barras = [A.barrasTurno(2, 2)];
     }

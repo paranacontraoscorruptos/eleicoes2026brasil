@@ -5,6 +5,14 @@
   const REPO = "https://github.com/paranacontraoscorruptos/eleicoes2026brasil";
   const BLOB = REPO + "/blob/6638cbfa6cbdf0f3ddc5d8fc83370cab666012e4/auditoria-eleicoes-2026-Brasil/auditoria_eleicoes_2026.py"; // v2.1.0: linhas de resumo.motor.funcoes
   const ZIP = REPO + "/archive/refs/heads/main.zip";
+  // v2.2.0: testes V1–V6 (variação entre turnos) — linhas do motor neste commit
+  const BLOB_V = REPO + "/blob/d47662c10c28de1dbf1abb1e261f420bf6afa819/auditoria-eleicoes-2026-Brasil/auditoria_eleicoes_2026.py";
+  const FN_DL = ["desvio_logit", 3432, 3451], FN_TT = ["teste_transferencia", 3472, 3482];
+  const FUNCS_V = { V1: [["executar_variacao", 3487, 3489], FN_TT, FN_DL], V2: [["executar_variacao", 3490, 3492], FN_TT, FN_DL], V3: [["executar_variacao", 3493, 3504], FN_DL],
+    V4: [["executar_variacao", 3505, 3526], FN_DL], V5: [["executar_variacao", 3527, 3538]], V6: [["executar_variacao", 3539, 3548]] };
+  const NIVEL_V = { V1: "uf", V2: "municipio", V3: "secao", V4: "secao", V5: "secao", V6: "secao" };
+  const TESTES_V = ["V1", "V2", "V3", "V4", "V5", "V6"];
+  const TESTES_L = ["L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10", "L11", "L12", "L13", "L14"];
   // downloads pausados enquanto a auditoria completa (35 testes) não termina: os botões abrem o aviso (extras.js)
   const DL_PAUSA = true;
   const PASTA = "auditoria-eleicoes-2026-Brasil";
@@ -32,6 +40,9 @@
   const titulo = (s) => String(s).toLowerCase().replace(/(^|\s)(\S)/g, (m, a, b) => a + b.toUpperCase()).replace(/\b(De|Da|Do|Dos|Das|E)\b/g, (m) => m.toLowerCase());
   const nomeTeste = (tid) => state.R.testes_txt[state.lang][tid].nome;
   const numTeste = (tid) => parseInt(tid.slice(1), 10);
+  // total de testes da auditoria completa e quantos já foram concluídos (lista em extras.js: APP.AUD)
+  const nTestes = () => { const a = window.APP && window.APP.AUD; return a ? [a.feitos.length + a.faltam.length, a.feitos.length] : [35, 21]; };
+  const txtTestes = () => `${nTestes()[0]} ${t().st_testes_x(nTestes()[1])}`;
 
   function tamanho(b) {
     if (b >= 1048576) return new Intl.NumberFormat(t().locale, { maximumFractionDigits: 1 }).format(b / 1048576) + " MB";
@@ -230,7 +241,7 @@
     const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"], P2 = T2.presidente;
     const tiles = [
       tile(T2.entrada.secoes, L.st_secoes, L.tip_secoes(nf(T2.entrada.linhas)), "grid"),
-      tile(15, L.st_testes, L.tip_testes, "flask"),
+      tile(nTestes()[0], L.st_testes, L.tip_testes, "flask", L.st_testes_x(nTestes()[1])),
       tile(T2.secoes_sinalizadas, L.st_sinal, L.tip_sinal, "flag", `(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`),
       tile(P2.aptos, L.st_aptos, L.tip_aptos, "users"),
       tile(P2.comparecimento, L.st_comp, L.tip_comp(nf(P2.comparecimento), nf(P2.aptos - P2.comparecimento)), "vote", `(${pct(P2.comparecimento / P2.aptos)})`),
@@ -262,7 +273,7 @@
     const val = cands.reduce((a, c) => a + c.votos, 0);
     const br = P2.candidatos.find((c) => c.nr === "95"), nu = P2.candidatos.find((c) => c.nr === "96");
     state.cartao = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: L.hero_title,
-      linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
+      linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, txtTestes()], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
         [L.st_aptos, nf(P2.aptos)], [L.st_comp, `${nf(P2.comparecimento)} (${pct(P2.comparecimento / P2.aptos)})`]], barras: [barrasTurno(2, 2)] };
     const ferr = MAIS.filter(([k]) => !["saved", "embed", "devs"].includes(k)).map(([k, h], i) => {
       const [tit, desc] = L.pg2[k];
@@ -289,13 +300,14 @@
         <div class="hero-ring"></div><div class="hero-ring r2"></div>
         <div class="hero-lens">${lente()}</div>
         <div class="float-chip c1"><span class="fc-ico">${icone("grid")}</span><span><b>${nf(T2.entrada.secoes)}</b>${esc(L.hero_chip_sec)}</span></div>
-        <div class="float-chip c2 y"><span class="fc-ico">${icone("flask")}</span><span><b>15</b>${esc(L.hero_chip_tests)}</span></div>
+        <div class="float-chip c2 y"><span class="fc-ico">${icone("flask")}</span><span><b>${nTestes()[0]}</b>${esc(L.hero_chip_tests)}</span></div>
         <div class="float-chip c3"><span class="fc-ico">${icone("check")}</span><span><b>2</b>${esc(L.hero_chip_rounds)}</span></div>
       </div>
     </section>
     ${destaqueAtlas()}
     ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
     ${destaqueUnanimidade()}
+    ${destaqueEncTardio()}
     ${telegram(false)}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
       <div class="tiles tiles-3">${tiles}</div>
@@ -337,6 +349,19 @@
       <div class="vr-dest-txt"><p class="kicker">${esc(L.un_kicker)}</p><h2 id="un-h">${esc(L.un_title)}</h2><p>${esc(L.un_txt)}</p>
         <div class="btn-row"><a class="btn btn-primary" href="#/testes/T03">${icone("flask")} ${esc(L.un_btn)}</a><a class="btn btn-ghost" href="#/lista?t=2&teste=T03">${icone("list")} ${esc(L.un_btn2)}</a></div></div>
       <div class="vr-dest-nums">${num("l", u("13"), L.un_lula)}${num("f", u("22"), L.un_flavio)}</div>
+    </section>`;
+  }
+
+  // Destaque: urnas que fecharam 1 h ou mais depois do horário oficial e votos gravados depois disso (log da urna)
+  function destaqueEncTardio() {
+    const L = t(), C = state.R.complementar || {}, ET = C.encerramento_tardio, VH = C.votos_apos_horario;
+    if (!ET) return "";
+    const T1 = ET.turnos["1"], T2 = ET.turnos["2"], v1 = VH && VH.turnos["1"];
+    const num = (k, n, txt) => `<div class="un-n ef-${k}"><span class="un-v" data-count="${n}">${nf(n)}</span><span>${esc(txt)}</span></div>`;
+    return `<section class="vr-dest un-dest ef-dest" aria-labelledby="ef-h">
+      <div class="vr-dest-txt"><p class="kicker">${esc(L.ef_kicker)}</p><h2 id="ef-h">${esc(L.ef_title)}</h2><p>${esc(L.ef_txt)}</p><p class="small muted">${esc(L.ef_nota)}</p>
+        <div class="btn-row"><a class="btn btn-primary" href="#/encerramento-tardio">${icone("clock")} ${esc(L.ef_btn)}</a><a class="btn btn-ghost" href="#/testes/T11">${icone("flask")} ${esc(L.ef_btn2)}</a></div></div>
+      <div class="vr-dest-nums">${num("a", T1.sinalizadas, L.ef_n1(pct(T1.sinalizadas / T1.analisadas)))}${v1 ? num("r", v1.votos_apos, L.ef_n2(pct(v1.votos_apos / (v1.votos_dia || 1)))) : ""}${num("b", T2.sinalizadas, L.ef_n3)}</div>
     </section>`;
   }
 
@@ -437,7 +462,8 @@
     </div>
     ${n === "2" && window.APP.destaqueVariacao ? window.APP.destaqueVariacao(true) : ""}
     <section class="card"><h2>${esc(L.r_pres_title)}</h2>${pres}</section>
-    <section><h2>${esc(L.r_tests_title)}</h2>${testes}</section>
+    <section><h2>${esc(L.r_tests_title)}</h2>${testes}
+      <p class="note t35-turno">${icone("flask")} <span>${esc((window.T35[state.lang] || window.T35.PT).turno_nota)} <a href="#/testes">${esc((window.T35[state.lang] || window.T35.PT).ver35)}</a></span></p></section>
     <section class="card"><div class="h-row"><h2>${esc(L.r_uf_title)}</h2><button class="btn btn-sm btn-ghost" type="button" data-toggle-view="uf">${esc(L.show_table)}</button></div>
       <p class="small muted">${esc(L.r_uf_sub)}</p><div data-view="uf-chart">${ufBar}</div><div data-view="uf-table" hidden>${ufTab}</div></section>
     ${conv}
@@ -477,10 +503,40 @@
             <span class="small">${icone("code")} ${esc(L.f_code)}: ${codigo}</span></p>
           </div></details></article>`;
     }).join("");
-    return `<header class="page-head"><h1>${esc(L.tests_title)}</h1><p class="lead">${esc(L.tests_sub)}</p>${acoes(false)}
+    const Z = window.T35[state.lang] || window.T35.PT, VR = L.vr, vres = (R.variacao || {}).testes || {};
+    const corpo = (tx) => [[L.f_obj, tx[0]], [L.f_met, tx[1]], [L.f_crit, tx[2]], [L.f_lim, tx[3]]];
+    const sec = (h, p, extra) => `<h3>${esc(h)}</h3><p>${esc(p)}</p>${extra || ""}`;
+    const perguntar = (id) => `<a class="btn btn-bot btn-sm" href="${esc(linkAtlas(L.ask_test(id)))}">${icone("globe")} ${esc(L.f_ask)}</a>`;
+    const simular = (id) => `<a class="btn btn-sm btn-ghost" href="#/simulador/${id}">${icone("lab")} ${esc(Z.sim)}</a>`;
+    const cardsV = TESTES_V.map((id) => {
+      const c = vres[id] || { a: 0, i: 0 }, cor = c.a ? "red" : c.i ? "amber" : "green";
+      const codigo = FUNCS_V[id].map(([nm, a, b]) => `<a href="${BLOB_V}#L${a}-L${b}" target="_blank" rel="noopener"><code>${esc(nm)}</code></a>`).join(" · ");
+      return `<article class="test-card tc-v" id="${id}"><details${foco === id ? " open" : ""}>
+        <summary><span class="tnum">${id}</span><span class="tmain"><span class="tname">${esc(VR.nomes[id])}</span><span class="ttype">${esc(id === "V5" || id === "V6" ? L.det : L.stat)} · ${esc(Z.nivel[NIVEL_V[id]])}</span>
+          <span class="tsimple">${esc(VR.curto[id])}</span><span class="tres"><span class="res"><span class="muted">${esc(Z.res_v)}:</span> ${chip(cor, `${nf(c.a)} / ${nf(c.i)}`)}</span></span></span></summary>
+        <div class="tbody">${corpo(Z.V[id]).map(([h, p]) => sec(h, p)).join("")}
+          <p class="btn-row">${perguntar(id)} <a class="btn btn-sm" href="#/variacao">${icone("chart")} ${esc(Z.v_ver)}</a> ${simular(id)}
+          <span class="small">${icone("code")} ${esc(L.f_code)}: ${codigo}</span></p></div></details></article>`;
+    }).join("");
+    const et = R.complementar && R.complementar.encerramento_tardio;
+    const cardsL = TESTES_L.map((id) => {
+      const tx = Z.L[id], cp = id === "L01" && et ? `<div class="note enc-nota"><p>${icone("clock")} ${esc(Z.l01_parcial)}</p><p class="btn-row"><a class="btn btn-sm btn-primary" href="#/encerramento-tardio">${esc(Z.l01_btn)}</a></p></div>` : "";
+      return `<article class="test-card tc-l" id="${id}"><details${foco === id ? " open" : ""}>
+        <summary><span class="tnum">${id}</span><span class="tmain"><span class="tname">${esc(L.ex.aud_L[id])}</span><span class="ttype">${esc(Z.tipo_l)}</span>
+          <span class="tsimple">${esc(tx[0])}</span><span class="tres"><span class="chip chip-and"><span class="dot" aria-hidden="true"></span>${esc(Z.andamento)}</span></span></span></summary>
+        <div class="tbody">${sec(L.f_met, tx[1], `<p class="small muted">${esc(Z.viz)}</p>${cp}`)}${sec(L.f_crit, tx[2], `<p class="small t35-prelim">${icone("help")} ${esc(Z.prelim)}</p>`)}${sec(L.f_lim, tx[3])}
+          <p class="btn-row">${perguntar(id)} ${simular(id)}</p></div></details></article>`;
+    }).join("");
+    const bloco = (k, ok, html) => `<section class="t35-bloco" id="bloco-${k}" aria-labelledby="bloco-${k}-h"><div class="t35-h"><span class="t35-tag ${ok ? "t35-ok" : "t35-and"}">${esc(ok ? Z.concluido : Z.andamento)}</span>
+      <h2 id="bloco-${k}-h">${esc(Z.blocos[k][0])}</h2><p class="t35-n">${esc(Z.blocos[k][1])}</p><p class="small muted">${esc(Z.blocos[k][2])}</p></div><div class="tests">${html}</div></section>`;
+    const nav = ["T", "V", "L"].map((k) => `<a class="t35-ir${k === "L" ? " t35-ir-and" : ""}" href="#/testes/bloco-${k}"><b>${esc(Z.blocos[k][0])}</b><span>${esc(Z.blocos[k][1])}</span></a>`).join("");
+    return `<header class="page-head"><h1>${esc(Z.titulo)}</h1><p class="lead">${esc(Z.sub)}</p>${A_aud()}${acoes(false)}
+      <nav class="t35-nav" aria-label="${esc(Z.ir)}">${nav}</nav>
       <ul class="legend inline">${L.legend.map(([c, nm]) => `<li>${chip(c, nm)}</li>`).join("")}<li class="muted small">${esc(L.th_anom)} / ${esc(L.th_info)}</li></ul></header>
-      <div class="tests">${cards}</div>${botCta()}`;
+      ${bloco("T", true, cards)}${bloco("V", true, cardsV)}${bloco("L", false, cardsL)}${botCta()}`;
   }
+  // barra de progresso da auditoria (extras.js), quando disponível
+  const A_aud = () => (window.APP && window.APP.audBarra ? `<div class="t35-prog">${window.APP.audBarra()}</div>` : "");
 
   function formSecao(compacto, uf, z, s) {
     const L = t();
@@ -1154,7 +1210,7 @@
   }
 
   const paginas = {};
-  window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, consultarSecao, votosTurno, icone, json, tabela, tile, barras, barrasCartao, barrasTurno, chip, chipStatus,
+  window.APP = { state, t, nf, pct, esc, titulo, ufNome, hora, numTeste, nomeTeste, nTestes, txtTestes, consultarSecao, votosTurno, icone, json, tabela, tile, barras, barrasCartao, barrasTurno, chip, chipStatus,
     status, botCta, linkAtlas, acoes, dec, zona, municipios, render, paginas, guardar, ler, efeitos, tema, REPO, TELEGRAM, PAGINAS, MAIS, ICO_MAIS, $, $$ };
   document.addEventListener("DOMContentLoaded", iniciar);
 })();

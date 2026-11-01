@@ -1817,7 +1817,7 @@
     let locaisN = null;
     try { const I = await indiceLoc(); locaisN = Object.values(I).reduce((a, x) => a + x.locais, 0); } catch (e) { /* sem índice */ }
     return { s2: T2.entrada.secoes, s1: T1.entrada.secoes, f2: T2.secoes_sinalizadas, f1: T1.secoes_sinalizadas, p2: T2.secoes_sinalizadas / T2.entrada.secoes, p1: T1.secoes_sinalizadas / T1.entrada.secoes,
-      testes: 15, locais: locaisN, aptos: P2.aptos, comp: P2.comparecimento };
+      testes: A.nTestes()[0], locais: locaisN, aptos: P2.aptos, comp: P2.comparecimento };
   }
   const pgImprensa = {
     ativo: "press",
@@ -1825,7 +1825,7 @@
     html() {
       const E = X(), L = t(), T2 = R().turnos["2"], P2 = T2.presidente;
       A.state.cartao = { kicker: `${L.round(2)} · ${L.roundDate[2]}`, titulo: L.hero_title,
-        linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, "15"], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
+        linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, A.txtTestes()], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
           [L.st_aptos, nf(P2.aptos)], [L.st_comp, `${nf(P2.comparecimento)} (${pct(P2.comparecimento / P2.aptos)})`]], barras: [A.barrasTurno ? A.barrasTurno(2, 2) : null].filter(Boolean) };
       return `${cabecalho(E.im_title, E.im_sub, true)}<div id="im-corpo">${carregando()}</div>${A.botCta()}`;
     },
@@ -1834,7 +1834,7 @@
       const partes = au.nome.trim().split(/\s+/), sob = partes.pop() || "";
       const v = { s2: nf(N.s2), s1: nf(N.s1), f2: nf(N.f2), f1: nf(N.f1), p2: pct(N.p2), p1: pct(N.p1), url: SITE, dom: SITE.replace(/^https:\/\/|\/$/g, ""), hoje: hoje(),
         autorAbnt: `${sob.toUpperCase()}, ${partes.join(" ")}`, autorApa: `${sob}, ${partes.map((x) => x[0] + ".").join(" ")}` };
-      const nums = [["s2", nf(N.s2)], ["f2", `${nf(N.f2)} (${pct(N.p2)})`], ["s1", nf(N.s1)], ["f1", `${nf(N.f1)} (${pct(N.p1)})`], ["testes", "15"], ["aptos", nf(N.aptos)], ["comp", `${nf(N.comp)} (${pct(N.comp / N.aptos)})`]]
+      const nums = [["s2", nf(N.s2)], ["f2", `${nf(N.f2)} (${pct(N.p2)})`], ["s1", nf(N.s1)], ["f1", `${nf(N.f1)} (${pct(N.p1)})`], ["testes", A.txtTestes()], ["aptos", nf(N.aptos)], ["comp", `${nf(N.comp)} (${pct(N.comp / N.aptos)})`]]
         .concat(N.locais ? [["locais", nf(N.locais)]] : []);
       const texto = (rot, txt) => `<article class="im-txt"><div class="h-row"><h3>${esc(rot)}</h3>${copiar(txt)}</div>${txt.split("\n\n").map((p) => `<p>${esc(p)}</p>`).join("")}<p class="small muted">${nf(txt.length)} ${A.state.lang === "EN" ? "characters" : "caracteres"}</p></article>`;
       const L = t(), A_ = R().autor;
@@ -1866,7 +1866,7 @@
       const E = X(), L = t(), T2 = R().turnos["2"], P2 = T2.presidente;
       const cands = P2.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96"), val = cands.reduce((a, c) => a + c.votos, 0);
       return `<section class="card wg" id="wg-numeros"><p class="kicker">${esc(L.round(2))} · ${esc(L.roundDate[2])}</p><h2>${esc(E.eb_nums_t)}</h2><p class="small muted">${esc(E.eb_nums_sub)}</p>
-        <div class="tiles">${[[T2.entrada.secoes, L.st_secoes, "grid"], [15, L.st_testes, "flask"], [T2.secoes_sinalizadas, L.st_sinal, "flag", `(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`], [P2.comparecimento, L.st_comp, "vote", `(${pct(P2.comparecimento / P2.aptos)})`]]
+        <div class="tiles">${[[T2.entrada.secoes, L.st_secoes, "grid"], [A.nTestes()[0], L.st_testes, "flask", L.st_testes_x(A.nTestes()[1])], [T2.secoes_sinalizadas, L.st_sinal, "flag", `(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`], [P2.comparecimento, L.st_comp, "vote", `(${pct(P2.comparecimento / P2.aptos)})`]]
           .map(([v, r, ic, ex]) => A.tile(v, r, r, ic, ex)).join("")}</div>
         ${A.barras(cands.map((c) => ({ rotulo: `${A.titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: pct(c.votos / val), dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}` })))}</section>`;
     },
@@ -2091,9 +2091,11 @@ curl -s ${base}SHA256SUMS.txt | head`;
     return new Promise((ok, erro) => { const el = document.createElement("script"); el.src = "site/js/" + src; el.onload = ok; el.onerror = () => erro(new Error(src)); document.head.append(el); });
   }
   function simCarregar() {
-    if (!simBase) simBase = simScript("simulador-motor.js").then(() => simScript("simulador.js"));
-    const lg = A.state.lang;
-    if (!simIdioma[lg]) simIdioma[lg] = simScript(`simulador-${lg.toLowerCase()}.js`).catch(() => (lg === "PT" ? Promise.reject(new Error("PT")) : simScript("simulador-pt.js")));
+    if (!simBase) simBase = simScript("simulador-motor.js").then(() => simScript("simulador-motor2.js")).then(() => simScript("simulador.js"));
+    const lg = A.state.lang, lgm = lg.toLowerCase();
+    // textos do idioma: testes T01–T15 e, em seguida, os testes V1–V6 e L01–L14
+    if (!simIdioma[lg]) simIdioma[lg] = simScript(`simulador-${lgm}.js`).then(() => simScript(`simulador-novos-${lgm}.js`))
+      .catch(() => (lg === "PT" ? Promise.reject(new Error("PT")) : simScript("simulador-pt.js").then(() => simScript("simulador-novos-pt.js"))));
     return Promise.all([simBase, simIdioma[lg]]);
   }
   const pgSimulador = {
@@ -2129,8 +2131,8 @@ curl -s ${base}SHA256SUMS.txt | head`;
     const E = X(), bloco = (ids, k, ok) => {
       const xs = ids.filter((id) => id[0] === k);
       if (!xs.length) return "";
-      const href = (id) => (id[0] === "T" ? `#/testes/${id}` : id[0] === "V" ? "#/variacao" : "");
-      return `<h4>${esc(E.aud_bloco[k])} <small>(${xs[0]}–${xs[xs.length - 1]})</small></h4><ul class="aud-l${ok ? " ok" : ""}">${xs.map((id) => `<li><span class="aud-id">${id}</span> ${ok && href(id) ? `<a href="${href(id)}" data-aud-ir>${esc(audNome(id))}</a>` : esc(audNome(id))}</li>`).join("")}</ul>`;
+      const href = (id) => `#/testes/${id}`;
+      return `<h4>${esc(E.aud_bloco[k])} <small>(${xs[0]}–${xs[xs.length - 1]})</small></h4><ul class="aud-l${ok ? " ok" : ""}">${xs.map((id) => `<li><span class="aud-id">${id}</span> <a href="${href(id)}" data-aud-ir>${esc(audNome(id))}</a></li>`).join("")}</ul>`;
     };
     return `<details class="aud-d"><summary>${icone("check")} ${esc(E.aud_feitos(nf(AUD.feitos.length)))}</summary>${bloco(AUD.feitos, "T", true)}${bloco(AUD.feitos, "V", true)}${bloco(AUD.feitos, "L", true)}</details>
       <details class="aud-d" open><summary>${icone("clock")} ${esc(E.aud_faltam(nf(AUD.faltam.length)))}</summary>${bloco(AUD.faltam, "L", false)}</details>`;
@@ -2191,6 +2193,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
     }
   }
   // janela 5 s depois de entrar no site (uma vez a cada 24 h; não aparece no modo incorporado)
+  A.audBarra = audBarra; A.AUD = AUD; A.audNome = audNome;
   const AUD_K = "aud_aviso_visto";
   function audVisto() { try { localStorage.setItem(AUD_K, String(Date.now())); } catch (e) { /* sem armazenamento */ } }
   const audRecente = () => { try { return Date.now() - (+localStorage.getItem(AUD_K) || 0) < 864e5; } catch (e) { return false; } };
