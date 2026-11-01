@@ -1675,7 +1675,7 @@
   }
 
   // --- Urnas que fecharam tarde (encerramento 1 h ou mais depois do horário oficial) ------------------------------
-  const ET_COLS = ["uf", "municipio", "zona", "secao", "turno", "atraso", "votos_apos", "abertura", "encerramento", "fim", "ultimo_voto"];
+  const ET_COLS = ["uf", "municipio", "zona", "secao", "turno", "atraso", "votos_1h", "abertura", "encerramento", "fim", "ultimo_voto"];
   const ET_MIN = [60, 120, 180, 240, 300, 360];
   const et = { dados: null, res: null, chave: null, f: { turno: 0, uf: "", mun: "", min: 60 } };
   const atrasoTxt = (m) => `+${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`;
@@ -1709,7 +1709,7 @@
     const E = X(), L = t(), C = E.et_col;
     // fim oficial: 17h de Brasília no 1º turno, 19h no 2º (com os dois turnos, 17h e a nota com asterisco)
     const h = et.f.turno === 2 ? "19h" : et.f.turno === 1 ? "17h" : "17h*";
-    const fmt = { atraso: (v) => `<b class="et-atraso">${esc(atrasoCurto(v))}</b>`, turno: (v) => esc(E.et_turno_c(v)), votos_apos: (v) => (v == null ? "—" : nf(v)),
+    const fmt = { atraso: (v) => `<b class="et-atraso">${esc(atrasoCurto(v))}</b>`, turno: (v) => esc(E.et_turno_c(v)), votos_1h: (v) => (v == null ? "—" : nf(v)),
       municipio: (v) => `<span class="et-mun">${esc(v)}</span>` };
     const rot = ET_COLS.map((c) => (typeof C[c] === "function" ? C[c](h) : C[c] || c));
     const r = { id: ++cqResSeq, m: { colunas: ET_COLS, linhas: ls.map((x) => [x.uf, x.mun, x.z, x.s, x.t, x.min, x.va, x.ab, x.en, x.fim, x.ult]) },

@@ -4,8 +4,8 @@
 Uso: python3 gerar.py [pasta site/data]
 
 encerramento_tardio.json: seções que encerraram 1 hora ou mais depois do horário oficial
-(complementar/encerramento_tardio.csv), com os votos gravados depois do horário pelo log da urna
-(complementar/votos_apos_horario_secoes.csv) e, em "r", a votação dessas seções no dia todo, por turno
+(complementar/encerramento_tardio.csv), com os votos gravados 1 hora ou mais depois do horário oficial pelo log
+da urna (complementar/votos_apos_horario_secoes.csv: votos_apos_fim menos primeira_hora, os votos da 1ª hora depois do horário) e, em "r", a votação dessas seções no dia todo, por turno
 (boletim de urna, arquivos secoes/). Só biblioteca padrão; não baixa nada.
 """
 import csv
@@ -19,7 +19,7 @@ comp = os.path.join(base, "complementar")
 vh = {}
 with open(os.path.join(comp, "votos_apos_horario_secoes.csv"), encoding="utf-8") as f:
     for r in csv.DictReader(f):
-        vh[(r["turno"], r["uf"], int(r["zona"]), int(r["secao"]))] = (int(r["votos_apos_fim"]), int(r["votos_dia_log"]), r["ultimo_voto"] or None)
+        vh[(r["turno"], r["uf"], int(r["zona"]), int(r["secao"]))] = (int(r["votos_apos_fim"]) - int(r["primeira_hora"]), int(r["votos_dia_log"]), r["ultimo_voto"] or None)
 
 # horas como número HHMMSS (igual aos arquivos de seção do site), para o arquivo ficar menor
 def hms(h):
@@ -59,7 +59,7 @@ for r in res.values():
     r["validos"] = sum(v for nr, v in r["votos"].items() if nr not in ("95", "96"))
 
 out = {"c": ["turno", "uf", "cod_mun", "zona", "secao", "abertura_hhmmss", "encerramento_hhmmss", "fim_oficial_hora_local", "fuso_utc",
-             "atraso_min", "votos_apos", "votos_dia", "ultimo_voto_hhmmss"],
+             "atraso_min", "votos_1h", "votos_dia", "ultimo_voto_hhmmss"],
        "fonte": ["complementar/encerramento_tardio.csv", "complementar/votos_apos_horario_secoes.csv", "secoes/<uf>/<zona>.json"],
        "r": res, "l": linhas}
 dest = os.path.join(base, "anomalias", "encerramento_tardio.json")
