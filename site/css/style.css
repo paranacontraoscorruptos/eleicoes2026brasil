@@ -2353,6 +2353,12 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
 .aud-q { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 12px; }
 .aud-q span { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid color-mix(in srgb, var(--amber) 70%, transparent); }
 .aud-q span.ok { background: var(--green); border-color: var(--green); }
+.aud-q span.meio { background: linear-gradient(135deg, var(--green) 0 50%, transparent 50%); border-color: var(--green); }
+.aud-meio-n { margin: 6px 0 0; }
+.lg-slot h4 { margin-top: 14px; }
+.lg-filtros { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; margin-bottom: 8px; }
+.lg-filtros label { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 180px; }
+.lg-filtros select { max-width: 100%; }
 .aud-dlg .dlg-body > p { margin: 0 0 10px; line-height: 1.5; }
 .aud-d { margin: 10px 0 0; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
 .aud-d summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }

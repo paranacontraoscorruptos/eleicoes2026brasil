@@ -2203,7 +2203,9 @@ curl -s ${base}SHA256SUMS.txt | head`;
   const audNome = (id) => (id[0] === "T" ? A.nomeTeste(id) : id[0] === "V" ? t().vr.nomes[id] : X().aud_L[id]) || id;
   const audBarra = () => { const f = AUD.feitos.length, n = audN(); return `<div class="aud-prog"><span class="aud-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${f}" aria-label="${esc(X().aud_prog(f, n))}"><i style="width:${((100 * f) / n).toFixed(1)}%"></i></span><b>${esc(X().aud_prog(nf(f), nf(n)))}</b></div>`; };
   // quadradinhos: um por teste, cheio quando concluído
-  const audQuadros = () => `<div class="aud-q" aria-hidden="true">${AUD.feitos.map((id) => `<span class="ok" title="${esc(`${id} · ${audNome(id)}`)}"></span>`).join("")}${AUD.faltam.map((id) => `<span title="${esc(`${id} · ${audNome(id)}`)}"></span>`).join("")}</div>`;
+  // testes L com o 1º turno concluído (logs.js): quadradinho meio cheio
+  const audMeio = (id) => id[0] === "L" && A.logsL && A.logsL.ok();
+  const audQuadros = () => `<div class="aud-q" aria-hidden="true">${AUD.feitos.map((id) => `<span class="ok" title="${esc(`${id} · ${audNome(id)}`)}"></span>`).join("")}${AUD.faltam.map((id) => `<span${audMeio(id) ? ' class="meio"' : ""} title="${esc(`${id} · ${audNome(id)}${audMeio(id) ? ` · ${A.logsL.textos().aud_meio}` : ""}`)}"></span>`).join("")}</div>`;
   function audListas() {
     const E = X(), bloco = (ids, k, ok) => {
       const xs = ids.filter((id) => id[0] === k);
@@ -2212,7 +2214,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
       return `<h4>${esc(E.aud_bloco[k])} <small>(${xs[0]}–${xs[xs.length - 1]})</small></h4><ul class="aud-l${ok ? " ok" : ""}">${xs.map((id) => `<li><span class="aud-id">${id}</span> <a href="${href(id)}" data-aud-ir>${esc(audNome(id))}</a></li>`).join("")}</ul>`;
     };
     return `<details class="aud-d"><summary>${icone("check")} ${esc(E.aud_feitos(nf(AUD.feitos.length)))}</summary>${bloco(AUD.feitos, "T", true)}${bloco(AUD.feitos, "V", true)}${bloco(AUD.feitos, "L", true)}</details>
-      <details class="aud-d" open><summary>${icone("clock")} ${esc(E.aud_faltam(nf(AUD.faltam.length)))}</summary>${bloco(AUD.faltam, "L", false)}</details>`;
+      <details class="aud-d" open><summary>${icone("clock")} ${esc(E.aud_faltam(nf(AUD.faltam.length)))}</summary>${A.logsL && A.logsL.ok() ? `<p class="small aud-meio-n">${esc(A.logsL.textos().aud_nota)}</p>` : ""}${bloco(AUD.faltam, "L", false)}</details>`;
   }
   // janela no mesmo estilo das outras do site
   function audDlg(titulo, corpo, cls) {

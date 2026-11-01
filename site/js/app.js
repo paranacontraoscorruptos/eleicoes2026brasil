@@ -521,17 +521,22 @@
           <span class="small">${icone("code")} ${esc(L.f_code)}: ${codigo}</span></p></div></details></article>`;
     }).join("");
     const et = R.complementar && R.complementar.encerramento_tardio;
+    const LL = window.APP.logsL && window.APP.logsL.ok() ? window.APP.logsL : null;   // testes L com resultado do 1º turno (logs.js)
     const cardsL = TESTES_L.map((id) => {
-      const tx = Z.L[id], cp = id === "L01" && et ? `<div class="note enc-nota"><p>${icone("clock")} ${esc(Z.l01_parcial)}</p><p class="btn-row"><a class="btn btn-sm btn-primary" href="#/encerramento-tardio">${esc(Z.l01_btn)}</a></p></div>` : "";
+      const tx = Z.L[id], cp = id === "L01" && et ? `<div class="note enc-nota"><p>${icone("clock")} ${esc(LL ? L.ex.et_title : Z.l01_parcial)}</p><p class="btn-row"><a class="btn btn-sm btn-primary" href="#/encerramento-tardio">${esc(Z.l01_btn)}</a></p></div>` : "";
+      const pronto = LL && LL.cartao(id, foco, Z, cp);
+      if (pronto) return pronto;
       return `<article class="test-card tc-l" id="${id}"><details${foco === id ? " open" : ""}>
         <summary><span class="tnum">${id}</span><span class="tmain"><span class="tname">${esc(L.ex.aud_L[id])}</span><span class="ttype">${esc(Z.tipo_l)}</span>
           <span class="tsimple">${esc(tx[0])}</span><span class="tres"><span class="chip chip-and"><span class="dot" aria-hidden="true"></span>${esc(Z.andamento)}</span></span></span></summary>
         <div class="tbody">${sec(L.f_met, tx[1], `<p class="small muted">${esc(Z.viz)}</p>${cp}`)}${sec(L.f_crit, tx[2], `<p class="small t35-prelim">${icone("help")} ${esc(Z.prelim)}</p>`)}${sec(L.f_lim, tx[3])}
           <p class="btn-row">${perguntar(id)} ${simular(id)}</p></div></details></article>`;
     }).join("");
-    const bloco = (k, ok, html) => `<section class="t35-bloco" id="bloco-${k}" aria-labelledby="bloco-${k}-h"><div class="t35-h"><span class="t35-tag ${ok ? "t35-ok" : "t35-and"}">${esc(ok ? Z.concluido : Z.andamento)}</span>
-      <h2 id="bloco-${k}-h">${esc(Z.blocos[k][0])}</h2><p class="t35-n">${esc(Z.blocos[k][1])}</p><p class="small muted">${esc(Z.blocos[k][2])}</p></div><div class="tests">${html}</div></section>`;
-    const nav = ["T", "V", "L"].map((k) => `<a class="t35-ir${k === "L" ? " t35-ir-and" : ""}" href="#/testes/bloco-${k}"><b>${esc(Z.blocos[k][0])}</b><span>${esc(Z.blocos[k][1])}</span></a>`).join("");
+    const LT = LL && LL.textos();   // bloco L: 1º turno concluído, 2º turno em andamento
+    const blk = (k) => (k === "L" && LT ? [Z.blocos.L[0], LT.bloco_l, LT.bloco_l_p] : Z.blocos[k]);
+    const bloco = (k, ok, html) => `<section class="t35-bloco" id="bloco-${k}" aria-labelledby="bloco-${k}-h"><div class="t35-h"><span class="t35-tag ${ok ? "t35-ok" : "t35-and"}">${esc(ok ? Z.concluido : k === "L" && LT ? LT.tag_l : Z.andamento)}</span>
+      <h2 id="bloco-${k}-h">${esc(blk(k)[0])}</h2><p class="t35-n">${esc(blk(k)[1])}</p><p class="small muted">${esc(blk(k)[2])}</p></div><div class="tests">${html}</div></section>`;
+    const nav = ["T", "V", "L"].map((k) => `<a class="t35-ir${k === "L" ? " t35-ir-and" : ""}" href="#/testes/bloco-${k}"><b>${esc(blk(k)[0])}</b><span>${esc(blk(k)[1])}</span></a>`).join("");
     return `<header class="page-head"><h1>${esc(Z.titulo)}</h1><p class="lead">${esc(Z.sub)}</p>${A_aud()}${acoes(false)}
       <nav class="t35-nav" aria-label="${esc(Z.ir)}">${nav}</nav>
       <ul class="legend inline">${L.legend.map(([c, nm]) => `<li>${chip(c, nm)}</li>`).join("")}<li class="muted small">${esc(L.th_anom)} / ${esc(L.th_info)}</li></ul></header>
@@ -636,7 +641,7 @@
             o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))]))
           + (f.o.some((o) => o[2] === "encerramento_tardio") ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_sec)} <a href="#/encerramento-tardio">${esc(L.ex.et_title)}</a> · <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(L.ex.enc_csv)}</a></p>` : "");
       } else fl = `<p>${chip("green", L.lk_noflags)}</p>`;
-      return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}<div class="vh-slot" data-t="${n}"${f && f.o.some((o) => o[2] === "encerramento_tardio") ? " data-vh" : ""}></div></section>`;
+      return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}<div class="vh-slot" data-t="${n}"${f && f.o.some((o) => o[2] === "encerramento_tardio") ? " data-vh" : ""}></div>${n === 1 && R.logs && R.logs["1"] ? '<div class="lg-slot" data-t="1"></div>' : ""}</section>`;
     }).join("");
     const nomeMun = titulo(d.mun[1]);
     const cart = [];
@@ -808,7 +813,7 @@
   // o que não couber desce para a faixa de baixo (ajustarMenu). No celular, tudo no menu lateral, com os títulos dos grupos.
   // Página nova que não estiver em nenhum grupo entra sozinha no último.
   const MENU1 = ["home", "res", "tests", "lookup", "atlas", "sim", "map", "faq", "downloads"];
-  const MENU2 = [["g_res", ["vary", "late", "states", "list", "charts"]], ["g_con", ["query", "places", "verify", "ballot", "saved"]],
+  const MENU2 = [["g_res", ["vary", "late", "logs", "states", "list", "charts"]], ["g_con", ["query", "places", "verify", "ballot", "saved"]],
     ["g_ent", ["glossary", "anatomy", "replicate", "limits"]], ["g_mais", ["updates", "proofs", "press", "embed", "devs"]]];
   function menuItens() {
     const href = Object.assign(Object.fromEntries(PAGINAS.concat(MAIS)), { res: "#/turno" });

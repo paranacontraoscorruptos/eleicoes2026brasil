@@ -70,7 +70,7 @@ try:
 except ImportError:  # pragma: no cover
     plt = None
 
-VERSAO_MOTOR = "3.0.0"
+VERSAO_MOTOR = "3.1.0"
 
 # =============================================================================
 # 1. CONFIGURAÇÃO
@@ -888,7 +888,7 @@ TXT = {
 
 TXT_EXTRA = {
     "PT": {
-        "legenda": "**Legenda de cores:** 🔴 Anomalia estatística (urna listada para verificação) · 🟡 Evento informativo (registrado para conferência, sem atingir o critério de anomalia) · 🟢 Nenhuma ocorrência · ⚠️ Falha na execução do teste",
+        "legenda": "**Legenda de cores:** 🔴 Anomalia estatística (urna listada para verificação) · 🟡 Evento informativo (registrado para conferência, sem atingir o critério de anomalia) · 🟢 Nenhuma ocorrência · ⚠️ Falha na execução do teste · ⚪ Não aplicável nesta execução",
         "hash_nucleo": "SHA-256 do núcleo analítico",
         "det_ok": "> 🛡️ **Status de Integridade (Determinismo Técnico):** Este relatório foi validado matematicamente. O hash criptográfico (SHA-256) aplicado estritamente sobre o **núcleo analítico de votos** (englobando as 15 metodologias estatísticas e excluindo timestamps de processamento) é idêntico ao relatório de homologação inicial. Isso comprova a exatidão absoluta e a ausência de aleatoriedade no motor de auditoria.",
         "det_base": "> 🧾 **Status de Integridade (Determinismo Técnico):** Primeira execução com estes arquivos de entrada. O núcleo analítico (15 metodologias, sem data, hora ou duração) foi registrado como **relatório de homologação**, com SHA-256 `{h}`. Toda nova execução com os mesmos arquivos será comparada a este registro.",
@@ -917,7 +917,7 @@ TXT_EXTRA = {
         "s14_det": "**Verificação de determinismo.** O núcleo analítico (resultados das 15 análises e das urnas listadas, sem data, hora ou duração) está em `dados/nucleo_analitico.json`; o seu SHA-256 é `{h}`. O registro de homologação (baseline) destes arquivos de entrada fica em `{pasta}`. Números reais são registrados com {d} algarismos significativos, o que neutraliza o ruído de arredondamento de ponto flutuante sem afetar nenhum resultado.",
     },
     "EN": {
-        "legenda": "**Color legend:** 🔴 Statistical anomaly (ballot box listed for verification) · 🟡 Informational event (recorded for checking, below the anomaly criterion) · 🟢 No occurrence · ⚠️ Test execution failure",
+        "legenda": "**Color legend:** 🔴 Statistical anomaly (ballot box listed for verification) · 🟡 Informational event (recorded for checking, below the anomaly criterion) · 🟢 No occurrence · ⚠️ Test execution failure · ⚪ Not applicable in this run",
         "hash_nucleo": "SHA-256 of the analytical core",
         "det_ok": "> 🛡️ **Integrity Status (Technical Determinism):** This report has been mathematically validated. The cryptographic hash (SHA-256) applied strictly to the **analytical core of votes** (covering the 15 statistical methodologies and excluding processing timestamps) is identical to the initial homologation report. This demonstrates the absolute exactness and the absence of randomness in the audit engine.",
         "det_base": "> 🧾 **Integrity Status (Technical Determinism):** First run with these input files. The analytical core (15 methodologies, without date, time or duration) has been recorded as the **homologation report**, with SHA-256 `{h}`. Every new run with the same files will be compared with this record.",
@@ -946,7 +946,7 @@ TXT_EXTRA = {
         "s14_det": "**Determinism check.** The analytical core (results of the 15 analyses and of the listed ballot boxes, without date, time or duration) is in `dados/nucleo_analitico.json`; its SHA-256 is `{h}`. The homologation record (baseline) for these input files is kept in `{pasta}`. Real numbers are recorded with {d} significant digits, which neutralizes floating-point rounding noise without affecting any result.",
     },
     "ES": {
-        "legenda": "**Leyenda de colores:** 🔴 Anomalía estadística (urna listada para verificación) · 🟡 Evento informativo (registrado para verificación, sin alcanzar el criterio de anomalía) · 🟢 Ninguna ocurrencia · ⚠️ Fallo en la ejecución de la prueba",
+        "legenda": "**Leyenda de colores:** 🔴 Anomalía estadística (urna listada para verificación) · 🟡 Evento informativo (registrado para verificación, sin alcanzar el criterio de anomalía) · 🟢 Ninguna ocurrencia · ⚠️ Fallo en la ejecución de la prueba · ⚪ No aplicable en esta ejecución",
         "hash_nucleo": "SHA-256 del núcleo analítico",
         "det_ok": "> 🛡️ **Estado de Integridad (Determinismo Técnico):** Este informe ha sido validado matemáticamente. El hash criptográfico (SHA-256) aplicado estrictamente sobre el **núcleo analítico de votos** (que abarca las 15 metodologías estadísticas y excluye las marcas de tiempo de procesamiento) es idéntico al informe de homologación inicial. Esto demuestra la exactitud absoluta y la ausencia de aleatoriedad en el motor de auditoría.",
         "det_base": "> 🧾 **Estado de Integridad (Determinismo Técnico):** Primera ejecución con estos archivos de entrada. El núcleo analítico (15 metodologías, sin fecha, hora ni duración) se registró como **informe de homologación**, con SHA-256 `{h}`. Toda nueva ejecución con los mismos archivos se comparará con este registro.",
@@ -2659,7 +2659,19 @@ class Auditoria:
             r = self.resultados.get(tid)
             resumo.append({"teste": tid, "nome": TESTES[tid]["PT"]["nome"], "unidades": r.unidades, "sinalizacoes": r.sinalizados,
                            "informativos": r.informativos, "brutos": r.brutos, "erro": r.erro or ""})
-        pd.DataFrame(resumo).to_csv(self.pasta_csv / "resumo_testes.csv", index=False, encoding=enc)
+        # os 35 testes: V1 a V6 e L01 a L14 também entram (sem números quando não se aplicam nesta execução)
+        na = TXT["PT"]["nao_aplicavel"]
+        for t in TESTES_VAR:
+            c = self.var["cont"][t] if self.var else None
+            resumo.append({"teste": t, "nome": TXT_VAR["PT"]["nome"][t], "unidades": c["unidades"] if c else None,
+                           "sinalizacoes": c["a"] if c else None, "informativos": c["i"] if c else None, "brutos": None,
+                           "erro": "" if c else (self.meta.get("var_erro") or na)})
+        for t in TESTES_LOG_ORDEM:
+            r = self.logs["res"][t] if self.logs else None
+            resumo.append({"teste": t, "nome": TESTES_LOG[t]["PT"]["nome"], "unidades": r.unidades if r else None,
+                           "sinalizacoes": r.sinalizados if r else None, "informativos": r.informativos if r else None, "brutos": None,
+                           "erro": (r.erro or "") if r else (self.meta.get("logs_erro") or na)})
+        pd.DataFrame(resumo).astype({"unidades": "Int64", "sinalizacoes": "Int64", "informativos": "Int64"}).to_csv(self.pasta_csv / "resumo_testes.csv", index=False, encoding=enc)
         pd.DataFrame(self.integridade).to_csv(self.pasta_csv / "integridade_arquivos.csv", index=False, encoding=enc)
         classificacao_efetiva().to_csv(self.pasta_csv / "classificacao_partidaria.csv", index=False, encoding=enc)
         for tid, nome in (("T13", "digitos_segundo_mebane.csv"), ("T14", "digitos_ultimo_beber_scacco.csv"), ("T15", "klimek_indicadores.csv")):
@@ -2841,7 +2853,7 @@ class Auditoria:
         P.append(L["s3_intro"].format(linhas=fnum(self.meta["linhas"], lang), arquivos=len(self.arquivos_bu),
                                       ufs=len(self.meta["ufs"]), secoes=fnum(self.meta["secoes"], lang),
                                       distintas=fnum(self.meta["secoes_distintas"], lang), turnos=turnos,
-                                      boletins=fnum(self.meta["boletins"], lang), ntestes=len(ORDEM_TESTES)) + "\n")
+                                      boletins=fnum(self.meta["boletins"], lang), ntestes=self._n_aplicados()) + "\n")
         P.append(L["s3_integridade"].format(ok=n_ok, total=len(self.integridade), div=n_div, nv=n_nv) + "\n")
         if n_div:
             P.append(L["aviso_divergencia"] + "\n")
@@ -2869,6 +2881,7 @@ class Auditoria:
             P.append(TXT_VAR[lang]["s3_falha"].format(erro=self.meta["var_erro"]) + "\n")
         else:
             P.append(TXT_VAR[lang]["s3_sem"] + "\n")
+        P.append(self._tabela_35(lang))
         P.append(f"### {L['busca_titulo']}\n")
         for par in L["busca_txt"]:
             P.append(par + "\n")
@@ -3001,7 +3014,8 @@ class Auditoria:
         P.append(L["s14_txt"] + "\n")
         P.append(L["s14_det"].format(h=self.det["hash"], pasta=f"{PASTA_DETERMINISMO}/{self.det['impressao']}"
                                      if not self.args.baseline else self.det["pasta"], d=DIGITOS_NUCLEO) + "\n")
-        P.append(f"**{L['comando']}:** `python {Path(sys.argv[0]).name} --dados <...> --saida <...>`\n")
+        P.append(f"**{L['comando']}:** `python {Path(sys.argv[0]).name} --dados <...> --saida <...>"
+                 + (" --logs <...>" if self.logs else "") + "`\n")
         lin = [[f"`{k}`", f"`{v}`"] for k, v in self.hashes_saida.items()]
         if lin:
             P.append(md_tabela([L["col_arquivo"], "SHA-512"], lin))
@@ -3010,12 +3024,82 @@ class Auditoria:
         P.append(f"## {L['s15']}\n")
         for ref in REFERENCIAS:
             P.append(f"- {ref.format(ano=ANO_ELEICAO)}")
-        if self.var:
-            P.append("\n" + self._anexo_variacao(lang))
-        if self.logs:
-            P.append("\n" + self._anexo_logs(lang))
+        P.append("\n" + (self._anexo_variacao(lang) if self.var else self._anexo_variacao_na(lang)))
+        P.append("\n" + (self._anexo_logs(lang) if self.logs else self._anexo_logs_na(lang)))
         P.append("\n---\n")
         P.append(f"*{L['rodape'].format(v=VERSAO_MOTOR)}*\n")
+        return "\n".join(P)
+
+    @staticmethod
+    def _par_variacao(lang: str) -> dict:
+        num = lambda x: fnum(x, lang)
+        return dict(phi=fnum(VAR_PHI_MIN, lang, 2), alfa=fnum(ALFA_FDR, lang, 2), la=num(VAR_LIMIAR_ANOMALIA_PP), li=num(VAR_LIMIAR_INFO_PP),
+                    mref=VAR_MIN_UNIDADES_REF, minv=MIN_VOTOS_PROPORCAO, mg=MIN_SECOES_GRUPO, mapt=VAR_MIN_APTOS,
+                    dir=num(100 * VAR_LIMIAR_DIRECIONAMENTO), mvar=VAR_MIN_VOTOS, teto=num(100 * VAR_LIMIAR_TETO),
+                    cad=num(100 * VAR_LIMIAR_CADASTRO))
+
+    def _n_aplicados(self) -> int:
+        return len(ORDEM_TESTES) + (len(TESTES_VAR) if self.var else 0) + (len(TESTES_LOG_ORDEM) if self.logs else 0)
+
+    def _tabela_35(self, lang: str) -> str:
+        """Sumário: os 35 testes do motor (1 a 15, V1 a V6 e L01 a L14) e o resultado de cada um nesta execução."""
+        L, T = TXT[lang], TXT_35[lang]
+        n_total = len(ORDEM_TESTES) + len(TESTES_VAR) + len(TESTES_LOG_ORDEM)
+        out = [f"### {T['t'].format(n=n_total)}\n", T["txt"].format(n=n_total, a=self._n_aplicados()) + "\n"]
+        lin = []
+        for tid in ORDEM_TESTES:
+            r = self.resultados[tid]
+            nome = f"{self._status(r)} {int(tid[1:])}. {TESTES[tid][lang]['nome']}"
+            lin.append([nome, T["base"]["bu"]] + ([L["falha"], "—", "—"] if r.erro else
+                                                  [fnum(r.sinalizados, lang), fnum(r.informativos, lang), fnum(r.unidades, lang)]))
+        for t in TESTES_VAR:
+            nome = f"{t}. {TXT_VAR[lang]['nome'][t]}"
+            if self.var:
+                c = self.var["cont"][t]
+                lin.append([f"{status_variacao(c)} {nome}", T["base"]["var"], fnum(c["a"], lang), fnum(c["i"], lang), fnum(c["unidades"], lang)])
+            elif self.meta.get("var_erro"):
+                lin.append([f"⚠️ {nome}", T["base"]["var"], L["falha"], "—", "—"])
+            else:
+                lin.append([f"⚪ {nome}", T["base"]["var"], L["nao_aplicavel"], "—", "—"])
+        for tid in TESTES_LOG_ORDEM:
+            nome = f"{tid}. {TESTES_LOG[tid][lang]['nome']}"
+            if self.logs:
+                r = self.logs["res"][tid]
+                lin.append([f"{self._status(r)} {nome}", T["base"]["log"]] + ([L["falha"], "—", "—"] if r.erro else
+                           [fnum(r.sinalizados, lang), fnum(r.informativos, lang), fnum(r.unidades, lang)]))
+            elif self.meta.get("logs_erro"):
+                lin.append([f"⚠️ {nome}", T["base"]["log"], L["falha"], "—", "—"])
+            else:
+                lin.append([f"⚪ {nome}", T["base"]["log"], L["nao_aplicavel"], "—", "—"])
+        out.append(md_tabela(T["cab"], lin, {2, 3, 4}))
+        out.append("")
+        if not self.var:
+            out.append(T["nota_var"] + "\n")
+        if not self.logs:
+            out.append(T["nota_log"] + "\n")
+        return "\n".join(out)
+
+    def _anexo_variacao_na(self, lang: str) -> str:
+        """Anexo A sem os dois turnos: os seis testes descritos e marcados como não aplicáveis (ou com a falha)."""
+        L, T = TXT_VAR[lang], TXT_35[lang]
+        par = self._par_variacao(lang)
+        P = [L["titulo"], "", L["a1_t"], "", L["a1"].split("\n\n")[0], ""]   # só o objetivo: os CSV de variação não existem aqui
+        P += [L["s3_falha"].format(erro=self.meta["var_erro"]) if self.meta.get("var_erro") else T["anexo_a"], ""]
+        st = "⚠️" if self.meta.get("var_erro") else "⚪"
+        for t in TESTES_VAR:
+            P += [f"- {st} **{t} — {L['nome'][t]}.** *{L['obj']}:* {L['testes'][t][0].format(**par)}"]
+        P.append("")
+        return "\n".join(P)
+
+    def _anexo_logs_na(self, lang: str) -> str:
+        """Anexo B sem os logs das urnas: os 14 testes listados e marcados como não aplicados (ou com a falha)."""
+        T, X = TXT_LOG[lang], TXT_35[lang]
+        P = [f"## {T['titulo']}\n", T["intro"] + "\n"]
+        erro = self.meta.get("logs_erro")
+        P.append((X["falha_log"].format(erro=erro) if erro else X["anexo_b"]) + "\n")
+        st = "⚠️" if erro else "⚪"
+        P += [f"- {st} **{tid} — {TESTES_LOG[tid][lang]['nome']}.** {TESTES_LOG[tid][lang]['objetivo']}" for tid in TESTES_LOG_ORDEM]
+        P.append("")
         return "\n".join(P)
 
     @staticmethod
@@ -3287,10 +3371,7 @@ class Auditoria:
     def _anexo_variacao(self, lang: str) -> str:
         L, res, sinais = TXT_VAR[lang], self.var["res"], self.var["sinais"]
         num = lambda x: fnum(x, lang)
-        par = dict(phi=fnum(VAR_PHI_MIN, lang, 2), alfa=fnum(ALFA_FDR, lang, 2), la=num(VAR_LIMIAR_ANOMALIA_PP), li=num(VAR_LIMIAR_INFO_PP),
-                   mref=VAR_MIN_UNIDADES_REF, minv=MIN_VOTOS_PROPORCAO, mg=MIN_SECOES_GRUPO, mapt=VAR_MIN_APTOS,
-                   dir=num(100 * VAR_LIMIAR_DIRECIONAMENTO), mvar=VAR_MIN_VOTOS, teto=num(100 * VAR_LIMIAR_TETO),
-                   cad=num(100 * VAR_LIMIAR_CADASTRO))
+        par = self._par_variacao(lang)
         P = [L["titulo"], "", L["a1_t"], "", L["a1"], ""]
         if self.var["fora"]:
             P += [L["fora"].format(ufs=", ".join(self.var["fora"])), ""]
@@ -3446,7 +3527,8 @@ class Auditoria:
                   "n_enc_depois", "t_ligada", "t_zeresima", "t_primeiro_voto", "dif_relogio_min", "ajuste_durante", "ajuste_fora",
                   "n_sem_digital", "pct_sem_digital", "pct_4_tentativas", "n_cpf"]
         m = m.reindex(columns=cols_m).sort_values(["turno", "uf", "mun", "zona", "secao"], kind="mergesort")
-        m.to_csv(self.pasta_csv / ARQUIVOS_LOG["sec"], index=False, encoding=enc, float_format="%.6g")
+        m.to_csv(self.pasta_csv / ARQUIVOS_LOG["sec"], index=False, encoding=enc, float_format="%.6g",
+                 compression={"method": "gzip", "mtime": 0})
         pd.DataFrame(self.logs["falhas"], columns=["turno", "uf", "mun", "zona", "secao", "falha"]).to_csv(
             self.pasta_csv / ARQUIVOS_LOG["falhas"], index=False, encoding=enc)
 
@@ -4285,7 +4367,8 @@ LOG_DIGITAL_TENTATIVAS_PCT = 0.20 # L13: parcela de eleitores com 4 tentativas o
 LOG_MAX_LINHAS_RELATORIO = 100    # linhas por tabela no relatório (a lista completa fica no CSV)
 LOG_MAX_EVENTOS = 3000
 TESTES_LOG_ORDEM = [f"L{i:02d}" for i in range(1, 15)]
-ARQUIVOS_LOG = {"sin": "logs_sinalizacoes.csv", "sec": "logs_secoes.csv", "falhas": "logs_falhas.csv"}
+# medidas por seção: compactado (≈ 90 MB sem compactar no país inteiro), com gzip sem data no cabeçalho (hash reproduzível)
+ARQUIVOS_LOG = {"sin": "logs_sinalizacoes.csv", "sec": "logs_secoes.csv.gz", "falhas": "logs_falhas.csv"}
 
 LOG_R_CAP = re.compile(r"^Capturada a digital\. Tentativa \[(\d+)\]")
 LOG_R_ENC_ANTES = re.compile(r"^Encerramento só pode ser solicitado após as (\d\d:\d\d)")
@@ -4843,11 +4926,14 @@ def log_medidas(r: dict, ctx: dict) -> dict:
         return (int(u[7]), int(u[8]), int(u[9])) != (ctx["mun"], ctx["zona"], ctx["secao"])
     m["carga_outra_secao_1a"] = bool(urnas) and i0 < len(urnas) and carga_outra(urnas[i0])
     m["carga_outra_secao_cont"] = any(carga_outra(u) for j, u in enumerate(urnas) if j != i0)
+    # carga do boletim × carga, no log, da urna que emitiu o boletim (a do número do boletim; sem ela, a 1ª do dia).
+    # O boletim publica o código como número (sem os zeros à esquerda); a comparação ignora esses zeros.
     cb = ctx.get("carga")
-    cl = u0[6]
+    ub = next((u for u in urnas if nr is not None and str(u[0]).isdigit() and int(u[0]) == nr), u0)
+    cl = ub[6]
     m["carga_log"] = cl
     m["carga_comparavel"] = bool(cb) and bool(cl)
-    m["carga_bu_dif"] = m["carga_comparavel"] and re.sub(r"\D", "", str(cb)) != cl
+    m["carga_bu_dif"] = m["carga_comparavel"] and re.sub(r"\D", "", str(cb)).lstrip("0") != str(cl).lstrip("0")
     # L13: biometria detalhada
     m["pct_sem_digital"] = m["n_sem_digital"] / n if n else np.nan
     n4 = sum(1 for c in lib if (c.isdigit() and int(c) >= LOG_DIGITAL_TENTATIVAS) or c == "N")
@@ -5174,7 +5260,7 @@ TXT_LOG = {
         "mais": "Mostrando {n} de {t} linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.",
         "geral_t": "Números gerais dos votos depois do horário oficial",
         "geral_cab": ["Turno", "Seções com log", "Votos no log", "Seções com voto depois do horário", "Votos depois do horário", "% dos votos", "Seções com voto 1 h ou mais depois", "Votos 1 h ou mais depois", "Liberados sem digital depois do horário"],
-        "link_l01": "Pelo número de seções, a lista urna por urna não entra neste relatório. Ela está em `dados/logs_secoes.csv` e, com a hora de cada voto, na página **Urnas que fecharam tarde**: {url}",
+        "link_l01": "Pelo número de seções, a lista urna por urna não entra neste relatório. Ela está em `dados/logs_secoes.csv.gz` e, com a hora de cada voto, na página **Urnas que fecharam tarde**: {url}",
         "versao": "Versão de referência do programa: {v}.", "versao_nao": "Nenhuma versão chega a {p}% das urnas do turno; o teste de versão não foi aplicado.",
         "carga_nao": "Código de carga: o formato do boletim é diferente do registrado no log, e a comparação não foi feita.",
         "sem_dados": "Nenhum resumo de log encontrado na pasta informada (--logs).",
@@ -5189,7 +5275,7 @@ TXT_LOG = {
         "mais": "Showing {n} of {t} rows, the first ones in the test's order. The full list is in `dados/logs_sinalizacoes.csv`.",
         "geral_t": "Overall figures for votes after the official time",
         "geral_cab": ["Round", "Sections with log", "Votes in the log", "Sections with a vote after the official time", "Votes after the official time", "% of votes", "Sections with a vote 1 h or more after", "Votes 1 h or more after", "Released without fingerprint after the official time"],
-        "link_l01": "Given the number of sections, the machine-by-machine list is not in this report. It is in `dados/logs_secoes.csv` and, with the time of every vote, on the **Machines that closed late** page: {url}",
+        "link_l01": "Given the number of sections, the machine-by-machine list is not in this report. It is in `dados/logs_secoes.csv.gz` and, with the time of every vote, on the **Machines that closed late** page: {url}",
         "versao": "Reference software version: {v}.", "versao_nao": "No version reaches {p}% of the machines in the round; the version check was not applied.",
         "carga_nao": "Load code: the tally sheet format differs from the one logged, so the comparison was not made.",
         "sem_dados": "No log summary found in the folder given (--logs).",
@@ -5204,12 +5290,63 @@ TXT_LOG = {
         "mais": "Mostrando {n} de {t} filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.",
         "geral_t": "Números generales de los votos después del horario oficial",
         "geral_cab": ["Vuelta", "Secciones con log", "Votos en el log", "Secciones con voto después del horario", "Votos después del horario", "% de los votos", "Secciones con voto 1 h o más después", "Votos 1 h o más después", "Liberados sin huella después del horario"],
-        "link_l01": "Por el número de secciones, la lista urna por urna no entra en este informe. Está en `dados/logs_secoes.csv` y, con la hora de cada voto, en la página **Urnas que cerraron tarde**: {url}",
+        "link_l01": "Por el número de secciones, la lista urna por urna no entra en este informe. Está en `dados/logs_secoes.csv.gz` y, con la hora de cada voto, en la página **Urnas que cerraron tarde**: {url}",
         "versao": "Versión de referencia del programa: {v}.", "versao_nao": "Ninguna versión llega al {p}% de las urnas de la vuelta; la prueba de versión no se aplicó.",
         "carga_nao": "Código de carga: el formato del boletín es distinto del registrado en el log, y la comparación no se hizo.",
         "sem_dados": "No se encontró ningún resumen de log en la carpeta indicada (--logs).",
         "explica_anom": "**Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.",
     },
+}
+
+# Sumário: os 35 testes do motor nesta execução (testes 1 a 15, V1 a V6 e L01 a L14)
+TXT_35 = {
+    "PT": {"t": "Os {n} testes do motor nesta execução",
+           "txt": "O motor tem {n} testes: 15 nos Boletins de Urna (testes 1 a 15), 6 de variação dos votos para Presidente entre o 1º e o "
+                  "2º turno (V1 a V6, Anexo A) e 14 nos logs das urnas (L01 a L14, Anexo B). Nesta execução foram aplicados {a}. A tabela "
+                  "mostra o resultado de cada um.",
+           "cab": ["Teste", "Dados", "Anomalias (🔴)", "Eventos informativos (🟡)", "Unidades analisadas"],
+           "base": {"bu": "Boletins de Urna", "var": "1º × 2º turno", "log": "Logs das urnas"},
+           "nota_var": "⚪ V1 a V6: comparam os votos do 1º e do 2º turno e exigem os Boletins de Urna dos dois turnos na mesma pasta de "
+                       "dados; esta execução tem um turno só.",
+           "nota_log": "⚪ L01 a L14: exigem a pasta dos resumos dos logs das urnas (opção --logs), que não foi informada nesta execução.",
+           "anexo_a": "**Não aplicável nesta execução.** Os seis testes comparam, seção por seção, os votos do 1º e do 2º turno e exigem os "
+                      "Boletins de Urna dos dois turnos na mesma pasta de dados. Esta execução tem os boletins de um turno só, e os testes "
+                      "V1 a V6 não foram aplicados.",
+           "anexo_b": "**Não aplicado nesta execução.** Os testes L01 a L14 exigem a pasta dos resumos dos logs das urnas (opção --logs), "
+                      "que não foi informada.",
+           "falha_log": "Os testes L01 a L14 não puderam ser concluídos: `{erro}`."},
+    "EN": {"t": "The engine's {n} tests in this run",
+           "txt": "The engine has {n} tests: 15 on the Ballot Box Reports (tests 1 to 15), 6 on the change in presidential votes between "
+                  "round 1 and round 2 (V1 to V6, Appendix A) and 14 on the voting machine logs (L01 to L14, Appendix B). {a} were applied "
+                  "in this run. The table shows the result of each one.",
+           "cab": ["Test", "Data", "Anomalies (🔴)", "Informational events (🟡)", "Units analyzed"],
+           "base": {"bu": "Ballot Box Reports", "var": "Round 1 × round 2", "log": "Voting machine logs"},
+           "nota_var": "⚪ V1 to V6: they compare round 1 and round 2 votes and require the Ballot Box Reports of both rounds in the same "
+                       "data folder; this run has a single round.",
+           "nota_log": "⚪ L01 to L14: they require the folder with the voting machine log summaries (--logs option), which was not given "
+                       "in this run.",
+           "anexo_a": "**Not applicable in this run.** The six tests compare, section by section, round 1 and round 2 votes and require "
+                      "the Ballot Box Reports of both rounds in the same data folder. This run has the reports of a single round, and tests "
+                      "V1 to V6 were not applied.",
+           "anexo_b": "**Not applied in this run.** Tests L01 to L14 require the folder with the voting machine log summaries (--logs "
+                      "option), which was not given.",
+           "falha_log": "Tests L01 to L14 could not be completed: `{erro}`."},
+    "ES": {"t": "Las {n} pruebas del motor en esta ejecución",
+           "txt": "El motor tiene {n} pruebas: 15 en los Boletines de Urna (pruebas 1 a 15), 6 de variación de los votos para Presidente "
+                  "entre la 1.ª y la 2.ª vuelta (V1 a V6, Anexo A) y 14 en los logs de las urnas (L01 a L14, Anexo B). En esta ejecución "
+                  "se aplicaron {a}. La tabla muestra el resultado de cada una.",
+           "cab": ["Prueba", "Datos", "Anomalías (🔴)", "Eventos informativos (🟡)", "Unidades analizadas"],
+           "base": {"bu": "Boletines de Urna", "var": "1.ª × 2.ª vuelta", "log": "Logs de las urnas"},
+           "nota_var": "⚪ V1 a V6: comparan los votos de la 1.ª y la 2.ª vuelta y exigen los Boletines de Urna de las dos vueltas en la "
+                       "misma carpeta de datos; esta ejecución tiene una sola vuelta.",
+           "nota_log": "⚪ L01 a L14: exigen la carpeta de los resúmenes de los logs de las urnas (opción --logs), que no se indicó en "
+                       "esta ejecución.",
+           "anexo_a": "**No aplicable en esta ejecución.** Las seis pruebas comparan, sección por sección, los votos de la 1.ª y la 2.ª "
+                      "vuelta y exigen los Boletines de Urna de las dos vueltas en la misma carpeta de datos. Esta ejecución tiene los "
+                      "boletines de una sola vuelta, y las pruebas V1 a V6 no se aplicaron.",
+           "anexo_b": "**No aplicada en esta ejecución.** Las pruebas L01 a L14 exigen la carpeta de los resúmenes de los logs de las urnas "
+                      "(opción --logs), que no se indicó.",
+           "falha_log": "Las pruebas L01 a L14 no pudieron concluirse: `{erro}`."},
 }
 
 # Teste 11, encerramento tardio: resumo no relatório (a lista completa fica no CSV e na página do site)
