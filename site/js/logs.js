@@ -361,6 +361,169 @@
   };
   ["PT", "EN", "ES"].forEach((lg) => { if (I[lg] && I[lg].ex && I[lg].ex.dv_desc) Object.assign(I[lg].ex.dv_desc, DV[lg]); });
   const L = () => TXT[A.state.lang] || TXT.PT;
+  // subpágina Achados em destaque (#/logs/destaques): textos de cada achado; números vêm de t1/destaques.json (destaques.py)
+  const TXT_DZ = {
+    PT: {
+      titulo: "Achados em destaque · Logs das urnas",
+      sub: "Os achados dos testes do log que mais merecem atenção no 1º turno. Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em uma seção da lista e veja o que o teste encontrou naquela urna.",
+      cta_k: "Merecem atenção", cta_t: "Achados em destaque",
+      cta_p: "O log que não bate com o boletim de urna, a carga da urna diferente, o relógio ajustado durante a votação, tentativas fora do padrão e votos com a urna marcada como desligada.",
+      cta_b: "Ver os achados", cta_n: (a, m) => [`${a} seções · prioridade alta`, `${m} seções · prioridade média`],
+      oque_t: "O que esta página mostra",
+      oque: ["Dos 14 testes do log, esta página separa os achados que mais merecem conferência, cada um com a lista das suas seções.",
+        "Prioridade alta (vermelho): o log da urna não bate com o boletim de urna. Prioridade média (amarelo): eventos raros, que pedem conferência com a ata da mesa.",
+        "Cada linha abre o mesmo painel da página Logs das urnas: o que o teste apurou na urna, a linha do dia, as urnas usadas e os registros do log.",
+        "Anomalia estatística não é prova de fraude, erro ou irregularidade: indica prioridade de verificação documental (ata da mesa, boletim impresso e registros da urna)."],
+      voltar: "Logs das urnas", p: { a: "Prioridade alta", m: "Prioridade média" },
+      kt: { log_bu: "Log × boletim de urna", carga: "Carga diferente do boletim", relogio: "Relógio ajustado na votação", tentativas: "Tentativas fora do padrão", desligada: "Votos com a urna desligada" },
+      k_tot: "Seções em destaque", k_tot_sub: (n) => `em ${n} achados`, k_sub: { a: "seções · prioridade alta", m: "seções · prioridade média" },
+      faixas_t: "Os achados", faixas_n: "Em vermelho, prioridade alta; em amarelo, prioridade média. Clique em um achado para ver a lista das seções.",
+      lista_t: "Seções do achado", f_grupo: "Achado", h_dest: "Casos que chamam atenção", h_porque: "Por que merece atenção", h_conferir: "O que conferir",
+      abrir: "Abrir o painel desta seção", ver_teste: (id) => `Todas as seções do teste ${id}`,
+      g: {
+        log_bu: { t: "Menos votos no log do que no boletim de urna",
+          a: (n, x) => `Em ${n} seções, o log da urna registra menos votos do que o comparecimento do boletim de urna: ${x.votos_a_menos} votos a menos, somando todas. Em 8 delas a diferença é de 1 ou 2 votos.`,
+          d: [["BA", 183, 175, "Teixeira de Freitas (BA), zona 183, seção 175: 236 votos no log e 272 no boletim (36 a menos). A seção usou 3 urnas; a 2ª não tem os dados de carga no log."],
+            ["SP", 2, 35, "São Paulo (SP), zona 2, seção 35: 232 votos no log e 247 no boletim (15 a menos). O log começa às 10:18, mas o boletim registra a abertura às 09:34: o começo do dia não está no log."],
+            ["RJ", 87, 184, "São Gonçalo (RJ), zona 87, seção 184: 2 votos a menos. A mesma seção aparece também nos testes L05 (interrupções) e L11 (relógio ajustado)."]],
+          w: "O boletim de urna é o resultado oficial da seção, e o log deveria registrar cada um desses votos. Quando os dois não batem, falta parte do log ou houve algo na seção que precisa ser conferido.",
+          c: "A ata da mesa (troca de urna, interrupções), o boletim impresso e o log de todas as urnas usadas na seção." },
+        carga: { t: "Código de carga no log diferente do boletim",
+          a: (n) => `Em ${n} seções, o código de carga da urna registrado no log é diferente do código impresso no boletim de urna.`,
+          d: [["PR", 3, 495, "Curitiba (PR), zona 3, seção 495: carga 255058257780317989897007 no log e 255058797790135151522313 no boletim."],
+            ["SC", 27, 56, "São Francisco do Sul (SC), zona 27, seções 56 e 57: o log de cada uma é de uma urna de contingência preparada para Araquari (SC)."],
+            ["AL", 22, 581, "Arapiraca (AL), zona 22, seção 581, e Nanuque (MG), zona 190, seção 107: a carga do log é diferente da carga do boletim."]],
+          w: "O código de carga identifica a preparação da urna para a seção. Log e boletim com cargas diferentes indicam que o log pode ser de outra urna ou de outra preparação.",
+          c: "A ata da mesa (troca de urna, urna de contingência), o boletim impresso e o registro de carga das urnas da zona eleitoral." },
+        relogio: { t: "Relógio da urna ajustado durante a votação",
+          a: (n, x) => `Em ${n} seções, a data e a hora da urna foram ajustadas com a votação aberta. ${x.exterior} delas ficam no exterior.`,
+          d: [["RJ", 87, null, "São Gonçalo (RJ), zona 87: 15 seções."], ["BA", null, null, "Salvador (BA): 10 seções."],
+            ["ZZ", null, null, "Exterior: Boston (5 seções), Washington (3) e Milão (3)."], ["SC", 46, 38, "Taió (SC), zona 46: 3 seções, com 2 ajustes em cada uma."]],
+          w: "Ajustar o relógio no meio da votação muda a hora registrada dos votos seguintes e dificulta conferir o horário de cada voto.",
+          c: "A ata da mesa (registro do ajuste e do motivo) e a diferença entre o relógio do log e os horários do boletim." },
+        tentativas: { t: "Tentativas de liberar eleitor fora do padrão",
+          a: (n, x) => `Em ${n} seções, as tentativas de liberar eleitor que não deram certo (eleitor que já tinha votado, não encontrado na seção ou impedido) ficaram muito acima do esperado. Em ${x.uma_por_voto}, há perto de uma tentativa para cada voto: a lista começa por elas.`,
+          d: [["RJ", 156, 380, "Nova Iguaçu (RJ), zona 156, seção 380: 303 tentativas em 298 votos."], ["DF", 6, 425, "Brasília (DF), zona 6, seção 425: 269 tentativas em 263 votos."],
+            ["MA", 22, 157, "Balsas (MA), zona 22, seção 157: 290 tentativas em 297 votos."],
+            [null, null, null, "Nessas seções, a tentativa é quase sempre de “eleitor que já votou”, cerca de 15 segundos depois de cada voto. A urna recusou todas: nenhuma virou voto."]],
+          w: "O padrão, voto após voto, é raro. Uma explicação possível é o mesário digitar de novo o título do eleitor que acabou de votar; só a conferência na seção confirma.",
+          c: "A ata da mesa e o caderno de votação (eleitores que compareceram)." },
+        desligada: { t: "Votos com a urna marcada como desligada",
+          a: (n, x) => `Em ${n} seções, o log grava votos depois de um registro de urna desligada e antes do registro seguinte de urna ligada: ${x.votos} votos no total.`,
+          d: [["ZZ", 1, 1162, "Miami (exterior), zona 1, seção 1162: 35 votos."], ["PA", 73, 291, "Belém (PA), zona 73, seção 291: 18 votos."],
+            [null, null, null, "Afuá (PA), Cordeiros (BA) e Recife (PE): 4 votos, somando as três."]],
+          w: "Uma urna desligada não grava votos. Pode ser efeito da forma como o log registra a hora de religar a urna; por isso está na lista para conferência.",
+          c: "O log completo da urna (registros de ligar e desligar) e a ata da mesa (interrupções)." },
+      },
+    },
+    EN: {
+      titulo: "Key findings · Voting machine logs",
+      sub: "The log test findings that most deserve attention in round 1. In red, high priority; in yellow, medium priority. Click a section on the list to see what the test found on that machine.",
+      cta_k: "Deserve attention", cta_t: "Key findings",
+      cta_p: "The log that does not match the tally sheet, a different machine load, the clock adjusted during voting, attempts outside the pattern and votes with the machine marked as off.",
+      cta_b: "See the findings", cta_n: (a, m) => [`${a} sections · high priority`, `${m} sections · medium priority`],
+      oque_t: "What this page shows",
+      oque: ["Out of the 14 log tests, this page separates the findings that most deserve checking, each with the list of its sections.",
+        "High priority (red): the machine log does not match the tally sheet. Medium priority (yellow): rare events that call for checking against the polling station minutes.",
+        "Each row opens the same panel as the Voting machine logs page: what the test found on the machine, the timeline of the day, the machines used and the log records.",
+        "A statistical anomaly is not proof of fraud, error or irregularity: it sets a priority for documentary checking (polling station minutes, printed tally sheet and machine records)."],
+      voltar: "Voting machine logs", p: { a: "High priority", m: "Medium priority" },
+      kt: { log_bu: "Log × tally sheet", carga: "Load differs from the tally sheet", relogio: "Clock adjusted during voting", tentativas: "Attempts outside the pattern", desligada: "Votes with the machine off" },
+      k_tot: "Sections in the findings", k_tot_sub: (n) => `in ${n} findings`, k_sub: { a: "sections · high priority", m: "sections · medium priority" },
+      faixas_t: "The findings", faixas_n: "In red, high priority; in yellow, medium priority. Click a finding to see its list of sections.",
+      lista_t: "Sections in the finding", f_grupo: "Finding", h_dest: "Cases that stand out", h_porque: "Why it deserves attention", h_conferir: "What to check",
+      abrir: "Open this section's panel", ver_teste: (id) => `All sections in test ${id}`,
+      g: {
+        log_bu: { t: "Fewer votes in the log than on the tally sheet",
+          a: (n, x) => `In ${n} sections, the machine log records fewer votes than the turnout on the tally sheet: ${x.votos_a_menos} votes fewer, adding them all. In 8 of them the difference is 1 or 2 votes.`,
+          d: [["BA", 183, 175, "Teixeira de Freitas (BA), zone 183, section 175: 236 votes in the log and 272 on the tally sheet (36 fewer). The section used 3 machines; the 2nd has no load data in the log."],
+            ["SP", 2, 35, "São Paulo (SP), zone 2, section 35: 232 votes in the log and 247 on the tally sheet (15 fewer). The log starts at 10:18, but the tally sheet records the opening at 09:34: the start of the day is not in the log."],
+            ["RJ", 87, 184, "São Gonçalo (RJ), zone 87, section 184: 2 votes fewer. The same section also shows up in tests L05 (interruptions) and L11 (clock adjusted)."]],
+          w: "The tally sheet is the section's official result, and the log should record each of those votes. When the two do not match, part of the log is missing or something happened in the section that needs checking.",
+          c: "The polling station minutes (machine replacement, interruptions), the printed tally sheet and the log of every machine used in the section." },
+        carga: { t: "Load code in the log differs from the tally sheet",
+          a: (n) => `In ${n} sections, the machine load code recorded in the log differs from the code printed on the tally sheet.`,
+          d: [["PR", 3, 495, "Curitiba (PR), zone 3, section 495: load 255058257780317989897007 in the log and 255058797790135151522313 on the tally sheet."],
+            ["SC", 27, 56, "São Francisco do Sul (SC), zone 27, sections 56 and 57: each log is from a backup machine prepared for Araquari (SC)."],
+            ["AL", 22, 581, "Arapiraca (AL), zone 22, section 581, and Nanuque (MG), zone 190, section 107: the load in the log differs from the load on the tally sheet."]],
+          w: "The load code identifies how the machine was prepared for the section. A log and a tally sheet with different loads suggest the log may be from another machine or another preparation.",
+          c: "The polling station minutes (machine replacement, backup machine), the printed tally sheet and the load record of the zone's machines." },
+        relogio: { t: "Machine clock adjusted during voting",
+          a: (n, x) => `In ${n} sections, the machine's date and time were adjusted while voting was open. ${x.exterior} of them are abroad.`,
+          d: [["RJ", 87, null, "São Gonçalo (RJ), zone 87: 15 sections."], ["BA", null, null, "Salvador (BA): 10 sections."],
+            ["ZZ", null, null, "Abroad: Boston (5 sections), Washington (3) and Milan (3)."], ["SC", 46, 38, "Taió (SC), zone 46: 3 sections, with 2 adjustments in each."]],
+          w: "Adjusting the clock in the middle of voting changes the recorded time of the following votes and makes it harder to check the time of each vote.",
+          c: "The polling station minutes (record of the adjustment and its reason) and the difference between the log clock and the tally sheet times." },
+        tentativas: { t: "Attempts to release a voter outside the pattern",
+          a: (n, x) => `In ${n} sections, the failed attempts to release a voter (voter who had already voted, not found in the section or barred) were far above what is expected. In ${x.uma_por_voto}, there is about one attempt for each vote: the list starts with them.`,
+          d: [["RJ", 156, 380, "Nova Iguaçu (RJ), zone 156, section 380: 303 attempts in 298 votes."], ["DF", 6, 425, "Brasília (DF), zone 6, section 425: 269 attempts in 263 votes."],
+            ["MA", 22, 157, "Balsas (MA), zone 22, section 157: 290 attempts in 297 votes."],
+            [null, null, null, "In these sections, the attempt is almost always “voter has already voted”, about 15 seconds after each vote. The machine refused them all: none became a vote."]],
+          w: "The pattern, vote after vote, is rare. One possible explanation is the poll worker typing again the ID of the voter who has just voted; only checking at the section confirms it.",
+          c: "The polling station minutes and the voting register (voters who turned up)." },
+        desligada: { t: "Votes with the machine marked as off",
+          a: (n, x) => `In ${n} sections, the log records votes after a machine-off record and before the next machine-on record: ${x.votos} votes in total.`,
+          d: [["ZZ", 1, 1162, "Miami (abroad), zone 1, section 1162: 35 votes."], ["PA", 73, 291, "Belém (PA), zone 73, section 291: 18 votes."],
+            [null, null, null, "Afuá (PA), Cordeiros (BA) and Recife (PE): 4 votes, adding the three."]],
+          w: "A machine that is off does not record votes. It may be an effect of how the log records the time the machine is turned back on; that is why it is on the list for checking.",
+          c: "The machine's full log (on and off records) and the polling station minutes (interruptions)." },
+      },
+    },
+    ES: {
+      titulo: "Hallazgos destacados · Logs de las urnas",
+      sub: "Los hallazgos de las pruebas del log que más merecen atención en la 1.ª vuelta. En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en una sección de la lista y vea qué encontró la prueba en esa urna.",
+      cta_k: "Merecen atención", cta_t: "Hallazgos destacados",
+      cta_p: "El log que no coincide con el boletín de urna, la carga de la urna distinta, el reloj ajustado durante la votación, intentos fuera del patrón y votos con la urna marcada como apagada.",
+      cta_b: "Ver los hallazgos", cta_n: (a, m) => [`${a} secciones · prioridad alta`, `${m} secciones · prioridad media`],
+      oque_t: "Qué muestra esta página",
+      oque: ["De las 14 pruebas del log, esta página separa los hallazgos que más merecen verificación, cada uno con la lista de sus secciones.",
+        "Prioridad alta (rojo): el log de la urna no coincide con el boletín de urna. Prioridad media (amarillo): eventos raros, que piden verificación con el acta de la mesa.",
+        "Cada fila abre el mismo panel de la página Logs de las urnas: qué encontró la prueba en la urna, la línea del día, las urnas usadas y los registros del log.",
+        "Una anomalía estadística no es prueba de fraude, error o irregularidad: indica prioridad de verificación documental (acta de la mesa, boletín impreso y registros de la urna)."],
+      voltar: "Logs de las urnas", p: { a: "Prioridad alta", m: "Prioridad media" },
+      kt: { log_bu: "Log × boletín de urna", carga: "Carga distinta del boletín", relogio: "Reloj ajustado en la votación", tentativas: "Intentos fuera del patrón", desligada: "Votos con la urna apagada" },
+      k_tot: "Secciones destacadas", k_tot_sub: (n) => `en ${n} hallazgos`, k_sub: { a: "secciones · prioridad alta", m: "secciones · prioridad media" },
+      faixas_t: "Los hallazgos", faixas_n: "En rojo, prioridad alta; en amarillo, prioridad media. Haga clic en un hallazgo para ver la lista de secciones.",
+      lista_t: "Secciones del hallazgo", f_grupo: "Hallazgo", h_dest: "Casos que llaman la atención", h_porque: "Por qué merece atención", h_conferir: "Qué verificar",
+      abrir: "Abrir el panel de esta sección", ver_teste: (id) => `Todas las secciones de la prueba ${id}`,
+      g: {
+        log_bu: { t: "Menos votos en el log que en el boletín de urna",
+          a: (n, x) => `En ${n} secciones, el log de la urna registra menos votos que la participación del boletín de urna: ${x.votos_a_menos} votos menos, sumando todas. En 8 de ellas la diferencia es de 1 o 2 votos.`,
+          d: [["BA", 183, 175, "Teixeira de Freitas (BA), zona 183, sección 175: 236 votos en el log y 272 en el boletín (36 menos). La sección usó 3 urnas; la 2.ª no tiene los datos de carga en el log."],
+            ["SP", 2, 35, "São Paulo (SP), zona 2, sección 35: 232 votos en el log y 247 en el boletín (15 menos). El log empieza a las 10:18, pero el boletín registra la apertura a las 09:34: el comienzo del día no está en el log."],
+            ["RJ", 87, 184, "São Gonçalo (RJ), zona 87, sección 184: 2 votos menos. La misma sección aparece también en las pruebas L05 (interrupciones) y L11 (reloj ajustado)."]],
+          w: "El boletín de urna es el resultado oficial de la sección, y el log debería registrar cada uno de esos votos. Cuando los dos no coinciden, falta parte del log o hubo algo en la sección que hay que verificar.",
+          c: "El acta de la mesa (cambio de urna, interrupciones), el boletín impreso y el log de todas las urnas usadas en la sección." },
+        carga: { t: "Código de carga en el log distinto del boletín",
+          a: (n) => `En ${n} secciones, el código de carga de la urna registrado en el log es distinto del código impreso en el boletín de urna.`,
+          d: [["PR", 3, 495, "Curitiba (PR), zona 3, sección 495: carga 255058257780317989897007 en el log y 255058797790135151522313 en el boletín."],
+            ["SC", 27, 56, "São Francisco do Sul (SC), zona 27, secciones 56 y 57: el log de cada una es de una urna de contingencia preparada para Araquari (SC)."],
+            ["AL", 22, 581, "Arapiraca (AL), zona 22, sección 581, y Nanuque (MG), zona 190, sección 107: la carga del log es distinta de la carga del boletín."]],
+          w: "El código de carga identifica la preparación de la urna para la sección. Un log y un boletín con cargas distintas indican que el log puede ser de otra urna o de otra preparación.",
+          c: "El acta de la mesa (cambio de urna, urna de contingencia), el boletín impreso y el registro de carga de las urnas de la zona electoral." },
+        relogio: { t: "Reloj de la urna ajustado durante la votación",
+          a: (n, x) => `En ${n} secciones, la fecha y la hora de la urna se ajustaron con la votación abierta. ${x.exterior} de ellas están en el exterior.`,
+          d: [["RJ", 87, null, "São Gonçalo (RJ), zona 87: 15 secciones."], ["BA", null, null, "Salvador (BA): 10 secciones."],
+            ["ZZ", null, null, "Exterior: Boston (5 secciones), Washington (3) y Milán (3)."], ["SC", 46, 38, "Taió (SC), zona 46: 3 secciones, con 2 ajustes en cada una."]],
+          w: "Ajustar el reloj en medio de la votación cambia la hora registrada de los votos siguientes y dificulta verificar el horario de cada voto.",
+          c: "El acta de la mesa (registro del ajuste y del motivo) y la diferencia entre el reloj del log y los horarios del boletín." },
+        tentativas: { t: "Intentos de habilitar elector fuera del patrón",
+          a: (n, x) => `En ${n} secciones, los intentos fallidos de habilitar elector (elector que ya había votado, no encontrado en la sección o impedido) quedaron muy por encima de lo esperado. En ${x.uma_por_voto}, hay cerca de un intento por cada voto: la lista empieza por ellas.`,
+          d: [["RJ", 156, 380, "Nova Iguaçu (RJ), zona 156, sección 380: 303 intentos en 298 votos."], ["DF", 6, 425, "Brasília (DF), zona 6, sección 425: 269 intentos en 263 votos."],
+            ["MA", 22, 157, "Balsas (MA), zona 22, sección 157: 290 intentos en 297 votos."],
+            [null, null, null, "En esas secciones, el intento es casi siempre de “elector que ya votó”, unos 15 segundos después de cada voto. La urna los rechazó todos: ninguno se convirtió en voto."]],
+          w: "El patrón, voto tras voto, es raro. Una explicación posible es que el miembro de mesa vuelva a digitar el título del elector que acaba de votar; solo la verificación en la sección lo confirma.",
+          c: "El acta de la mesa y el cuaderno de votación (electores que comparecieron)." },
+        desligada: { t: "Votos con la urna marcada como apagada",
+          a: (n, x) => `En ${n} secciones, el log registra votos después de un registro de urna apagada y antes del siguiente registro de urna encendida: ${x.votos} votos en total.`,
+          d: [["ZZ", 1, 1162, "Miami (exterior), zona 1, sección 1162: 35 votos."], ["PA", 73, 291, "Belém (PA), zona 73, sección 291: 18 votos."],
+            [null, null, null, "Afuá (PA), Cordeiros (BA) y Recife (PE): 4 votos, sumando las tres."]],
+          w: "Una urna apagada no registra votos. Puede ser un efecto de la forma en que el log registra la hora de volver a encender la urna; por eso está en la lista para verificación.",
+          c: "El log completo de la urna (registros de encender y apagar) y el acta de la mesa (interrupciones)." },
+      },
+    },
+  };
+  const LD = () => TXT_DZ[A.state.lang] || TXT_DZ.PT;
   A.ICO_MAIS.logs = "list";
   const iLate = A.MAIS.findIndex((x) => x[0] === "late");
   if (PUBLICADO) A.MAIS.splice(iLate >= 0 ? iLate + 1 : 1, 0, ["logs", "#/logs"]);
@@ -624,6 +787,195 @@
     if (abrir && ev.isTrusted) lista.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   });
 
+  // tabela de um teste (mesma tabela, dica e painel da consulta): linhas do teste já filtradas, na ordem da página
+  function resTabela(id, ls, cols, nomeMun, ord, info) {
+    const api = API(), c = COLS[id], E2 = L(), Lg = t();
+    const chaves = ["uf", "municipio", "zona", "secao", "nivel", "cat"].concat(c.map((x) => x[0]));
+    const rot = chaves.map((k) => E2.col[k] || E2.cols[k] || k);
+    const fmtC = { nivel: (v) => chip(v === "a" ? "red" : "amber", v === "a" ? Lg.lv_a : Lg.lv_i), municipio: (v) => `<span class="et-mun">${esc(v)}</span>`, cat: (v) => `<span class="lg-catc">${esc(v)}</span>` };
+    c.forEach(([k, tp]) => { fmtC[k] = (v) => esc(fmtVal(tp, v)); });
+    const r = { id: api.novoId(), m: { colunas: chaves, linhas: ls.map((l) => [l[0], nomeMun(l[0], l[1]), l[2], l[3], l[4], catNome(l[5])].concat(c.map(([k]) => l[cols.indexOf(k)]))) },
+      sql: null, turno: 0, ms: 0, pag: 0, pp: api.ppSalvo(), ord, sel: null, G: null, temSec: true,
+      ler: (l) => ({ uf: l[0], z: l[2], s: l[3], loc: null, t: 1, cod: null, mun: null, teste: null, nivel: null, nr: null }),
+      fonte: async (e, dd0) => {
+        const [dd, det, fu] = await Promise.all([api.fonteSecao(e, dd0), detSecao(e.uf, e.z, e.s).catch(() => null), dadosUF(e.uf).catch(() => null)]);
+        return Object.assign(dd, { lgDet: det, lgFl: fu ? fu.o.filter((o) => o[1] === e.z && o[2] === e.s) : [] });
+      },
+      fonteId: "lg", rot, fmt: chaves.map((k) => fmtC[k] || null), semNum: true, tabCls: "et-tab lg-tab", barraTopo: true, animRolar: true, dicaLinha: true, guiaPainel: true,
+      info,
+      teste: id, linhasLg: ls, colsLg: cols,
+      painelTopo: (dd, rr, gi) => (dd.tipo === "secao" ? blocoTeste(dd, rr, gi) : ""),
+      semVH: () => id === "L01",
+      botaoPainel: (corpo) => corpo.querySelector(".lg-bloco [data-vh-ver], .lg-bloco [data-lg-ver]"),
+      dicaExtra: (dd, rr, gi) => {
+        const l = rr.linhasLg[gi], v = c.slice(0, 2).map(([k, tp]) => `${E2.cols[k].replace(/\n/g, " ")}: ${fmtVal(tp, l[cols.indexOf(k)])}`).join(" · ");
+        return `<div class="cq-d-t lg-d-t"><b>${esc(id)}</b> · ${esc(catNome(l[5]))}<br>${esc(v)}</div>`;
+      } };
+    api.ordenar(r);
+    return r;
+  }
+
+  // ------------------------------------------------------------------------------------------------ subpágina Achados em destaque
+  // #/logs/destaques?achado=log_bu&uf=BA&mun=...: os achados em vermelho (prioridade alta) e amarelo (prioridade média),
+  // cada um com a explicação e a mesma tabela e painel da página Logs das urnas
+  const dz = { res: null, chave: null, f: { g: "", uf: "", mun: "" } };
+  const dadosDest = () => buscar(cache.teste, "_dest", "site/data/logs/t1/destaques.json", { g: [] });
+  const somaP = (D, p) => D.g.filter((x) => x.p === p).reduce((a, x) => a + x.n, 0);
+  const corP = (p) => (p === "a" ? "red" : "amber");
+  function dzLerFiltros(q) {
+    const f = { g: "", uf: "", mun: "" };
+    const g = q.get("achado"); if (g && LD().g[g]) f.g = g;
+    const uf = (q.get("uf") || "").toUpperCase(); if (window.UF_NOMES[uf]) f.uf = uf;
+    f.mun = (q.get("mun") || "").slice(0, 60);
+    return f;
+  }
+  // cartões com números e a lista dos achados (barras em vermelho ou amarelo)
+  function dzTopo(D, f) {
+    const E = LD(), gs = D.g, tot = gs.reduce((a, x) => a + x.n, 0), nA = API().nA;
+    const kpis = `<div class="et-kpis lg-kpis dz-kpis">${gs.map((x) => `<div class="${x.p === "a" ? "et-dest" : "dz-m"}"><span class="et-k-t">${esc(x.teste)} · ${esc(E.kt[x.k] || x.k)}</span><b>${nA(x.n)}</b><span>${esc(E.k_sub[x.p])}</span></div>`).join("")}
+      <div><span class="et-k-t">${esc(E.k_tot)}</span><b>${nA(tot)}</b><span>${esc(E.k_tot_sub(nf(gs.length)))}</span></div></div>`;
+    const mx = Math.max(1, ...gs.map((x) => x.n));
+    const faixas = `<section class="card"><h2>${esc(E.faixas_t)}</h2><p class="small muted">${esc(E.faixas_n)}</p><ul class="et-faixas lg-faixas dz-faixas">${gs.map((x, k) =>
+      `<li><button type="button" data-dz-g="${x.k}" aria-pressed="${f.g === x.k}"><span><b>${esc(x.teste)}</b> ${esc(E.g[x.k].t)}</span>${barra(x.p === "a" ? x.n : 0, x.p === "a" ? 0 : x.n, mx, k)}<em><span class="${x.p === "a" ? "lg-na" : "lg-ni"}">${nA(x.n)}</span></em></button></li>`).join("")}</ul></section>`;
+    return kpis + faixas;
+  }
+  // explicação do achado: o que foi encontrado, casos (clique abre o painel da seção), por que merece atenção e o que conferir
+  function dzGrupo(x) {
+    const E = LD(), G = E.g[x.k], tx = txtL(x.teste) || {}, xf = {};
+    Object.keys(x.x || {}).forEach((k) => { xf[k] = nf(x.x[k]); });
+    const casos = G.d.map(([uf, z, s, txt]) => `<li>${s != null ? `<a class="dz-caso" href="#/secao/${uf}/${z}/${s}" data-dz-c="${uf}|${z}|${s}" title="${esc(E.abrir)}">${esc(txt)}</a>` : esc(txt)}</li>`).join("");
+    return `<div class="dz-g dz-${x.p}"><p class="dz-g-top">${chip(corP(x.p), E.p[x.p])} <a class="chip" href="#/logs?teste=${x.teste}&nivel=a">${esc(x.teste)} · ${esc(tx.nome || "")}</a></p>
+      <h3>${esc(G.t)}</h3><p>${esc(G.a(nf(x.n), xf))}</p>
+      <h4>${esc(E.h_dest)}</h4><ul class="dz-casos">${casos}</ul>
+      <div class="dz-g2"><div><h4>${esc(E.h_porque)}</h4><p>${esc(G.w)}</p></div><div><h4>${esc(E.h_conferir)}</h4><p>${esc(G.c)}</p></div></div></div>`;
+  }
+  const pgDest = {
+    html() {
+      const E = LD(), E1 = L(), g = LG1();
+      if (!g || !API()) return `<header class="page-head"><h1>${esc(E.titulo)}</h1><p class="lead">${esc(E.sub)}</p></header><p class="alert">${esc(E1.erro)}</p>`;
+      dz.f = dzLerFiltros(A.state.query);
+      const rel = g.relatorio.replace("{lg}", A.state.lang);
+      return `<header class="page-head"><p class="dz-volta"><a href="#/logs">‹ ${esc(E.voltar)}</a></p><h1>${esc(E.titulo)}</h1><p class="lead">${esc(E.sub)}</p>${A.acoes(false)}</header>
+        <section class="card et-sobre"><h2>${esc(E.oque_t)}</h2><ul>${E.oque.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+          <p class="btn-row"><a class="btn btn-sm" href="#/logs">${icone("list")} ${esc(E.voltar)}</a><a class="btn btn-sm btn-ghost" href="#/encerramento-tardio">${icone("clock")} ${esc(E1.tardio)}</a></p></section>
+        <div id="dz-topo">${API().carregando()}</div>
+        <section class="card cq-p" id="cq-res-c"><h2>${esc(E.lista_t)}</h2><div id="dz-g"></div>
+          <form class="et-filtros" id="dz-f" onsubmit="return false">
+            <div class="filters">
+              <label><span>${esc(E.f_grupo)}</span><select name="g"></select></label>
+              <label><span>${esc(E1.f_uf)}</span><select name="uf"><option value="">${esc(E1.f_uf_todos)}</option></select></label>
+              <label><span>${esc(E1.f_mun)}</span><input name="mun" type="search" autocomplete="off" placeholder="${esc(E1.f_mun_ph)}" value="${esc(dz.f.mun)}"></label>
+              <button class="btn btn-sm btn-ghost" type="button" id="dz-limpar">${icone("close")} ${esc(E1.limpar)}</button></div></form>
+          <p class="small muted" id="cq-info" aria-live="polite"></p><div id="cq-res">${API().carregando()}</div>
+          <div class="btn-row" id="cq-dl" hidden><button class="btn btn-sm" type="button" id="dz-csv">${icone("download")} ${esc(E1.csv)}</button><a class="btn btn-sm btn-ghost" id="dz-teste" href="#/logs">${icone("list")} <span></span></a></div>
+          <p class="small muted" id="lg-leg"></p><p class="small muted">${esc(E1.nota_h)}</p></section>
+        <section class="card"><h2>${esc(E1.como_t)}</h2><ul>${E1.como.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+          <p class="btn-row"><a class="btn btn-sm btn-ghost" href="${esc(rel)}">${icone("download")} ${esc(E1.rel)}</a><a class="btn btn-sm btn-ghost" href="#/logs">${icone("list")} ${esc(E.voltar)}</a></p></section>
+        <section class="card"><h2>${esc(E1.arq_t)}</h2><ul class="et-arq">
+          <li>${esc(E.titulo)}: <a href="site/data/logs/t1/destaques.json" download>destaques.json</a> · <a href="site/data/logs/destaques.py" download>destaques.py</a></li>
+          <li>${esc(E1.arq[1])}: <code>site/data/logs/t1/det/{UF}/{zona}.json</code></li></ul>
+          <p class="small muted">${esc(E1.arq_n)}</p></section>${A.botCta()}`;
+    },
+    async iniciar() {
+      const E = LD(), api = API(), box = $("#cq-res"), form = $("#dz-f"), topo = $("#dz-topo");
+      if (!box || !form || !topo || !api) return;
+      let D, M;
+      try { [D, M] = await Promise.all([dadosDest(), A.municipios().catch(() => ({})), api.sinais()]); }
+      catch (e) { topo.innerHTML = ""; box.innerHTML = api.erroDados(e); return; }
+      if (!box.isConnected) return;
+      if (!D.g.length) { topo.innerHTML = ""; box.innerHTML = `<p class="alert">${esc(L().erro)}</p>`; return; }
+      M = M || {};
+      if (!D.g.some((x) => x.k === dz.f.g)) dz.f.g = D.g[0].k;
+      topo.innerHTML = dzTopo(D, dz.f);
+      const blocos = () => $$(".dz-kpis > div, .dz-faixas");
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) api.zerar(blocos());
+      api.animarAoVer(blocos());
+      const grupo = () => D.g.find((x) => x.k === dz.f.g);
+      const nomeMun = (uf, c) => { const m = (M[uf] || {})[c]; return m ? A.titulo(m[0]) : String(c); };
+      const filtrar = (ls, f, sem) => {
+        const q = api.nz(f.mun.trim());
+        return ls.filter((l) => (sem === "uf" || !f.uf || l[0] === f.uf) && (!q || api.nz(nomeMun(l[0], l[1])).includes(q)));
+      };
+      const chaveD = () => JSON.stringify([A.state.lang, dz.f.g, dz.f.uf, api.nz(dz.f.mun.trim())]);
+      const montar = () => {
+        const x = grupo();
+        return Object.assign(resTabela(x.teste, filtrar(x.l, dz.f), x.c, nomeMun, dz.res && dz.res.k === x.k ? dz.res.ord : null,
+          (n) => L().info(nf(n), nf(x.l.length), n === x.l.length)), { k: x.k });
+      };
+      const selG = form.elements.g, selUf = form.elements.uf;
+      selG.innerHTML = D.g.map((x) => `<option value="${x.k}">${esc(x.teste)}. ${esc(E.g[x.k].t)} (${nf(x.n)})</option>`).join("");
+      const opcoesUf = () => {
+        const c = {}; filtrar(grupo().l, dz.f, "uf").forEach((l) => { c[l[0]] = (c[l[0]] || 0) + 1; });
+        const tot = Object.values(c).reduce((a, b) => a + b, 0);
+        const us = Object.keys(window.UF_NOMES).filter((u) => c[u] || u === dz.f.uf).sort((a, b) => (a === "ZZ") - (b === "ZZ") || A.ufNome(a).localeCompare(A.ufNome(b)));
+        selUf.innerHTML = `<option value="">${esc(L().f_uf_todos)} (${nf(tot)})</option>` + us.map((u) => `<option value="${u}">${esc(A.ufNome(u))} (${nf(c[u] || 0)})</option>`).join("");
+        selUf.value = dz.f.uf;
+      };
+      const explicar = () => {
+        const x = grupo(), tx = txtL(x.teste) || {};
+        $("#dz-g").innerHTML = dzGrupo(x);
+        $("#lg-leg").textContent = `${L().leg} (${x.teste}): ${tx.leg || ""}`;
+        const a = $("#dz-teste"); a.href = `#/logs?teste=${x.teste}&nivel=a`; a.querySelector("span").textContent = E.ver_teste(x.teste);
+      };
+      const mostrar = (manter) => {
+        const k = chaveD();
+        if (!(manter && dz.res && dz.chave === k)) { dz.res = montar(); dz.chave = k; }
+        api.mostrar(dz.res);
+        $("#cq-dl").hidden = !dz.res.m.linhas.length;
+        opcoesUf(); explicar();
+      };
+      const endereco = () => {
+        const q = new URLSearchParams();
+        q.set("achado", dz.f.g);
+        if (dz.f.uf) q.set("uf", dz.f.uf);
+        if (dz.f.mun.trim()) q.set("mun", dz.f.mun.trim());
+        const h = `#/logs/destaques?${q}`;
+        if (location.hash !== h) history.replaceState(history.state, "", h);
+      };
+      const aplicar = () => {
+        api.fechar();
+        $$("[data-dz-g]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.dzG === dz.f.g)));
+        selG.value = dz.f.g;
+        endereco();
+        mostrar(false);
+      };
+      const irLista = () => $("#cq-res-c").scrollIntoView({ block: "start", behavior: "smooth" });
+      selG.addEventListener("change", () => { dz.f.g = selG.value; aplicar(); });
+      selUf.addEventListener("change", () => { dz.f.uf = selUf.value; aplicar(); });
+      let tm = 0;
+      form.elements.mun.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(() => { dz.f.mun = form.elements.mun.value; aplicar(); }, 250); });
+      $("#dz-limpar").addEventListener("click", () => { dz.f = { g: dz.f.g, uf: "", mun: "" }; form.elements.mun.value = ""; aplicar(); });
+      $$("[data-dz-g]").forEach((b) => b.addEventListener("click", () => { dz.f.g = b.dataset.dzG; aplicar(); irLista(); }));
+      // caso citado no texto: abre o painel da seção (tira os filtros se a seção estiver fora deles)
+      $("#dz-g").addEventListener("click", (ev) => {
+        const b = ev.target.closest("[data-dz-c]"); if (!b || !dz.res || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.button) return;
+        ev.preventDefault();
+        const [uf, z, s] = b.dataset.dzC.split("|");
+        const acha = () => dz.res.linhasLg.findIndex((l) => l[0] === uf && l[2] === +z && l[3] === +s);
+        let i = acha();
+        if (i < 0 && (dz.f.uf || dz.f.mun)) { dz.f.uf = ""; dz.f.mun = ""; form.elements.mun.value = ""; aplicar(); i = acha(); }
+        if (i >= 0) api.abrir(i);
+      });
+      $("#dz-csv").addEventListener("click", () => {
+        const r = dz.res; if (!r) return;
+        const c = COLS[r.teste], cab = ["achado", "teste", "nivel", "categoria", "uf", "cod_mun", "municipio", "zona", "secao"].concat(c.map((x) => x[0]));
+        const ls = r.idx.map((i) => { const l = r.linhasLg[i]; return [r.k, r.teste, l[4] === "a" ? "anomalia" : "informativo", l[5], l[0], l[1], nomeMun(l[0], l[1]), l[2], l[3]].concat(c.map(([k]) => l[r.colsLg.indexOf(k)])); });
+        api.baixar(`logs_urnas_destaques_${r.k}_${new Date().toISOString().slice(0, 10)}.csv`, "﻿" + [cab].concat(ls).map((l) => l.map(api.csvCampo).join(",")).join("\r\n"), "text/csv;charset=utf-8");
+      });
+      selG.value = dz.f.g;
+      endereco();
+      api.ligar(box);
+      mostrar(true);
+      // volta de uma página aberta pelo painel: a lista, a página e a linha continuam onde estavam
+      const v = dz.res.volta; dz.res.volta = null;
+      if (v) {
+        const tr = $(`#cq-res tr[data-i="${v.i}"]`);
+        if (tr) { tr.scrollIntoView({ block: "center" }); tr.classList.add("cq-volta"); setTimeout(() => tr.classList.remove("cq-volta"), 2600); }
+        if (v.painel) setTimeout(() => api.abrir(v.i), 0);
+      } else if (A.state.query.get("achado") || A.state.query.get("uf")) { const c = $("#cq-res-c"); if (c) c.scrollIntoView({ block: "start" }); }
+    },
+  };
+
   // ------------------------------------------------------------------------------------------------ página Logs das urnas
   const lg = { res: null, chave: null, f: { teste: "L01", nivel: "", uf: "", mun: "" } };
   function lerFiltros(q) {
@@ -640,8 +992,9 @@
   const contas = (a, i) => `<em><span class="lg-na">${API().nA(a)}</span><span class="lg-ni">${API().nA(i)}</span></em>`;
   const pgLogs = {
     ativo: "logs",
-    titulo: () => L().titulo,
-    html() {
+    titulo: (p) => (p && p[1] === "destaques" ? LD().titulo : L().titulo),
+    html(p) {
+      if (p && p[1] === "destaques") return pgDest.html(p);
       const E = L(), g = LG1();
       if (!g || !API()) return `<header class="page-head"><h1>${esc(E.titulo)}</h1><p class="lead">${esc(E.sub)}</p></header><p class="alert">${esc(E.erro)}</p>`;
       const f = (lg.f = lerFiltros(A.state.query));
@@ -663,7 +1016,10 @@
       }).join("")}</ul></section>`;
       const rel = g.relatorio.replace("{lg}", A.state.lang);
       const t35 = window.T35 ? (window.T35[A.state.lang] || window.T35.PT).titulo : "L01–L14";
-      return `<header class="page-head"><h1>${esc(E.titulo)}</h1><p class="lead">${esc(E.sub)}</p>${A.acoes(false)}</header>
+      const D0 = LD();
+      const cta = `<a class="lg-cta" href="#/logs/destaques"><span class="lg-cta-i" aria-hidden="true">${icone("alert")}</span><span class="lg-cta-x"><span class="lg-cta-k">${esc(D0.cta_k)}</span>
+        <b>${esc(D0.cta_t)}</b><span class="lg-cta-p">${esc(D0.cta_p)}</span><span class="lg-cta-n" id="lg-cta-n"></span></span><span class="btn btn-sm btn-primary lg-cta-b">${esc(D0.cta_b)} ›</span></a>`;
+      return `<header class="page-head"><h1>${esc(E.titulo)}</h1><p class="lead">${esc(E.sub)}</p>${A.acoes(false)}</header>${cta}
         <section class="card et-sobre"><h2>${esc(E.oque_t)}</h2><ul>${E.oque.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
           <p class="btn-row"><a class="btn btn-sm" href="#/testes/bloco-L">${icone("flask")} ${esc(t35)}</a><a class="btn btn-sm btn-ghost" href="#/encerramento-tardio">${icone("clock")} ${esc(E.tardio)}</a></p></section>
         ${kpis}${faixas}
@@ -688,9 +1044,16 @@
           <li>${esc(E.arq[2])}: <a href="site/data/logs/gerar.py" download>gerar.py</a> · <a href="site/data/logs/detalhes.py" download>detalhes.py</a></li></ul>
           <p class="small muted">${esc(E.arq_n)}</p></section>${A.botCta()}`;
     },
-    async iniciar() {
+    async iniciar(p) {
+      if (p && p[1] === "destaques") return pgDest.iniciar(p);
       const E = L(), api = API(), box = $("#cq-res"), form = $("#lg-f");
       if (!box || !form || !api) return;
+      // números da chamada para os achados em destaque
+      dadosDest().then((D) => {
+        const el = $("#lg-cta-n"); if (!el || !D.g.length) return;
+        const [a, m] = LD().cta_n(nf(somaP(D, "a")), nf(somaP(D, "m")));
+        el.innerHTML = `${chip("red", a)} ${chip("amber", m)}`;
+      }).catch(() => {});
       const blocos = () => $$(".lg-kpis > div, .lg-faixas");
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) api.zerar(blocos());
       api.animarAoVer(blocos());
@@ -708,33 +1071,8 @@
         const q = api.nz(f.mun.trim());
         return ls.filter((l) => (sem === "nivel" || !f.nivel || l[4] === f.nivel) && (sem === "uf" || !f.uf || l[0] === f.uf) && (!q || api.nz(nomeMun(l[0], l[1])).includes(q)));
       };
-      const montarRes = (d, f) => {
-        const id = f.teste, cols = d.c, c = COLS[id], E2 = L(), Lg = t();
-        const ls = filtrar(d.l, f);
-        const chaves = ["uf", "municipio", "zona", "secao", "nivel", "cat"].concat(c.map((x) => x[0]));
-        const rot = chaves.map((k) => E2.col[k] || E2.cols[k] || k);
-        const fmtC = { nivel: (v) => chip(v === "a" ? "red" : "amber", v === "a" ? Lg.lv_a : Lg.lv_i), municipio: (v) => `<span class="et-mun">${esc(v)}</span>`, cat: (v) => `<span class="lg-catc">${esc(v)}</span>` };
-        c.forEach(([k, tp]) => { fmtC[k] = (v) => esc(fmtVal(tp, v)); });
-        const r = { id: api.novoId(), m: { colunas: chaves, linhas: ls.map((l) => [l[0], nomeMun(l[0], l[1]), l[2], l[3], l[4], catNome(l[5])].concat(c.map(([k]) => l[cols.indexOf(k)]))) },
-          sql: null, turno: 0, ms: 0, pag: 0, pp: api.ppSalvo(), ord: lg.res && lg.res.teste === id ? lg.res.ord : null, sel: null, G: null, temSec: true,
-          ler: (l) => ({ uf: l[0], z: l[2], s: l[3], loc: null, t: 1, cod: null, mun: null, teste: null, nivel: null, nr: null }),
-          fonte: async (e, dd0) => {
-            const [dd, det, fu] = await Promise.all([api.fonteSecao(e, dd0), detSecao(e.uf, e.z, e.s).catch(() => null), dadosUF(e.uf).catch(() => null)]);
-            return Object.assign(dd, { lgDet: det, lgFl: fu ? fu.o.filter((o) => o[1] === e.z && o[2] === e.s) : [] });
-          },
-          fonteId: "lg", rot, fmt: chaves.map((k) => fmtC[k] || null), semNum: true, tabCls: "et-tab lg-tab", barraTopo: true, animRolar: true, dicaLinha: true, guiaPainel: true,
-          info: (n) => E2.info(nf(n), nf(d.l.length), n === d.l.length),
-          teste: id, linhasLg: ls, colsLg: cols,
-          painelTopo: (dd, rr, gi) => (dd.tipo === "secao" ? blocoTeste(dd, rr, gi) : ""),
-          semVH: () => id === "L01",
-          botaoPainel: (corpo) => corpo.querySelector(".lg-bloco [data-vh-ver], .lg-bloco [data-lg-ver]"),
-          dicaExtra: (dd, rr, gi) => {
-            const l = rr.linhasLg[gi], v = c.slice(0, 2).map(([k, tp]) => `${E2.cols[k].replace(/\n/g, " ")}: ${fmtVal(tp, l[cols.indexOf(k)])}`).join(" · ");
-            return `<div class="cq-d-t lg-d-t"><b>${esc(id)}</b> · ${esc(catNome(l[5]))}<br>${esc(v)}</div>`;
-          } };
-        api.ordenar(r);
-        return r;
-      };
+      const montarRes = (d, f) => resTabela(f.teste, filtrar(d.l, f), d.c, nomeMun, lg.res && lg.res.teste === f.teste ? lg.res.ord : null,
+        (n) => L().info(nf(n), nf(d.l.length), n === d.l.length));
       const legenda = () => {
         const tx = txtL(lg.f.teste) || {};
         $("#lg-leg").textContent = `${E.leg}: ${tx.leg || ""}`;
