@@ -2110,6 +2110,102 @@ curl -s ${base}SHA256SUMS.txt | head`;
   };
   document.addEventListener("pagina", (e) => { if (e.detail.ativo !== "sim") document.documentElement.classList.remove("sim-on"); });
 
+  // ===================================================================================================
+  // Auditoria em andamento: 35 testes (T01–T15 e V1–V6 concluídos; L01–L14, dos logs das urnas, em andamento).
+  // Tarja no alto, bloco no rodapé, janela que abre 5 s depois de entrar no site (uma vez por dia)
+  // e downloads pausados (os botões da página Downloads abrem o aviso).
+  // Quando um teste L ficar pronto, ele passa de "faltam" para "feitos".
+  // ===================================================================================================
+  const AUD = {
+    feitos: ["T01", "T02", "T03", "T04", "T05", "T06", "T07", "T08", "T09", "T10", "T11", "T12", "T13", "T14", "T15", "V1", "V2", "V3", "V4", "V5", "V6"],
+    faltam: ["L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10", "L11", "L12", "L13", "L14"],
+  };
+  const audN = () => AUD.feitos.length + AUD.faltam.length;
+  const audNome = (id) => (id[0] === "T" ? A.nomeTeste(id) : id[0] === "V" ? t().vr.nomes[id] : X().aud_L[id]) || id;
+  const audBarra = () => { const f = AUD.feitos.length, n = audN(); return `<div class="aud-prog"><span class="aud-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${f}" aria-label="${esc(X().aud_prog(f, n))}"><i style="width:${((100 * f) / n).toFixed(1)}%"></i></span><b>${esc(X().aud_prog(nf(f), nf(n)))}</b></div>`; };
+  // quadradinhos: um por teste, cheio quando concluído
+  const audQuadros = () => `<div class="aud-q" aria-hidden="true">${AUD.feitos.map((id) => `<span class="ok" title="${esc(`${id} · ${audNome(id)}`)}"></span>`).join("")}${AUD.faltam.map((id) => `<span title="${esc(`${id} · ${audNome(id)}`)}"></span>`).join("")}</div>`;
+  function audListas() {
+    const E = X(), bloco = (ids, k, ok) => {
+      const xs = ids.filter((id) => id[0] === k);
+      if (!xs.length) return "";
+      const href = (id) => (id[0] === "T" ? `#/testes/${id}` : id[0] === "V" ? "#/variacao" : "");
+      return `<h4>${esc(E.aud_bloco[k])} <small>(${xs[0]}–${xs[xs.length - 1]})</small></h4><ul class="aud-l${ok ? " ok" : ""}">${xs.map((id) => `<li><span class="aud-id">${id}</span> ${ok && href(id) ? `<a href="${href(id)}" data-aud-ir>${esc(audNome(id))}</a>` : esc(audNome(id))}</li>`).join("")}</ul>`;
+    };
+    return `<details class="aud-d"><summary>${icone("check")} ${esc(E.aud_feitos(nf(AUD.feitos.length)))}</summary>${bloco(AUD.feitos, "T", true)}${bloco(AUD.feitos, "V", true)}${bloco(AUD.feitos, "L", true)}</details>
+      <details class="aud-d" open><summary>${icone("clock")} ${esc(E.aud_faltam(nf(AUD.faltam.length)))}</summary>${bloco(AUD.faltam, "L", false)}</details>`;
+  }
+  // janela no mesmo estilo das outras do site
+  function audDlg(titulo, corpo, cls) {
+    const d = document.createElement("dialog");
+    d.className = "dlg aud-dlg " + (cls || "");
+    d.innerHTML = `<div class="dlg-head"><h2>${esc(titulo)}</h2><button class="icon-btn dlg-x" type="button" aria-label="${esc(t().x_close)}">${icone("close")}</button></div><div class="dlg-body">${corpo}</div>`;
+    document.body.append(d);
+    const fechar = () => d.close();
+    d.querySelector(".dlg-x").addEventListener("click", fechar);
+    d.addEventListener("click", (e) => { if (e.target === d || e.target.closest("[data-aud-ok], [data-aud-ir]")) fechar(); });
+    d.addEventListener("close", () => { d.remove(); if (!$("dialog[open]")) document.body.classList.remove("dlg-open"); });
+    document.body.classList.add("dlg-open");
+    if (d.showModal) d.showModal(); else d.setAttribute("open", "");
+    audVisto();
+    return d;
+  }
+  function audJanela() {
+    const E = X(), f = AUD.feitos.length, n = audN();
+    audDlg(E.aud_t, `${audBarra()}${audQuadros()}${E.aud_p(nf(f), nf(n), nf(n - f)).map((x) => `<p>${esc(x)}</p>`).join("")}${audListas()}
+      <p class="btn-row aud-acoes"><button class="btn btn-primary" type="button" data-aud-ok>${esc(E.aud_ok)}</button></p>`);
+  }
+  function dlBloqueado() {
+    const E = X(), n = audN();
+    audDlg(E.dl_t, `<p class="aud-lock">${icone("lock")}</p>${E.dl_p(nf(n)).map((x) => `<p>${esc(x)}</p>`).join("")}${audBarra()}
+      <p class="btn-row aud-acoes"><button class="btn btn-primary" type="button" data-aud-ok>${esc(E.aud_ok)}</button><button class="btn btn-ghost" type="button" data-aud>${icone("list")} ${esc(E.dl_ver)}</button></p>`, "dl-dlg");
+  }
+  // cliques: botões de download pausados, "saiba mais" e, por segurança, qualquer link de arquivo que sobrar na página Downloads
+  document.addEventListener("click", (ev) => {
+    if (ev.target.closest("[data-dl-bloq]")) { ev.preventDefault(); dlBloqueado(); return; }
+    const a = ev.target.closest("[data-aud]");
+    if (a) { ev.preventDefault(); const d = a.closest("dialog"); if (d) d.close(); audJanela(); return; }
+    const l = ev.target.closest("#main a[download], #main a[href$='.zip']");
+    if (l && (location.hash || "").indexOf("#/downloads") === 0) { ev.preventDefault(); ev.stopPropagation(); dlBloqueado(); }
+  }, true);
+  // tarja no alto (logo abaixo de "Análise independente") e bloco no rodapé; refeitos ao trocar de idioma
+  function audMontar() {
+    const E = X(), f = AUD.feitos.length, n = audN(), lg = A.state.lang;
+    let tj = $("#aud-tarja");
+    if (!tj || tj.dataset.lg !== lg) {
+      if (tj) tj.remove();
+      tj = document.createElement("div");
+      tj.id = "aud-tarja"; tj.className = "aud-tarja"; tj.setAttribute("role", "note"); tj.dataset.lg = lg;
+      // a faixa inteira abre a janela com os testes
+      tj.innerHTML = `<button class="aud-tarja-in" type="button" data-aud>${icone("clock")}<span class="aud-tarja-l">${esc(E.aud_tarja(nf(f), nf(n)))}</span><span class="aud-tarja-c">${esc(E.aud_tarja_c(nf(f), nf(n)))}</span>
+        <span class="aud-bar" aria-hidden="true"><i style="width:${((100 * f) / n).toFixed(1)}%"></i></span><span class="aud-tarja-b">${esc(E.aud_mais)}</span><span class="aud-tarja-s" aria-hidden="true">›</span></button>`;
+      const b = $("#badge"); if (b) b.after(tj);
+    }
+    const ft = $("#footer");
+    if (ft && ft.firstElementChild && (!$(".aud-foot", ft) || $(".aud-foot", ft).dataset.lg !== lg)) {
+      const o = $(".aud-foot", ft); if (o) o.remove();
+      const bx = document.createElement("section");
+      bx.className = "aud-foot"; bx.dataset.lg = lg;
+      bx.innerHTML = `<div class="aud-foot-in"><h3>${icone("clock")} ${esc(E.aud_t)}</h3><p>${esc(E.aud_foot_p(nf(f), nf(n)))}</p>${audBarra()}${audQuadros()}<button class="btn btn-sm" type="button" data-aud>${icone("list")} ${esc(E.aud_ver)}</button></div>`;
+      const fs = $(".flag-stripe", ft); if (fs) fs.after(bx); else ft.prepend(bx);
+    }
+  }
+  // janela 5 s depois de entrar no site (uma vez a cada 24 h; não aparece no modo incorporado)
+  const AUD_K = "aud_aviso_visto";
+  function audVisto() { try { localStorage.setItem(AUD_K, String(Date.now())); } catch (e) { /* sem armazenamento */ } }
+  const audRecente = () => { try { return Date.now() - (+localStorage.getItem(AUD_K) || 0) < 864e5; } catch (e) { return false; } };
+  let audTm = 0;
+  function audAgendar(ms) {
+    clearTimeout(audTm);
+    audTm = setTimeout(() => {
+      if (audRecente() || document.documentElement.classList.contains("embed")) return;
+      if ($("dialog[open]") || document.hidden) { audAgendar(4000); return; }
+      audJanela();
+    }, ms);
+  }
+  let audIni = false;
+  document.addEventListener("pagina", () => { audMontar(); if (!audIni) { audIni = true; audAgendar(5000); } });
+
   Object.assign(A.paginas, { "encerramento-tardio": pgEncTardio, simulador: pgSimulador, locais: pgLocais, perguntas: pgPerguntas, anatomia: pgAnatomia, consulta: pgConsulta, imprensa: pgImprensa, incorporar: pgIncorporar, widget: pgWidget, dados: pgDados, provas: pgProvas });
   A.extras = { locais, sinalizacoes, md };
 })();

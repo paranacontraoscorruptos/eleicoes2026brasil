@@ -5,6 +5,8 @@
   const REPO = "https://github.com/paranacontraoscorruptos/eleicoes2026brasil";
   const BLOB = REPO + "/blob/6638cbfa6cbdf0f3ddc5d8fc83370cab666012e4/auditoria-eleicoes-2026-Brasil/auditoria_eleicoes_2026.py"; // v2.1.0: linhas de resumo.motor.funcoes
   const ZIP = REPO + "/archive/refs/heads/main.zip";
+  // downloads pausados enquanto a auditoria completa (35 testes) não termina: os botões abrem o aviso (extras.js)
+  const DL_PAUSA = true;
   const PASTA = "auditoria-eleicoes-2026-Brasil";
   const TSE_PORTAL = "https://dadosabertos.tse.jus.br/";
   const TSE_RESULTADOS = "https://resultados.tse.jus.br/";
@@ -624,12 +626,13 @@
       const desc = L.dl_desc[nomeArq] || (nomeArq.startsWith("graficos/") ? `${L.dl_graph}: ${nomeArq.slice(9)}` : "");
       return [`<span class="fname">${esc(nomeArq)}</span>${desc ? `<br><span class="small muted">${esc(desc)}</span>` : ""}`, tamanho(d.bytes),
         `<details class="sha"><summary><code>${esc(d.sha512.slice(0, 16))}…</code></summary><code class="wrap">${esc(d.sha512)}</code></details>${copiar(d.sha512)}`,
-        `<a class="btn btn-sm" href="${esc(d.path)}" download>${icone("download")} ${esc(L.dl_btn)}</a>`];
+        DL_PAUSA ? `<button class="btn btn-sm" type="button" data-dl-bloq>${icone("download")} ${esc(L.dl_btn)}</button>` : `<a class="btn btn-sm" href="${esc(d.path)}" download>${icone("download")} ${esc(L.dl_btn)}</a>`];
     };
     const grupo = (tit, itens) => `<section><h2>${esc(tit)}</h2>${tabela([L.th_file, L.th_size, L.th_sha, ""], itens.map(linha), "dl")}</section>`;
     const ord = (a, b) => (a.nome.includes("/") - b.nome.includes("/")) || a.nome.localeCompare(b.nome);
     return `<header class="page-head"><h1>${esc(L.dl_title)}</h1><p class="lead">${esc(L.dl_sub)}</p>${acoes(false)}</header>
-      <section class="card dl-all"><a class="btn btn-primary btn-lg" href="${ZIP}">${icone("download")} ${esc(L.dl_all)}</a><p class="small muted">${esc(L.dl_all_note)}</p></section>
+      ${DL_PAUSA && L.ex ? `<section class="card dl-pausa" role="note"><h2>${icone("lock")} ${esc(L.ex.dl_t)}</h2>${L.ex.dl_p(35).slice(0, 3).map((x) => `<p>${esc(x)}</p>`).join("")}<button class="btn btn-sm" type="button" data-aud>${icone("list")} ${esc(L.ex.dl_ver)}</button></section>` : ""}
+      <section class="card dl-all">${DL_PAUSA ? `<button class="btn btn-primary btn-lg" type="button" data-dl-bloq>${icone("download")} ${esc(L.dl_all)}</button>` : `<a class="btn btn-primary btn-lg" href="${ZIP}">${icone("download")} ${esc(L.dl_all)}</a>`}<p class="small muted">${esc(L.dl_all_note)}</p></section>
       ${grupo(L.dl_code, R.downloads.filter((d) => d.turno === 0))}
       ${[1, 2].map((n) => grupo(L.dl_round(n), R.downloads.filter((d) => d.turno === n).sort(ord))).join("")}
       <section><h2>${esc(L.rp_hash_title)}</h2>${blocoCodigo("certutil -hashfile Relatorio_Tecnico_Auditoria_Eleicoes_2026_PT.md SHA512")}</section>

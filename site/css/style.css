@@ -2284,3 +2284,55 @@ html.sim-on .atlas-launcher { bottom: calc(64px + env(safe-area-inset-bottom)); 
   .cq-p-rolar, .cq-p-rolar-s, .cq-vhb { animation: none; }
 }
 @media print { .cq-p-rolar, .cq-vhb { display: none !important; } }
+
+/* auditoria em andamento: tarja no alto, bloco no rodapé, janelas e downloads pausados */
+.aud-tarja { background: color-mix(in srgb, var(--amber) 15%, var(--surface)); border-bottom: 1px solid color-mix(in srgb, var(--amber) 40%, transparent); }
+.aud-tarja-in { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 7px 16px; border: 0; background: none; color: var(--ink); font: 600 .84rem/1.35 var(--font); text-align: center; cursor: pointer; }
+.aud-tarja-in > svg { flex: none; width: 17px; height: 17px; color: var(--amber); }
+.aud-tarja-in:hover { background: color-mix(in srgb, var(--amber) 10%, transparent); }
+.aud-tarja-in:focus-visible { outline: 2px solid var(--amber); outline-offset: -3px; }
+.aud-tarja-c, .aud-tarja-s { display: none; }
+.aud-tarja .aud-bar { flex: none; width: 90px; }
+.aud-tarja-b { flex: none; border: 1px solid color-mix(in srgb, var(--amber) 60%, transparent); font-weight: 700; font-size: .8rem; padding: 3px 11px; border-radius: 999px; }
+.aud-tarja-in:hover .aud-tarja-b { background: color-mix(in srgb, var(--amber) 24%, transparent); }
+@media (max-width: 760px) {
+  .aud-tarja-in { gap: 8px; padding: 7px 12px; font-size: .82rem; }
+  .aud-tarja-l, .aud-tarja .aud-bar, .aud-tarja-b { display: none; }
+  .aud-tarja-c { display: inline; }
+  .aud-tarja-s { display: inline; flex: none; font-size: 1.25rem; line-height: .8; font-weight: 700; color: var(--amber); }
+}
+.aud-bar { display: inline-block; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 14%, transparent); overflow: hidden; vertical-align: middle; }
+.aud-bar i { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+.aud-prog { display: flex; align-items: center; gap: 10px; margin: 2px 0 10px; font-size: .9rem; }
+.aud-prog .aud-bar { flex: 1; height: 10px; }
+.aud-prog b { white-space: nowrap; }
+.aud-q { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 12px; }
+.aud-q span { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid color-mix(in srgb, var(--amber) 70%, transparent); }
+.aud-q span.ok { background: var(--green); border-color: var(--green); }
+.aud-dlg .dlg-body > p { margin: 0 0 10px; line-height: 1.5; }
+.aud-d { margin: 10px 0 0; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+.aud-d summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.aud-d summary svg { flex: none; width: 17px; height: 17px; }
+.aud-d h4 { margin: 10px 0 4px; font-size: .84rem; color: var(--ink-2); }
+.aud-d h4 small { font-weight: 500; }
+.aud-l { list-style: none; margin: 0; padding: 0; font-size: .86rem; }
+.aud-l li { padding: 4px 0; border-bottom: 1px solid var(--line); }
+.aud-l li:last-child { border-bottom: 0; }
+.aud-id { display: inline-block; min-width: 2.8em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--amber); }
+.aud-l.ok .aud-id { color: var(--green); }
+.aud-acoes { margin: 14px 0 0 !important; }
+.aud-lock { margin: 0 0 4px !important; }
+.aud-lock svg { width: 36px; height: 36px; color: var(--amber); }
+.aud-foot { padding: 20px 16px 0; }
+.aud-foot-in { max-width: 1148px; margin: 0 auto; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--amber) 40%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--amber) 8%, var(--surface)); }
+.aud-foot h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 1.02rem; }
+.aud-foot h3 svg { flex: none; width: 18px; height: 18px; color: var(--amber); }
+.aud-foot p { margin: 0 0 8px; color: var(--ink-2); font-size: .9rem; }
+.aud-foot .aud-prog { max-width: 520px; }
+.dl-pausa { border-color: color-mix(in srgb, var(--amber) 45%, transparent); background: color-mix(in srgb, var(--amber) 9%, var(--surface)); }
+.dl-pausa h2 { display: flex; align-items: center; gap: 8px; }
+.dl-pausa h2 svg { flex: none; color: var(--amber); }
+.dl-pausa p { margin: 0 0 8px; }
+body.atlas-on .aud-tarja { flex: none; }
+html.embed .aud-tarja, html.embed .aud-foot { display: none !important; }
+@media print { .aud-tarja, .aud-foot { display: none !important; } }
