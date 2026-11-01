@@ -93,7 +93,7 @@ window.I18N = {
     r_integ_title: "Integridade e reprodutibilidade",
     r_integ: (d) => [
       `Arquivos CESP: <b>${d.cesp} conferem</b> com o hash oficial do TSE; 0 divergem.`,
-      `Arquivos de BU: ${d.bu} fornecidos descompactados (.csv). O hash foi registrado, mas o hash oficial do TSE refere-se ao .zip e não pôde ser comparado.`,
+      d.buOk ? `Arquivos de BU: <b>${d.buOk} conferem</b> com o hash oficial do TSE; 0 divergem.` : `Arquivos de BU: ${d.bu} fornecidos descompactados (.csv). O hash foi registrado, mas o hash oficial do TSE refere-se ao .zip e não pôde ser comparado.`,
       `SHA-256 do núcleo analítico: <code>${d.nucleo}</code>`,
       `Hash do manifesto (SHA-512): <code class="wrap">${d.manif}</code>`,
       `Relatório emitido em ${d.emissao} · motor v${d.versao} · processamento: ${d.dur}`,
@@ -318,7 +318,7 @@ window.I18N = {
     r_integ_title: "Integrity and reproducibility",
     r_integ: (d) => [
       `CESP files: <b>${d.cesp} match</b> the TSE official hash; 0 differ.`,
-      `BU files: ${d.bu} supplied unzipped (.csv). The hash was recorded, but the TSE official hash refers to the .zip and could not be compared.`,
+      d.buOk ? `BU files: <b>${d.buOk} match</b> the TSE official hash; 0 differ.` : `BU files: ${d.bu} supplied unzipped (.csv). The hash was recorded, but the TSE official hash refers to the .zip and could not be compared.`,
       `Analytical core SHA-256: <code>${d.nucleo}</code>`,
       `Manifest hash (SHA-512): <code class="wrap">${d.manif}</code>`,
       `Report issued on ${d.emissao} · engine v${d.versao} · processing: ${d.dur}`,
@@ -535,7 +535,7 @@ window.I18N = {
     r_integ_title: "Integridad y reproducibilidad",
     r_integ: (d) => [
       `Archivos CESP: <b>${d.cesp} coinciden</b> con el hash oficial del TSE; 0 difieren.`,
-      `Archivos de BU: ${d.bu} entregados descomprimidos (.csv). El hash se registró, pero el hash oficial del TSE se refiere al .zip y no pudo compararse.`,
+      d.buOk ? `Archivos de BU: <b>${d.buOk} coinciden</b> con el hash oficial del TSE; 0 difieren.` : `Archivos de BU: ${d.bu} entregados descomprimidos (.csv). El hash se registró, pero el hash oficial del TSE se refiere al .zip y no pudo compararse.`,
       `SHA-256 del núcleo analítico: <code>${d.nucleo}</code>`,
       `Hash del manifiesto (SHA-512): <code class="wrap">${d.manif}</code>`,
       `Informe emitido el ${d.emissao} · motor v${d.versao} · procesamiento: ${d.dur}`,

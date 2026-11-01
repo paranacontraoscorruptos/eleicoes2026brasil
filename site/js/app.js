@@ -445,8 +445,8 @@
     const fig = (nr, tipo, cap) => `<figure><a href="${g(nr, tipo)}" target="_blank" rel="noopener"><img src="${g(nr, tipo)}" alt="${esc(cap)}" loading="lazy"></a><figcaption>${esc(cap)}</figcaption></figure>`;
     const lider = cands.slice(0, 2);
     const ig = T.integridade;
-    const integ = L.r_integ({ cesp: nf(ig["cesp:st_confere"] || 0), bu: nf(ig["bu:st_csv"] || 0), nucleo: esc(T.cab.nucleo_sha256), manif: esc(T.cab.manifesto_sha512),
-      emissao: esc(T.cab.emissao), versao: esc(R.motor.versao), dur: esc(T.cab.duracao) });
+    const integ = L.r_integ({ cesp: nf(ig["cesp:st_confere"] || 0), bu: nf(ig["bu:st_csv"] || 0), buOk: ig["bu:st_confere"] ? nf(ig["bu:st_confere"]) : "",
+      nucleo: esc(T.cab.nucleo_sha256), manif: esc(T.cab.manifesto_sha512), emissao: esc(T.cab.emissao), versao: esc(T.cab.motor || R.motor.versao), dur: esc(T.cab.duracao) });
     const rel = ["PT", "EN", "ES"].map((lg) => { const p = `${PASTA}/resultados-${n}turno/Relatorio_Tecnico_Auditoria_Eleicoes_2026_${lg}.md`;
       return `<a class="btn" href="${p}" download>${icone("download")} ${esc(L.report_lang[lg])}</a>`; }).join("");
     state.cartao = { kicker: L.roundDate[n], titulo: `${L.round(+n)} · ${L.cd_pres}`, itens: barrasTurno(n, +n === 1 ? 6 : 2).itens.map((x) => ["b"].concat(x))
