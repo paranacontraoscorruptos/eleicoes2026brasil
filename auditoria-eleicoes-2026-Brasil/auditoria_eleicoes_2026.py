@@ -24,11 +24,19 @@ Saídas (pasta --saida):
     dados/*.csv, graficos/*.png, manifesto_saida.sha512, log_execucao.txt
     Com o 1º e o 2º turno na mesma pasta, o relatório ganha o Anexo A (variação dos votos para Presidente
     entre os turnos, testes V1 a V6) e dados/variacao_turnos_*.csv.
+    Com --logs <pasta>, o relatório ganha o Anexo B (logs das urnas, testes L01 a L14) e dados/logs_*.csv.
+
+Logs das urnas (testes L01 a L14):
+    python auditoria_eleicoes_2026.py --extrair-logs --logs ./logs_urnas --turno 1      (só extrai, sem boletins)
+    python auditoria_eleicoes_2026.py --dados ./dados_tse --logs ./logs_urnas           (auditoria com o Anexo B)
+    A extração baixa o log de cada seção do TSE, lê na memória e grava só um resumo numérico por seção
+    (<pasta>/t<turno>/<UF>.jsonl.gz). O .logjez e o logd.dat não são gravados; nenhum número de título é guardado.
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import io
 import json
@@ -62,7 +70,7 @@ try:
 except ImportError:  # pragma: no cover
     plt = None
 
-VERSAO_MOTOR = "2.2.0"
+VERSAO_MOTOR = "3.0.0"
 
 # =============================================================================
 # 1. CONFIGURAÇÃO
@@ -427,19 +435,19 @@ TESTES = {
     "T11": {
         "PT": {"nome": "Horários Atípicos",
                "objetivo": "Verificar a conformidade cronológica dos eventos registrados no BU.",
-               "metodo": "Para urnas eletrônicas apuradas, o fuso horário local de cada município é inferido, entre os fusos possíveis da UF, pelo 10º percentil dos horários de abertura (uma abertura regular nunca precede o horário oficial, e atrasos não deslocam a referência) (abertura, encerramento e emissão do BU são registrados em hora local; o recebimento, em hora de Brasília). Horário oficial: {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h (hora de Brasília), convertido para a hora local; no Exterior, {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h em hora local. Tolerância: {TOLERANCIA_MINUTOS} min. Verificações: abertura anterior ao horário oficial; encerramento anterior ao horário oficial; encerramento anterior à abertura; emissão do BU anterior ao encerramento; recebimento do BU anterior à emissão (exceto Exterior); data de abertura ou encerramento distinta da data do pleito; ausência de horários em urna eletrônica apurada. Atrasos de abertura ≥ {ATRASO_ABERTURA_MIN} min são reportados como eventos informativos.",
+               "metodo": "Para urnas eletrônicas apuradas, o fuso horário local de cada município é inferido, entre os fusos possíveis da UF, pelo 10º percentil dos horários de abertura (uma abertura regular nunca precede o horário oficial, e atrasos não deslocam a referência) (abertura, encerramento e emissão do BU são registrados em hora local; o recebimento, em hora de Brasília). Horário oficial: {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h (hora de Brasília), convertido para a hora local; no Exterior, {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h em hora local. Tolerância: {TOLERANCIA_MINUTOS} min. Verificações: abertura anterior ao horário oficial; encerramento anterior ao horário oficial; encerramento anterior à abertura; emissão do BU anterior ao encerramento; recebimento do BU anterior à emissão (exceto Exterior); data de abertura ou encerramento distinta da data do pleito; ausência de horários em urna eletrônica apurada. Atrasos de abertura ≥ {ATRASO_ABERTURA_MIN} min são reportados como eventos informativos. Encerramento tardio: encerramento 1 hora ou mais depois do fim oficial do turno (17h de Brasília no 1º turno e 19h no 2º turno, quando o encerramento foi estendido), na hora local; o encerramento antecipado continua referido às {HORA_FIM_OFICIAL}h de Brasília nos dois turnos, horário a partir do qual a urna libera o encerramento.",
                "criterio": "Teste determinístico. Qualquer violação é sinalizada como anomalia; atrasos são informativos.",
-               "limites": "Desvios de relógio da urna, substituição de urna durante a votação e municípios com fuso horário distinto da maioria podem gerar sinalizações explicáveis."},
+               "limites": "Desvios de relógio da urna, substituição de urna durante a votação e municípios com fuso horário distinto da maioria podem gerar sinalizações explicáveis. Encerrar depois do horário é permitido quando há eleitores na fila; a ata da mesa registra."},
         "EN": {"nome": "Atypical Timestamps",
                "objetivo": "To verify the chronological consistency of the events recorded in the BU.",
-               "metodo": "For tallied electronic voting machines, the local time zone of each municipality is inferred, among the time zones possible for the state, from the 10th percentile of opening times (a regular opening never precedes the official time, and delays do not shift the reference) (opening, closing and report issuance are recorded in local time; receipt in Brasília time). Official voting hours: {HORA_INICIO_OFICIAL}:00–{HORA_FIM_OFICIAL}:00 (Brasília time), converted to local time; abroad, {HORA_INICIO_OFICIAL}:00–{HORA_FIM_OFICIAL}:00 local time. Tolerance: {TOLERANCIA_MINUTOS} min. Checks: opening before official time; closing before official time; closing earlier than opening; report issued before closing; report received before issuance (except abroad); opening or closing date different from election day; missing timestamps in a tallied electronic machine. Opening delays ≥ {ATRASO_ABERTURA_MIN} min are reported as informational events.",
+               "metodo": "For tallied electronic voting machines, the local time zone of each municipality is inferred, among the time zones possible for the state, from the 10th percentile of opening times (a regular opening never precedes the official time, and delays do not shift the reference) (opening, closing and report issuance are recorded in local time; receipt in Brasília time). Official voting hours: {HORA_INICIO_OFICIAL}:00–{HORA_FIM_OFICIAL}:00 (Brasília time), converted to local time; abroad, {HORA_INICIO_OFICIAL}:00–{HORA_FIM_OFICIAL}:00 local time. Tolerance: {TOLERANCIA_MINUTOS} min. Checks: opening before official time; closing before official time; closing earlier than opening; report issued before closing; report received before issuance (except abroad); opening or closing date different from election day; missing timestamps in a tallied electronic machine. Opening delays ≥ {ATRASO_ABERTURA_MIN} min are reported as informational events. Late closing: closing 1 hour or more after the round's official end (5 pm Brasília time in round 1 and 7 pm in round 2, when closing was extended), in local time; early closing is still referred to {HORA_FIM_OFICIAL}:00 Brasília time in both rounds, the time from which the machine allows closing.",
                "criterio": "Deterministic test. Any violation is flagged as an anomaly; delays are informational.",
-               "limites": "Machine clock drift, replacement of a machine during voting and municipalities whose time zone differs from the majority may produce explainable flags."},
+               "limites": "Machine clock drift, replacement of a machine during voting and municipalities whose time zone differs from the majority may produce explainable flags. Closing after the official time is allowed when voters are still in line; the polling station minutes record it."},
         "ES": {"nome": "Horarios Atípicos",
                "objetivo": "Verificar la conformidad cronológica de los eventos registrados en el BU.",
-               "metodo": "Para urnas electrónicas escrutadas, el huso horario local de cada municipio se infiere, entre los husos posibles de la UF, por el percentil 10 de los horarios de apertura (una apertura regular nunca precede el horario oficial y los retrasos no desplazan la referencia) (apertura, cierre y emisión del BU se registran en hora local; la recepción, en hora de Brasilia). Horario oficial: {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h (hora de Brasilia), convertido a la hora local; en el Exterior, {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h en hora local. Tolerancia: {TOLERANCIA_MINUTOS} min. Verificaciones: apertura anterior al horario oficial; cierre anterior al horario oficial; cierre anterior a la apertura; emisión del BU anterior al cierre; recepción del BU anterior a la emisión (excepto Exterior); fecha de apertura o cierre distinta del día de la elección; ausencia de horarios en urna electrónica escrutada. Los retrasos de apertura ≥ {ATRASO_ABERTURA_MIN} min se informan como eventos informativos.",
+               "metodo": "Para urnas electrónicas escrutadas, el huso horario local de cada municipio se infiere, entre los husos posibles de la UF, por el percentil 10 de los horarios de apertura (una apertura regular nunca precede el horario oficial y los retrasos no desplazan la referencia) (apertura, cierre y emisión del BU se registran en hora local; la recepción, en hora de Brasilia). Horario oficial: {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h (hora de Brasilia), convertido a la hora local; en el Exterior, {HORA_INICIO_OFICIAL}h–{HORA_FIM_OFICIAL}h en hora local. Tolerancia: {TOLERANCIA_MINUTOS} min. Verificaciones: apertura anterior al horario oficial; cierre anterior al horario oficial; cierre anterior a la apertura; emisión del BU anterior al cierre; recepción del BU anterior a la emisión (excepto Exterior); fecha de apertura o cierre distinta del día de la elección; ausencia de horarios en urna electrónica escrutada. Los retrasos de apertura ≥ {ATRASO_ABERTURA_MIN} min se informan como eventos informativos. Cierre tardío: cierre 1 hora o más después del fin oficial de la vuelta (17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª, cuando se extendió el cierre), en hora local; el cierre anticipado sigue referido a las {HORA_FIM_OFICIAL} h de Brasilia en las dos vueltas, hora a partir de la cual la urna libera el cierre.",
                "criterio": "Prueba determinística. Cualquier violación se señala como anomalía; los retrasos son informativos.",
-               "limites": "Desvíos del reloj de la urna, sustitución de la urna durante la votación y municipios con huso horario distinto de la mayoría pueden generar señalizaciones explicables."},
+               "limites": "Desvíos del reloj de la urna, sustitución de la urna durante la votación y municipios con huso horario distinto de la mayoría pueden generar señalizaciones explicables. Cerrar después del horario está permitido cuando hay electores en la fila; el acta de la mesa lo registra."},
     },
     "T12": {
         "PT": {"nome": "Troca de Urna e Votação em Cédula",
@@ -1444,6 +1452,7 @@ class Auditoria:
         self.resultados: dict[str, Resultado] = {}
         self.meta: dict = {}
         self.var: dict | None = None
+        self.logs: dict | None = None
         self.con = None
 
     # ------------------------------------------------------------------ setup
@@ -2240,6 +2249,21 @@ class Auditoria:
              s["abertura"].dt.strftime("%Y-%m-%d"), dia.dt.strftime("%Y-%m-%d")),
             ("atraso_abertura", "informativo", s["abertura"] >= inicio + pd.Timedelta(minutes=ATRASO_ABERTURA_MIN), fmt("abertura"), inicio.dt.strftime("%H:%M")),
         ]
+        # Encerramento tardio: 1 hora ou mais depois do fim oficial do turno (17h de Brasília no 1º turno; 19h no 2º turno,
+        # encerramento estendido), na hora local. O encerramento antecipado continua com HORA_FIM_OFICIAL (17h), o horário
+        # a partir do qual a urna libera o encerramento nos dois turnos.
+        fim_t = dia + pd.to_timedelta(s["turno"].map(lambda t: HORA_FIM_TURNO.get(int(t), HORA_FIM_OFICIAL)).astype(float) + s["offset"], unit="h")
+        tardio = s["enc"] >= fim_t + pd.Timedelta(minutes=ATRASO_TARDIO_MIN)
+        checagens.append(("encerramento_tardio", "anomalia", tardio, fmt("enc"), fim_t.dt.strftime("%H:%M")))
+        res.extras["tardio"] = {}
+        for tt, g in s.groupby("turno"):
+            mk = tardio[g.index].fillna(False)
+            atraso = ((g["enc"] - fim_t[g.index]).dt.total_seconds() / 60)[mk]
+            ult = g.loc[mk, "enc"].max() if mk.any() else None
+            res.extras["tardio"][int(tt)] = {
+                "analisadas": int(len(g)), "sinalizadas": int(mk.sum()), "h2": int((atraso >= 120).sum()), "h3": int((atraso >= 180).sum()),
+                "h4": int((atraso >= 240).sum()), "max": (f"{ult.strftime('%H:%M:%S')} (+{int(atraso.max())} min)" if ult is not None else None),
+                "por_uf": {str(u): int(n) for u, n in g.loc[mk, "uf"].value_counts().sort_index().items()}}
         emis_brt = s["emis"] - pd.to_timedelta(s["offset"], unit="h")
         checagens.append(("recebimento_antes_emissao", "anomalia", brasil & (s["receb"] < emis_brt - tol),
                           s["receb"].dt.strftime("%H:%M:%S"), emis_brt.dt.strftime("%H:%M:%S")))
@@ -2988,6 +3012,8 @@ class Auditoria:
             P.append(f"- {ref.format(ano=ANO_ELEICAO)}")
         if self.var:
             P.append("\n" + self._anexo_variacao(lang))
+        if self.logs:
+            P.append("\n" + self._anexo_logs(lang))
         P.append("\n---\n")
         P.append(f"*{L['rodape'].format(v=VERSAO_MOTOR)}*\n")
         return "\n".join(P)
@@ -3101,6 +3127,12 @@ class Auditoria:
         if tid == "T15":
             out.append(self._tabela_klimek(r, lang))
             return "\n".join(out)
+        if tid == "T11" and (tab["categoria"] == "encerramento_tardio").any():
+            # encerramento tardio: números gerais e o link da página (dezenas de milhares de seções no 1º turno)
+            out.append(self._bloco_tardio(lang))
+            tab = tab[tab["categoria"] != "encerramento_tardio"]
+            if tab.empty:
+                return "\n".join(out)
         if tab.empty:
             out.append(f"🟢 {L['sem_sinal']}\n")
             return "\n".join(out)
@@ -3354,6 +3386,170 @@ class Auditoria:
         return md_tabela(cab, linhas, {0, 3, 4} if t not in ("V1", "V2") else {0})
 
     # ------------------------------------------------------- manifesto
+    # ------------------------------------------------------- logs das urnas (Anexo B: testes L01 a L14)
+    def testes_logs(self):
+        a = self.args
+        if not getattr(a, "logs", None):
+            return
+        pasta = Path(a.logs).resolve()
+        if getattr(a, "extrair_logs", False):
+            s = self.sec[self.sec["turno"].isin(list(LOG_DIA))]
+            secoes = {(int(t), u): [(int(m), int(z), int(x)) for m, z, x in zip(g["mun"], g["zona"], g["secao"])]
+                      for (t, u), g in s.groupby(["turno", "uf"])}
+            log(f"Logs das urnas: extração de {len(s):,} seções em {pasta}...".replace(",", "."))
+            for t in sorted({k[0] for k in secoes}):
+                extrair_logs(pasta, [t], sorted(u for (tt, u) in secoes if tt == t), a.processos, secoes)
+        t0 = time.time()
+        log("Logs das urnas — testes L01 a L14...")
+        try:
+            self.logs = executar_testes_logs(self.sec, pasta)
+        except Exception as exc:
+            self.logs = None
+            self.meta["logs_erro"] = f"{type(exc).__name__}: {exc}"
+            log(f"  FALHA: {self.meta['logs_erro']}")
+            _LOG.append(traceback.format_exc())
+            return
+        if self.logs is None:
+            self.meta["logs_erro"] = TXT_LOG["PT"]["sem_dados"]
+            log(f"  {self.meta['logs_erro']}")
+            return
+        sin = self.logs["sinais"].reindex(columns=COLUNAS_SINAL)
+        for c in ("turno", "mun", "zona", "secao", "loc", "cargo"):
+            sin[c] = pd.to_numeric(sin[c], errors="coerce").round().astype("Int64")
+        self.logs["sinais"] = sin.merge(self.ident, on=CHAVE_SECAO, how="left")
+        for tid in TESTES_LOG_ORDEM:
+            r = self.logs["res"][tid]
+            log(f"  {tid} {TESTES_LOG[tid]['PT']['nome']}: " + f"unidades={r.unidades:,} anomalias={r.sinalizados:,} "
+                f"informativos={r.informativos:,}".replace(",", "."))
+        log(f"  ({time.time() - t0:.0f}s)")
+
+    def exportar_logs(self):
+        if not self.logs:
+            return
+        enc = "utf-8-sig"
+        cols = ["teste", "nivel", "categoria", "turno", "uf", "mun", "nm_mun", "zona", "secao", "secoes_agregadas", "loc", "nr_urna",
+                "cod_carga", "comparecimento", "abertura", "encerramento", "observado", "referencia", "detalhe"]
+        s = self.logs["sinais"].reindex(columns=cols).copy()
+        for c in ("abertura", "encerramento"):
+            s[c] = pd.to_datetime(s[c], errors="coerce").dt.strftime("%d/%m/%Y %H:%M:%S")
+        s.insert(1, "teste_nome", s["teste"].map(lambda t: TESTES_LOG[t]["PT"]["nome"]))
+        s.insert(4, "categoria_nome", s["categoria"].map(lambda c: CATEGORIAS_LOG.get(c, {}).get("PT", c)))
+        s.to_csv(self.pasta_csv / ARQUIVOS_LOG["sin"], index=False, encoding=enc)
+        m = self.logs["med"].copy()
+        for c in ("fim_local", "t_zeresima", "t_ligada", "t_primeiro_voto"):
+            if c in m:
+                m[c] = [_hhmm(x) if x is not None and not (isinstance(x, float) and math.isnan(x)) else "" for x in m[c]]
+        cols_m = ["turno", "uf", "mun", "nm_mun", "zona", "secao", "loc", "falha", "n_votos", "comp_bu", "dif_bu", "n_urnas", "n_urnas_voto",
+                  "urnas_log", "versao", "modelo", "fim_local", "v_apos", "v_apos_1h", "ult_apos_min", "sd_apos", "int_mediano", "rajada_max",
+                  "n_rajadas", "seq_sem_digital", "pct_digital", "v_pos_sim", "v_pos_nao", "n_religamentos", "n_bateria", "n_desligada",
+                  "v_urna_desligada", "seg_parada", "v_sobreposto", "n_tentativas", "tentativas_seguidas", "n_nao_concluidos", "n_enc_cedo",
+                  "n_enc_depois", "t_ligada", "t_zeresima", "t_primeiro_voto", "dif_relogio_min", "ajuste_durante", "ajuste_fora",
+                  "n_sem_digital", "pct_sem_digital", "pct_4_tentativas", "n_cpf"]
+        m = m.reindex(columns=cols_m).sort_values(["turno", "uf", "mun", "zona", "secao"], kind="mergesort")
+        m.to_csv(self.pasta_csv / ARQUIVOS_LOG["sec"], index=False, encoding=enc, float_format="%.6g")
+        pd.DataFrame(self.logs["falhas"], columns=["turno", "uf", "mun", "zona", "secao", "falha"]).to_csv(
+            self.pasta_csv / ARQUIVOS_LOG["falhas"], index=False, encoding=enc)
+
+    def _anexo_logs(self, lang: str) -> str:
+        L, T, X = TXT[lang], TXT_LOG[lang], self.logs
+        P = [f"## {T['titulo']}\n", T["intro"] + "\n", T["fim"].format(mg=MIN_SECOES_GRUPO) + "\n"]
+        por_t = X["ok"].groupby("turno").size()
+        turnos = "; ".join(f"{L['turno'].format(n=int(t))}: {fnum(int(n), lang)}" for t, n in por_t.items())
+        P.append(T["cobertura"].format(ok=fnum(len(X["ok"]), lang), turnos=turnos, f=fnum(len(X["falhas"]), lang),
+                                       fora=fnum(X["fora_bu"], lang)) + "\n")
+        lin = [[f"{tid} — {TESTES_LOG[tid][lang]['nome']}", self._status(r), fnum(r.sinalizados, lang), fnum(r.informativos, lang),
+                fnum(r.unidades, lang)] for tid, r in ((t, X["res"][t]) for t in TESTES_LOG_ORDEM)]
+        P.append(f"**{T['resumo']}**\n")
+        P.append(md_tabela([T["col_teste"], T["col_st"], T["col_anom"], T["col_info"], T["col_un"]], lin, {2, 3, 4}))
+        P.append("")
+        for i, tid in enumerate(TESTES_LOG_ORDEM, start=1):
+            P.append(self._secao_log(tid, i, lang))
+        return "\n".join(P)
+
+    def _secao_log(self, tid: str, i: int, lang: str) -> str:
+        L, T, X = TXT[lang], TXT_LOG[lang], self.logs
+        r = X["res"][tid]
+        out = [f"### B.{i} {self._status(r)} {tid} — {TESTES_LOG[tid][lang]['nome']}\n"]
+        for campo in ("objetivo", "metodo", "criterio", "limites"):
+            out.append(f"**{L[campo]}.** {TESTES_LOG[tid][lang][campo]}\n")
+        taxa = fpct(r.sinalizados / r.unidades, lang, 3) if r.unidades else "—"
+        caixa = [L["res_caixa"].format(st=self._status(r), s=fnum(r.sinalizados, lang), u=fnum(r.unidades, lang), taxa=taxa,
+                                       i=fnum(r.informativos, lang))]
+        caixa.append(T["explica_anom"] if r.sinalizados else L["explica_zero"])
+        if r.informativos:
+            caixa.append(L["explica_info"])
+        out.append("\n>\n".join("> " + c for c in caixa) + "\n")
+        if tid == "L12":
+            vs = [f"{L['turno'].format(n=t)}: `{v}`" for t, v in sorted(X["versao_ref"].items()) if v]
+            out.append((T["versao"].format(v="; ".join(vs)) if vs else T["versao_nao"].format(p=int(100 * LOG_VERSAO_MAIORIA))) + "\n")
+            if X["carga_pares"] and not X["carga_comparada"]:
+                out.append(T["carga_nao"] + "\n")
+        tab = X["sinais"][X["sinais"]["teste"] == tid]
+        if len(tab):
+            cat = tab.groupby(["categoria", "nivel"]).size().reset_index(name="n").sort_values(["n", "categoria"], ascending=[False, True], kind="mergesort")
+            out.append(f"**{L['por_categoria']}**\n")
+            out.append(md_tabela([L["col_categoria"], L["col_qtd"]],
+                                 [[("🔴 " if c.nivel == "anomalia" else "🟡 ") + CATEGORIAS_LOG.get(c.categoria, {}).get(lang, c.categoria),
+                                   fnum(c.n, lang)] for c in cat.itertuples()], {1}))
+            out.append("")
+        if tid == "L01":
+            G = X["geral"]
+            lin = [[fid(t), fnum(g["secoes"], lang), fnum(g["votos"], lang), fnum(g["secoes_apos"], lang), fnum(g["votos_apos"], lang),
+                    fpct(g["votos_apos"] / g["votos"] if g["votos"] else np.nan, lang), fnum(g["secoes_1h"], lang), fnum(g["votos_1h"], lang),
+                    fnum(g["sem_digital_apos"], lang)] for t, g in sorted(G.items())]
+            out.append(f"**{T['geral_t']}**\n")
+            out.append(md_tabela(T["geral_cab"], lin, set(range(1, 9))))
+            out.append("")
+            out.append(T["link_l01"].format(url=URL_PAGINA_TARDIO) + "\n")
+            return "\n".join(out)
+        if tab.empty:
+            out.append(f"🟢 {L['sem_sinal']}\n")
+            return "\n".join(out)
+        out.append(f"*{LEG_LOG[lang][tid]}*\n")
+        anom, info = tab[tab["nivel"] == "anomalia"], tab[tab["nivel"] != "anomalia"]
+        for parte, rot, det in ((anom, L["tab_anom"], False), (info, L["tab_info"], True)):
+            if not len(parte):
+                continue
+            mostra = parte.head(LOG_MAX_LINHAS_RELATORIO)
+            if det:
+                out.append(f"<details>\n<summary><b>{rot.format(n=fnum(len(parte), lang))}</b></summary>\n")
+            else:
+                out.append(f"#### {rot.format(n=fnum(len(parte), lang))}\n")
+            out.append(self._tabela_urnas(mostra, lang))
+            if len(parte) > len(mostra):
+                out.append(T["mais"].format(n=fnum(len(mostra), lang), t=fnum(len(parte), lang)) + "\n")
+            if det:
+                out.append("</details>\n")
+        return "\n".join(out)
+
+    def _bloco_tardio(self, lang: str) -> str:
+        """Teste 11, encerramento tardio: números gerais e o link da página, sem a lista urna por urna."""
+        L, T = TXT[lang], TXT_T11_TARDIO[lang]
+        ext = self.resultados["T11"].extras.get("tardio", {})
+        tot = sum(v["sinalizadas"] for v in ext.values())
+        out = [f"#### 🔴 {T['t']}\n", T["txt"].format(n=fnum(tot, lang), url=URL_PAGINA_TARDIO) + "\n"]
+        lin = [[fid(t), fnum(v["analisadas"], lang), fnum(v["sinalizadas"], lang),
+                fpct(v["sinalizadas"] / v["analisadas"] if v["analisadas"] else np.nan, lang), fnum(v["h2"], lang), fnum(v["h3"], lang),
+                fnum(v["h4"], lang), v["max"] or "—"] for t, v in sorted(ext.items())]
+        out.append(md_tabela(T["cab"], lin, set(range(1, 7))))
+        out.append("")
+        ufs = sorted({u for v in ext.values() for u in v["por_uf"]})
+        if ufs:
+            ts = sorted(ext)
+            out.append(f"**{T['uf']}**\n")
+            out.append(md_tabela([L["col_uf"]] + [L["turno"].format(n=t) for t in ts],
+                                 [[u] + [fnum(ext[t]["por_uf"].get(u, 0), lang) for t in ts] for u in ufs], set(range(1, len(ts) + 1))))
+            out.append("")
+        if self.logs:
+            ok = self.logs["ok"]
+            tard = self.sinais[(self.sinais["teste"] == "T11") & (self.sinais["categoria"] == "encerramento_tardio")][CHAVE_SECAO]
+            tard = tard.astype({c: "int64" for c in ("turno", "mun", "zona", "secao")})
+            d = ok.merge(tard, on=CHAVE_SECAO, how="inner")
+            if len(d):
+                out.append(T["logs"].format(n=fnum(len(d), lang), v=fnum(int(d["v_apos"].sum()), lang),
+                                            p=fpct(d["v_apos"].sum() / max(1, d["n_votos"].sum()), lang)) + "\n")
+        return "\n".join(out)
+
     def manifesto_saida(self):
         (self.saida / "log_execucao.txt").write_text("\n".join(_LOG) + "\n", encoding="utf-8")
         linhas = []
@@ -3382,8 +3578,10 @@ class Auditoria:
         self.executar_testes()
         self.consolidar()
         self.variacao_turnos()
+        self.testes_logs()
         self.exportar()
         self.exportar_variacao()
+        self.exportar_logs()
         self.verificar_determinismo()  # antes de compilar o .md
         self.gerar_relatorios()
         self.manifesto_saida()
@@ -3977,6 +4175,1068 @@ TXT_VAR = {
 }
 
 
+TESTES_LOG = {
+    "L01": {
+        "PT": {"nome": "Votos depois do horário oficial", "objetivo": "Conta os votos gravados depois do horário oficial de encerramento: 17h de Brasília no 1º turno e 19h no 2º turno, quando o encerramento foi estendido, sempre convertido para a hora local.", "metodo": "Lê no log a hora de cada voto e compara com o fim oficial na hora local do município. Conta quantos votos vieram depois, quanto tempo depois e se o eleitor foi liberado com ou sem digital.", "criterio": "Informativo: voto gravado 1 hora ou mais depois do horário oficial local (17h de Brasília no 1º turno e 19h no 2º turno, quando o encerramento foi estendido). Anomalia estatística: 10 votos ou mais depois do horário, o último 1 hora ou mais depois, e parcela de votos depois do horário muito acima do grupo de referência (escore z robusto ≥ 3,5).", "limites": "O log não mostra se havia fila nem em quem foi o voto. A ata da mesa registra a distribuição de senhas."},
+        "EN": {"nome": "Votes after the official closing time", "objetivo": "Counts the votes recorded after the official closing time: 5 pm Brasília time in round 1 and 7 pm in round 2, when closing was extended, always converted to local time.", "metodo": "Reads the time of each vote in the log and compares it with the official end in the municipality's local time. It counts how many votes came after, how long after and whether the voter was released with or without a fingerprint.", "criterio": "Informational: a vote recorded 1 hour or more after the local official time (5 pm Brasília time in round 1 and 7 pm in round 2, when closing was extended). Statistical anomaly: 10 or more votes after the official time, the last one 1 hour or more later, and a share of votes after the official time far above the reference group (robust z-score ≥ 3.5).", "limites": "The log does not show whether there was a line or who the vote went to. The polling station minutes record the distribution of queue tickets."},
+        "ES": {"nome": "Votos después del horario oficial", "objetivo": "Cuenta los votos registrados después del horario oficial de cierre: 17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª vuelta, cuando el cierre se extendió, siempre convertido a la hora local.", "metodo": "Lee en el log la hora de cada voto y la compara con el fin oficial en la hora local del municipio. Cuenta cuántos votos vinieron después, cuánto tiempo después y si el elector fue habilitado con o sin huella.", "criterio": "Informativo: voto grabado 1 hora o más después del horario oficial local (17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª, cuando se extendió el cierre). Anomalía estadística: 10 votos o más después del horario, el último 1 hora o más después, y una proporción de votos después del horario muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5).", "limites": "El log no muestra si había fila ni a quién fue el voto. El acta de la mesa registra la distribución de turnos."},
+    },
+    "L02": {
+        "PT": {"nome": "Tempo de cada voto (votos rápidos e em rajada)", "objetivo": "Mede o tempo entre um voto e o seguinte e procura votos rápidos demais e sequências em rajada.", "metodo": "Calcula, no log, o intervalo entre o fim de um voto e o fim do seguinte. Procura sequências de votos com 30 segundos ou menos entre si e compara o tempo mediano da seção com o do município.", "criterio": "Anomalia estatística: 5 ou mais votos seguidos com 30 segundos ou menos entre eles, todos liberados sem digital. Informativo: tempo mediano entre votos muito abaixo do grupo de referência (escore z robusto ≤ −3,5), em seções com 30 votos ou mais.", "limites": "Eleitores rápidos e cédulas com poucos cargos encurtam o tempo. O log não mostra quem estava na cabine."},
+        "EN": {"nome": "Time per vote (fast votes and bursts)", "objetivo": "Measures the time between one vote and the next and looks for votes that are too fast and for bursts.", "metodo": "Computes, in the log, the interval between the end of one vote and the end of the next. It looks for sequences of votes 30 seconds or less apart and compares the section's median time with the municipality's.", "criterio": "Statistical anomaly: 5 or more consecutive votes 30 seconds or less apart, all released without fingerprint. Informational: median time between votes far below the reference group (robust z-score ≤ −3.5), in sections with 30 votes or more.", "limites": "Fast voters and ballots with few offices shorten the time. The log does not show who was in the booth."},
+        "ES": {"nome": "Tiempo de cada voto (votos rápidos y en ráfaga)", "objetivo": "Mide el tiempo entre un voto y el siguiente y busca votos demasiado rápidos y secuencias en ráfaga.", "metodo": "Calcula, en el log, el intervalo entre el fin de un voto y el fin del siguiente. Busca secuencias de votos con 30 segundos o menos entre sí y compara el tiempo mediano de la sección con el del municipio.", "criterio": "Anomalía estadística: 5 o más votos seguidos con 30 segundos o menos entre ellos, todos liberados sin huella. Informativo: tiempo mediano entre votos muy por debajo del grupo de referencia (puntuación z robusta ≤ −3,5), en secciones con 30 votos o más.", "limites": "Electores rápidos y boletas con pocos cargos acortan el tiempo. El log no muestra quién estaba en la cabina."},
+    },
+    "L03": {
+        "PT": {"nome": "Liberações sem digital em sequência", "objetivo": "Procura sequências longas de eleitores liberados sem a digital, pelo código digitado pelo mesário.", "metodo": "Lê no log como cada eleitor foi liberado (digital reconhecida ou liberação sem digital) e mede a maior sequência seguida de liberações sem digital.", "criterio": "Anomalia estatística: 10 ou mais liberações seguidas sem digital, numa seção em que a maioria dos eleitores votou com a digital. Informativo: a mesma sequência quando a maioria da seção votou sem a digital ou quando a urna registrou erro no mesmo período.", "limites": "Leitor com defeito, digitais gastas e eleitores sem biometria cadastrada explicam muitos casos. Só a ata da mesa confirma."},
+        "EN": {"nome": "Releases without fingerprint in a row", "objetivo": "Looks for long sequences of voters released without a fingerprint, through the code typed by the poll worker.", "metodo": "Reads in the log how each voter was released (fingerprint recognised or release without fingerprint) and measures the longest run of releases without a fingerprint.", "criterio": "Statistical anomaly: 10 or more consecutive releases without fingerprint, in a section where most voters voted with their fingerprint. Informational: the same sequence when most of the section voted without fingerprint or when the machine logged an error in the same period.", "limites": "Faulty readers, worn fingerprints and voters without registered biometrics explain many cases. Only the polling station minutes confirm."},
+        "ES": {"nome": "Liberaciones sin huella seguidas", "objetivo": "Busca secuencias largas de electores habilitados sin huella, con el código digitado por el miembro de mesa.", "metodo": "Lee en el log cómo fue habilitado cada elector (huella reconocida o habilitación sin huella) y mide la secuencia más larga de habilitaciones sin huella.", "criterio": "Anomalía estadística: 10 o más liberaciones seguidas sin huella, en una sección en que la mayoría de los electores votó con la huella. Informativo: la misma secuencia cuando la mayoría de la sección votó sin huella o cuando la urna registró un error en el mismo período.", "limites": "Lectores defectuosos, huellas gastadas y electores sin biometría registrada explican muchos casos. Solo el acta de la mesa lo confirma."},
+    },
+    "L04": {
+        "PT": {"nome": "Votos depois do “todos já votaram? SIM”", "objetivo": "Confere se a urna gravou votos depois de o mesário responder, no encerramento, que todos os eleitores já votaram.", "metodo": "Localiza no log a pergunta de encerramento e a resposta SIM e procura votos gravados depois dela.", "criterio": "Anomalia estatística: voto gravado depois da resposta SIM, sem que o encerramento tenha sido cancelado antes. Informativo: votos depois da resposta NÃO ou depois de um encerramento cancelado (a votação foi retomada, como previsto).", "limites": "Depende de a urna registrar a pergunta e a resposta no log; modelos diferentes podem registrar de formas diferentes."},
+        "EN": {"nome": "Votes after “has everyone voted? YES”", "objetivo": "Checks whether the machine recorded votes after the poll worker answered, at closing, that every voter had already voted.", "metodo": "Finds the closing question and the YES answer in the log and looks for votes recorded after it.", "criterio": "Statistical anomaly: a vote recorded after the YES answer, with no cancellation of the closing before it. Informational: votes after a NO answer or after a cancelled closing (voting resumed, as provided).", "limites": "It depends on the machine recording the question and the answer in the log; different models may record them differently."},
+        "ES": {"nome": "Votos después del “¿todos ya votaron? SÍ”", "objetivo": "Verifica si la urna registró votos después de que el miembro de mesa respondiera, al cierre, que todos los electores ya votaron.", "metodo": "Localiza en el log la pregunta de cierre y la respuesta SÍ y busca votos registrados después.", "criterio": "Anomalía estadística: voto grabado después de la respuesta SÍ, sin que el cierre se haya cancelado antes. Informativo: votos después de la respuesta NO o después de un cierre cancelado (la votación se reanudó, como está previsto).", "limites": "Depende de que la urna registre la pregunta y la respuesta en el log; modelos distintos pueden registrarlas de formas distintas."},
+    },
+    "L05": {
+        "PT": {"nome": "Falta de energia e interrupções", "objetivo": "Encontra quedas de energia, desligamentos e reinícios da urna durante a votação.", "metodo": "Lê no log os eventos de bateria, desligamento e religamento e mede quanto tempo a urna ficou parada.", "criterio": "Informativo: interrupção registrada durante a votação (urna desligada ou operando na bateria). Anomalia estatística: voto gravado com hora dentro do período em que a mesma urna estava desligada, ou 3 religamentos ou mais durante a votação.", "limites": "Falta de luz e bateria fraca acontecem, principalmente em locais afastados. A ata registra as ocorrências."},
+        "EN": {"nome": "Power failures and interruptions", "objetivo": "Finds power cuts, shutdowns and restarts of the machine during voting.", "metodo": "Reads the battery, shutdown and restart events in the log and measures how long the machine was stopped.", "criterio": "Informational: interruption logged during voting (machine switched off or running on battery). Statistical anomaly: a vote recorded at a time when the same machine was switched off, or 3 or more restarts during voting.", "limites": "Power cuts and weak batteries happen, especially in remote places. The minutes record the events."},
+        "ES": {"nome": "Cortes de energía e interrupciones", "objetivo": "Encuentra cortes de energía, apagados y reinicios de la urna durante la votación.", "metodo": "Lee en el log los eventos de batería, apagado y reencendido y mide cuánto tiempo la urna estuvo detenida.", "criterio": "Informativo: interrupción registrada durante la votación (urna apagada o funcionando con batería). Anomalía estadística: voto grabado con hora dentro del período en que la misma urna estaba apagada, o 3 reencendidos o más durante la votación.", "limites": "Cortes de luz y batería baja ocurren, sobre todo en lugares alejados. El acta registra los hechos."},
+    },
+    "L06": {
+        "PT": {"nome": "Troca de urna", "objetivo": "Confere as trocas de urna durante a votação e se os votos das duas urnas somam o que está no boletim.", "metodo": "Identifica no log a urna original e a de contingência (número e hora de cada uma) e soma os votos gravados em cada.", "criterio": "Informativo: troca de urna registrada. Anomalia estatística: voto gravado na urna anterior depois do primeiro voto da urna nova. A soma dos votos das urnas comparada com o boletim fica no teste L14.", "limites": "O log não diz o motivo da troca; a ata da mesa registra."},
+        "EN": {"nome": "Machine replacement", "objetivo": "Checks machine replacements during voting and whether the votes of the two machines add up to the report.", "metodo": "Identifies in the log the original machine and the contingency one (number and time of each) and adds up the votes recorded in each.", "criterio": "Informational: machine replacement logged. Statistical anomaly: a vote recorded in the previous machine after the first vote of the new one. The sum of the machines' votes compared with the tally sheet is in test L14.", "limites": "The log does not say why the machine was replaced; the polling station minutes do."},
+        "ES": {"nome": "Cambio de urna", "objetivo": "Verifica los cambios de urna durante la votación y si los votos de las dos urnas suman lo que dice el boletín.", "metodo": "Identifica en el log la urna original y la de contingencia (número y hora de cada una) y suma los votos registrados en cada una.", "criterio": "Informativo: cambio de urna registrado. Anomalía estadística: voto grabado en la urna anterior después del primer voto de la urna nueva. La suma de los votos de las urnas comparada con el boletín está en la prueba L14.", "limites": "El log no dice el motivo del cambio; el acta de la mesa lo registra."},
+    },
+    "L07": {
+        "PT": {"nome": "Tentativas repetidas (já votou, não encontrado, impedido)", "objetivo": "Conta as tentativas de liberar eleitores que já votaram, que não foram encontrados na seção ou que estão impedidos de votar.", "metodo": "Soma no log as mensagens de eleitor que já votou, título não encontrado e eleitor impedido, e compara a taxa da seção com a do município e a das seções vizinhas.", "criterio": "Anomalia estatística: taxa de tentativas muito acima do grupo de referência (escore z robusto ≥ 3,5 e teste beta-binomial com taxa de falsas descobertas de 1%), com 5 tentativas ou mais. Informativo: 3 tentativas ou mais seguidas com o mesmo resultado, sem voto entre elas.", "limites": "Erro ao digitar o número do título gera tentativas. O log não mostra o nome do eleitor."},
+        "EN": {"nome": "Repeated attempts (already voted, not found, barred)", "objetivo": "Counts attempts to release voters who had already voted, who were not found in the section or who are barred from voting.", "metodo": "Adds up the log messages for voter already voted, voter ID not found and voter barred, and compares the section's rate with the municipality's and the neighbouring sections'.", "criterio": "Statistical anomaly: rate of attempts far above the reference group (robust z-score ≥ 3.5 and a beta-binomial test with a 1% false discovery rate), with 5 attempts or more. Informational: 3 or more consecutive attempts with the same result, with no vote between them.", "limites": "Typing the voter ID number wrong creates attempts. The log does not show the voter's name."},
+        "ES": {"nome": "Intentos repetidos (ya votó, no encontrado, impedido)", "objetivo": "Cuenta los intentos de habilitar electores que ya votaron, que no fueron encontrados en la sección o que están impedidos de votar.", "metodo": "Suma en el log los mensajes de elector que ya votó, título no encontrado y elector impedido, y compara la tasa de la sección con la del municipio y la de las secciones vecinas.", "criterio": "Anomalía estadística: tasa de intentos muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5 y prueba beta-binomial con tasa de falsos descubrimientos del 1 %), con 5 intentos o más. Informativo: 3 intentos o más seguidos con el mismo resultado, sin voto entre ellos.", "limites": "Errores al digitar el número del título generan intentos. El log no muestra el nombre del elector."},
+    },
+    "L08": {
+        "PT": {"nome": "Votos não concluídos", "objetivo": "Conta os votos que começaram e não terminaram: eleitor que saiu da cabine ou voto cancelado pelo mesário.", "metodo": "Lê no log os votos interrompidos e compara a taxa da seção com a do município e a das seções vizinhas.", "criterio": "Anomalia estatística: taxa de votos não concluídos muito acima do grupo de referência (escore z robusto ≥ 3,5 e teste beta-binomial com taxa de falsas descobertas de 1%), com 5 casos ou mais.", "limites": "Eleitores com dificuldade, pessoas idosas e problemas no teclado explicam parte dos casos."},
+        "EN": {"nome": "Unfinished votes", "objetivo": "Counts votes that started and did not finish: a voter who left the booth or a vote cancelled by the poll worker.", "metodo": "Reads the interrupted votes in the log and compares the section's rate with the municipality's and the neighbouring sections'.", "criterio": "Statistical anomaly: rate of unfinished votes far above the reference group (robust z-score ≥ 3.5 and a beta-binomial test with a 1% false discovery rate), with 5 cases or more.", "limites": "Voters with difficulties, elderly people and keypad problems explain part of the cases."},
+        "ES": {"nome": "Votos no concluidos", "objetivo": "Cuenta los votos que empezaron y no terminaron: elector que salió de la cabina o voto cancelado por el miembro de mesa.", "metodo": "Lee en el log los votos interrumpidos y compara la tasa de la sección con la del municipio y la de las secciones vecinas.", "criterio": "Anomalía estadística: tasa de votos no concluidos muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5 y prueba beta-binomial con tasa de falsos descubrimientos del 1 %), con 5 casos o más.", "limites": "Electores con dificultades, personas mayores y problemas del teclado explican parte de los casos."},
+    },
+    "L09": {
+        "PT": {"nome": "Tentativas de encerramento", "objetivo": "Procura tentativas de encerrar a votação antes do horário ou mais de uma vez.", "metodo": "Lê no log cada comando de encerramento, a hora e se foi confirmado ou cancelado.", "criterio": "Anomalia estatística: tentativa de encerramento antes do horário em que a urna libera o encerramento (17h de Brasília nos dois turnos, conforme a configuração registrada no próprio log). Informativo: mais de uma tentativa de encerramento depois desse horário.", "limites": "Tecla apertada por engano gera tentativas canceladas. A ata registra."},
+        "EN": {"nome": "Closing attempts", "objetivo": "Looks for attempts to close voting before the official time or more than once.", "metodo": "Reads each closing command in the log, its time and whether it was confirmed or cancelled.", "criterio": "Statistical anomaly: a closing attempt before the time at which the machine allows closing (5 pm Brasília time in both rounds, as configured and logged by the machine itself). Informational: more than one closing attempt after that time.", "limites": "A key pressed by mistake creates cancelled attempts. The minutes record them."},
+        "ES": {"nome": "Intentos de cierre", "objetivo": "Busca intentos de cerrar la votación antes del horario o más de una vez.", "metodo": "Lee en el log cada comando de cierre, la hora y si fue confirmado o cancelado.", "criterio": "Anomalía estadística: intento de cierre antes de la hora en que la urna libera el cierre (17 h de Brasilia en las dos vueltas, según la configuración registrada en el propio log). Informativo: más de un intento de cierre después de esa hora.", "limites": "Una tecla presionada por error genera intentos cancelados. El acta los registra."},
+    },
+    "L10": {
+        "PT": {"nome": "Hora da zerésima e da ligação da urna", "objetivo": "Confere a hora em que a urna foi ligada e imprimiu a zerésima, o relatório que mostra que ela começou sem nenhum voto.", "metodo": "Lê no log a hora de ligar a urna, a da zerésima e a do primeiro voto.", "criterio": "Anomalia estatística: zerésima depois do primeiro voto, ou urna sem zerésima no dia. Informativo: zerésima antes das 6h ou 1 hora ou mais depois do início oficial da votação (8h de Brasília), na hora local.", "limites": "Urna de contingência imprime a sua zerésima na hora da troca. Relógio errado muda todos os horários."},
+        "EN": {"nome": "Time of the zero report and power-on", "objetivo": "Checks when the machine was switched on and printed the zero report (zerésima), which shows it started with no votes.", "metodo": "Reads in the log the time the machine was switched on, the time of the zero report and the time of the first vote.", "criterio": "Statistical anomaly: zero report after the first vote, or no zero report on the day. Informational: zero report before 6 am or 1 hour or more after the official start of voting (8 am Brasília time), in local time.", "limites": "A contingency machine prints its own zero report at the time of the replacement. A wrong clock shifts every time."},
+        "ES": {"nome": "Hora de la zerésima y del encendido de la urna", "objetivo": "Verifica la hora en que la urna fue encendida e imprimió la zerésima, el informe que muestra que empezó sin ningún voto.", "metodo": "Lee en el log la hora de encendido de la urna, la de la zerésima y la del primer voto.", "criterio": "Anomalía estadística: zerésima después del primer voto, o urna sin zerésima en el día. Informativo: zerésima antes de las 6 h o 1 hora o más después del inicio oficial de la votación (8 h de Brasilia), en hora local.", "limites": "La urna de contingencia imprime su zerésima a la hora del cambio. Un reloj equivocado cambia todos los horarios."},
+    },
+    "L11": {
+        "PT": {"nome": "Relógio da urna", "objetivo": "Verifica se o relógio da urna estava certo e se foi ajustado durante o dia.", "metodo": "Compara a hora do log com as horas da zerésima, do boletim e do recebimento pelo TSE e procura ajustes de data e hora no log.", "criterio": "Informativo: diferença de 15 minutos ou mais entre o log e o boletim (abertura, encerramento ou emissão), ou ajuste de relógio no dia fora da votação. Anomalia estatística: ajuste de relógio, ou volta do relógio de mais de 1 minuto, durante a votação, com votos antes e depois.", "limites": "Relógio desregulado é causa conhecida e mexe nos horários de todos os outros testes."},
+        "EN": {"nome": "Machine clock", "objetivo": "Checks whether the machine's clock was right and whether it was adjusted during the day.", "metodo": "Compares the log time with the times of the zero report, the tally sheet and receipt by the TSE, and looks for date and time adjustments in the log.", "criterio": "Informational: a difference of 15 minutes or more between the log and the tally sheet (opening, closing or issuance), or a clock adjustment on the day outside voting. Statistical anomaly: a clock adjustment, or the clock going back more than 1 minute, during voting, with votes before and after.", "limites": "A drifting clock is a known cause and shifts the times used by every other test."},
+        "ES": {"nome": "Reloj de la urna", "objetivo": "Verifica si el reloj de la urna estaba en hora y si fue ajustado durante el día.", "metodo": "Compara la hora del log con las horas de la zerésima, del boletín y de la recepción por el TSE, y busca ajustes de fecha y hora en el log.", "criterio": "Informativo: diferencia de 15 minutos o más entre el log y el boletín (apertura, cierre o emisión), o ajuste del reloj en el día fuera de la votación. Anomalía estadística: ajuste del reloj, o retroceso del reloj de más de 1 minuto, durante la votación, con votos antes y después.", "limites": "Un reloj desajustado es una causa conocida y altera los horarios de todas las demás pruebas."},
+    },
+    "L12": {
+        "PT": {"nome": "Modelo, versão do software e código de carga", "objetivo": "Confere o modelo da urna, a versão do programa e o código de carga registrados no log.", "metodo": "Compara o log com o boletim de urna e com as listas oficiais de urnas, de versões e de cargas.", "criterio": "Anomalia estatística: versão do programa diferente da usada pela grande maioria das urnas do turno, número da urna do boletim ausente do log, ou primeira urna do dia com carga feita para outro município, zona ou seção. Informativo: urna de contingência com carga de outra seção.", "limites": "Depende das listas oficiais publicadas pelo TSE para cada seção."},
+        "EN": {"nome": "Model, software version and load code", "objetivo": "Checks the machine model, the software version and the load code recorded in the log.", "metodo": "Compares the log with the tally sheet and with the official lists of machines, versions and loads.", "criterio": "Statistical anomaly: software version different from the one used by the vast majority of machines in the round, the tally sheet's machine number missing from the log, or the first machine of the day loaded for another municipality, zone or section. Informational: contingency machine loaded for another section.", "limites": "It depends on the official lists published by the TSE for each section."},
+        "ES": {"nome": "Modelo, versión del software y código de carga", "objetivo": "Verifica el modelo de la urna, la versión del programa y el código de carga registrados en el log.", "metodo": "Compara el log con el boletín de urna y con las listas oficiales de urnas, versiones y cargas.", "criterio": "Anomalía estadística: versión del programa distinta de la usada por la gran mayoría de las urnas de la vuelta, número de urna del boletín ausente del log, o primera urna del día con carga hecha para otro municipio, zona o sección. Informativo: urna de contingencia con carga de otra sección.", "limites": "Depende de las listas oficiales publicadas por el TSE para cada sección."},
+    },
+    "L13": {
+        "PT": {"nome": "Biometria detalhada", "objetivo": "Detalha o uso da biometria: digital reconhecida na 1ª tentativa, depois de várias tentativas ou liberação sem digital.", "metodo": "Conta no log as tentativas de digital de cada eleitor e o resultado, e compara a seção com o município e com as seções vizinhas.", "criterio": "Anomalia estatística: taxa de liberação sem digital muito acima do grupo de referência (escore z robusto ≥ 3,5 e teste beta-binomial com taxa de falsas descobertas de 1%), em seções com 30 votos ou mais. Informativo: 20% ou mais dos eleitores com 4 tentativas de digital ou mais.", "limites": "Complementa o teste 10, que usa o boletim. Leitor com defeito e eleitores sem biometria explicam muitos casos."},
+        "EN": {"nome": "Detailed biometrics", "objetivo": "Details the use of biometrics: fingerprint recognised at the 1st attempt, after several attempts, or release without a fingerprint.", "metodo": "Counts in the log the fingerprint attempts of each voter and the result, and compares the section with the municipality and the neighbouring sections.", "criterio": "Statistical anomaly: rate of releases without fingerprint far above the reference group (robust z-score ≥ 3.5 and a beta-binomial test with a 1% false discovery rate), in sections with 30 votes or more. Informational: 20% or more of voters with 4 or more fingerprint attempts.", "limites": "It complements test 10, which uses the tally sheet. Faulty readers and voters without biometrics explain many cases."},
+        "ES": {"nome": "Biometría detallada", "objetivo": "Detalla el uso de la biometría: huella reconocida en el 1.er intento, después de varios intentos o habilitación sin huella.", "metodo": "Cuenta en el log los intentos de huella de cada elector y el resultado, y compara la sección con el municipio y con las secciones vecinas.", "criterio": "Anomalía estadística: tasa de liberación sin huella muy por encima del grupo de referencia (puntuación z robusta ≥ 3,5 y prueba beta-binomial con tasa de falsos descubrimientos del 1 %), en secciones con 30 votos o más. Informativo: 20 % o más de los electores con 4 intentos de huella o más.", "limites": "Complementa la prueba 10, que usa el boletín. Lectores defectuosos y electores sin biometría explican muchos casos."},
+    },
+    "L14": {
+        "PT": {"nome": "Votos do log × boletim de urna", "objetivo": "Confere se o número de votos gravados no log é igual ao comparecimento do boletim de urna.", "metodo": "Conta os votos concluídos no log (somando as urnas, se houve troca) e compara com o comparecimento do boletim.", "criterio": "Anomalia estatística: qualquer diferença entre os votos concluídos no log (somando as urnas, se houve troca) e o comparecimento do boletim. Informativo: log ausente ou ilegível numa seção com votação em urna.", "limites": "Log incompleto ou corrompido também gera diferença; nesse caso fica registrado como falha do arquivo."},
+        "EN": {"nome": "Log votes × tally sheet", "objetivo": "Checks whether the number of votes recorded in the log equals the turnout in the tally sheet.", "metodo": "Counts the completed votes in the log (adding up the machines if one was replaced) and compares them with the tally sheet's turnout.", "criterio": "Statistical anomaly: any difference between the votes completed in the log (adding up the machines, if one was replaced) and the turnout in the tally sheet. Informational: missing or unreadable log in a section that voted on a machine.", "limites": "An incomplete or corrupted log also creates a difference; in that case it is recorded as a file failure."},
+        "ES": {"nome": "Votos del log × boletín de urna", "objetivo": "Verifica si el número de votos registrados en el log es igual a la comparecencia del boletín de urna.", "metodo": "Cuenta los votos concluidos en el log (sumando las urnas, si hubo cambio) y los compara con la comparecencia del boletín.", "criterio": "Anomalía estadística: cualquier diferencia entre los votos concluidos en el log (sumando las urnas, si hubo cambio) y la comparecencia del boletín. Informativo: log ausente o ilegible en una sección que votó en urna.", "limites": "Un log incompleto o dañado también genera diferencia; en ese caso queda registrado como falla del archivo."},
+    },
+}
+# =============================================================================
+# 6. LOGS DAS URNAS (ANEXO B DO RELATÓRIO): TESTES L01 A L14
+# =============================================================================
+# Os testes L usam o log de cada urna (arquivo .logjez publicado pelo TSE em resultados.tse.jus.br, "arquivo-urna"),
+# que registra a hora de cada voto e de cada evento da urna. Duas etapas:
+#   1. extração (--extrair-logs): baixa o log de cada seção, lê na memória e grava só um RESUMO NUMÉRICO por seção
+#      (hora de cada voto, forma de liberação do eleitor, eventos da urna, versão e carga). O .logjez e o logd.dat
+#      nunca são gravados em disco, e nenhum número de título (de eleitor ou de mesário) entra no resumo;
+#   2. testes (--logs <pasta dos resumos>): aplica os testes L01 a L14 a cada seção, com o Boletim de Urna da mesma
+#      seção (comparecimento, horários, urna, carga) e o mesmo grupo de referência dos testes T.
+# Os horários do log são os do relógio da urna (hora local). Fim oficial: 17h de Brasília no 1º turno e 19h no
+# 2º turno (encerramento estendido), convertidos para a hora local pelo mesmo fuso inferido no teste T11.
+LOG_PLEITO = {1: 3220, 2: 3221}                       # códigos dos pleitos no "arquivo-urna" do TSE
+LOG_DIA = {1: "04/10/2026", 2: "25/10/2026"}          # dia da votação de cada turno
+LOG_URL_SECAO = "https://resultados.tse.jus.br/oficial/ele2026/arquivo-urna/{pl}/dados/{uf}/{m:05d}/{z:04d}/{s:04d}"
+LOG_URL_CONFIG = "https://resultados.tse.jus.br/oficial/ele2026/arquivo-urna/{pl}/config/{uf}/{uf}-p{pl:06d}-cs.json"
+LOG_UFS = ["AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR", "RJ",
+           "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO", "ZZ"]
+HORA_FIM_TURNO = {1: 17, 2: 19}   # fim oficial (Brasília) usado no encerramento tardio (T11) e nos votos depois do horário (L01)
+ATRASO_TARDIO_MIN = 60            # encerramento tardio (T11): 1 hora ou mais depois do fim oficial local
+URL_PAGINA_TARDIO = "https://paranacontraoscorruptos.org/#/encerramento-tardio"
+LOG_APOS_MIN_VOTOS = 10           # L01: votos depois do horário para a anomalia
+LOG_RAJADA_SEG = 30               # L02: intervalo máximo entre votos de uma rajada
+LOG_RAJADA_MIN = 5                # L02: votos seguidos numa rajada
+LOG_MIN_VOTOS_TEMPO = 30          # L02 e L13: votos mínimos na seção
+LOG_SEQ_SEM_DIGITAL = 10          # L03: liberações seguidas sem digital
+LOG_RELIGAMENTOS = 3              # L05: religamentos durante a votação
+LOG_MIN_CASOS = 5                 # L07 e L08: casos mínimos para a anomalia
+LOG_TENTATIVAS_SEQ = 3            # L07: tentativas seguidas com o mesmo resultado
+LOG_HORA_ZER_CEDO = 6             # L10: zerésima antes desta hora local (informativo)
+LOG_RELOGIO_MIN = 15              # L11: diferença log × boletim (minutos)
+LOG_VOLTA_SEG = 60                # L11: volta do relógio (segundos)
+LOG_VERSAO_MAIORIA = 0.95         # L12: a versão de referência é a de pelo menos 95% das urnas do turno
+LOG_DIGITAL_TENTATIVAS = 4        # L13: tentativas de digital
+LOG_DIGITAL_TENTATIVAS_PCT = 0.20 # L13: parcela de eleitores com 4 tentativas ou mais (informativo)
+LOG_MAX_LINHAS_RELATORIO = 100    # linhas por tabela no relatório (a lista completa fica no CSV)
+LOG_MAX_EVENTOS = 3000
+TESTES_LOG_ORDEM = [f"L{i:02d}" for i in range(1, 15)]
+ARQUIVOS_LOG = {"sin": "logs_sinalizacoes.csv", "sec": "logs_secoes.csv", "falhas": "logs_falhas.csv"}
+
+LOG_R_CAP = re.compile(r"^Capturada a digital\. Tentativa \[(\d+)\]")
+LOG_R_ENC_ANTES = re.compile(r"^Encerramento só pode ser solicitado após as (\d\d:\d\d)")
+LOG_R_VERSAO = re.compile(r"^Versão da aplicação: ([0-9.]+)")
+LOG_R_MODELO = re.compile(r"^Identificação do Modelo de Urna: (\S+)")
+LOG_R_CARGA = re.compile(r"^Código de carga ([0-9.]+) gravado")
+LOG_R_MUN = re.compile(r"^Município: (\d+)$")
+LOG_R_ZONA = re.compile(r"^Zona Eleitoral: (\d+)$")
+LOG_R_SECAO = re.compile(r"^Seção Eleitoral: (\d+)$")
+LOG_R_DH = re.compile(r"^Data e hora (?:atualizada|que foi digitada)")
+# Eventos da urna: código -> início da mensagem no log (nenhum guarda números de título)
+LOG_EVENTOS = [
+    ("suspensa", "Votação suspensa"), ("reinicio", "Mesário confirmou o reinício da votação"),
+    ("desligada", "Desligando a urna"), ("desligada", "Urna desligada a pedido"), ("ligada", "Urna ligada em "),
+    ("bateria", "Urna operando na bateria interna"), ("bateria", "Urna operando com bateria interna"),
+    ("rede", "Urna operando na rede elétrica"), ("rede", "Urna operando com rede elétrica"),
+    ("ja_votou", "O eleitor identificado já votou"), ("impedido", "Eleitor impedido"), ("justificativa", "Justificativa recebida"),
+    ("suspenso_sem_voto", "Eleitor foi suspenso e não confirmou nenhum voto"), ("hab_cancelada", "Habilitação cancelada"),
+    ("nao_encontrado", "Eleitor não encontrado para o identificador informado"), ("enc_cedo", "Encerramento só pode ser solicitado após as"),
+    ("enc_menu", "Operador selecionou: Encerrar votação"), ("enc_cancelado", "Operador cancelou o encerramento da votação"),
+    ("todos_sim", "Todas as pessoas presentes já votaram? SIM"), ("todos_nao", "Todas as pessoas presentes já votaram? NÃO"),
+    ("enc_confirmado", "Procedimento de encerramento confirmado"), ("enc_abortado", "Procedimento de encerramento abortado"),
+    ("bu_impresso", "Imprimindo relatório [BU] via nº [1]"), ("zer", "Gerando relatório [ZERÉSIMA] [INÍCIO]"),
+    ("pronta", "Urna pronta para receber votos"),
+]
+# Liberação do eleitor no resumo: 1–9 = digital do eleitor na n-ésima captura; N = digital não reconhecida (liberação
+# manual); S = sem digital cadastrada (ano de nascimento); ? = não identificada
+LOG_SEM_DIGITAL = ("N", "S")
+
+
+class LogFalha(Exception):
+    pass
+
+
+def _hms_seg(s: str) -> int:
+    return int(s[0:2]) * 3600 + int(s[3:5]) * 60 + int(s[6:8])
+
+
+def _data_tupla(s: str) -> tuple:
+    return (s[6:10], s[3:5], s[0:2])
+
+
+def log_textos(blob: bytes) -> list[str]:
+    """logd.dat principal e os logs de urnas substituídas (arquivos .jez dentro do .logjez), lidos na memória."""
+    out = []
+    z = zipfile.ZipFile(io.BytesIO(blob))
+    for n in z.namelist():
+        b = z.read(n)
+        if n == "logd.dat":
+            out.append(b.decode("latin1"))
+        elif n.lower().endswith(".jez"):
+            try:
+                z2 = zipfile.ZipFile(io.BytesIO(b))
+                if "logd.dat" in z2.namelist():
+                    out.append(z2.read("logd.dat").decode("latin1"))
+            except zipfile.BadZipFile:
+                pass
+    return out
+
+
+def log_resumir(textos: list[str], turno: int) -> dict:
+    """Resumo numérico de uma seção: votos (hora, liberação), eventos, urnas, versão e carga. Nenhum título é guardado.
+
+    Hora = segundos desde 0h do dia da votação, no relógio da urna (depois da meia-noite, + 86400). Quando o .logjez traz
+    cópias do log da mesma urna, cada linha (urna, data e hora, assinatura da linha) conta uma vez só."""
+    dia = LOG_DIA[turno]
+    d, m, a = (int(x) for x in dia.split("/"))
+    dseg = (datetime(a, m, d) + timedelta(days=1)).strftime("%d/%m/%Y")
+    tdia = _data_tupla(dia)
+    votos, eventos, voltas = [], [], []
+    urnas: dict[str, dict] = {}
+    vistos = set()
+    n_lin = 0
+    for txt in textos:
+        cur = None
+        prev = {}
+        for ln in txt.splitlines():
+            p = ln.split("\t")
+            if len(p) < 6:
+                continue
+            data, urna, app, msg = p[0][:10], p[2], p[3], p[4]
+            assin = (urna, p[0], p[5])
+            if assin in vistos:
+                continue
+            vistos.add(assin)
+            U = urnas.get(urna)
+            if U is None:
+                U = urnas[urna] = {"i": len(urnas), "t0": None, "t1": None, "n": 0, "ver": "", "mod": "", "carga": "", "mun": "", "zona": "", "sec": ""}
+            if data != dia and data != dseg:
+                # antes do dia da votação: versão, modelo e carga da urna (a última informada até o dia)
+                if _data_tupla(data) <= tdia:
+                    if msg.startswith("Versão da aplicação"):
+                        mm = LOG_R_VERSAO.match(msg)
+                        if mm:
+                            U["ver"] = mm.group(1)
+                    elif msg.startswith("Identificação do Modelo"):
+                        mm = LOG_R_MODELO.match(msg)
+                        if mm:
+                            U["mod"] = mm.group(1)
+                    elif msg.startswith("Código de carga"):
+                        mm = LOG_R_CARGA.match(msg)
+                        if mm:
+                            U["carga"] = mm.group(1).replace(".", "")
+                    elif app == "SCUE" and msg.startswith(("Município:", "Zona Eleitoral:", "Seção Eleitoral:")):
+                        for chave, rx in (("mun", LOG_R_MUN), ("zona", LOG_R_ZONA), ("sec", LOG_R_SECAO)):
+                            mm = rx.match(msg)
+                            if mm:
+                                U[chave] = mm.group(1)
+                continue
+            t = _hms_seg(p[0][11:19]) + (86400 if data == dseg else 0)
+            n_lin += 1
+            ui = U["i"]
+            if U["t0"] is None:
+                U["t0"] = t
+            U["t1"] = t
+            pv = prev.get(urna)
+            if pv is not None and pv - t > LOG_VOLTA_SEG:
+                voltas.append([t, pv - t, ui])
+            prev[urna] = t
+            if msg.startswith("Versão da aplicação"):
+                mm = LOG_R_VERSAO.match(msg)
+                if mm and not U["ver"]:
+                    U["ver"] = mm.group(1)
+            elif msg.startswith("Identificação do Modelo"):
+                mm = LOG_R_MODELO.match(msg)
+                if mm and not U["mod"]:
+                    U["mod"] = mm.group(1)
+            if p[1] == "ERRO":
+                eventos.append([t, "erro", ui])
+            elif LOG_R_DH.match(msg):
+                eventos.append([t, "dh", ui])
+            else:
+                for cod, ini in LOG_EVENTOS:
+                    if msg.startswith(ini):
+                        if cod == "enc_cedo":
+                            mm = LOG_R_ENC_ANTES.match(msg)
+                            cod += ":" + (mm.group(1) if mm else "")
+                        if cod != "ligada" or app != "VOTA":   # "Urna ligada em" vem do LOGD
+                            eventos.append([t, cod, ui])
+                        break
+            if app != "VOTA":
+                continue
+            # bloco do eleitor: do identificador digitado até "O voto do eleitor foi computado"
+            if msg == "Aguardando digitação do identificador do eleitor":
+                if cur is None or cur["th"] is None:
+                    cur = {"ti": None, "id": "", "cap": 0, "man": 0, "ano": 0, "bio": 0, "mes": 0, "th": None, "fl": 0}
+                continue
+            if msg == "Identificador do eleitor digitado pelo mesário":
+                if cur is None:
+                    cur = {"ti": None, "id": "", "cap": 0, "man": 0, "ano": 0, "bio": 0, "mes": 0, "th": None, "fl": 0}
+                if cur["ti"] is None:
+                    cur["ti"] = t
+                continue
+            if cur is None:
+                continue
+            if msg.startswith("Identificador digitado pelo mesário foi:"):
+                cur["id"] = "C" if "CPF" in msg else "T"
+            elif msg.startswith("Capturada a digital. Tentativa"):
+                mm = LOG_R_CAP.match(msg)
+                if mm:
+                    cur["cap"] = max(cur["cap"], int(mm.group(1)))
+            elif msg == "Tipo de habilitação do eleitor [biométrica]":
+                cur["bio"] = 1
+            elif msg.startswith("Solicitação de dado pessoal do eleitor para habilitação manual"):
+                cur["man"] = 1
+            elif msg.startswith("Ano de nascimento digitado é igual") or msg == "Dado digitado confere":
+                cur["ano"] = 1
+            elif msg == "Capturada a digital do mesário" or (msg.startswith("Mesário") and msg.endswith("habilitou o eleitor")):
+                cur["mes"] = 1
+            elif msg.startswith("Habilitação cancelada"):
+                cur.update({"cap": 0, "man": 0, "ano": 0, "bio": 0, "mes": 0})   # nova tentativa, mesmo atendimento
+            elif msg == "Eleitor foi habilitado":
+                cur["th"] = t
+            elif msg.startswith("Eleitor corrigiu na tela de confirmação"):
+                cur["fl"] |= 1
+            elif msg.startswith("Eleitor sem atividade por"):
+                cur["fl"] |= 2
+            elif msg.startswith("Eleitor votou parcialmente e em seguida foi suspenso") or msg.startswith("Atribuido voto nulo por suspensão"):
+                cur["fl"] |= 4
+            elif msg.startswith("Áudio ativado") or msg == "Fone de ouvido conectado":
+                cur["fl"] |= 8
+            elif msg == "Eleitor foi suspenso e não confirmou nenhum voto":
+                cur = None
+            elif msg == "O voto do eleitor foi computado":
+                if cur["bio"]:
+                    lib = str(min(9, max(1, cur["cap"])))
+                elif cur["man"]:
+                    lib = "N"
+                elif cur["ano"]:
+                    lib = "S"
+                else:
+                    lib = "?"
+                fl = cur["fl"] | (16 if cur["mes"] and lib in LOG_SEM_DIGITAL else 0)
+                th = cur["th"] if cur["th"] is not None else t
+                ti = cur["ti"] if cur["ti"] is not None else th
+                votos.append((t, th, ti, lib, cur["id"] or "?", fl, ui))
+                U["n"] += 1
+                cur = None
+    if not urnas or n_lin == 0:
+        raise LogFalha("log sem registros do dia da votação")
+    votos.sort(key=lambda v: (v[0], v[6]))
+    eventos.sort(key=lambda e: (e[0], e[2]))
+    voltas.sort()
+    ordem = sorted((u for u in urnas.values() if u["t0"] is not None), key=lambda u: u["t0"])
+    novo = {u["i"]: k for k, u in enumerate(ordem)}           # urnas numeradas pela ordem em que aparecem no dia
+    nomes = {u["i"]: n for n, u in urnas.items()}
+    vt, ant = [], 0
+    for v in votos:
+        vt.append(v[0] - ant)
+        ant = v[0]
+    r = {
+        "u": [[nomes[u["i"]], u["t0"], u["t1"], u["n"], u["ver"], u["mod"], u["carga"], u["mun"], u["zona"], u["sec"]] for u in ordem],
+        "vt": vt, "vh": [v[0] - v[1] for v in votos], "vi": [v[1] - v[2] for v in votos],
+        "vl": "".join(v[3] for v in votos), "vd": "".join(v[4] for v in votos),
+        "vf": {str(i): v[5] for i, v in enumerate(votos) if v[5]},
+        "ev": [[e[0], e[1], novo.get(e[2], 0)] for e in eventos[:LOG_MAX_EVENTOS]],
+        "volta": [[x[0], x[1], novo.get(x[2], 0)] for x in voltas],
+        "nl": n_lin,
+    }
+    if len(ordem) > 1:
+        r["vu"] = "".join(str(min(9, novo.get(v[6], 0))) for v in votos)
+    return r
+
+
+# ---------------------------------------------------------------- download (um processo por vez; nada vai para o disco)
+_LOG_SES = None
+
+
+def _log_get(url: str, tentativas: int = 6) -> bytes | None:
+    """GET com novas tentativas. Devolve None quando o arquivo não existe (404)."""
+    global _LOG_SES
+    try:
+        import requests
+    except ImportError:  # pragma: no cover
+        requests = None
+    for k in range(tentativas):
+        try:
+            if requests is not None:
+                if _LOG_SES is None:
+                    _LOG_SES = requests.Session()
+                    _LOG_SES.headers["User-Agent"] = f"auditoria-eleicoes/{VERSAO_MOTOR}"
+                r = _LOG_SES.get(url, timeout=60)
+                if r.status_code == 200:
+                    return r.content
+                if r.status_code == 404:
+                    return None
+            else:
+                req = urllib.request.Request(url, headers={"User-Agent": f"auditoria-eleicoes/{VERSAO_MOTOR}"})
+                with urllib.request.urlopen(req, timeout=60) as resp:
+                    return resp.read()
+        except Exception as exc:  # noqa: BLE001
+            if getattr(exc, "code", None) == 404:
+                return None
+        time.sleep(min(60, 2 ** k))
+    raise LogFalha("download falhou: " + url.rsplit("/", 1)[-1])
+
+
+def log_secoes_tse(turno: int, uf: str) -> list[tuple[int, int, int]]:
+    """Seções de uma UF no turno, pela configuração publicada pelo TSE (município, zona, seção)."""
+    pl = LOG_PLEITO[turno]
+    b = _log_get(LOG_URL_CONFIG.format(pl=pl, uf=uf.lower()))
+    if b is None:
+        return []
+    j = json.loads(b.decode("utf-8"))
+    out = set()
+    for ab in j.get("abr", []):
+        for mu in ab.get("mu", []):
+            for z in mu.get("zon", []):
+                for s in z.get("sec", []):
+                    out.add((int(mu["cd"]), int(z["cd"]), int(s["ns"])))
+    return sorted(out)
+
+
+def log_processar_secao(chave: tuple) -> dict:
+    """Uma seção: baixa o índice e o(s) .logjez na memória, lê e devolve o resumo (ou a falha)."""
+    turno, uf, mun, zona, secao = chave
+    pl = LOG_PLEITO[turno]
+    base = LOG_URL_SECAO.format(pl=pl, uf=uf.lower(), m=mun, z=zona, s=secao)
+    try:
+        aux = _log_get(f"{base}/p{pl:06d}-{uf.lower()}-m{mun:05d}-z{zona:04d}-s{secao:04d}-aux.json")
+        if aux is None:
+            raise LogFalha("seção sem arquivos de urna publicados")
+        blobs = []
+        for h in json.loads(aux.decode("utf-8")).get("hashes", []):
+            for a in h.get("arq", []):
+                if a.get("tp") == "log":
+                    c = _log_get(f"{base}/{h['hash']}/{a['nm']}")
+                    if c is not None:
+                        blobs.append(c)
+        if not blobs:
+            raise LogFalha("seção sem log publicado")
+        textos, shas = [], []
+        for b in blobs:
+            shas.append(hashlib.sha256(b).hexdigest())
+            textos += log_textos(b)
+        del blobs
+        r = log_resumir(textos, turno)
+        r["k"] = [turno, uf, mun, zona, secao]
+        r["sha"] = shas
+        return r
+    except Exception as exc:  # noqa: BLE001
+        return {"k": [turno, uf, mun, zona, secao], "falha": f"{type(exc).__name__}: {exc}"[:200]}
+
+
+def _log_ler_jsonl(p: Path):
+    op = gzip.open if p.suffix == ".gz" else open
+    with op(p, "rt", encoding="utf-8") as f:
+        for ln in f:
+            ln = ln.strip()
+            if ln:
+                try:
+                    yield json.loads(ln)
+                except json.JSONDecodeError:
+                    continue  # linha cortada por uma interrupção: a seção é refeita
+
+
+def extrair_logs(pasta: Path, turnos: list[int], ufs: list[str] | None = None, processos: int = 12,
+                 secoes: dict | None = None) -> None:
+    """Etapa 1 dos testes L: um arquivo <pasta>/t<turno>/<UF>.jsonl.gz por UF, com o resumo de cada seção.
+
+    Retomável: as seções já resumidas não são baixadas de novo. As falhas são tentadas de novo duas vezes."""
+    from multiprocessing import Pool
+    for turno in turnos:
+        d = Path(pasta) / f"t{turno}"
+        d.mkdir(parents=True, exist_ok=True)
+        for uf in (ufs or LOG_UFS):
+            gz = d / f"{uf}.jsonl.gz"
+            if gz.exists():
+                log(f"  Logs {turno}º turno {uf}: já extraídos ({gz.name}).")
+                continue
+            lista = sorted(secoes[(turno, uf)]) if secoes is not None and (turno, uf) in secoes else log_secoes_tse(turno, uf)
+            if not lista:
+                log(f"  Logs {turno}º turno {uf}: nenhuma seção.")
+                continue
+            arq = d / f"{uf}.jsonl"
+            t0 = time.time()
+            for rodada in range(3):
+                ok = set()
+                if arq.exists():
+                    for r in _log_ler_jsonl(arq):
+                        if "falha" not in r:
+                            ok.add(tuple(r["k"][2:]))
+                pend = [s for s in lista if tuple(s) not in ok]
+                if not pend:
+                    break
+                log(f"  Logs {turno}º turno {uf}: {len(pend):,} seções a ler (rodada {rodada + 1}; já lidas {len(ok):,} de {len(lista):,}).".replace(",", "."))
+                feitas, falhas, ult = 0, 0, time.time()
+                with Pool(processos if rodada == 0 else max(2, processos // 2)) as pool, open(arq, "a", encoding="utf-8") as f:
+                    for r in pool.imap_unordered(log_processar_secao, [(turno, uf, *s) for s in pend], chunksize=2):
+                        f.write(json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n")
+                        feitas += 1
+                        falhas += "falha" in r
+                        if time.time() - ult > 60:
+                            f.flush()
+                            ult = time.time()
+                            log(f"    {uf}: {feitas:,}/{len(pend):,} ({falhas:,} falhas) · {feitas / max(1, ult - t0):.1f} seções/s".replace(",", "."))
+                            (d / "progresso.json").write_text(json.dumps({"turno": turno, "uf": uf, "feitas": feitas, "pendentes": len(pend),
+                                                                          "falhas": falhas, "atualizado": datetime.now(TZ_BRT).isoformat(timespec="seconds")}),
+                                                              encoding="utf-8")
+            # consolida: um registro por seção (o resumo, se houver; senão a última falha) e compacta
+            reg = {}
+            for r in _log_ler_jsonl(arq):
+                k = tuple(r["k"])
+                if "falha" not in r or k not in reg or "falha" in reg[k]:
+                    reg[k] = r
+            with gzip.open(str(gz) + ".tmp", "wt", encoding="utf-8", compresslevel=6) as f:
+                for k in sorted(reg):
+                    f.write(json.dumps(reg[k], ensure_ascii=False, separators=(",", ":")) + "\n")
+            os.replace(str(gz) + ".tmp", gz)
+            arq.unlink()
+            nf = sum(1 for r in reg.values() if "falha" in r)
+            log(f"  Logs {turno}º turno {uf}: {len(reg) - nf:,} seções lidas, {nf:,} sem log ({time.time() - t0:.0f}s).".replace(",", "."))
+
+
+# ---------------------------------------------------------------- testes L: medidas por seção
+def offset_fuso(s: pd.DataFrame) -> pd.Series:
+    """Diferença (h) entre a hora local e a de Brasília, por seção: entre os fusos possíveis da UF, o mais próximo do
+    10º percentil das aberturas do município no turno (mesma regra do teste T11)."""
+    h = s["abertura"].dt.hour + s["abertura"].dt.minute / 60.0 + s["abertura"].dt.second / 3600.0
+    q = h.groupby([s["turno"], s["uf"], s["mun"]]).transform(lambda v: v.quantile(0.10))
+    return pd.Series([min(FUSOS_UF.get(u, (0,)), key=lambda o: abs(x - HORA_INICIO_OFICIAL - o)) if pd.notna(x) else 0
+                      for u, x in zip(s["uf"], q)], index=s.index, dtype=float)
+
+
+def _seg_do_dia(serie: pd.Series, turno: pd.Series) -> pd.Series:
+    """Datetime do boletim -> segundos desde 0h do dia da votação do turno (NaN se ausente)."""
+    base = turno.map({t: pd.Timestamp(datetime.strptime(d, "%d/%m/%Y")) for t, d in LOG_DIA.items()})
+    return (serie - base).dt.total_seconds()
+
+
+def _maior_sequencia(marcas) -> tuple[int, int]:
+    """Maior sequência de True seguidos: (tamanho, índice do fim)."""
+    best, fim, run = 0, -1, 0
+    for i, x in enumerate(marcas):
+        run = run + 1 if x else 0
+        if run > best:
+            best, fim = run, i
+    return best, fim
+
+
+def log_medidas(r: dict, ctx: dict) -> dict:
+    """Medidas de uma seção para os testes L01 a L14. ctx: horários oficiais locais (s) e dados do boletim."""
+    m = {"falha": r.get("falha", "")}
+    if m["falha"]:
+        return m
+    fim, cfg, ini = ctx["fim"], ctx["cfg"], ctx["ini"]
+    vt, n = r["vt"], len(r["vt"])
+    t = list(np.cumsum(vt)) if n else []
+    lib, vu, vf = r["vl"], r.get("vu", ""), r.get("vf", {})
+    ev = r["ev"]
+    urnas = r["u"]
+    m.update(n_votos=n, n_urnas=len(urnas), n_urnas_voto=sum(1 for u in urnas if u[3] > 0))
+    sd = [c in LOG_SEM_DIGITAL for c in lib]
+    m["n_sem_digital"] = int(sum(sd))
+    m["n_cpf"] = r["vd"].count("C")
+    # L01: votos depois do horário oficial local
+    apos = [i for i in range(n) if t[i] >= fim]
+    m["v_apos"] = len(apos)
+    m["v_apos_1h"] = sum(1 for i in apos if t[i] >= fim + 3600)
+    m["ult_apos_min"] = round((t[-1] - fim) / 60, 1) if n else np.nan
+    m["sd_apos"] = sum(1 for i in apos if sd[i])
+    m["pct_apos"] = m["v_apos"] / n if n else np.nan
+    # L02: intervalo entre votos seguidos da mesma urna e rajadas sem digital
+    ints, rajada, rmax, nraj = [], 0, 0, 0
+    for i in range(1, n):
+        mesma = (vu[i] == vu[i - 1]) if vu else True
+        dt = t[i] - t[i - 1]
+        if mesma:
+            ints.append(dt)
+        if mesma and dt <= LOG_RAJADA_SEG and sd[i] and sd[i - 1]:
+            rajada = rajada + 1 if rajada else 2
+        else:
+            if rajada >= LOG_RAJADA_MIN:
+                nraj += 1
+            rajada = 0
+        rmax = max(rmax, rajada)
+    if rajada >= LOG_RAJADA_MIN:
+        nraj += 1
+    m["int_mediano"] = float(np.median(ints)) if len(ints) >= LOG_MIN_VOTOS_TEMPO - 1 else np.nan
+    m["rajada_max"], m["n_rajadas"] = rmax, nraj
+    # L03: maior sequência de liberações sem digital
+    seq, fim_seq = _maior_sequencia(sd)
+    m["seq_sem_digital"] = seq
+    m["pct_digital"] = 1 - m["n_sem_digital"] / n if n else np.nan
+    m["erro_na_seq"] = False
+    if seq >= LOG_SEQ_SEM_DIGITAL:
+        a, b = t[fim_seq - seq + 1], t[fim_seq]
+        m["erro_na_seq"] = any(e[1] == "erro" and a - 600 <= e[0] <= b for e in ev)
+    # L04: votos depois do "todos já votaram? SIM" (sem encerramento cancelado antes do voto)
+    estado, v_sim, v_nao = None, 0, 0
+    ie = 0
+    evs = sorted(ev, key=lambda e: e[0])
+    for i in range(n):
+        while ie < len(evs) and evs[ie][0] <= t[i]:
+            c = evs[ie][1]
+            if c == "todos_sim":
+                estado = "sim"
+            elif c == "todos_nao":
+                estado = "nao"
+            elif c in ("enc_cancelado", "enc_abortado") and estado == "sim":
+                estado = "cancelado"
+            ie += 1
+        if estado == "sim":
+            v_sim += 1
+        elif estado in ("nao", "cancelado"):
+            v_nao += 1
+    m["v_pos_sim"], m["v_pos_nao"] = v_sim, v_nao
+    # janela da votação: do primeiro ao último voto (ou do "pronta" ao encerramento)
+    t_pronta = next((e[0] for e in evs if e[1] == "pronta"), t[0] if n else None)
+    t_enc = [e[0] for e in evs if e[1] == "enc_confirmado"]
+    t_enc = t_enc[-1] if t_enc else (t[-1] if n else None)
+    jan = (lambda x: t_pronta is not None and t_enc is not None and t_pronta <= x <= t_enc)
+    # L05: interrupções
+    deslig = [e for e in evs if e[1] == "desligada" and jan(e[0])]
+    prim_lig = {}
+    for e in evs:
+        if e[1] == "ligada":
+            prim_lig.setdefault(e[2], e[0])
+    # religamento: urna ligada de novo durante a votação (a 1ª ligação de uma urna de contingência não conta)
+    relig = [e for e in evs if e[1] == "ligada" and jan(e[0]) and not (e[2] > 0 and prim_lig.get(e[2]) == e[0])]
+    m["n_religamentos"] = len(relig)
+    m["n_bateria"] = sum(1 for e in evs if e[1] == "bateria" and jan(e[0]))
+    m["n_desligada"] = len(deslig)
+    v_parada, parada = 0, 0
+    for e in deslig:
+        prox = next((x[0] for x in evs if x[1] == "ligada" and x[2] == e[2] and x[0] > e[0]), None)
+        if prox is None:
+            continue
+        parada += prox - e[0]
+        v_parada += sum(1 for i in range(n) if e[0] < t[i] < prox and (not vu or int(vu[i]) == e[2]))
+    m["v_urna_desligada"], m["seg_parada"] = v_parada, parada
+    # L06: troca de urna (votos em mais de uma urna) e voto na urna anterior depois do 1º voto da nova
+    sobre = 0
+    if vu and m["n_urnas_voto"] > 1:
+        prim = {}
+        for i in range(n):
+            prim.setdefault(vu[i], t[i])
+        for i in range(n):
+            if any(t[i] > prim[u2] for u2 in prim if u2 > vu[i]):
+                sobre += 1
+    m["v_sobreposto"] = sobre
+    # L07: tentativas (já votou, não encontrado, impedido) e sequências sem voto entre elas
+    tent = [e for e in evs if e[1] in ("ja_votou", "nao_encontrado", "impedido")]
+    m["n_tentativas"] = len(tent)
+    m["taxa_tentativas"] = len(tent) / (n + len(tent)) if n + len(tent) else np.nan
+    sq, best, ant_c, iv = 0, 0, None, 0
+    for e in tent:
+        while iv < n and t[iv] <= e[0]:
+            iv += 1
+            ant_c, sq = None, 0
+        sq = sq + 1 if e[1] == ant_c else 1
+        ant_c = e[1]
+        best = max(best, sq)
+    m["tentativas_seguidas"] = best
+    # L08: votos não concluídos
+    n_int = sum(1 for e in evs if e[1] == "suspenso_sem_voto") + sum(1 for f in vf.values() if f & 4)
+    m["n_nao_concluidos"] = n_int
+    m["taxa_nao_concluidos"] = n_int / (n + n_int) if n + n_int else np.nan
+    # L09: tentativas de encerramento antes do horário configurado (17h de Brasília, hora local) e depois
+    menus = [e[0] for e in evs if e[1] == "enc_menu"]
+    # cada tentativa gera "Encerrar votação" e, se for cedo, a recusa da urna: conta uma vez só
+    tol = TOLERANCIA_MINUTOS * 60
+    m["n_enc_cedo"] = max(sum(1 for e in evs if e[1].startswith("enc_cedo") and e[0] < cfg - tol), sum(1 for x in menus if x < cfg - tol))
+    m["n_enc_depois"] = sum(1 for x in menus if x >= cfg)
+    hc = next((e[1].split(":", 1)[1] for e in evs if e[1].startswith("enc_cedo:")), "")
+    m["enc_liberado_as"] = hc
+    # L10: zerésima, ligação e primeiro voto da 1ª urna do dia
+    zer = next((e[0] for e in evs if e[1] == "zer" and e[2] == 0), None)
+    lig = next((e[0] for e in evs if e[1] == "ligada" and e[2] == 0), urnas[0][1] if urnas else None)
+    v1 = next((t[i] for i in range(n) if not vu or vu[i] == "0"), None)
+    m["t_zeresima"], m["t_ligada"], m["t_primeiro_voto"] = zer, lig, v1
+    m["zer_ausente"] = zer is None and v1 is not None
+    m["zer_depois_voto"] = zer is not None and v1 is not None and zer > v1
+    m["zer_fora"] = zer is not None and (zer < LOG_HORA_ZER_CEDO * 3600 or zer >= ini + ATRASO_ABERTURA_MIN * 60)
+    # L11: relógio — log × boletim e ajustes no dia
+    dif = []
+    for chave, tl in (("ab", t_pronta), ("enc", t_enc), ("emis", next((e[0] for e in evs if e[1] == "bu_impresso"), None))):
+        tb = ctx.get(chave)
+        if tl is not None and tb is not None and not (isinstance(tb, float) and math.isnan(tb)):
+            dif.append(abs(tl - tb) / 60)
+    m["dif_relogio_min"] = round(max(dif), 1) if dif else np.nan
+    v_ini, v_fim = (t[0], t[-1]) if n else (None, None)
+    durante = lambda x: v_ini is not None and v_ini < x < v_fim
+    m["ajuste_durante"] = sum(1 for e in evs if e[1] == "dh" and durante(e[0])) + sum(1 for x in r.get("volta", []) if durante(x[0]))
+    m["ajuste_fora"] = sum(1 for e in evs if e[1] == "dh" and not durante(e[0]))
+    # L12: versão, número da urna e carga
+    u0 = urnas[0] if urnas else ["", 0, 0, 0, "", "", "", "", "", ""]
+    m["versao"], m["modelo"], m["urnas_log"] = u0[4], u0[5], ";".join(str(int(u[0])) for u in urnas if str(u[0]).isdigit())
+    nr = ctx.get("urna")
+    m["urna_bu_no_log"] = (nr is None) or any(str(u[0]).isdigit() and int(u[0]) == nr for u in urnas)
+    i0 = int(vu[0]) if vu else 0
+    def carga_outra(u):
+        if not (u[7] and u[8] and u[9]) or int(u[9]) == 0:
+            return False
+        return (int(u[7]), int(u[8]), int(u[9])) != (ctx["mun"], ctx["zona"], ctx["secao"])
+    m["carga_outra_secao_1a"] = bool(urnas) and i0 < len(urnas) and carga_outra(urnas[i0])
+    m["carga_outra_secao_cont"] = any(carga_outra(u) for j, u in enumerate(urnas) if j != i0)
+    cb = ctx.get("carga")
+    cl = u0[6]
+    m["carga_log"] = cl
+    m["carga_comparavel"] = bool(cb) and bool(cl)
+    m["carga_bu_dif"] = m["carga_comparavel"] and re.sub(r"\D", "", str(cb)) != cl
+    # L13: biometria detalhada
+    m["pct_sem_digital"] = m["n_sem_digital"] / n if n else np.nan
+    n4 = sum(1 for c in lib if (c.isdigit() and int(c) >= LOG_DIGITAL_TENTATIVAS) or c == "N")
+    m["pct_4_tentativas"] = n4 / n if n else np.nan
+    # L14: votos do log × comparecimento do boletim
+    comp = ctx.get("comp")
+    m["comp_bu"] = comp
+    m["dif_bu"] = (n - comp) if comp is not None else np.nan
+    return m
+
+
+def z_robusto_l(valores: pd.Series, grupos: pd.Series) -> pd.Series:
+    """Escore z robusto (Iglewicz–Hoaglin) no grupo de referência. Quando a MAD é zero (a maioria das seções do grupo
+    tem o mesmo valor, como zero), usa o desvio absoluto médio: z = (x − mediana) / (1,253314 × DAM)."""
+    med = valores.groupby(grupos).transform("median")
+    desv = (valores - med).abs()
+    mad = desv.groupby(grupos).transform("median")
+    dam = desv.groupby(grupos).transform("mean")
+    with np.errstate(all="ignore"):
+        z = np.where(mad > 0, 0.6745 * (valores - med) / mad, np.where(dam > 0, (valores - med) / (1.253314 * dam), np.nan))
+    return pd.Series(z, index=valores.index)
+
+
+def _hhmm(seg) -> str:
+    if seg is None or (isinstance(seg, float) and math.isnan(seg)):
+        return "—"
+    seg = int(seg)
+    d, r = divmod(seg, 86400)
+    return f"{r // 3600:02d}:{r % 3600 // 60:02d}" + (f" (+{d}d)" if d else "")
+
+
+def log_contexto(sec: pd.DataFrame) -> dict:
+    """Horários oficiais locais e dados do boletim de cada seção (chave: turno, uf, mun, zona, secao)."""
+    s = sec[sec["turno"].isin(list(LOG_DIA))].copy()
+    s["off"] = offset_fuso(s)
+    for c, col in (("ab", "abertura"), ("enc", "enc"), ("emis", "emis")):
+        s[c] = _seg_do_dia(pd.to_datetime(s[col], errors="coerce"), s["turno"]) if col in s else np.nan
+    ctx = {}
+    for r in s.itertuples(index=False):
+        k = (int(r.turno), r.uf, int(r.mun), int(r.zona), int(r.secao))
+        ctx[k] = {"fim": (HORA_FIM_TURNO[int(r.turno)] + r.off) * 3600, "cfg": (HORA_FIM_OFICIAL + r.off) * 3600,
+                  "ini": (HORA_INICIO_OFICIAL + r.off) * 3600, "ab": r.ab, "enc": r.enc, "emis": r.emis,
+                  "comp": int(r.comp) if pd.notna(r.comp) else None,
+                  "urna": int(r.urna) if "urna" in s and pd.notna(getattr(r, "urna", np.nan)) else None,
+                  "carga": (str(r.carga) if pd.notna(getattr(r, "carga", np.nan)) else None) if "carga" in s else None,
+                  "mun": int(r.mun), "zona": int(r.zona), "secao": int(r.secao),
+                  "urna_eletronica": bool((getattr(r, "tipo_urna", 1) == 1) and pd.isna(getattr(r, "junta", np.nan)) and (r.comp or 0) > 0)}
+    return ctx
+
+
+def executar_testes_logs(sec: pd.DataFrame, pasta: Path) -> dict | None:
+    """Testes L01 a L14 sobre os resumos dos logs (etapa 2). sec: seções do boletim (com grupo, nm_mun e loc)."""
+    pasta = Path(pasta)
+    arqs = sorted(pasta.glob("t[12]/*.jsonl.gz"))
+    if not arqs:
+        return None
+    ctx = log_contexto(sec)
+    linhas, fora, falhas = [], 0, []
+    cobertura = {}
+    for a in arqs:
+        turno, uf = int(a.parent.name[1:]), a.name.split(".")[0]
+        n_ok = n_f = 0
+        for r in _log_ler_jsonl(a):
+            k = tuple(r["k"])
+            k = (int(k[0]), k[1], int(k[2]), int(k[3]), int(k[4]))
+            c = ctx.get(k)
+            if c is None:
+                fora += 1
+                continue
+            m = log_medidas(r, c)
+            m.update(turno=k[0], uf=k[1], mun=k[2], zona=k[3], secao=k[4])
+            if m["falha"]:
+                n_f += 1
+                if c["urna_eletronica"]:
+                    falhas.append({"turno": k[0], "uf": k[1], "mun": k[2], "zona": k[3], "secao": k[4], "falha": m["falha"]})
+            else:
+                n_ok += 1
+            m["fim_local"] = c["fim"]
+            m["urna_eletronica"] = c["urna_eletronica"]
+            linhas.append(m)
+        cobertura[(turno, uf)] = {"lidas": n_ok, "sem_log": n_f}
+    if not linhas:
+        return None
+    med = pd.DataFrame(linhas)
+    base = sec[CHAVE_SECAO + ["nm_mun", "loc", "grupo"]].copy()
+    for c in ("turno", "mun", "zona", "secao"):
+        base[c] = base[c].astype("int64")
+    med = med.merge(base, on=CHAVE_SECAO, how="left")
+    ok = med[med["falha"] == ""].copy()
+    g = ok["grupo"]
+    ng = g.map(g.value_counts())
+    ok["z_apos"] = z_robusto_l(ok["pct_apos"], g).where(ng >= MIN_SECOES_GRUPO)
+    ok["z_int"] = z_robusto_l(ok["int_mediano"], g).where(ng >= MIN_SECOES_GRUPO)
+    ok["z_tent"] = z_robusto_l(ok["taxa_tentativas"], g).where(ng >= MIN_SECOES_GRUPO)
+    ok["q_tent"] = q_binomial_loo(ok["n_tentativas"], ok["n_votos"] + ok["n_tentativas"], g)
+    ok["q_nc"] = q_binomial_loo(ok["n_nao_concluidos"], ok["n_votos"] + ok["n_nao_concluidos"], g)
+    ok["q_sd"] = q_binomial_loo(ok["n_sem_digital"], ok["n_votos"], g)
+    ok["z_nc"] = z_robusto_l(ok["taxa_nao_concluidos"], g).where(ng >= MIN_SECOES_GRUPO)
+    ok["z_sd"] = z_robusto_l(ok["pct_sem_digital"].where(ok["n_votos"] >= LOG_MIN_VOTOS_TEMPO), g).where(ng >= MIN_SECOES_GRUPO)
+    # versão de referência: a de pelo menos LOG_VERSAO_MAIORIA das urnas do turno
+    vref = {}
+    for t, v in ok.groupby("turno")["versao"]:
+        vc = v[v != ""].value_counts(normalize=True)
+        vref[int(t)] = vc.index[0] if len(vc) and vc.iloc[0] >= LOG_VERSAO_MAIORIA else None
+    # carga do boletim × carga do log: só compara se o formato for o mesmo na grande maioria das seções
+    comp_carga = ok["carga_comparavel"].astype(bool)
+    carga_ok = bool(comp_carga.sum()) and ok.loc[comp_carga, "carga_bu_dif"].astype(float).mean() < 0.5
+    Z = lambda x: fnum_z(x)
+    S = []
+
+    def add(tid, nivel, cat, mask, obs, ref="", det=""):
+        d = ok[mask.fillna(False)] if isinstance(mask, pd.Series) else ok[mask]
+        if len(d):
+            o = obs(d) if callable(obs) else obs
+            rf = ref(d) if callable(ref) else ref
+            dt = det(d) if callable(det) else det
+            S.append(montar_sinais(d, tid, nivel, cat, o, rf, detalhe=dt, cargo=np.nan))
+
+    hh = lambda col: (lambda d: [_hhmm(x) for x in d[col]])
+    # L01
+    a1 = (ok["v_apos"] >= LOG_APOS_MIN_VOTOS) & (ok["ult_apos_min"] >= 60) & (ok["z_apos"] >= LIMIAR_Z_ROBUSTO)
+    obs_l01 = lambda d: [f"{int(v)} (+{int(u)} min)" for v, u in zip(d["v_apos"], d["ult_apos_min"])]
+    ref_l01 = lambda d: [_hhmm(f) for f in d["fim_local"]]
+    add("L01", "anomalia", "votos_apos_fora_padrao", a1, obs_l01, ref_l01, lambda d: [f"z = {Z(z)}" for z in d["z_apos"]])
+    add("L01", "informativo", "votos_1h_apos", ~a1 & (ok["v_apos_1h"] >= 1), obs_l01, ref_l01)
+    # L02
+    add("L02", "anomalia", "rajada_sem_digital", ok["n_rajadas"] >= 1, lambda d: [str(int(x)) for x in d["rajada_max"]],
+        lambda d: [str(int(x)) for x in d["n_rajadas"]])
+    add("L02", "informativo", "tempo_mediano_baixo", (ok["z_int"] <= -LIMIAR_Z_ROBUSTO) & (ok["n_rajadas"] == 0),
+        lambda d: [f"{x:.0f} s" for x in d["int_mediano"]], lambda d: [f"z = {Z(z)}" for z in d["z_int"]])
+    # L03
+    seq = ok["seq_sem_digital"] >= LOG_SEQ_SEM_DIGITAL
+    expl = (ok["pct_digital"] < 0.5) | ok["erro_na_seq"]
+    obs_l03 = lambda d: [str(int(x)) for x in d["seq_sem_digital"]]
+    ref_l03 = lambda d: [f"{100 * x:.0f}%" for x in d["pct_digital"]]
+    add("L03", "anomalia", "seq_sem_digital", seq & ~expl, obs_l03, ref_l03)
+    add("L03", "informativo", "seq_sem_digital_explicada", seq & expl, obs_l03, ref_l03, lambda d: ["ERRO" if e else "" for e in d["erro_na_seq"]])
+    # L04
+    add("L04", "anomalia", "voto_apos_sim", ok["v_pos_sim"] >= 1, lambda d: [str(int(x)) for x in d["v_pos_sim"]])
+    add("L04", "informativo", "voto_apos_nao", (ok["v_pos_sim"] == 0) & (ok["v_pos_nao"] >= 1),
+        lambda d: [str(int(x)) for x in d["v_pos_nao"]])
+    # L05
+    a5 = (ok["v_urna_desligada"] >= 1) | (ok["n_religamentos"] >= LOG_RELIGAMENTOS)
+    obs_l05 = lambda d: [f"{int(r)} / {int(b)} / {int(v)}" for r, b, v in zip(d["n_religamentos"], d["n_bateria"], d["v_urna_desligada"])]
+    add("L05", "anomalia", "interrupcao_com_voto", a5, obs_l05, lambda d: [f"{int(x) // 60} min" for x in d["seg_parada"]])
+    add("L05", "informativo", "interrupcao", ~a5 & ((ok["n_religamentos"] >= 1) | (ok["n_bateria"] >= 1) | (ok["n_desligada"] >= 1)), obs_l05,
+        lambda d: [f"{int(x) // 60} min" for x in d["seg_parada"]])
+    # L06
+    add("L06", "anomalia", "voto_urna_anterior", ok["v_sobreposto"] >= 1, lambda d: [str(int(x)) for x in d["v_sobreposto"]],
+        lambda d: list(d["urnas_log"]))
+    add("L06", "informativo", "troca_urna", (ok["v_sobreposto"] == 0) & (ok["n_urnas_voto"] >= 2), lambda d: [str(int(x)) for x in d["n_urnas_voto"]],
+        lambda d: list(d["urnas_log"]))
+    # L07
+    a7 = (ok["z_tent"] >= LIMIAR_Z_ROBUSTO) & (ok["q_tent"] < ALFA_FDR) & (ok["n_tentativas"] >= LOG_MIN_CASOS)
+    obs_l07 = lambda d: [f"{int(x)} ({int(s)})" for x, s in zip(d["n_tentativas"], d["tentativas_seguidas"])]
+    add("L07", "anomalia", "tentativas_fora_padrao", a7, obs_l07, lambda d: [f"z = {Z(z)}" for z in d["z_tent"]], lambda d: [f"q = {q:.2g}" for q in d["q_tent"]])
+    add("L07", "informativo", "tentativas_seguidas", ~a7 & (ok["tentativas_seguidas"] >= LOG_TENTATIVAS_SEQ), obs_l07)
+    # L08
+    add("L08", "anomalia", "nao_concluidos", (ok["z_nc"] >= LIMIAR_Z_ROBUSTO) & (ok["q_nc"] < ALFA_FDR) & (ok["n_nao_concluidos"] >= LOG_MIN_CASOS),
+        lambda d: [str(int(x)) for x in d["n_nao_concluidos"]], lambda d: [f"z = {Z(z)}" for z in d["z_nc"]],
+        lambda d: [f"q = {q:.2g}" for q in d["q_nc"]])
+    # L09
+    add("L09", "anomalia", "encerramento_tentado_cedo", ok["n_enc_cedo"] >= 1, lambda d: [str(int(x)) for x in d["n_enc_cedo"]],
+        lambda d: [h or "17:00" for h in d["enc_liberado_as"]])
+    add("L09", "informativo", "varias_tentativas_encerramento", (ok["n_enc_cedo"] == 0) & (ok["n_enc_depois"] >= 2),
+        lambda d: [str(int(x)) for x in d["n_enc_depois"]])
+    # L10
+    add("L10", "anomalia", "zeresima_ausente", ok["zer_ausente"], "—", hh("t_primeiro_voto"))
+    add("L10", "anomalia", "zeresima_depois_voto", ok["zer_depois_voto"], hh("t_zeresima"), hh("t_primeiro_voto"))
+    add("L10", "informativo", "zeresima_fora_horario", ok["zer_fora"] & ~ok["zer_depois_voto"], hh("t_zeresima"), hh("t_ligada"))
+    # L11
+    add("L11", "anomalia", "relogio_ajustado_votacao", ok["ajuste_durante"] >= 1, lambda d: [str(int(x)) for x in d["ajuste_durante"]])
+    i11 = (ok["ajuste_durante"] == 0) & ((ok["dif_relogio_min"] >= LOG_RELOGIO_MIN) | (ok["ajuste_fora"] >= 1))
+    add("L11", "informativo", "relogio_diferente", i11, lambda d: [f"{x:.0f} min" if pd.notna(x) else "—" for x in d["dif_relogio_min"]],
+        lambda d: [str(int(x)) for x in d["ajuste_fora"]])
+    # L12
+    vr = ok["turno"].map(vref)
+    a12v = vr.notna() & (ok["versao"] != "") & (ok["versao"] != vr)
+    add("L12", "anomalia", "versao_diferente", a12v, lambda d: list(d["versao"]), lambda d: [vref.get(int(t)) or "—" for t in d["turno"]])
+    add("L12", "anomalia", "urna_bu_fora_do_log", ~ok["urna_bu_no_log"].astype(bool), lambda d: list(d["urnas_log"]))
+    uma = (ok["n_urnas"] == 1)
+    add("L12", "anomalia", "carga_outra_secao", ok["carga_outra_secao_1a"].astype(bool) & uma, lambda d: list(d["urnas_log"]))
+    add("L12", "informativo", "contingencia_outra_secao", ok["carga_outra_secao_cont"].astype(bool) | (ok["carga_outra_secao_1a"].astype(bool) & ~uma),
+        lambda d: list(d["urnas_log"]))
+    if carga_ok:
+        add("L12", "anomalia", "carga_diferente_bu", ok["carga_bu_dif"].astype(bool), lambda d: list(d["carga_log"]))
+    # L13
+    a13 = (ok["z_sd"] >= LIMIAR_Z_ROBUSTO) & (ok["q_sd"] < ALFA_FDR)
+    add("L13", "anomalia", "sem_digital_fora_padrao", a13, lambda d: [f"{100 * x:.1f}%" for x in d["pct_sem_digital"]],
+        lambda d: [f"z = {Z(z)}" for z in d["z_sd"]], lambda d: [f"q = {q:.2g}" for q in d["q_sd"]])
+    add("L13", "informativo", "muitas_tentativas_digital", (ok["pct_4_tentativas"] >= LOG_DIGITAL_TENTATIVAS_PCT) & ~a13,
+        lambda d: [f"{100 * x:.1f}%" for x in d["pct_4_tentativas"]])
+    # L14
+    add("L14", "anomalia", "log_diferente_bu", ok["dif_bu"].notna() & (ok["dif_bu"] != 0),
+        lambda d: [str(int(n)) for n in d["n_votos"]], lambda d: [str(int(c)) for c in d["comp_bu"]])
+    fal = med[(med["falha"] != "") & med["urna_eletronica"].astype(bool)].copy()
+    if len(fal):
+        S.append(montar_sinais(fal, "L14", "informativo", "log_ausente", list(fal["falha"]), "", cargo=np.nan))
+    sinais = pd.concat(S, ignore_index=True) if S else pd.DataFrame(columns=COLUNAS_SINAL)
+    sinais = ordenar_sinais(sinais) if len(sinais) else sinais
+    res = {}
+    n_ok = len(ok)
+    for tid in TESTES_LOG_ORDEM:
+        tb = sinais[sinais["teste"] == tid]
+        res[tid] = Resultado(tid, unidades=n_ok + (len(fal) if tid == "L14" else 0), sinalizados=int((tb["nivel"] == "anomalia").sum()),
+                             informativos=int((tb["nivel"] != "anomalia").sum()), tabela=tb)
+    # números gerais do L01 (votos depois do horário), por turno
+    geral = {}
+    for t, d in ok.groupby("turno"):
+        geral[int(t)] = {"secoes": int(len(d)), "votos": int(d["n_votos"].sum()), "secoes_apos": int((d["v_apos"] > 0).sum()),
+                         "votos_apos": int(d["v_apos"].sum()), "secoes_1h": int((d["v_apos_1h"] > 0).sum()), "votos_1h": int(d["v_apos_1h"].sum()),
+                         "sem_digital_apos": int(d["sd_apos"].sum()), "ult_max_min": float(d["ult_apos_min"].max())}
+    return {"med": med, "ok": ok, "sinais": sinais, "res": res, "cobertura": cobertura, "fora_bu": fora, "falhas": falhas,
+            "versao_ref": vref, "carga_comparada": carga_ok, "carga_pares": int(comp_carga.sum()), "geral": geral}
+
+
+def q_binomial_loo(x: pd.Series, n: pd.Series, grupos: pd.Series) -> pd.Series:
+    """q (Benjamini–Hochberg) do teste beta-binomial de cauda superior, com os parâmetros do grupo de referência sem a
+    própria seção (leave-one-out), como nos testes 4, 5 e 10: a seção tem mais casos do que o grupo explicaria?"""
+    xv, nv = x.astype(float).fillna(0).values, n.astype(float).fillna(0).values
+    gv = grupos.astype(str).values
+    val = nv > 0
+    p = np.ones(len(xv))
+    if val.any():
+        aux = pd.DataFrame({"g": gv[val], "n": nv[val], "x": xv[val], "q": xv[val] ** 2 / nv[val], "n2": nv[val] ** 2})
+        agg = aux.groupby("g").agg(N=("n", "sum"), X=("x", "sum"), Q=("q", "sum"), S2=("n2", "sum"), G=("n", "size"))
+        a, b, m_ref, _ = parametros_loo(agg, gv[val], xv[val], nv[val])
+        p[val] = p_superior_betabinomial(xv[val], nv[val], a, b, m_ref)
+    return pd.Series(benjamini_hochberg(p), index=x.index)
+
+
+def fnum_z(x) -> str:
+    return "—" if x is None or (isinstance(x, float) and math.isnan(x)) else f"{x:.1f}"
+
+
+CATEGORIAS_LOG = {
+    "votos_apos_fora_padrao": {"PT": "Votos depois do horário fora do padrão", "EN": "Votes after hours outside the pattern", "ES": "Votos después del horario fuera del patrón"},
+    "votos_1h_apos": {"PT": "Voto 1 h ou mais depois do horário (informativo)", "EN": "Vote 1 h or more after the official time (informational)", "ES": "Voto 1 h o más después del horario (informativo)"},
+    "rajada_sem_digital": {"PT": "Rajada de votos sem digital", "EN": "Burst of votes without fingerprint", "ES": "Ráfaga de votos sin huella"},
+    "tempo_mediano_baixo": {"PT": "Tempo mediano entre votos muito baixo (informativo)", "EN": "Very low median time between votes (informational)", "ES": "Tiempo mediano entre votos muy bajo (informativo)"},
+    "seq_sem_digital": {"PT": "Sequência longa sem digital", "EN": "Long sequence without fingerprint", "ES": "Secuencia larga sin huella"},
+    "seq_sem_digital_explicada": {"PT": "Sequência sem digital com causa provável (informativo)", "EN": "Sequence without fingerprint with a likely cause (informational)", "ES": "Secuencia sin huella con causa probable (informativo)"},
+    "voto_apos_sim": {"PT": "Voto depois do “todos já votaram? SIM”", "EN": "Vote after “has everyone voted? YES”", "ES": "Voto después del “¿todos ya votaron? SÍ”"},
+    "voto_apos_nao": {"PT": "Votação retomada depois do NÃO ou de encerramento cancelado (informativo)", "EN": "Voting resumed after NO or a cancelled closing (informational)", "ES": "Votación reanudada después del NO o de un cierre cancelado (informativo)"},
+    "interrupcao_com_voto": {"PT": "Voto com a urna desligada ou 3+ religamentos", "EN": "Vote while the machine was off, or 3+ restarts", "ES": "Voto con la urna apagada o 3+ reencendidos"},
+    "interrupcao": {"PT": "Interrupção durante a votação (informativo)", "EN": "Interruption during voting (informational)", "ES": "Interrupción durante la votación (informativo)"},
+    "voto_urna_anterior": {"PT": "Voto na urna anterior depois da troca", "EN": "Vote in the previous machine after the replacement", "ES": "Voto en la urna anterior después del cambio"},
+    "troca_urna": {"PT": "Troca de urna (informativo)", "EN": "Machine replacement (informational)", "ES": "Cambio de urna (informativo)"},
+    "tentativas_fora_padrao": {"PT": "Tentativas acima do padrão", "EN": "Attempts above the pattern", "ES": "Intentos por encima del patrón"},
+    "tentativas_seguidas": {"PT": "Tentativas seguidas com o mesmo resultado (informativo)", "EN": "Consecutive attempts with the same result (informational)", "ES": "Intentos seguidos con el mismo resultado (informativo)"},
+    "nao_concluidos": {"PT": "Votos não concluídos acima do padrão", "EN": "Unfinished votes above the pattern", "ES": "Votos no concluidos por encima del patrón"},
+    "encerramento_tentado_cedo": {"PT": "Tentativa de encerramento antes do horário", "EN": "Closing attempt before the allowed time", "ES": "Intento de cierre antes del horario"},
+    "varias_tentativas_encerramento": {"PT": "Várias tentativas de encerramento (informativo)", "EN": "Several closing attempts (informational)", "ES": "Varios intentos de cierre (informativo)"},
+    "zeresima_ausente": {"PT": "Sem zerésima no dia", "EN": "No zero report on the day", "ES": "Sin zerésima en el día"},
+    "zeresima_depois_voto": {"PT": "Zerésima depois do primeiro voto", "EN": "Zero report after the first vote", "ES": "Zerésima después del primer voto"},
+    "zeresima_fora_horario": {"PT": "Zerésima fora do horário (informativo)", "EN": "Zero report outside the usual time (informational)", "ES": "Zerésima fuera del horario (informativo)"},
+    "relogio_ajustado_votacao": {"PT": "Relógio ajustado durante a votação", "EN": "Clock adjusted during voting", "ES": "Reloj ajustado durante la votación"},
+    "relogio_diferente": {"PT": "Relógio: diferença com o boletim ou ajuste fora da votação (informativo)", "EN": "Clock: difference from the tally sheet or adjustment outside voting (informational)", "ES": "Reloj: diferencia con el boletín o ajuste fuera de la votación (informativo)"},
+    "versao_diferente": {"PT": "Versão do programa diferente", "EN": "Different software version", "ES": "Versión del programa distinta"},
+    "urna_bu_fora_do_log": {"PT": "Urna do boletim ausente do log", "EN": "Tally sheet machine missing from the log", "ES": "Urna del boletín ausente del log"},
+    "carga_outra_secao": {"PT": "Urna com carga de outra seção", "EN": "Machine loaded for another section", "ES": "Urna con carga de otra sección"},
+    "contingencia_outra_secao": {"PT": "Contingência com carga de outra seção (informativo)", "EN": "Contingency machine loaded for another section (informational)", "ES": "Contingencia con carga de otra sección (informativo)"},
+    "carga_diferente_bu": {"PT": "Código de carga diferente do boletim", "EN": "Load code differs from the tally sheet", "ES": "Código de carga distinto del boletín"},
+    "sem_digital_fora_padrao": {"PT": "Liberação sem digital acima do padrão", "EN": "Release without fingerprint above the pattern", "ES": "Liberación sin huella por encima del patrón"},
+    "muitas_tentativas_digital": {"PT": "Muitos eleitores com 4+ tentativas de digital (informativo)", "EN": "Many voters with 4+ fingerprint attempts (informational)", "ES": "Muchos electores con 4+ intentos de huella (informativo)"},
+    "log_diferente_bu": {"PT": "Votos do log ≠ comparecimento do boletim", "EN": "Log votes ≠ tally sheet turnout", "ES": "Votos del log ≠ comparecencia del boletín"},
+    "log_ausente": {"PT": "Log ausente ou ilegível (informativo)", "EN": "Missing or unreadable log (informational)", "ES": "Log ausente o ilegible (informativo)"},
+    "encerramento_tardio": {"PT": "Encerramento 1 h ou mais depois do horário oficial", "EN": "Closing 1 h or more after the official time", "ES": "Cierre 1 h o más después del horario oficial"},
+}
+
+# Legenda das colunas Observado / Referência das tabelas de cada teste L
+LEG_LOG = {
+    "PT": {"L01": "Observado: votos depois do horário (minutos do último voto depois do horário). Referência: fim oficial na hora local.",
+           "L02": "Observado: maior rajada (votos) ou tempo mediano entre votos. Referência: número de rajadas ou escore z.",
+           "L03": "Observado: maior sequência de liberações sem digital. Referência: eleitores da seção que votaram com digital.",
+           "L04": "Observado: votos gravados depois da resposta.",
+           "L05": "Observado: religamentos / avisos de bateria / votos com a urna desligada. Referência: tempo parada.",
+           "L06": "Observado: votos na urna anterior depois da troca, ou urnas com votos. Referência: números das urnas no log.",
+           "L07": "Observado: tentativas (maior sequência). Referência: escore z; detalhe: q.",
+           "L08": "Observado: votos não concluídos. Referência: escore z; detalhe: q.",
+           "L09": "Observado: tentativas de encerramento. Referência: hora em que a urna libera o encerramento.",
+           "L10": "Observado: hora da zerésima. Referência: hora do primeiro voto ou da ligação da urna.",
+           "L11": "Observado: ajustes do relógio durante a votação ou diferença log × boletim. Referência: ajustes fora da votação.",
+           "L12": "Observado: versão do programa ou números das urnas no log. Referência: versão de referência.",
+           "L13": "Observado: parcela de eleitores. Referência: escore z; detalhe: q.",
+           "L14": "Observado: votos no log. Referência: comparecimento no boletim."},
+    "EN": {"L01": "Observed: votes after the official time (minutes from the official time to the last vote). Reference: official end in local time.",
+           "L02": "Observed: largest burst (votes) or median time between votes. Reference: number of bursts or z-score.",
+           "L03": "Observed: longest sequence of releases without fingerprint. Reference: voters of the section who used their fingerprint.",
+           "L04": "Observed: votes recorded after the answer.",
+           "L05": "Observed: restarts / battery warnings / votes while the machine was off. Reference: time stopped.",
+           "L06": "Observed: votes in the previous machine after the replacement, or machines with votes. Reference: machine numbers in the log.",
+           "L07": "Observed: attempts (longest sequence). Reference: z-score; detail: q.",
+           "L08": "Observed: unfinished votes. Reference: z-score; detail: q.",
+           "L09": "Observed: closing attempts. Reference: time at which the machine allows closing.",
+           "L10": "Observed: time of the zero report. Reference: time of the first vote or of power-on.",
+           "L11": "Observed: clock adjustments during voting or log × tally sheet difference. Reference: adjustments outside voting.",
+           "L12": "Observed: software version or machine numbers in the log. Reference: reference version.",
+           "L13": "Observed: share of voters. Reference: z-score; detail: q.",
+           "L14": "Observed: votes in the log. Reference: turnout in the tally sheet."},
+    "ES": {"L01": "Observado: votos después del horario (minutos del último voto después del horario). Referencia: fin oficial en hora local.",
+           "L02": "Observado: mayor ráfaga (votos) o tiempo mediano entre votos. Referencia: número de ráfagas o puntuación z.",
+           "L03": "Observado: mayor secuencia de liberaciones sin huella. Referencia: electores de la sección que votaron con huella.",
+           "L04": "Observado: votos grabados después de la respuesta.",
+           "L05": "Observado: reencendidos / avisos de batería / votos con la urna apagada. Referencia: tiempo detenida.",
+           "L06": "Observado: votos en la urna anterior después del cambio, o urnas con votos. Referencia: números de las urnas en el log.",
+           "L07": "Observado: intentos (mayor secuencia). Referencia: puntuación z; detalle: q.",
+           "L08": "Observado: votos no concluidos. Referencia: puntuación z; detalle: q.",
+           "L09": "Observado: intentos de cierre. Referencia: hora en que la urna libera el cierre.",
+           "L10": "Observado: hora de la zerésima. Referencia: hora del primer voto o del encendido de la urna.",
+           "L11": "Observado: ajustes del reloj durante la votación o diferencia log × boletín. Referencia: ajustes fuera de la votación.",
+           "L12": "Observado: versión del programa o números de las urnas en el log. Referencia: versión de referencia.",
+           "L13": "Observado: proporción de electores. Referencia: puntuación z; detalle: q.",
+           "L14": "Observado: votos en el log. Referencia: comparecencia en el boletín."},
+}
+
+TXT_LOG = {
+    "PT": {
+        "titulo": "Anexo B — Logs das urnas: testes L01 a L14",
+        "intro": "Os testes L usam o log de cada urna publicado pelo TSE (arquivo .logjez de cada seção), que registra a hora de cada voto e de cada evento da urna. O motor lê o log na memória e guarda só números: hora de cada voto, forma de liberação do eleitor e eventos da urna. O .logjez e o logd.dat não são gravados, e nenhum número de título (de eleitor ou de mesário) entra nos resultados. Os horários são os do relógio da urna (hora local).",
+        "fim": "Fim oficial: 17h de Brasília no 1º turno e 19h no 2º turno (encerramento estendido), convertidos para a hora local pelo fuso inferido no teste 11; no Exterior, as mesmas horas locais. A urna libera o encerramento a partir das 17h de Brasília nos dois turnos (configuração registrada no próprio log), e essa é a referência do teste L09. Grupo de referência dos escores z: o mesmo dos testes 1 a 15 (zona do município, município, zona ou UF, com {mg} seções ou mais).",
+        "cobertura": "Seções com log lido: {ok} ({turnos}). Seções que votaram em urna e ficaram sem log legível: {f} (teste L14). Seções do log fora dos boletins analisados: {fora}.",
+        "resumo": "Resumo dos testes L", "col_teste": "Teste", "col_st": "Resultado", "col_anom": "Anomalias", "col_info": "Informativos", "col_un": "Seções",
+        "mais": "Mostrando {n} de {t} linhas, as primeiras na ordem do teste. A lista completa está em `dados/logs_sinalizacoes.csv`.",
+        "geral_t": "Números gerais dos votos depois do horário oficial",
+        "geral_cab": ["Turno", "Seções com log", "Votos no log", "Seções com voto depois do horário", "Votos depois do horário", "% dos votos", "Seções com voto 1 h ou mais depois", "Votos 1 h ou mais depois", "Liberados sem digital depois do horário"],
+        "link_l01": "Pelo número de seções, a lista urna por urna não entra neste relatório. Ela está em `dados/logs_secoes.csv` e, com a hora de cada voto, na página **Urnas que fecharam tarde**: {url}",
+        "versao": "Versão de referência do programa: {v}.", "versao_nao": "Nenhuma versão chega a {p}% das urnas do turno; o teste de versão não foi aplicado.",
+        "carga_nao": "Código de carga: o formato do boletim é diferente do registrado no log, e a comparação não foi feita.",
+        "sem_dados": "Nenhum resumo de log encontrado na pasta informada (--logs).",
+        "explica_anom": "**O que significa:** cada seção da lista 🔴 abaixo atingiu, no log da urna, o critério deste teste. É uma anomalia estatística: indica prioridade de verificação documental (ata da mesa, boletim impresso, registros da urna) e não indica a causa.",
+    },
+    "EN": {
+        "titulo": "Appendix B — Voting machine logs: tests L01 to L14",
+        "intro": "The L tests use the log of each voting machine published by the TSE (each section's .logjez file), which records the time of every vote and every machine event. The engine reads the log in memory and keeps only numbers: the time of each vote, how the voter was released and the machine events. The .logjez and logd.dat files are not saved, and no voter ID number (of a voter or a poll worker) enters the results. Times are those of the machine's clock (local time).",
+        "fim": "Official end: 5 pm Brasília time in round 1 and 7 pm in round 2 (extended closing), converted to local time with the time zone inferred in test 11; abroad, the same local hours. The machine allows closing from 5 pm Brasília time in both rounds (configuration logged by the machine itself), which is the reference of test L09. Reference group for z-scores: the same as in tests 1 to 15 (zone within the municipality, municipality, zone or state, with {mg} sections or more).",
+        "cobertura": "Sections with a readable log: {ok} ({turnos}). Sections that voted on a machine and have no readable log: {f} (test L14). Log sections outside the tally sheets analyzed: {fora}.",
+        "resumo": "Summary of the L tests", "col_teste": "Test", "col_st": "Result", "col_anom": "Anomalies", "col_info": "Informational", "col_un": "Sections",
+        "mais": "Showing {n} of {t} rows, the first ones in the test's order. The full list is in `dados/logs_sinalizacoes.csv`.",
+        "geral_t": "Overall figures for votes after the official time",
+        "geral_cab": ["Round", "Sections with log", "Votes in the log", "Sections with a vote after the official time", "Votes after the official time", "% of votes", "Sections with a vote 1 h or more after", "Votes 1 h or more after", "Released without fingerprint after the official time"],
+        "link_l01": "Given the number of sections, the machine-by-machine list is not in this report. It is in `dados/logs_secoes.csv` and, with the time of every vote, on the **Machines that closed late** page: {url}",
+        "versao": "Reference software version: {v}.", "versao_nao": "No version reaches {p}% of the machines in the round; the version check was not applied.",
+        "carga_nao": "Load code: the tally sheet format differs from the one logged, so the comparison was not made.",
+        "sem_dados": "No log summary found in the folder given (--logs).",
+        "explica_anom": "**What it means:** each section in the 🔴 list below met this test's criterion in the machine's log. It is a statistical anomaly: it sets a priority for documentary checking (polling station minutes, printed tally sheet, machine records) and does not indicate the cause.",
+    },
+    "ES": {
+        "titulo": "Anexo B — Logs de las urnas: pruebas L01 a L14",
+        "intro": "Las pruebas L usan el log de cada urna publicado por el TSE (archivo .logjez de cada sección), que registra la hora de cada voto y de cada evento de la urna. El motor lee el log en memoria y guarda solo números: hora de cada voto, forma de liberación del elector y eventos de la urna. El .logjez y el logd.dat no se graban, y ningún número de título (de elector o de miembro de mesa) entra en los resultados. Los horarios son los del reloj de la urna (hora local).",
+        "fim": "Fin oficial: 17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª (cierre extendido), convertidos a la hora local con el huso inferido en la prueba 11; en el Exterior, las mismas horas locales. La urna libera el cierre a partir de las 17 h de Brasilia en las dos vueltas (configuración registrada en el propio log), y esa es la referencia de la prueba L09. Grupo de referencia de las puntuaciones z: el mismo de las pruebas 1 a 15 (zona del municipio, municipio, zona o UF, con {mg} secciones o más).",
+        "cobertura": "Secciones con log leído: {ok} ({turnos}). Secciones que votaron en urna y quedaron sin log legible: {f} (prueba L14). Secciones del log fuera de los boletines analizados: {fora}.",
+        "resumo": "Resumen de las pruebas L", "col_teste": "Prueba", "col_st": "Resultado", "col_anom": "Anomalías", "col_info": "Informativos", "col_un": "Secciones",
+        "mais": "Mostrando {n} de {t} filas, las primeras en el orden de la prueba. La lista completa está en `dados/logs_sinalizacoes.csv`.",
+        "geral_t": "Números generales de los votos después del horario oficial",
+        "geral_cab": ["Vuelta", "Secciones con log", "Votos en el log", "Secciones con voto después del horario", "Votos después del horario", "% de los votos", "Secciones con voto 1 h o más después", "Votos 1 h o más después", "Liberados sin huella después del horario"],
+        "link_l01": "Por el número de secciones, la lista urna por urna no entra en este informe. Está en `dados/logs_secoes.csv` y, con la hora de cada voto, en la página **Urnas que cerraron tarde**: {url}",
+        "versao": "Versión de referencia del programa: {v}.", "versao_nao": "Ninguna versión llega al {p}% de las urnas de la vuelta; la prueba de versión no se aplicó.",
+        "carga_nao": "Código de carga: el formato del boletín es distinto del registrado en el log, y la comparación no se hizo.",
+        "sem_dados": "No se encontró ningún resumen de log en la carpeta indicada (--logs).",
+        "explica_anom": "**Qué significa:** cada sección de la lista 🔴 abajo alcanzó, en el log de la urna, el criterio de esta prueba. Es una anomalía estadística: indica prioridad de verificación documental (acta de la mesa, boletín impreso, registros de la urna) y no indica la causa.",
+    },
+}
+
+# Teste 11, encerramento tardio: resumo no relatório (a lista completa fica no CSV e na página do site)
+TXT_T11_TARDIO = {
+    "PT": {"t": "Encerramento tardio: urnas que fecharam 1 hora ou mais depois do horário oficial",
+           "txt": "Fim oficial: 17h de Brasília no 1º turno e 19h no 2º turno (encerramento estendido), na hora local. São {n} seções sinalizadas. Pelo número de seções, a lista não entra neste relatório: está em `dados/secoes_sinalizadas.csv` (categoria `encerramento_tardio`) e, urna por urna, com a hora de cada voto, na página **Urnas que fecharam tarde**: {url}",
+           "cab": ["Turno", "Seções analisadas", "Seções sinalizadas", "%", "2 h ou mais depois", "3 h ou mais depois", "4 h ou mais depois", "Encerramento mais tardio"],
+           "uf": "Seções sinalizadas por UF", "logs": "Nas seções sinalizadas com log lido ({n}): {v} votos depois do horário oficial ({p} dos votos do dia nessas seções)."},
+    "EN": {"t": "Late closing: machines that closed 1 hour or more after the official time",
+           "txt": "Official end: 5 pm Brasília time in round 1 and 7 pm in round 2 (extended closing), in local time. {n} sections are flagged. Given the number of sections, the list is not in this report: it is in `dados/secoes_sinalizadas.csv` (category `encerramento_tardio`) and, machine by machine, with the time of every vote, on the **Machines that closed late** page: {url}",
+           "cab": ["Round", "Sections analyzed", "Flagged sections", "%", "2 h or more after", "3 h or more after", "4 h or more after", "Latest closing"],
+           "uf": "Flagged sections by state", "logs": "In the flagged sections with a readable log ({n}): {v} votes after the official time ({p} of the day's votes in those sections)."},
+    "ES": {"t": "Cierre tardío: urnas que cerraron 1 hora o más después del horario oficial",
+           "txt": "Fin oficial: 17 h de Brasilia en la 1.ª vuelta y 19 h en la 2.ª (cierre extendido), en hora local. Son {n} secciones señaladas. Por el número de secciones, la lista no entra en este informe: está en `dados/secoes_sinalizadas.csv` (categoría `encerramento_tardio`) y, urna por urna, con la hora de cada voto, en la página **Urnas que cerraron tarde**: {url}",
+           "cab": ["Vuelta", "Secciones analizadas", "Secciones señaladas", "%", "2 h o más después", "3 h o más después", "4 h o más después", "Cierre más tardío"],
+           "uf": "Secciones señaladas por UF", "logs": "En las secciones señaladas con log leído ({n}): {v} votos después del horario oficial ({p} de los votos del día en esas secciones)."},
+}
+
+
+CATEGORIAS.update(CATEGORIAS_LOG)
+
+
+def tem_boletins(pasta) -> bool:
+    p = Path(pasta)
+    return p.exists() and any(RE_BU.match(x.name) for x in p.rglob("bweb_*"))
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         try:
@@ -3991,7 +5251,22 @@ def main():
     ap.add_argument("--manter-extraidos", action="store_true", help="mantém os CSV descompactados em <saida>/_trabalho/csv")
     ap.add_argument("--baseline", default=None,
                     help=f"pasta do registro de homologação do determinismo (padrão: <saida>/{PASTA_DETERMINISMO})")
+    ap.add_argument("--logs", default=None,
+                    help="pasta dos resumos dos logs das urnas: com ela, o relatório ganha o Anexo B (testes L01 a L14)")
+    ap.add_argument("--extrair-logs", action="store_true",
+                    help="baixa do TSE e resume os logs das urnas antes dos testes L; sem boletins em --dados, só extrai (use --turno e --ufs)")
+    ap.add_argument("--turno", type=int, choices=(1, 2), default=None, help="turno dos logs na extração sem boletins (padrão: os dois)")
+    ap.add_argument("--ufs", default=None, help="UFs dos logs na extração sem boletins, separadas por vírgula (padrão: todas)")
+    ap.add_argument("--processos", type=int, default=12, help="downloads simultâneos na extração dos logs (padrão: 12)")
     args = ap.parse_args()
+    if args.extrair_logs and not args.logs:
+        args.logs = "./logs_urnas"
+    if args.extrair_logs and not tem_boletins(args.dados):
+        log(f"Extração dos logs das urnas (motor v{VERSAO_MOTOR}), sem boletins: resumos em {Path(args.logs).resolve()}")
+        extrair_logs(Path(args.logs), [args.turno] if args.turno else [1, 2],
+                     [u.strip().upper() for u in args.ufs.split(",")] if args.ufs else None, args.processos)
+        log("Extração concluída.")
+        return
     Auditoria(args).executar()
 
 
