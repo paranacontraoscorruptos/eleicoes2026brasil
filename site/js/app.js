@@ -803,34 +803,66 @@
   }
   document.addEventListener("avisos", () => faixaTopo());
 
-  // Menu do alto. Página nova que não estiver em nenhum grupo entra sozinha no último.
+  // Menu do alto: todas as páginas numa lista só, nesta ordem. No computador, cabem duas fileiras ao lado da marca;
+  // o que não couber desce para a faixa de baixo (ajustarMenu). No celular, tudo no menu lateral, com os títulos dos grupos.
+  // Página nova que não estiver em nenhum grupo entra sozinha no último.
   const MENU1 = ["home", "res", "tests", "lookup", "atlas", "sim", "map", "faq", "downloads"];
-  // em cima no computador; Perguntas só a partir de 1270 px (abaixo disso fica no grupo de baixo); no celular, só nos grupos
-  const MENU1_LARGO = { map: "so-pc", faq: "so-largo" };
-  const MENU2 = [["g_res", ["vary", "late", "map", "states", "list", "charts"]], ["g_con", ["query", "places", "verify", "ballot", "saved"]],
-    ["g_ent", ["faq", "glossary", "anatomy", "replicate", "limits"]], ["g_mais", ["updates", "proofs", "press", "embed", "devs"]]];
+  const MENU2 = [["g_res", ["vary", "late", "states", "list", "charts"]], ["g_con", ["query", "places", "verify", "ballot", "saved"]],
+    ["g_ent", ["glossary", "anatomy", "replicate", "limits"]], ["g_mais", ["updates", "proofs", "press", "embed", "devs"]]];
   function menuItens() {
     const href = Object.assign(Object.fromEntries(PAGINAS.concat(MAIS)), { res: "#/turno" });
     const usados = new Set(MENU1.concat(...MENU2.map((g) => g[1]), ["r1", "r2"]));   // 1º e 2º turno: dentro de Resultados
     const sobra = Object.keys(href).filter((k) => !usados.has(k));
     const grupos = MENU2.map(([g, ks], i) => [g, (i === MENU2.length - 1 ? ks.concat(sobra) : ks).filter((k) => href[k])]);
-    return { href, um: MENU1.filter((k) => href[k]), grupos, largo: MENU1_LARGO };
+    const um = MENU1.filter((k) => href[k]);
+    return { href, um, grupos, todos: um.concat(...grupos.map((g) => g[1])) };
   }
+
+  // computador: encaixa em duas fileiras o máximo de botões, na ordem da lista (um botão menor pode ocupar a sobra da 1ª fileira);
+  // o que não couber aparece na faixa de baixo. No celular, volta a ordem original com os títulos dos grupos.
+  let menuOrdem = [];
+  function ajustarMenu() {
+    const nav = $("#nav"), nav2 = $("#nav2");
+    if (!nav || !nav2) return;
+    const links = menuOrdem.filter((e) => e.matches("a[data-nav]")), fora = new Set();
+    links.forEach((a) => a.classList.remove("fora"));
+    let ordem = menuOrdem;
+    if (window.matchMedia("(min-width: 1181px)").matches && links.length) {
+      const W = nav.clientWidth, gap = parseFloat(getComputedStyle(nav).columnGap) || 0, fila = [[], []], usado = [0, 0];
+      links.forEach((a) => {
+        const w = a.getBoundingClientRect().width;
+        const f = [0, 1].find((k) => usado[k] + (fila[k].length ? gap : 0) + w <= W + .5);
+        if (f === undefined) { a.classList.add("fora"); fora.add(a.dataset.nav); return; }
+        usado[f] += (fila[f].length ? gap : 0) + w; fila[f].push(a);
+      });
+      ordem = fila[0].concat(fila[1], menuOrdem.filter((e) => !fila[0].includes(e) && !fila[1].includes(e)));
+    }
+    if (ordem.some((e, k) => nav.children[k] !== e)) nav.append(...ordem);
+    $$("#nav2 a[data-nav]").forEach((a) => a.classList.toggle("vis", fora.has(a.dataset.nav)));
+    nav2.classList.toggle("vazio", !fora.size);
+  }
+  let ajusteFila = 0;
+  const pedirAjuste = () => { cancelAnimationFrame(ajusteFila); ajusteFila = requestAnimationFrame(ajustarMenu); };
+  window.addEventListener("resize", pedirAjuste);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(pedirAjuste);
+  // tamanho da letra (acessibilidade) e tema mudam atributos do <html>
+  new MutationObserver(pedirAjuste).observe(document.documentElement, { attributes: true, attributeFilter: ["style", "class", "data-contrast"] });
 
   function montarCabecalho() {
     const L = t();
     marca();
     faixaTopo(L);
-    // menu: fileira principal ao lado da marca; embaixo, as demais páginas em grupos (no celular, tudo no menu lateral)
+    // menu: uma lista só (os títulos dos grupos aparecem só no menu lateral do celular); a faixa de baixo repete as páginas
+    // e mostra só as que não couberem nas duas fileiras de cima
     const M = menuItens(); let n = 0;
-    const item = (k, cls) => `<a href="${M.href[k]}" data-nav="${k}"${cls ? ` class="${cls}"` : ""} style="--i:${n++}">${esc(L.nav[k])}</a>`;
-    // no celular, map e faq aparecem só uma vez (no grupo)
-    $("#nav").innerHTML = M.um.map((k) => item(k, M.largo[k] || "")).join("")
-      + `<div class="nav-more">${M.grupos.map(([g, ks]) => `<div class="nav-g" role="group" aria-label="${esc(L.nav[g])}"><span class="nav-sub-t" style="--i:${n++}">${esc(L.nav[g])}</span>${ks.map((k) => item(k)).join("")}</div>`).join("")}</div>
-        <button class="nav-a11y" type="button" data-a11y style="--i:${n++}">${icone("a11y")} ${esc(L.ax_title)}</button>`;
+    const item = (k) => `<a href="${M.href[k]}" data-nav="${k}" style="--i:${n++}">${esc(L.nav[k])}</a>`;
+    $("#nav").innerHTML = M.um.map(item).join("")
+      + M.grupos.map(([g, ks]) => `<span class="nav-sub-t" style="--i:${n++}">${esc(L.nav[g])}</span>${ks.map(item).join("")}`).join("")
+      + `<button class="nav-a11y" type="button" data-a11y style="--i:${n++}">${icone("a11y")} ${esc(L.ax_title)}</button>`;
     $("#nav2").setAttribute("aria-label", L.nav.more_title);
-    const it2 = (k) => `<a href="${M.href[k]}" data-nav="${k}"${M.largo[k] ? ' class="so-estreito"' : ""}>${esc(L.nav[k])}</a>`;
-    $("#nav2").innerHTML = `<div class="nav2-in">${M.grupos.map(([g, ks]) => [g, ks.filter((k) => M.largo[k] !== "so-pc")]).map(([g, ks]) => `<div class="mg" role="group" aria-label="${esc(L.nav[g])}"><span class="mg-c">${it2(ks[0])}</span>${ks.slice(1).map(it2).join("")}</div>`).join("")}</div>`;
+    $("#nav2").innerHTML = `<div class="nav2-in">${M.todos.map((k) => `<a href="${M.href[k]}" data-nav="${k}">${esc(L.nav[k])}</a>`).join("")}</div>`;
+    menuOrdem = [...$("#nav").children];
+    ajustarMenu();
     $("#lang").innerHTML = LANGS.map((l) => `<button type="button" data-lang="${l}" aria-pressed="${l === state.lang}">${l}</button>`).join("");
     $("#lang").setAttribute("aria-label", L.lang);
     $("#theme-btn").setAttribute("aria-label", L.theme); $("#theme-btn").title = L.theme;
