@@ -548,13 +548,12 @@
         <div class="float-chip c3"><span class="fc-ico">${icone("check")}</span><span><b>2</b>${esc(L.hero_chip_rounds)}</span></div>
       </div>
     </section>
-    ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
-    ${destaqueUnanimidade()}
-    ${destaqueEncTardio()}
+    ${secao1Numeros()}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
       <div class="tiles tiles-3">${tiles}</div>${dzSecao("2")}
     </section>
-    ${secao1Numeros()}
+    ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
+    ${destaqueUnanimidade()}
     <section aria-labelledby="h-pages"><h2 id="h-pages">${esc(L.explore_title)}</h2><p class="sec-sub">${esc(L.explore_sub)}</p>
       <div class="pages">${cards}</div>
     </section>
@@ -584,19 +583,6 @@
       <div class="vr-dest-txt"><p class="kicker">${esc(L.un_kicker)}</p><h2 id="un-h">${esc(L.un_title)}</h2><p>${esc(L.un_txt)}</p>
         <div class="btn-row"><a class="btn btn-primary" href="#/testes/T03">${icone("flask")} ${esc(L.un_btn)}</a><a class="btn btn-ghost" href="#/lista?t=2&teste=T03">${icone("list")} ${esc(L.un_btn2)}</a></div></div>
       <div class="vr-dest-nums">${num("l", u("13"), L.un_lula)}${num("f", u("22"), L.un_flavio)}</div>
-    </section>`;
-  }
-
-  // Destaque: urnas que fecharam 1 h ou mais depois do horário oficial e votos gravados depois disso (log da urna)
-  function destaqueEncTardio() {
-    const L = t(), C = state.R.complementar || {}, ET = C.encerramento_tardio, VH = C.votos_apos_horario;
-    if (!ET) return "";
-    const T1 = ET.turnos["1"], T2 = ET.turnos["2"], v1 = VH && VH.turnos["1"];
-    const num = (k, n, txt) => `<div class="un-n ef-${k}"><span class="un-v" data-count="${n}">${nf(n)}</span><span>${esc(txt)}</span></div>`;
-    return `<section class="vr-dest un-dest ef-dest" aria-labelledby="ef-h">
-      <div class="vr-dest-txt"><p class="kicker">${esc(L.ef_kicker)}</p><h2 id="ef-h">${esc(L.ef_title)}</h2><p>${esc(L.ef_txt)}</p><p class="small muted">${esc(L.ef_nota)}</p>
-        <div class="btn-row"><a class="btn btn-primary" href="#/encerramento-tardio">${icone("clock")} ${esc(L.ef_btn)}</a><a class="btn btn-ghost" href="#/testes/T11">${icone("flask")} ${esc(L.ef_btn2)}</a></div></div>
-      <div class="vr-dest-nums">${num("a", T1.sinalizadas, L.ef_n1(pct(T1.sinalizadas / T1.analisadas)))}${v1 && v1.votos_1h != null ? num("r", v1.votos_1h, L.ef_n2(pct(v1.votos_1h / (v1.votos_dia || 1)))) : ""}${num("b", T2.sinalizadas, L.ef_n3)}</div>
     </section>`;
   }
 
