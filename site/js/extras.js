@@ -1236,7 +1236,7 @@
     $$("tr.cq-sel").forEach((tr) => tr.classList.remove("cq-sel"));
     const tr = caixa(r) && $(`tr[data-i="${gi}"]`, caixa(r)); if (tr) tr.classList.add("cq-sel");
     const k = r.idx.indexOf(gi), n = r.m.linhas.length;
-    el.querySelector(".cq-p-nav span").textContent = E.cq_p_linha(nf(k + 1), nf(n));
+    el.querySelector(".cq-p-nav span").textContent = r.navRot ? r.navRot(k + 1, n) : E.cq_p_linha(nf(k + 1), nf(n));
     el.querySelector('[data-p="ant"]').disabled = k <= 0;
     el.querySelector('[data-p="prox"]').disabled = k >= n - 1;
     const aberto = !el.hidden;

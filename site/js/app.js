@@ -302,12 +302,137 @@
       : L.rc_tip2(nf(A35.bu), nf(A35.var), nf(A35.log), nf(A35.secoes), nf(A35.analisadas))) + "\n\n" + base;
   }
 
+  // --- Anomalias em destaque (seções "em números" da inicial) ------------------------------------------------------
+  // dados: resumo.json → aud35[turno].dest (aud35.py, lido dos arquivos do Relatório Técnico de cada turno)
+  // dica ao passar o mouse (data-tip) e painel ao clicar (mesmo painel das tabelas: cqPagina), com o botão da página no rodapé
+  const dzA = (n) => state.R.aud35 && state.R.aud35[n];
+  const dzHM = (h) => String(h || "").slice(0, 5);
+  const dzDur = (min) => { const m = Math.round(min); return t().dz.dur(Math.floor(m / 60), m % 60); };
+  const dzNome = (it) => { const D = t().dz; return it.k === "tardias" ? D.tard_nome : it.k === "V" ? D.rot.V : (window.APP.audNome ? window.APP.audNome(it.t) : it.t); };
+  const dzFam = (it) => (it.k === "tardias" ? "T" : it.t[0]);
+  const dzId = (it) => (it.k === "V" ? "V3 · V4" : it.t);
+  const dzPct = (n, it) => { const A35 = dzA(n); return it.u === "s" ? A35.analisadas : it.base || A35.analisadas; };
+  // números do item já formatados (para as frases)
+  function dzX(it) {
+    const o = {};
+    Object.entries(it.x || {}).forEach(([k, v]) => { if (typeof v === "number") o[k] = k === "pct_max" ? pct(v, 1) : nf(v); });
+    return o;
+  }
+  function dzTip(n, it) {
+    const D = t().dz, A35 = dzA(n), x = dzX(it), f = D.x[it.k];
+    const lin = [`${dzId(it)} · ${D.rot[it.k] || dzNome(it)}`, `${nf(it.a)} ${D.un[it.u] || D.un.s} (${D.pct(pct(it.a / dzPct(n, it), it.a / dzPct(n, it) < 0.001 ? 3 : 2))})`];
+    if (f) lin.push(f(x));
+    const u = it.x && it.x.ult;
+    if (u) lin.push(`${D.ult_mini} ${dzHM(u.hb)} (${D.ult_bsb})`);
+    if (it.ufs && it.ufs.length) lin.push(`${D.mais}: ${it.ufs.slice(0, 3).map(([uf, q]) => `${uf} ${nf(q)}`).join(" · ")}`);
+    lin.push(D.clique);
+    return lin.join("\n");
+  }
+  function dzTile(n, it, gi) {
+    const D = t().dz, x = dzX(it), f = D.x[it.k], u = it.x && it.x.ult;
+    return `<div class="tile dz-tile spot${u ? " dz-grave-t" : ""}" role="button" tabindex="0" data-dz="${n}|${gi}" data-tip="${esc(dzTip(n, it))}">
+      <div class="tile-top"><span class="dz-badge">${icone("alert")} ${esc(D.badge)}</span><span class="dz-id">${esc(dzId(it))}</span></div>
+      <div class="tile-v"><span data-count="${it.a}">${nf(it.a)}</span> <small>${esc(D.un[it.u] || D.un.s)}</small></div>
+      <div class="tile-l">${esc(D.rot[it.k] || dzNome(it))}</div>${f ? `<div class="dz-x">${esc(f(x))}</div>` : ""}
+      ${u ? `<div class="dz-ult">${icone("clock")}<span>${esc(D.ult_mini)}</span><b>${esc(dzHM(u.hb))}</b></div>` : ""}</div>`;
+  }
+  // bloco de gravidade: o último voto depois do horário oficial, com a seção e o botão para conferir
+  function dzUlt(n, u) {
+    const D = t().dz, fim = n === "1" ? "17h" : "19h";
+    const hora = u.h === u.hb ? `<b class="dz-g-h">${esc(dzHM(u.hb))}</b><span class="dz-g-s">${esc(D.ult_bsb)}</span>` : `<b class="dz-g-h">${esc(dzHM(u.hb))}</b><span class="dz-g-s">${esc(D.ult_dif(dzHM(u.hb), dzHM(u.h)))}</span>`;
+    return `<section class="dz-grave"><p class="dz-g-k">${icone("alert")} ${esc(D.ult_k)}</p><div class="dz-g-r">${hora}</div>
+      <p class="dz-g-d">${esc(D.ult_dur(dzDur(u.min), fim))}</p><p class="dz-g-o">${esc(D.ult_onde(titulo(u.nm_mun), u.uf, u.zona, u.secao, nf(u.v_apos)))}</p>
+      <p class="btn-row"><a class="btn btn-sm" href="#/secao/${u.uf}/${u.zona}/${u.secao}" data-ir>${icone("search")} ${esc(D.ver_secao)}</a></p></section>`;
+  }
+  function dzUfs(it) {
+    const D = t().dz; if (!it.ufs || !it.ufs.length) return "";
+    const mx = it.ufs[0][1] || 1;
+    return `<h3>${esc(D.ufs)}</h3><ol class="dz-ufs">${it.ufs.map(([uf, q]) => `<li><span class="dz-uf" title="${esc(ufNome(uf) || uf)}">${esc(uf)}</span><span class="dz-bar"><i style="width:${Math.max(4, Math.round((100 * q) / mx))}%"></i></span><b>${nf(q)}</b></li>`).join("")}</ol>`;
+  }
+  // textos do teste: objetivo e critério (boletins: testes_txt; logs: logs.js; variação: T35)
+  function dzTxt(it) {
+    const D = t().dz, R = state.R, ZT = window.T35[state.lang] || window.T35.PT;
+    if (it.k === "tardias") return { obj: D.tard_obj, crit: D.tard_crit };
+    if (it.k === "V") return { obj: `${ZT.V.V3[0]} ${ZT.V.V4[0]}`, crit: ZT.V.V3[2] };
+    if (it.t[0] === "T") { const x = R.testes_txt[state.lang][it.t] || {}; return { obj: x.objetivo, crit: x.criterio }; }
+    const lx = window.APP.logsL && window.APP.logsL.txt(it.t), z = ZT.L && ZT.L[it.t];
+    return { obj: (lx && lx.objetivo) || (z && z[0]), crit: (lx && lx.criterio) || (z && z[2]) };
+  }
+  function dzPainel(n, it) {
+    const L = t(), D = L.dz, A35 = dzA(n), x = it.x || {}, rt = L.round(+n), base = dzPct(n, it);
+    const un = D.un[it.u] || D.un.s;
+    const pares = [[D.th_a, `<b>${nf(it.a)}</b> <small>${esc(un)} (${pct(it.a / base, it.a / base < 0.001 ? 3 : 2)})</small>`]];
+    if (it.i) pares.push([D.th_i, `${nf(it.i)} <small>${esc(un)}</small>`]);
+    pares.push([it.u === "s" ? D.th_secs : D.th_base, nf(base)]);
+    const un2 = { com_votos: D.u.secoes, votos: D.u.votos, votos_1h: D.u.votos, secoes_1h: D.u.secoes, u2h: D.u.secoes, u3h: D.u.secoes, u4h: D.u.secoes, tentativas: D.u.tent,
+      religamentos: D.u.vezes, v_desligada: D.u.votos, sem_digital: "", seq_max: D.u.lib, V3: D.u.secoes, V4: D.u.secoes, a_menos: D.u.votos, a_mais: D.u.votos, max: D.u.votos };
+    Object.keys(D.xd).forEach((k) => {
+      if (x[k] == null || typeof x[k] === "object") return;
+      if (k === "enc_max") { pares.push([D.xd.enc_max, `${esc(dzHM(x.enc_max))} <small>(+${esc(dzDur(x.enc_max_min))})</small>`]); return; }
+      if (k === "a_mais" && !x.a_mais || k === "a_menos" && !x.a_menos) return;
+      const v = k === "pct_max" ? pct(x[k], 1) : nf(x[k]);
+      pares.push([D.xd[k], `${v}${un2[k] ? ` <small>${esc(un2[k])}</small>` : ""}`]);
+    });
+    const tx = dzTxt(it);
+    const corpo = `${x.ult ? dzUlt(n, x.ult) : ""}<section class="tp-ap"><h3>${esc(n === "1" ? L.stats1_title : L.stats_title)}</h3>${tpDl(pares)}</section>${dzUfs(it)}
+      ${tx.obj ? `<h3>${esc(D.obj)}</h3><p>${esc(tx.obj)}</p>` : ""}${tx.crit ? `<h3>${esc(D.crit)}</h3><p>${esc(tx.crit)}</p>` : ""}<p class="note small">${icone("help")} ${esc(D.nota)}</p>`;
+    let acoes = "", href = "";
+    if (it.k === "tardias") { href = "#/encerramento-tardio"; acoes = tpBtn(href, "clock", D.ab.et, true) + tpBtn(`#/logs?t=${n}&teste=L01&nivel=a`, "list", D.ver_l01); }
+    else if (it.k === "V") { href = "#/variacao"; acoes = tpBtn(href, "swap", D.ab.vr, true) + tpBtn("#/testes/V3", "flask", D.ver_teste); }
+    else if (it.t[0] === "L") { href = `#/logs?t=${n}&teste=${it.t}&nivel=a`; acoes = tpBtn(href, "list", D.ab.lg, true) + tpBtn(`#/testes/${it.t}`, "flask", D.ver_teste); }
+    else { href = `#/testes/${it.t}`; acoes = tpBtn(href, "flask", D.ab.tst, true) + tpBtn(`#/lista?t=${n}&teste=${it.t}`, "list", D.ver_secs); }
+    return { tipo: "info", e: {}, d: null, href, kick: `${rt} · ${L.rc_g[dzFam(it)]} · ${dzId(it)}`, tit: dzNome(it), sub: it.k === "tardias" ? D.tard_sub : D.rot[it.k] || "", corpo, acoes, dica: "" };
+  }
+  // painel do total: seções com anomalia por bloco de testes e os testes com mais seções
+  function dzPainelTotal(n) {
+    const L = t(), D = L.dz, A35 = dzA(n), rt = L.round(+n);
+    const pares = [[D.th_secs, nf(A35.analisadas)], [D.tot_bu, `${nf(A35.bu)} <small>${esc(D.u.secoes)}</small>`]];
+    if (A35.tardias) pares.push([D.tot_tard, `${nf(A35.tardias)} <small>${esc(D.u.secoes)}</small>`]);
+    if (A35.var != null) pares.push([D.tot_var, `${nf(A35.var)} <small>${esc(D.u.secoes)}</small>`]);
+    pares.push([D.tot_log, `${nf(A35.log)} <small>${esc(D.u.secoes)}</small>`], [D.tot_sem, `<b>${nf(A35.secoes)}</b> (${pct(A35.secoes / A35.analisadas)})`]);
+    const ZT = window.T35[state.lang] || window.T35.PT;
+    const top = A35.testes.filter((x) => x.a > 0).sort((a, b) => b.a - a.a).slice(0, 8);
+    const nomeT = (x) => (window.APP.audNome ? window.APP.audNome(x.id) : x.id);
+    const lista = `<h3>${esc(D.tot_top)}</h3><ol class="dz-ufs dz-tst">${top.map((x) => { const uk = x.id[0] === "T" ? UN_T[x.id] || "s" : x.id[0] === "V" ? UN_V[x.id] : "s";
+      return `<li><span class="dz-uf">${esc(x.id)}</span><span class="dz-tn">${esc(nomeT(x))}</span><b>${nf(x.a)} <small>${esc(ZT.un_t[uk])}</small></b></li>`; }).join("")}</ol>`;
+    const nT = A35.testes.filter((x) => !x.na).length;
+    const corpo = `<section class="tp-ap"><h3>${esc(D.tot_t)}</h3>${tpDl(pares)}<p class="small muted">${esc(D.tot_x)}</p></section>${lista}<p class="note small">${icone("help")} ${esc(D.nota)}</p>`;
+    return { tipo: "info", e: {}, d: null, href: `#/turno/${n}`, kick: D.tot_k(rt), tit: D.tot_t, sub: D.tot_sub(nT), corpo,
+      acoes: tpBtn(`#/turno/${n}`, "chart", D.ab.turno(rt), true) + tpBtn("#/testes", "flask", D.ver35), dica: "" };
+  }
+  // tabela "invisível" do painel: linha 0 = total; 1… = destaques (setas do painel passam por todos)
+  const dzRes = {};
+  function dzAbrir(n, gi) {
+    const A35 = dzA(n), CP = window.APP.cqPagina; if (!A35 || !CP) return;
+    const itens = A35.dest;
+    if (!dzRes[n] || dzRes[n].lang !== state.lang) {
+      dzRes[n] = { lang: state.lang, id: CP.novoId(), m: { colunas: ["k"], linhas: [["total"]].concat(itens.map((x) => [x.k])) }, idx: [], pag: 0, pp: 999, ord: null, sel: null, G: null,
+        ler: tpVazio, fonte: (e, d, l, i) => Promise.resolve(i === 0 ? dzPainelTotal(n) : dzPainel(n, itens[i - 1])), fonteId: `dz${n}`, chave: (l, i) => `dz|${n}|${i}`,
+        rot: ["k"], semNum: true, animRolar: true, guiaPainel: false, box: document.createElement("div"), navRot: (k, q) => `${nf(k)} / ${nf(q)}` };
+      CP.ordenar(dzRes[n]);
+    }
+    CP.abrir(gi, dzRes[n]);
+  }
+  document.addEventListener("click", (e) => { const el = e.target.closest && e.target.closest("[data-dz]"); if (!el) return; e.preventDefault(); const [n, gi] = el.dataset.dz.split("|"); dzAbrir(n, +gi); });
+  document.addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const el = e.target.closest && e.target.closest("[data-dz]"); if (!el) return; e.preventDefault(); const [n, gi] = el.dataset.dz.split("|"); dzAbrir(n, +gi); });
+  function dzSecao(n) {
+    const L = t(), A35 = dzA(n); if (!A35 || !A35.dest) return "";
+    return `<h3 class="dz-h">${icone("alert")} ${esc(L.dz.t(L.round(+n)))}</h3><p class="sec-sub small">${esc(L.dz.sub)}</p>
+      <div class="tiles tiles-3 dz-tiles">${A35.dest.map((it, i) => dzTile(n, it, i + 1)).join("")}</div>`;
+  }
+  // número clicável (abre o painel do total ou de um destaque)
+  function tileDz(n, gi, v, rotulo, dica, ic, extra) {
+    return `<div class="tile spot dz-num" role="button" tabindex="0" data-dz="${n}|${gi}" data-tip="${esc(dica)}"><div class="tile-top">${icone(ic)}<span class="tile-i" aria-hidden="true">i</span></div>
+      <div class="tile-v"><span data-count="${v}">${nf(v)}</span>${extra ? ` <small>${extra}</small>` : ""}</div><div class="tile-l">${esc(rotulo)}</div></div>`;
+  }
+
   function paginaInicio() {
     const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"], P2 = T2.presidente;
     const tiles = [
       tile(T2.entrada.secoes, L.st_secoes, L.tip_secoes(nf(T2.entrada.linhas)), "grid"),
       tile(nTestes()[0], L.st_testes, audFim() ? L.tip_testes_fim : L.tip_testes, "flask", L.st_testes_x(nTestes()[1])),
-      tile(T2.secoes_sinalizadas, L.st_sinal, L.tip_sinal, "flag", `(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`),
+      dzA("2") ? tileDz("2", 0, dzA("2").secoes, L.dz.st_anom35, L.dz.tip_anom(nf(dzA("2").bu), nf(dzA("2").log), nf(dzA("2").var)), "flag", `(${pct(dzA("2").secoes / dzA("2").analisadas)})`)
+        : tile(T2.secoes_sinalizadas, L.st_sinal, L.tip_sinal, "flag", `(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`),
       tile(P2.aptos, L.st_aptos, L.tip_aptos, "users"),
       tile(P2.comparecimento, L.st_comp, L.tip_comp(nf(P2.comparecimento), nf(P2.aptos - P2.comparecimento)), "vote", `(${pct(P2.comparecimento / P2.aptos)})`),
       tile(T2.entrada.boletins, L.st_bol, L.tip_bol, "file"),
@@ -373,7 +498,7 @@
     ${destaqueEncTardio()}
     ${telegram(false)}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
-      <div class="tiles tiles-3">${tiles}</div>
+      <div class="tiles tiles-3">${tiles}</div>${dzSecao("2")}
     </section>
     <section aria-labelledby="h-pages"><h2 id="h-pages">${esc(L.explore_title)}</h2><p class="sec-sub">${esc(L.explore_sub)}</p>
       <div class="pages">${cards}</div>
