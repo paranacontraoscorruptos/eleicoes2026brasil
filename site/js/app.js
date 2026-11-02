@@ -307,7 +307,7 @@
   // dica ao passar o mouse (data-tip) e painel ao clicar (mesmo painel das tabelas: cqPagina), com o botão da página no rodapé
   const dzA = (n) => state.R.aud35 && state.R.aud35[n];
   const dzHM = (h) => String(h || "").slice(0, 5);
-  const dzDur = (min) => { const m = Math.round(min); return t().dz.dur(Math.floor(m / 60), m % 60); };
+  const dzDur = (min) => { const m = Math.floor(min); return t().dz.dur(Math.floor(m / 60), m % 60); };
   const dzNome = (it) => { const D = t().dz; return it.k === "tardias" ? D.tard_nome : it.k === "V" ? D.rot.V : (window.APP.audNome ? window.APP.audNome(it.t) : it.t); };
   const dzFam = (it) => (it.k === "tardias" ? "T" : it.t[0]);
   const dzId = (it) => (it.k === "V" ? "V3 · V4" : it.t);
@@ -338,7 +338,7 @@
   }
   // bloco de gravidade: o último voto depois do horário oficial, com a seção e o botão para conferir
   function dzUlt(n, u) {
-    const D = t().dz, fim = n === "1" ? "17h" : "19h";
+    const D = t().dz, fim = state.lang === "EN" ? (n === "1" ? "5 pm" : "7 pm") : state.lang === "ES" ? (n === "1" ? "17 h" : "19 h") : n === "1" ? "17h" : "19h";
     const hora = u.h === u.hb ? `<b class="dz-g-h">${esc(dzHM(u.hb))}</b><span class="dz-g-s">${esc(D.ult_bsb)}</span>` : `<b class="dz-g-h">${esc(dzHM(u.hb))}</b><span class="dz-g-s">${esc(D.ult_dif(dzHM(u.hb), dzHM(u.h)))}</span>`;
     return `<section class="dz-grave"><p class="dz-g-k">${icone("alert")} ${esc(D.ult_k)}</p><div class="dz-g-r">${hora}</div>
       <p class="dz-g-d">${esc(D.ult_dur(dzDur(u.min), fim))}</p><p class="dz-g-o">${esc(D.ult_onde(titulo(u.nm_mun), u.uf, u.zona, u.secao, nf(u.v_apos)))}</p>
@@ -426,6 +426,24 @@
       <div class="tile-v"><span data-count="${v}">${nf(v)}</span>${extra ? ` <small>${extra}</small>` : ""}</div><div class="tile-l">${esc(rotulo)}</div></div>`;
   }
 
+  // 1º turno em números: totais da auditoria completa e as anomalias em destaque (com as urnas que fecharam tarde)
+  function secao1Numeros() {
+    const L = t(), D = L.dz, A35 = dzA("1"), T1 = state.R.turnos["1"], P1 = T1.presidente;
+    if (!A35 || !A35.dest) return "";
+    const td = A35.dest.findIndex((x) => x.k === "tardias"), it = A35.dest[td], x = it ? it.x : null;
+    const nT = A35.testes.filter((y) => !y.na).length;
+    const tl = [
+      tile(A35.analisadas, L.st_secoes, L.tip_secoes(nf(T1.entrada.linhas)), "grid"),
+      tile(nT, D.st_testes1, D.tip_testes1, "flask"),
+      tileDz("1", 0, A35.secoes, D.st_anom1, D.tip_anom(nf(A35.bu), nf(A35.log), ""), "flag", `(${pct(A35.secoes / A35.analisadas)})`),
+      x ? tileDz("1", td + 1, it.a, D.st_tard, D.tip_tard(nf(x.com_votos), nf(x.votos)), "clock", `(${pct(it.a / x.analisadas)})`) : "",
+      x ? tileDz("1", td + 1, x.votos, D.st_vapos, D.tip_vapos(nf(x.com_votos)), "vote") : "",
+      tile(P1.comparecimento, L.st_comp, L.tip_comp(nf(P1.comparecimento), nf(P1.aptos - P1.comparecimento)), "users", `(${pct(P1.comparecimento / P1.aptos)})`),
+    ].join("");
+    return `<section aria-labelledby="h-stats1"><h2 id="h-stats1">${esc(L.stats1_title)}</h2><p class="sec-sub small">${esc(L.stats1_sub)}</p>
+      <div class="tiles tiles-3">${tl}</div>${dzSecao("1")}
+    </section>`;
+  }
   function paginaInicio() {
     const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"], P2 = T2.presidente;
     const tiles = [
@@ -500,6 +518,7 @@
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
       <div class="tiles tiles-3">${tiles}</div>${dzSecao("2")}
     </section>
+    ${secao1Numeros()}
     <section aria-labelledby="h-pages"><h2 id="h-pages">${esc(L.explore_title)}</h2><p class="sec-sub">${esc(L.explore_sub)}</p>
       <div class="pages">${cards}</div>
     </section>
