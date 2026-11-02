@@ -344,27 +344,45 @@
   const dzPct = (n, it) => { const A35 = dzA(n); return it.u === "s" ? A35.analisadas : it.base || A35.analisadas; };
   // números do item já formatados (para as frases)
   function dzX(it) {
-    const o = {};
+    const o = { secoes: nf(it.a) };
     Object.entries(it.x || {}).forEach(([k, v]) => { if (typeof v === "number") o[k] = k === "pct_max" ? pct(v, 1) : nf(v); });
     return o;
+  }
+  // faixa vermelha do card: urnas que fecharam tarde = última urna encerrada; L01 (votos depois do horário) = último voto do turno
+  const dzTard = (n) => { const A35 = dzA(n); return A35 && A35.dest.find((y) => y.k === "tardias"); };
+  function dzUltDe(n, it) {
+    const u = it.x && it.x.ult;
+    if (it.k !== "L01") return u;
+    const td = dzTard(n), ut = td && td.x && td.x.ult;
+    return ut && (!u || String(ut.hb) > String(u.hb)) ? ut : u;
+  }
+  function dzPilula(n, it) {
+    const D = t().dz, x = it.x || {};
+    if (it.k === "tardias" && x.enc_max) return [D.enc_mini, dzHM(x.enc_max)];
+    const u = dzUltDe(n, it); if (!u) return null;
+    return [it.k === "L01" ? D.ult_turno : D.ult_mini, dzHM(u.hb), true];
   }
   function dzTip(n, it) {
     const D = t().dz, A35 = dzA(n), x = dzX(it), f = D.x[it.k];
     const lin = [`${dzId(it)} · ${D.rot[it.k] || dzNome(it)}`, `${nf(it.a)} ${D.un[it.u] || D.un.s} (${D.pct(pct(it.a / dzPct(n, it), it.a / dzPct(n, it) < 0.001 ? 3 : 2))})`];
     if (f) lin.push(f(x));
-    const u = it.x && it.x.ult;
-    if (u) lin.push(`${D.ult_mini} ${dzHM(u.hb)} (${D.ult_bsb})`);
+    const p = dzPilula(n, it), u = dzUltDe(n, it);
+    if (p) lin.push(`${p[0]} ${p[1]}${p[2] ? ` (${D.ult_bsb})` : ""}`);
+    if (it.k === "tardias" && u) lin.push(`${D.ult_mini} ${dzHM(u.hb)} (${D.ult_bsb})`);
     if (it.ufs && it.ufs.length) lin.push(`${D.mais}: ${it.ufs.slice(0, 3).map(([uf, q]) => `${uf} ${nf(q)}`).join(" · ")}`);
     lin.push(D.clique);
     return lin.join("\n");
   }
   function dzTile(n, it, gi) {
-    const D = t().dz, x = dzX(it), f = D.x[it.k], u = it.x && it.x.ult;
-    return `<div class="tile dz-tile spot${u ? " dz-grave-t" : ""}" role="button" tabindex="0" data-dz="${n}|${gi}" data-tip="${esc(dzTip(n, it))}">
+    const D = t().dz, x = dzX(it), p = dzPilula(n, it);
+    // L01: o card destaca os votos (as seções fora do padrão vão na linha de baixo)
+    const vot = it.k === "L01" && it.x && it.x.votos, v = vot ? it.x.votos : it.a, un = vot ? D.u.votos : D.un[it.u] || D.un.s;
+    const f = (D.xt && D.xt[it.k]) || D.x[it.k];
+    return `<div class="tile dz-tile spot${p ? " dz-grave-t" : ""}" role="button" tabindex="0" data-dz="${n}|${gi}" data-tip="${esc(dzTip(n, it))}">
       <div class="tile-top"><span class="dz-badge">${icone("alert")} ${esc(D.badge)}</span><span class="dz-id">${esc(dzId(it))}</span></div>
-      <div class="tile-v"><span data-count="${it.a}">${nf(it.a)}</span> <small>${esc(D.un[it.u] || D.un.s)}</small></div>
+      <div class="tile-v"><span data-count="${v}">${nf(v)}</span> <small>${esc(un)}</small></div>
       <div class="tile-l">${esc(D.rot[it.k] || dzNome(it))}</div>${f ? `<div class="dz-x">${esc(f(x))}</div>` : ""}
-      ${u ? `<div class="dz-ult">${icone("clock")}<span>${esc(D.ult_mini)}</span><b>${esc(dzHM(u.hb))}</b></div>` : ""}</div>`;
+      ${p ? `<div class="dz-ult">${icone("clock")}<span>${esc(p[0])}</span><b>${esc(p[1])}</b></div>` : ""}</div>`;
   }
   // bloco de gravidade: o último voto depois do horário oficial, com a seção e o botão para conferir
   function dzUlt(n, u) {
@@ -404,7 +422,8 @@
       pares.push([D.xd[k], `${v}${un2[k] ? ` <small>${esc(un2[k])}</small>` : ""}`]);
     });
     const tx = dzTxt(it);
-    const corpo = `${x.ult ? dzUlt(n, x.ult) : ""}<section class="tp-ap"><h3>${esc(n === "1" ? L.stats1_title : L.stats_title)}</h3>${tpDl(pares)}</section>${dzUfs(it)}
+    const uP = dzUltDe(n, it);
+    const corpo = `${uP ? dzUlt(n, uP) : ""}<section class="tp-ap"><h3>${esc(n === "1" ? L.stats1_title : L.stats_title)}</h3>${tpDl(pares)}</section>${dzUfs(it)}
       ${tx.obj ? `<h3>${esc(D.obj)}</h3><p>${esc(tx.obj)}</p>` : ""}${tx.crit ? `<h3>${esc(D.crit)}</h3><p>${esc(tx.crit)}</p>` : ""}<p class="note small">${icone("help")} ${esc(D.nota)}</p>`;
     let acoes = "", href = "";
     if (it.k === "tardias") { href = "#/encerramento-tardio"; acoes = tpBtn(href, "clock", D.ab.et, true) + tpBtn(`#/logs?t=${n}&teste=L01&nivel=a`, "list", D.ver_l01); }
