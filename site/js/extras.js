@@ -2250,6 +2250,9 @@ curl -s ${base}SHA256SUMS.txt | head`;
     feitos: ["T01", "T02", "T03", "T04", "T05", "T06", "T07", "T08", "T09", "T10", "T11", "T12", "T13", "T14", "T15", "V1", "V2", "V3", "V4", "V5", "V6"],
     faltam: ["L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10", "L11", "L12", "L13", "L14"],
   };
+  // com os logs dos dois turnos publicados (logs.js), os testes L passam para "feitos": auditoria completa
+  const audSync = () => { if (AUD.faltam.length && A.logsL && A.logsL.dois && A.logsL.dois()) { AUD.feitos = AUD.feitos.concat(AUD.faltam); AUD.faltam = []; } };
+  const audCompleta = () => { audSync(); return !AUD.faltam.length; };
   const audN = () => AUD.feitos.length + AUD.faltam.length;
   const audNome = (id) => (id[0] === "T" ? A.nomeTeste(id) : id[0] === "V" ? t().vr.nomes[id] : X().aud_L[id]) || id;
   const audBarra = () => { const f = AUD.feitos.length, n = audN(); return `<div class="aud-prog"><span class="aud-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${f}" aria-label="${esc(X().aud_prog(f, n))}"><i style="width:${((100 * f) / n).toFixed(1)}%"></i></span><b>${esc(X().aud_prog(nf(f), nf(n)))}</b></div>`; };
@@ -2284,7 +2287,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
   }
   function audJanela() {
     const E = X(), f = AUD.feitos.length, n = audN();
-    audDlg(E.aud_t, `${audBarra()}${audQuadros()}${E.aud_p(nf(f), nf(n), nf(n - f)).map((x) => `<p>${esc(x)}</p>`).join("")}${audListas()}${audSeguir()}
+    audDlg(E.aud_t, `${audBarra()}${audQuadros()}${E.aud_p(nf(f), nf(n), nf(n - f)).slice(0, A.DL_PAUSA ? undefined : -1).map((x) => `<p>${esc(x)}</p>`).join("")}${audListas()}${audSeguir()}
       <p class="btn-row aud-acoes"><button class="btn btn-primary" type="button" data-aud-ok>${esc(E.aud_ok)}</button></p>`);
   }
   // acompanhar: feed e app (no app já instalado, o botão liga os avisos)
@@ -2336,11 +2339,24 @@ curl -s ${base}SHA256SUMS.txt | head`;
     const a = ev.target.closest("[data-aud]");
     if (a) { ev.preventDefault(); const d = a.closest("dialog"); if (d) d.close(); audJanela(); return; }
     const l = ev.target.closest("#main a[download], #main a[href$='.zip']");
-    if (l && (location.hash || "").indexOf("#/downloads") === 0) { ev.preventDefault(); ev.stopPropagation(); dlBloqueado(); }
+    if (A.DL_PAUSA && l && (location.hash || "").indexOf("#/downloads") === 0) { ev.preventDefault(); ev.stopPropagation(); dlBloqueado(); }
   }, true);
   // tarja no alto (logo abaixo de "Análise independente") e bloco no rodapé; refeitos ao trocar de idioma
   function audMontar() {
+    const fim = audCompleta();
     const E = X(), f = AUD.feitos.length, n = audN(), lg = A.state.lang;
+    if (fim) {
+      const o = $("#aud-tarja"); if (o) o.remove();
+      const ft = $("#footer"), ob = ft && $(".aud-foot", ft);
+      if (ft && ft.firstElementChild && (!ob || ob.dataset.lg !== lg || !ob.dataset.fim)) {
+        if (ob) ob.remove();
+        const bx = document.createElement("section");
+        bx.className = "aud-foot"; bx.dataset.lg = lg; bx.dataset.fim = "1";
+        bx.innerHTML = `<div class="aud-foot-in"><h3>${icone("check")} ${esc(E.aud_fim_t)}</h3><p>${esc(E.aud_fim_p(nf(n)))}</p>${audBarra()}${audQuadros()}<a class="btn btn-sm" href="#/testes">${icone("list")} ${esc(E.aud_ver)}</a></div>`;
+        const fs = $(".flag-stripe", ft); if (fs) fs.after(bx); else ft.prepend(bx);
+      }
+      return;
+    }
     let tj = $("#aud-tarja");
     if (!tj || tj.dataset.lg !== lg) {
       if (tj) tj.remove();
@@ -2356,12 +2372,12 @@ curl -s ${base}SHA256SUMS.txt | head`;
       const o = $(".aud-foot", ft); if (o) o.remove();
       const bx = document.createElement("section");
       bx.className = "aud-foot"; bx.dataset.lg = lg;
-      bx.innerHTML = `<div class="aud-foot-in"><h3>${icone("clock")} ${esc(E.aud_t)}</h3><p>${esc(E.aud_foot_p(nf(f), nf(n)))}</p>${audBarra()}${audQuadros()}<button class="btn btn-sm" type="button" data-aud>${icone("list")} ${esc(E.aud_ver)}</button></div>`;
+      bx.innerHTML = `<div class="aud-foot-in"><h3>${icone("clock")} ${esc(E.aud_t)}</h3><p>${esc(E.aud_foot_p(nf(f), nf(n), !!A.DL_PAUSA))}</p>${audBarra()}${audQuadros()}<button class="btn btn-sm" type="button" data-aud>${icone("list")} ${esc(E.aud_ver)}</button></div>`;
       const fs = $(".flag-stripe", ft); if (fs) fs.after(bx); else ft.prepend(bx);
     }
   }
   // janela 5 s depois de entrar no site (uma vez a cada 24 h; não aparece no modo incorporado)
-  A.audBarra = audBarra; A.AUD = AUD; A.audNome = audNome;
+  A.audBarra = audBarra; A.AUD = AUD; A.audNome = audNome; A.audSync = audSync; A.audCompleta = audCompleta;
   const AUD_K = "aud_aviso_visto";
   function audVisto() { try { localStorage.setItem(AUD_K, String(Date.now())); } catch (e) { /* sem armazenamento */ } }
   const audRecente = () => { try { return Date.now() - (+localStorage.getItem(AUD_K) || 0) < 864e5; } catch (e) { return false; } };
@@ -2375,7 +2391,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
     }, ms);
   }
   let audIni = false;
-  document.addEventListener("pagina", () => { audMontar(); if (!audIni) { audIni = true; audAgendar(5000); } });
+  document.addEventListener("pagina", () => { audMontar(); if (!audIni) { audIni = true; if (!audCompleta()) audAgendar(5000); } });
 
   // --- Tabela padrão de qualquer página: a mesma tabela, dica e painel da página Urnas que fecharam tarde -----------------
   // cfg: id (nome da tabela), memo (filtros; mesma chave = volta à mesma página/ordem/linha), colunas, rot, linhas, fmt,

@@ -4,7 +4,7 @@
 
   const REPO = "https://github.com/paranacontraoscorruptos/eleicoes2026brasil";
   const BLOB = REPO + "/blob/6638cbfa6cbdf0f3ddc5d8fc83370cab666012e4/auditoria-eleicoes-2026-Brasil/auditoria_eleicoes_2026.py"; // v2.1.0: linhas de resumo.motor.funcoes
-  const ZIP = REPO + "/archive/refs/heads/main.zip";
+  const ZIP = REPO + "/archive/refs/heads/site.zip";   // branch publicado (o main está desatualizado)
   // v2.2.0: testes V1–V6 (variação entre turnos) — linhas do motor neste commit
   const BLOB_V = REPO + "/blob/d47662c10c28de1dbf1abb1e261f420bf6afa819/auditoria-eleicoes-2026-Brasil/auditoria_eleicoes_2026.py";
   const FN_DL = ["desvio_logit", 3432, 3451], FN_TT = ["teste_transferencia", 3472, 3482];
@@ -17,7 +17,7 @@
   const TESTES_V = ["V1", "V2", "V3", "V4", "V5", "V6"];
   const TESTES_L = ["L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10", "L11", "L12", "L13", "L14"];
   // downloads pausados enquanto a auditoria completa (35 testes) não termina: os botões abrem o aviso (extras.js)
-  const DL_PAUSA = true;
+  const DL_PAUSA = false;
   const PASTA = "auditoria-eleicoes-2026-Brasil";
   const TSE_PORTAL = "https://dadosabertos.tse.jus.br/";
   const TSE_RESULTADOS = "https://resultados.tse.jus.br/";
@@ -44,7 +44,9 @@
   const nomeTeste = (tid) => state.R.testes_txt[state.lang][tid].nome;
   const numTeste = (tid) => parseInt(tid.slice(1), 10);
   // total de testes da auditoria completa e quantos já foram concluídos (lista em extras.js: APP.AUD)
-  const nTestes = () => { const a = window.APP && window.APP.AUD; return a ? [a.feitos.length + a.faltam.length, a.feitos.length] : [35, 21]; };
+  const nTestes = () => { if (window.APP && window.APP.audSync) window.APP.audSync(); const a = window.APP && window.APP.AUD; return a ? [a.feitos.length + a.faltam.length, a.feitos.length] : [35, 21]; };
+  // auditoria completa (os 35 testes nos dois turnos): extras.js decide pelos dados publicados
+  const audFim = () => !!(window.APP && window.APP.audCompleta && window.APP.audCompleta());
   const txtTestes = () => `${nTestes()[0]} ${t().st_testes_x(nTestes()[1])}`;
 
   function tamanho(b) {
@@ -274,7 +276,7 @@
     const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"], P2 = T2.presidente;
     const tiles = [
       tile(T2.entrada.secoes, L.st_secoes, L.tip_secoes(nf(T2.entrada.linhas)), "grid"),
-      tile(nTestes()[0], L.st_testes, L.tip_testes, "flask", L.st_testes_x(nTestes()[1])),
+      tile(nTestes()[0], L.st_testes, audFim() ? L.tip_testes_fim : L.tip_testes, "flask", L.st_testes_x(nTestes()[1])),
       tile(T2.secoes_sinalizadas, L.st_sinal, L.tip_sinal, "flag", `(${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`),
       tile(P2.aptos, L.st_aptos, L.tip_aptos, "users"),
       tile(P2.comparecimento, L.st_comp, L.tip_comp(nf(P2.comparecimento), nf(P2.aptos - P2.comparecimento)), "vote", `(${pct(P2.comparecimento / P2.aptos)})`),
@@ -287,7 +289,7 @@
         tip: L.tip_round(nf(T1.entrada.linhas), nf(T1.entrada.secoes), nf(T1.entrada.boletins), T1.cab.emissao) },
       { k: "r2", href: "#/turno/2", ic: "chart", m: L.round_card(2, nf(T2.secoes_sinalizadas), pct(T2.secoes_sinalizadas / T2.entrada.secoes)), x: miniTestes(T2),
         tip: L.tip_round(nf(T2.entrada.linhas), nf(T2.entrada.secoes), nf(T2.entrada.boletins), T2.cab.emissao) },
-      { k: "tests", href: "#/testes", ic: "flask", m: L.m_tests, tip: L.tip_tests(comOcorr(T1), comOcorr(T2)) },
+      { k: "tests", href: "#/testes", ic: "flask", m: audFim() ? L.m_tests_fim : L.m_tests, tip: (audFim() ? L.tip_tests_fim : L.tip_tests)(comOcorr(T1), comOcorr(T2)) },
       { k: "lookup", href: "#/secao", ic: "search", m: L.m_lookup(nf(T2.entrada.secoes)), tip: L.tip_lookup, y: true },
       { k: "replicate", href: "#/replicar", ic: "terminal", m: L.m_replicate, tip: L.tip_replicate(T2.cab.nucleo_sha256.slice(0, 16)) },
       { k: "downloads", href: "#/downloads", ic: "download", m: L.m_downloads(nf(R.downloads.length), tamanho(totDl)), tip: L.tip_downloads(nf(R.downloads.length), tamanho(totDl)) },
@@ -598,14 +600,15 @@
           <p class="btn-row">${perguntar(id)} ${simular(id)}</p></div></details></article>`;
     }).join("");
     const LT = LL && LL.textos();   // bloco L: 1º turno concluído, 2º turno em andamento
-    const blk = (k) => (k === "L" && LT ? [Z.blocos.L[0], LT.bloco_l, LT.bloco_l_p] : Z.blocos[k]);
+    const fimL = audFim();
+    const blk = (k) => (k === "L" && LT ? [Z.blocos.L[0], fimL ? LT.bloco_l_fim : LT.bloco_l, fimL ? LT.bloco_l_p_fim : LT.bloco_l_p] : Z.blocos[k]);
     const bloco = (k, ok, html) => `<section class="t35-bloco" id="bloco-${k}" aria-labelledby="bloco-${k}-h"><div class="t35-h"><span class="t35-tag ${ok ? "t35-ok" : "t35-and"}">${esc(ok ? Z.concluido : k === "L" && LT ? LT.tag_l : Z.andamento)}</span>
       <h2 id="bloco-${k}-h">${esc(blk(k)[0])}</h2><p class="t35-n">${esc(blk(k)[1])}</p><p class="small muted">${esc(blk(k)[2])}</p></div><div class="tests">${html}</div></section>`;
-    const nav = ["T", "V", "L"].map((k) => `<a class="t35-ir${k === "L" ? " t35-ir-and" : ""}" href="#/testes/bloco-${k}"><b>${esc(blk(k)[0])}</b><span>${esc(blk(k)[1])}</span></a>`).join("");
+    const nav = ["T", "V", "L"].map((k) => `<a class="t35-ir${k === "L" && !fimL ? " t35-ir-and" : ""}" href="#/testes/bloco-${k}"><b>${esc(blk(k)[0])}</b><span>${esc(blk(k)[1])}</span></a>`).join("");
     return `<header class="page-head"><h1>${esc(Z.titulo)}</h1><p class="lead">${esc(Z.sub)}</p>${A_aud()}${acoes(false)}
       <nav class="t35-nav" aria-label="${esc(Z.ir)}">${nav}</nav>
       <ul class="legend inline">${L.legend.map(([c, nm]) => `<li>${chip(c, nm)}</li>`).join("")}<li class="muted small">${esc(L.th_anom)} / ${esc(L.th_info)}</li></ul></header>
-      ${bloco("T", true, cards)}${bloco("V", true, cardsV)}${bloco("L", false, cardsL)}${botCta()}`;
+      ${bloco("T", true, cards)}${bloco("V", true, cardsV)}${bloco("L", fimL, cardsL)}${botCta()}`;
   }
   // barra de progresso da auditoria (extras.js), quando disponível
   const A_aud = () => (window.APP && window.APP.audBarra ? `<div class="t35-prog">${window.APP.audBarra()}</div>` : "");
@@ -742,7 +745,7 @@
             o[6] == null ? "—" : esc(dec(Number(o[6]).toExponential(2)))])))
           + (f.o.some((o) => o[2] === "encerramento_tardio") ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_sec)} <a href="#/encerramento-tardio">${esc(L.ex.et_title)}</a> · <a href="site/data/complementar/encerramento_tardio.csv" download>${esc(L.ex.enc_csv)}</a></p>` : "");
       } else fl = `<p>${chip("green", L.lk_noflags)}</p>`;
-      return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}<div class="vh-slot" data-t="${n}"${f && f.o.some((o) => o[2] === "encerramento_tardio") ? " data-vh" : ""}></div>${n === 1 && R.logs && R.logs["1"] ? '<div class="lg-slot" data-t="1"></div>' : ""}</section>`;
+      return `<section class="card round-box"><h3>${esc(L.round(n))} <span class="muted small">${esc(L.roundDate[n])}</span></h3>${corpo}<h4>${esc(L.lk_flags)}</h4>${fl}<div class="vh-slot" data-t="${n}"${f && f.o.some((o) => o[2] === "encerramento_tardio") ? " data-vh" : ""}></div>${R.logs && R.logs[String(n)] ? `<div class="lg-slot" data-t="${n}"></div>` : ""}</section>`;
     }).join("");
     const nomeMun = titulo(d.mun[1]);
     const cart = [];

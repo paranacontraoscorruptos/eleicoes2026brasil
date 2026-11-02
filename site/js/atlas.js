@@ -1758,7 +1758,7 @@
     itens = itens.slice(0, 12);
     const rot = (d) => (d.turno ? L.round(d.turno) : T.dl_code);
     let h = `<p>${esc(geral ? T.dl_lead_all : T.dl_lead(itens.length))}</p>`;
-    if (tudo || geral) h += botoes([`<a class="btn btn-primary btn-sm" href="${A.REPO}/archive/refs/heads/main.zip">${icone("download")} ${esc(L.dl_all)}</a>`]);
+    if (tudo || geral) h += botoes([`<a class="btn btn-primary btn-sm" href="${A.REPO}/archive/refs/heads/site.zip">${icone("download")} ${esc(L.dl_all)}</a>`]);
     h += `<ul class="at-dl">${itens.map((d) => `<li><a class="btn btn-sm" href="${esc(d.path)}" download>${icone("download")} ${esc(d.nome.split("/").pop())}</a>
       <span class="small muted">${esc(rot(d))} · ${esc(tam(d.bytes))}${L.dl_desc[d.nome] ? ` · ${esc(L.dl_desc[d.nome])}` : ""}</span></li>`).join("")}</ul>`;
     if (mais) h += `<p class="small muted">${esc(T.dl_more)}</p>`;

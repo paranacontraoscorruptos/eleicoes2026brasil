@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sun, 01 Nov 2026 21:55:00 -0300</lastBuildDate>
+  <lastBuildDate>Sun, 01 Nov 2026 22:10:00 -0300</lastBuildDate>
+  <item>
+    <title>Downloads liberados de novo</title>
+    <link>https://paranacontraoscorruptos.org/#/downloads</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-01-22</guid>
+    <pubDate>Sun, 01 Nov 2026 22:10:00 -0300</pubDate>
+    <category>Site</category>
+    <description>Com a auditoria completa dos dois turnos terminada (35 testes), os relatórios, os dados e o motor voltaram a ser baixados no site: na página Downloads e nos botões das outras páginas. Cada arquivo tem o tamanho e o código de conferência (SHA-512). O botão Baixar tudo (.zip) agora traz a versão publicada do repositório, com os pacotes novos dos dois turnos.</description>
+  </item>
   <item>
     <title>Relatório do 2º turno refeito: auditoria completa, com os logs das urnas</title>
     <link>https://paranacontraoscorruptos.org/#/downloads</link>
