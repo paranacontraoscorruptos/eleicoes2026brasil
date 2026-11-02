@@ -232,11 +232,93 @@
     requestAnimationFrame(passo);
   }
 
+  // --- tabelas das respostas no padrão do site: a mesma tabela, dica ao passar o mouse e painel ao clicar das páginas -----------
+  // A resposta guardada (m.h) continua com a tabela simples: copiar, ouvir, planilha, PDF, site e exportações leem dela.
+  // Painel: linha de seção (UF, zona e seção na linha, ou data-tp "sec|..."): a seção; data-tp "uf|..."/"mun|...": o estado ou
+  // o município, com a linha no alto; outras linhas: a linha inteira com os nomes das colunas.
+  const TAB_SIMPLES = new Map();
+  let tabSeq = 0;
+  const COL_RX = { uf: /^(uf|state|estado)$/i, z: /^(zona|zone)$/i, s: /^(se[cç][aã]o|section|secci[oó]n)$/i, t: /^(turno|round|vuelta)$/i };
+  const txtCel = (h) => { const dv = document.createElement("div"); dv.innerHTML = h; return dv.textContent.replace(/\s+/g, " ").trim(); };
+  const inteiro = (x) => { const m = String(x || "").match(/\d+/); return m ? +m[0] : null; };
+  function lugarLinha(cab, cel) {
+    const i = (k) => cab.findIndex((c) => COL_RX[k].test(c));
+    const dv = document.createElement("div"); dv.innerHTML = cel.join(" ");
+    const mk = dv.querySelector("[data-tp]"), p = mk ? mk.dataset.tp.split("|") : null;
+    if (p && p[0] === "uf") return { tipo: "uf", uf: p[1] };
+    if (p && p[0] === "mun") return { tipo: "mun", uf: p[1], cod: p[2] };
+    if (p && p[0] === "sec") return { tipo: "sec", uf: p[1], z: +p[2], s: +p[3], t: p[4] ? +p[4] : null };
+    const iu = i("uf"), iz = i("z"), is = i("s"), it = i("t");
+    if (iu < 0 || iz < 0 || is < 0) return null;
+    const uf = (txtCel(cel[iu]).match(/^[A-Z]{2}\b/) || [])[0], z = inteiro(txtCel(cel[iz])), s = inteiro(txtCel(cel[is]));
+    const tn = it >= 0 ? inteiro(txtCel(cel[it])) : null;
+    return uf && z && s ? { tipo: "sec", uf, z, s, t: tn === 1 || tn === 2 ? tn : null } : null;
+  }
+  function padronizarTabelas(d) {
+    const PE = ext(), TP = A.cqPagina;
+    if (!PE || !PE.tabelaHtml || !TP || !d || !d.isConnected) return;
+    d.querySelectorAll(".table-wrap").forEach((w) => {
+      const tb = w.querySelector(":scope > table");
+      if (!tb || !tb.tHead || !tb.tBodies[0] || w.closest(".at-tp")) return;
+      const trs = Array.from(tb.tBodies[0].rows), ths = Array.from(tb.tHead.rows[0].cells);
+      if (!trs.length) return;
+      const cab = ths.map((c) => c.innerHTML), rot = ths.map((c) => c.textContent.replace(/\s+/g, " ").trim());
+      // linha de grupo ("2º turno" e o resto vazio, na comparação): vira o começo do nome das linhas seguintes
+      let grupo = "";
+      const linhas = [];
+      trs.forEach((tr) => {
+        const cs = Array.from(tr.cells).map((c) => c.innerHTML);
+        if (cs.length > 1 && cs.slice(1).every((c) => !txtCel(c))) { grupo = txtCel(cs[0]); return; }
+        if (grupo) cs[0] = `${esc(grupo)} · ${cs[0]}`;
+        linhas.push(cs);
+      });
+      if (!linhas.length) return;
+      if (!rot[0] && linhas.every((l) => txtCel(l[0]))) { rot[0] = t().gr_measure; cab[0] = esc(rot[0]); }
+      const lug = linhas.map((l) => lugarLinha(rot, l));
+      // título do painel: a 1ª célula com texto (não só o número da posição); no alto, o título da parte da resposta
+      let h4 = w.previousElementSibling; while (h4 && !h4.matches("h4.at-t, .at-h")) h4 = h4.previousElementSibling;
+      const kick = txtCel((h4 || d.querySelector(".at-h") || { innerHTML: "Atlas" }).innerHTML).replace(/\s+·\s+$/, "");
+      const titulo = (gi) => {
+        const xs = linhas[gi].map(txtCel), i = xs.findIndex((x, j) => x && rot[j] !== "#" && !/^[\d.,%#º\s–—-]+$/.test(x));
+        return i >= 0 ? xs[i] : `${rot[0] && rot[0] !== "#" ? rot[0] + " " : ""}${xs[0] || ""}`;
+      };
+      const id = `at-${++tabSeq}`;
+      TAB_SIMPLES.set(id, w.outerHTML);
+      if (TAB_SIMPLES.size > 300) TAB_SIMPLES.delete(TAB_SIMPLES.keys().next().value);
+      const box = document.createElement("div");
+      box.className = "tp-box at-tp"; box.dataset.tabSimples = id;
+      w.replaceWith(box);
+      const algum = lug.some(Boolean);
+      // alto do painel: a linha com os nomes das colunas; a coluna sem nome (botões "Por quê?") fica embaixo, como botões
+      const topo = (gi) => {
+        const l = linhas[gi], bts = l.filter((c, i) => !rot[i] && txtCel(c));
+        return `<section class="tp-ap"><h3>${esc(kick)}</h3>${TP.pnDl(rot.map((k, i) => (k ? [k, l[i]] : null)))}${bts.length ? `<p class="btn-row">${bts.join(" ")}</p>` : ""}</section>`;
+      };
+      PE.tabelaHtml(box, cab, linhas, { id: "atlas", memo: id, kick, titulo, topo, cls: tb.className || "num-cols", dicaLinha: lug.some((x) => x && x.tipo === "sec"),
+        ler: algum ? (gi) => { const x = lug[gi]; return x && x.tipo === "sec" ? { uf: x.uf, z: x.z, s: x.s, t: x.t } : {}; } : undefined,
+        fonte: algum ? (gi, e, dd) => {
+          const x = lug[gi];
+          if (x && x.tipo === "sec") return TP.fonteSecao(e, dd);
+          if (x && x.tipo === "uf") return TP.fonteUf(x.uf);
+          if (x && x.tipo === "mun") return TP.fonteMun(x.uf, x.cod);
+          return Promise.resolve({ tipo: "linha", e, d: null, href: null });
+        } : undefined });
+    });
+  }
+  // cópia de uma resposta (PDF, página interativa, site, imagem): a tabela simples volta no lugar da tabela padrão
+  function tabSimples(c) {
+    c.querySelectorAll(".at-tp[data-tab-simples]").forEach((b) => {
+      const h = TAB_SIMPLES.get(b.dataset.tabSimples);
+      if (h) b.outerHTML = h; else b.remove();
+    });
+    return c;
+  }
+
   function mostrarConversa(c) {
     const log = S.el.log; log.innerHTML = "";
     S.el.root.classList.toggle("vazio", !c || !c.m.length);
     if (!c) { listaConversas(); return; }
-    c.m.forEach((m) => { const d = bolha(m.r, m.h); if (m.r === "a") { preparar(d); acoesResposta(d, m); } });
+    c.m.forEach((m) => { const d = bolha(m.r, m.h); if (m.r === "a") { preparar(d); acoesResposta(d, m); padronizarTabelas(d); } });
     log.scrollTop = log.scrollHeight;
     listaConversas();
   }
@@ -255,6 +337,7 @@
     // a página foi redesenhada enquanto escrevia (troca de idioma): mostra a conversa de novo
     if (!document.contains(d)) { const c = S.convs.find((x) => x.id === S.atual); if (c && S.el.log && document.contains(S.el.log)) mostrarConversa(c); return null; }
     acoesResposta(d, m);
+    padronizarTabelas(d);
     if (S.con.hook && S.hook.auto && urlValida(S.hook.url)) enviarAutomacao(m, d);
     return d;
   }
@@ -1329,15 +1412,16 @@
   // --- ranking, comparação, filtro, mapa, "por que", relatório e roteiro -----------------------------------------------
   const Q = () => A.consulta;
   const turnoTem = (n, nr) => R().turnos[n].presidente.candidatos.some((c) => c.nr === nr);
-  const lk = (q, txt) => `<button type="button" class="at-lk" data-q="${esc(q)}">${esc(txt)}</button>`;
+  // tp (opcional): o lugar da linha ("uf|SP", "mun|SP|71072", "sec|SP|1|23|2"), que o painel da tabela padrão abre
+  const lk = (q, txt, tp) => `<button type="button" class="at-lk" data-q="${esc(q)}"${tp ? ` data-tp="${esc(tp)}"` : ""}>${esc(txt)}</button>`;
   const ABS = /\b(numero|quantidade|total|absolut\w*|number|count|cantidad)\b/;
   // Nome de quem aparece numa linha de ranking ou comparação, com o link que pergunta sobre ele
   function nomeLinha(r) {
     const T = X(), L = t();
-    if (r.tipo === "uf") return lk(A.ufNome(r.uf), `${r.uf} – ${A.ufNome(r.uf)}`);
-    if (r.tipo === "mun") return lk(`${r.nome} ${r.uf}`, `${r.nome} (${r.uf})`);
+    if (r.tipo === "uf") return lk(A.ufNome(r.uf), `${r.uf} – ${A.ufNome(r.uf)}`, `uf|${r.uf}`);
+    if (r.tipo === "mun") return lk(`${r.nome} ${r.uf}`, `${r.nome} (${r.uf})`, r.cod ? `mun|${r.uf}|${r.cod}` : "");
     if (r.tipo === "zona") return lk(`${r.uf} ${T.w_zone} ${r.z}`, `${L.th_zone} ${r.z}`);
-    if (r.tipo === "secao") return lk(`${r.uf} ${T.w_zone} ${r.z} ${T.w_section} ${r.s}`, `${L.th_zone} ${r.z} · ${L.th_section} ${r.s}`);
+    if (r.tipo === "secao") return lk(`${r.uf} ${T.w_zone} ${r.z} ${T.w_section} ${r.s}`, `${L.th_zone} ${r.z} · ${L.th_section} ${r.s}`, `sec|${r.uf}|${r.z}|${r.s}`);
     return esc(r.nome || "");
   }
   const nomeTxt = (r) => (r.tipo === "uf" ? `${r.uf} – ${A.ufNome(r.uf)}` : r.tipo === "mun" ? `${r.nome} (${r.uf})` : r.nome || "");
@@ -1650,7 +1734,7 @@
     }
     if (r.secs.length) {
       h += `<h4 class="at-t">${esc(T.rl_secs(nf(r.secs.length)))}</h4>`;
-      h += tabela([L.th_zone, L.th_section, T.th_round, T.ft_th_tests, ""], r.secs.slice(0, 40).map((s) => [s.z, s.s, `${s.n}º`, s.testes.map((id) => A.chip(s.a ? "red" : "amber", String(A.numTeste(id)))).join(" "), lk(T.pq_q(s.uf, s.z, s.s, s.n), T.ft_why)]), "num-cols");
+      h += tabela([L.th_zone, L.th_section, T.th_round, T.ft_th_tests, ""], r.secs.slice(0, 40).map((s) => [s.z, s.s, `${s.n}º`, s.testes.map((id) => A.chip(s.a ? "red" : "amber", String(A.numTeste(id)))).join(" "), lk(T.pq_q(s.uf, s.z, s.s, s.n), T.ft_why, `sec|${s.uf}|${s.z}|${s.s}|${s.n}`)]), "num-cols");
       if (r.secs.length > 40) h += `<p class="small muted">${esc(T.ft_more("40", nf(r.secs.length)))}</p>`;
     } else h += `<p>${A.chip("green", T.rl_nosecs)}</p>`;
     if (r.ib) h += blocoIbge(r.ib, m);
@@ -2368,7 +2452,7 @@
       <p class="doc-meta">${esc(d ? T.doc_one : T.doc_all)} · ${esc(quando)}</p><p class="doc-selo">${esc(L.badge)}</p>
       ${vivo ? `<div class="doc-vivo">${o.qr || ""}<div><b>${esc(d ? T.doc_live_one : T.doc_live_all)}</b><p>${esc(o.html ? T.doc_live_note_html : T.doc_live_note)}</p><a href="${esc(vivo)}">${esc(vivo.replace(/^https:\/\//, ""))}</a></div></div>` : ""}</header>`;
     msgs.forEach((x) => {
-      const u = x.classList.contains("msg-user"), c = x.cloneNode(true);
+      const u = x.classList.contains("msg-user"), c = tabSimples(x.cloneNode(true));
       c.querySelectorAll(".at-acts, .caret").forEach((e) => e.remove());
       c.querySelectorAll("[style*='display: none']").forEach((e) => { e.style.display = ""; });
       // número que ainda contava, ou barra que ainda não cresceu: fica o valor final
@@ -2428,7 +2512,7 @@
   const corrido = (el) => { const c = el.cloneNode(true); c.querySelectorAll("p, div, dt, dd, li, h4, td, th, figcaption, .bar-label, .bar-value").forEach((x) => x.append(" ")); return c.textContent; };
   // Uma resposta como parte do site: título e subtítulo saem do cabeçalho da resposta; botões viram links para o site
   function parteSite(d) {
-    const c = d.cloneNode(true);
+    const c = tabSimples(d.cloneNode(true));
     c.querySelectorAll(".at-acts, .caret, .msg-rel, .chips, .at-entendi, form").forEach((e) => e.remove());
     c.querySelectorAll("[style*='display: none']").forEach((e) => { e.style.display = ""; });
     c.querySelectorAll("[data-count]").forEach((e) => { e.textContent = nf(+e.dataset.count); e.removeAttribute("data-count"); });
@@ -2512,7 +2596,7 @@
   }
   // Cartão de imagem e vídeo da resposta: título, blocos de números, barras e selos dos testes (ver itensCartao em ferramentas.js)
   function cartaoResposta(d, m) {
-    const c = d.cloneNode(true), txt = (e) => (e ? e.textContent.replace(/\s+/g, " ").trim() : "");
+    const c = tabSimples(d.cloneNode(true)), txt = (e) => (e ? e.textContent.replace(/\s+/g, " ").trim() : "");
     c.querySelectorAll(".at-acts, .caret").forEach((e) => e.remove());
     c.querySelectorAll("[data-count]").forEach((e) => { e.textContent = nf(+e.dataset.count); });
     const h = c.querySelector(".at-h"), sub = h && h.querySelector(".muted");
@@ -2830,6 +2914,15 @@
     fecharGaveta();
   });
   document.addEventListener("click", (e) => { if (document.body.classList.contains("atlas-on") && !e.target.closest(".at-pop, [data-at-ac], .at-mais, .at-menu-mais, [data-at='exportar-conversa']")) fecharMenus(); });
+  // painel da tabela padrão (fica fora da conversa): os botões da linha ("Por quê?", nome do lugar) perguntam ao Atlas ou abrem a página
+  document.addEventListener("click", (e) => {
+    if (!document.body.classList.contains("atlas-on") || !S.el.root || !document.contains(S.el.root)) return;
+    const b = e.target.closest && e.target.closest(".cq-painel .tp-ap [data-q], .cq-painel .tp-ap [data-go]");
+    if (!b) return;
+    e.preventDefault();
+    if (A.cqPagina) A.cqPagina.fechar();
+    if (b.dataset.q) perguntar(b.dataset.q); else location.hash = b.dataset.go;
+  });
   // soltar arquivo fora da conversa não abre o arquivo no navegador
   ["dragover", "drop"].forEach((ev) => window.addEventListener(ev, (e) => { if (document.body.classList.contains("atlas-on") && !e.defaultPrevented) e.preventDefault(); }));
   document.addEventListener("pagina", (e) => {
