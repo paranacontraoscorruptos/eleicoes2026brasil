@@ -486,16 +486,10 @@
       tile(T2.entrada.boletins, L.st_bol, L.tip_bol, "file"),
     ].join("");
     const comOcorr = (T) => T.testes.filter((x) => x.sinal > 0 || x.info > 0).length;
-    const totDl = R.downloads.reduce((a, d) => a + d.bytes, 0);
     const pag = [
       { k: "r1", href: "#/turno/1", ic: "chart", m: metr35("1"), x: mini35("1"), tip: tip35("1") },
       { k: "r2", href: "#/turno/2", ic: "chart", m: metr35("2"), x: mini35("2"), tip: tip35("2") },
       { k: "tests", href: "#/testes", ic: "flask", m: audFim() ? L.m_tests_fim : L.m_tests, tip: (audFim() ? L.tip_tests_fim : L.tip_tests)(comOcorr(T1), comOcorr(T2)) },
-      { k: "lookup", href: "#/secao", ic: "search", m: L.m_lookup(nf(T2.entrada.secoes)), tip: L.tip_lookup, y: true },
-      { k: "replicate", href: "#/replicar", ic: "terminal", m: L.m_replicate, tip: L.tip_replicate(T2.cab.nucleo_sha256.slice(0, 16)) },
-      { k: "downloads", href: "#/downloads", ic: "download", m: L.m_downloads(nf(R.downloads.length), tamanho(totDl)), tip: L.tip_downloads(nf(R.downloads.length), tamanho(totDl)) },
-      { k: "limits", href: "#/limitacoes", ic: "shield", m: L.m_limits, tip: L.tip_limits },
-      { k: "bot", href: "#/atlas", ic: "globe", m: L.m_bot, tip: L.tip_bot, y: true, bot: true },
     ];
     const cards = pag.map((c, i) => {
       const [tit, desc] = L.pg[c.k];
@@ -505,9 +499,6 @@
       const cls = `page-card spot tilt${c.y ? " y" : ""}`;
       return `<a class="${cls}" href="${c.href}" data-tip="${esc(c.tip)}">${dentro}</a>`;
     }).join("");
-    const cands = P2.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96");
-    const val = cands.reduce((a, c) => a + c.votos, 0);
-    const br = P2.candidatos.find((c) => c.nr === "95"), nu = P2.candidatos.find((c) => c.nr === "96");
     state.cartao = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: L.hero_title,
       linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, txtTestes()], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
         [L.st_aptos, nf(P2.aptos)], [L.st_comp, `${nf(P2.comparecimento)} (${pct(P2.comparecimento / P2.aptos)})`]], barras: [barrasTurno(2, 2)] };
@@ -516,8 +507,6 @@
       return `<a class="page-card spot tilt${i % 3 === 1 ? " y" : ""}" href="${h}"><span class="pc-ico">${icone(ICO_MAIS[k])}</span>
         <span class="pc-title">${esc(tit)}</span><span class="pc-desc">${esc(desc)}</span><span class="pc-go">${esc(L.pg_open)} ${icone("arrow")}</span></a>`;
     }).join("");
-    const pres = barras(cands.map((c) => ({ rotulo: `${titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: `${pct(c.votos / val)}`,
-      dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}\n${titulo(c.nome)} (${c.nr})` })));
     return `
     <section class="hero">
       <canvas class="hero-canvas" aria-hidden="true"></canvas>
@@ -540,11 +529,9 @@
         <div class="float-chip c3"><span class="fc-ico">${icone("check")}</span><span><b>2</b>${esc(L.hero_chip_rounds)}</span></div>
       </div>
     </section>
-    ${destaqueAtlas()}
     ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
     ${destaqueUnanimidade()}
     ${destaqueEncTardio()}
-    ${telegram(false)}
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
       <div class="tiles tiles-3">${tiles}</div>${dzSecao("2")}
     </section>
@@ -555,14 +542,6 @@
     <section aria-labelledby="h-tools"><h2 id="h-tools">${esc(L.tools_title)}</h2><p class="sec-sub">${esc(L.tools_sub)}</p>
       <div class="pages pages-tools">${ferr}</div>
     </section>
-    <section class="grid2">
-      <div class="card pres-home"><h2>${esc(L.home_pres_title)}</h2><p class="small muted">${esc(L.home_pres_sub)}</p>${pres}
-        <p class="small muted">${esc(L.blank)}: ${nf(br.votos)} · ${esc(L.null_)}: ${nf(nu.votos)}</p>
-        <a class="btn btn-sm" href="#/turno/2">${esc(L.home_pres_more)} ${icone("arrow")}</a></div>
-      <div class="card"><h2>${esc(L.tl_title)}</h2>
-        <ol class="timeline">${L.tl.map(([d, x], i) => `<li${i % 2 ? ' class="y"' : ""}><time>${esc(d)}</time><span>${esc(x)}</span></li>`).join("")}</ol></div>
-    </section>
-    <section class="card" aria-labelledby="h-lk"><h2 id="h-lk">${esc(L.lookup_cta_title)}</h2><p>${esc(L.lookup_cta_text)}</p>${formSecao(true)}</section>
     <section aria-labelledby="h-leg"><h2 id="h-leg">${esc(L.legend_title)}</h2>
       <ul class="legend">${L.legend.map(([c, n, d]) => `<li>${chip(c, n)} <span class="muted">${esc(d)}</span></li>`).join("")}</ul>
     </section>`;
