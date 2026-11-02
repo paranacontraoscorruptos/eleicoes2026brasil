@@ -271,6 +271,36 @@
     const L = t();
     return `<span class="round-chips">${T.testes.map((x) => `<span class="mini mini-${status(x)}" data-tip="${esc(`${numTeste(x.id)}. ${nomeTeste(x.id)}\n${L.th_anom}: ${nf(x.sinal)} · ${L.th_info}: ${nf(x.info)}`)}">${numTeste(x.id)}</span>`).join("")}</span>`;
   }
+  // os 35 testes do turno nos cards da inicial (resumo.json: aud35, lido dos arquivos do Relatório Técnico de cada turno)
+  // 1º turno: teste 11 como no Relatório (com as urnas que fecharam tarde); V1–V6 comparam os dois turnos e ficam no card do 2º turno
+  const UN_V = { V1: "uf", V2: "municipio", V3: "secao", V4: "secao", V5: "secao", V6: "secao" };
+  function mini35(n) {
+    const L = t(), A35 = state.R.aud35 && state.R.aud35[n];
+    if (!A35) return miniTestes(state.R.turnos[n]);
+    const ZT = window.T35[state.lang] || window.T35.PT;
+    const nome = (id) => (window.APP.audNome ? window.APP.audNome(id) : id);
+    const chipM = (x) => {
+      const k = x.id[0], rot = k === "T" ? String(numTeste(x.id)) : x.id;
+      if (x.na) return `<span class="mini mini-na" data-tip="${esc(`${x.id}. ${nome(x.id)}\n${L.rc_na}`)}">${rot}</span>`;
+      const uk = k === "T" ? UN_T[x.id] || "s" : k === "V" ? UN_V[x.id] : "s";
+      const st = x.a > 0 ? "red" : x.i > 0 ? "amber" : "green";
+      const extra = x.id === "T11" && A35.tardias ? `\n${L.rc_t11(nf(A35.tardias), nf(A35.tardias_votos.secoes), nf(A35.tardias_votos.votos))}` : "";
+      return `<span class="mini mini-${st}" data-tip="${esc(`${k === "T" ? numTeste(x.id) : x.id}. ${nome(x.id)}\n${unTip(ZT, x.a, x.i, uk)}${extra}`)}">${rot}</span>`;
+    };
+    return `<span class="round-chips r35">${["T", "V", "L"].map((k) => `<span class="rc-g"><span class="rc-l">${esc(L.rc_g[k])}</span><span class="rc-c">${A35.testes.filter((x) => x.id[0] === k).map(chipM).join("")}</span></span>`).join("")}</span>`;
+  }
+  function metr35(n) {
+    const L = t(), A35 = state.R.aud35 && state.R.aud35[n], T = state.R.turnos[n];
+    if (!A35) return L.round_card(+n, nf(T.secoes_sinalizadas), pct(T.secoes_sinalizadas / T.entrada.secoes));
+    return L.round_card(+n, nf(A35.secoes), pct(A35.secoes / A35.analisadas));
+  }
+  function tip35(n) {
+    const L = t(), A35 = state.R.aud35 && state.R.aud35[n], T = state.R.turnos[n];
+    const base = L.tip_round(nf(T.entrada.linhas), nf(T.entrada.secoes), nf(T.entrada.boletins), T.cab.emissao);
+    if (!A35) return base;
+    return (n === "1" ? L.rc_tip1(nf(A35.bu), nf(A35.tardias), nf(A35.log), nf(A35.secoes), nf(A35.analisadas))
+      : L.rc_tip2(nf(A35.bu), nf(A35.var), nf(A35.log), nf(A35.secoes), nf(A35.analisadas))) + "\n\n" + base;
+  }
 
   function paginaInicio() {
     const L = t(), R = state.R, T1 = R.turnos["1"], T2 = R.turnos["2"], P2 = T2.presidente;
@@ -285,10 +315,8 @@
     const comOcorr = (T) => T.testes.filter((x) => x.sinal > 0 || x.info > 0).length;
     const totDl = R.downloads.reduce((a, d) => a + d.bytes, 0);
     const pag = [
-      { k: "r1", href: "#/turno/1", ic: "chart", m: L.round_card(1, nf(T1.secoes_sinalizadas), pct(T1.secoes_sinalizadas / T1.entrada.secoes)), x: miniTestes(T1),
-        tip: L.tip_round(nf(T1.entrada.linhas), nf(T1.entrada.secoes), nf(T1.entrada.boletins), T1.cab.emissao) },
-      { k: "r2", href: "#/turno/2", ic: "chart", m: L.round_card(2, nf(T2.secoes_sinalizadas), pct(T2.secoes_sinalizadas / T2.entrada.secoes)), x: miniTestes(T2),
-        tip: L.tip_round(nf(T2.entrada.linhas), nf(T2.entrada.secoes), nf(T2.entrada.boletins), T2.cab.emissao) },
+      { k: "r1", href: "#/turno/1", ic: "chart", m: metr35("1"), x: mini35("1"), tip: tip35("1") },
+      { k: "r2", href: "#/turno/2", ic: "chart", m: metr35("2"), x: mini35("2"), tip: tip35("2") },
       { k: "tests", href: "#/testes", ic: "flask", m: audFim() ? L.m_tests_fim : L.m_tests, tip: (audFim() ? L.tip_tests_fim : L.tip_tests)(comOcorr(T1), comOcorr(T2)) },
       { k: "lookup", href: "#/secao", ic: "search", m: L.m_lookup(nf(T2.entrada.secoes)), tip: L.tip_lookup, y: true },
       { k: "replicate", href: "#/replicar", ic: "terminal", m: L.m_replicate, tip: L.tip_replicate(T2.cab.nucleo_sha256.slice(0, 16)) },
