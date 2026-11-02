@@ -35,8 +35,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-VERSAO = "1.0.0"
-DATA_EDICAO = "29/10/2026"
+VERSAO = "1.1.0"
+DATA_EDICAO = "01/11/2026"
 
 # Parâmetros herdados do motor v2.1.0
 ALFA_FDR = 0.01                  # taxa de falsas descobertas (Benjamini–Hochberg)
@@ -373,25 +373,26 @@ TX = {
                  "V6": "Cadastro alterado entre os turnos"},
         "nivel": {"uf": "Estado", "municipio": "Município", "secao": "Seção"},
         "nota_topo": "> 📌 **Nota de edição ({data}).** Este relatório foi complementado pelo **Adendo A — Variação dos votos para Presidente "
-                     "entre o 1º e o 2º turno**, ao final do documento, com a nota do autor que justifica a edição. As seções 1 a 15 não foram alteradas.\n",
+                     "entre o 1º e o 2º turno**, ao final do documento, com a nota do autor que justifica a edição. O restante do relatório não foi alterado.\n",
         "titulo": "## Adendo A — Variação dos votos para Presidente entre o 1º e o 2º turno",
         "nota_t": "### Nota de edição — {data}",
         "nota": [
-            "Após a emissão deste Relatório Técnico, em {emissao}, a comparação entre os votos obtidos pelos finalistas à Presidência da República "
+            "Depois do 2º turno, a comparação entre os votos obtidos pelos finalistas à Presidência da República "
             "no 1º e no 2º turno passou a ocupar lugar central no debate público. Levantamentos sobre quantos votos cada candidato ganhou ou perdeu "
             "de um turno para o outro — por estado, por município e até por seção eleitoral — foram amplamente difundidos nas redes sociais e na "
             "imprensa nacional e internacional, acompanhados de dúvidas e questionamentos legítimos por parte dos eleitores.",
             "Na condição de autor e responsável técnico por esta auditoria, considerei que um trabalho que se propõe a examinar, com independência e "
             "transparência, a consistência estatística dos resultados oficiais não poderia permanecer silente diante de uma questão de tamanho "
             "interesse público. Senti-me, por isso, no dever de submeter também essa comparação a testes estatísticos formais, conduzidos com o mesmo "
-            "rigor, os mesmos fundamentos metodológicos e o mesmo padrão de documentação adotados nos quinze testes originais. O propósito é oferecer "
+            "rigor, os mesmos fundamentos metodológicos e o mesmo padrão de documentação adotados nos demais testes desta auditoria. O propósito é oferecer "
             "à sociedade uma resposta técnica, verificável e imparcial, capaz de distinguir a variação esperada entre os turnos — decorrente da "
             "redistribuição dos votos dos candidatos não classificados, dos votos brancos e nulos e da mudança do comparecimento — daquilo que, de "
             "fato, merece verificação documental.",
             "Este Adendo A baseia-se exclusivamente nos dados oficiais dos Boletins de Urna dos dois turnos, já processados por esta auditoria. "
-            "As seções 1 a 15 deste relatório não foram alteradas: seus resultados, critérios e conclusões permanecem integralmente válidos, e os "
-            "quinze testes originais não precisaram ser reexecutados, pois os dados de entrada e o núcleo analítico (SHA-256 `{nucleo}`) são os "
-            "mesmos. O adendo foi produzido por script próprio (`variacao_entre_turnos.py`), publicado junto com este relatório para que qualquer "
+            "Nesta execução, o motor de análise recebeu apenas os Boletins de Urna e os logs das urnas do 2º turno; por isso, o Anexo A do motor "
+            "aparece como não aplicável, e os seis testes de variação entre os turnos (V1 a V6) são apresentados neste Adendo A. O adendo não "
+            "altera nenhuma outra parte deste relatório nem os resultados, critérios e conclusões dos demais testes (núcleo analítico SHA-256 "
+            "`{nucleo}`). Foi produzido por script próprio (`variacao_entre_turnos.py`), publicado junto com este relatório para que qualquer "
             "pessoa possa reproduzi-lo integralmente. Os hashes SHA-512 deste documento e dos novos arquivos de dados foram atualizados em "
             "`manifesto_saida.sha512`, e a edição foi registrada publicamente na página de Atualizações do site.",
             "Reafirmo o princípio que orienta todo este trabalho: anomalia estatística indica prioridade de verificação e não constitui, por si só, "
@@ -500,28 +501,29 @@ TX = {
                  "V6": "Voter roll changed between rounds"},
         "nivel": {"uf": "State", "municipio": "Municipality", "secao": "Section"},
         "nota_topo": "> 📌 **Editorial note ({data}).** This report has been supplemented with **Addendum A — Change in presidential votes "
-                     "between round 1 and round 2**, at the end of the document, including the author's note explaining the edit. Sections 1 to 15 "
-                     "have not been changed.\n",
+                     "between round 1 and round 2**, at the end of the document, including the author's note explaining the edit. The rest of the "
+                     "report has not been changed.\n",
         "titulo": "## Addendum A — Change in presidential votes between round 1 and round 2",
         "nota_t": "### Editorial note — {data}",
         "nota": [
-            "After this Technical Report was issued on {emissao}, the comparison between the votes received by the two presidential finalists "
+            "After round 2, the comparison between the votes received by the two presidential finalists "
             "in round 1 and round 2 became central to the public debate. Figures on how many votes each candidate gained or lost from one round "
             "to the next — by state, by municipality and even by polling section — were widely circulated on social media and in the national "
             "and international press, accompanied by legitimate doubts and questions from voters.",
             "As the author and the person technically responsible for this audit, I considered that a work which sets out to examine, "
             "independently and transparently, the statistical consistency of the official results could not remain silent on a question of such "
             "public interest. I therefore felt duty-bound to subject this comparison to formal statistical tests as well, carried out with the "
-            "same rigor, the same methodological foundations and the same documentation standard adopted in the fifteen original tests. The "
+            "same rigor, the same methodological foundations and the same documentation standard adopted in the other tests of this audit. The "
             "purpose is to offer society a technical, verifiable and impartial answer, able to distinguish the change expected between rounds — "
             "resulting from the redistribution of votes cast for the candidates who did not advance, of blank and null votes, and from changes in "
             "turnout — from what actually warrants documentary verification.",
             "This Addendum A is based exclusively on the official data of the Ballot Box Reports (Boletins de Urna) of both rounds, already "
-            "processed by this audit. Sections 1 to 15 of this report have not been changed: their results, criteria and conclusions remain fully "
-            "valid, and the fifteen original tests did not need to be re-run, since the input data and the analytical core (SHA-256 `{nucleo}`) "
-            "are the same. The addendum was produced by a dedicated script (`variacao_entre_turnos.py`), published together with this report so "
-            "that anyone can reproduce it in full. The SHA-512 hashes of this document and of the new data files have been updated in "
-            "`manifesto_saida.sha512`, and the edit has been publicly recorded on the site's Updates page.",
+            "processed by this audit. In this run, the analysis engine received only the round 2 Ballot Box Reports and voting machine logs; "
+            "therefore the engine's Appendix A appears as not applicable, and the six tests of change between rounds (V1 to V6) are presented in "
+            "this Addendum A. The addendum does not change any other part of this report nor the results, criteria and conclusions of the other "
+            "tests (analytical core SHA-256 `{nucleo}`). It was produced by a dedicated script (`variacao_entre_turnos.py`), published together "
+            "with this report so that anyone can reproduce it in full. The SHA-512 hashes of this document and of the new data files have been "
+            "updated in `manifesto_saida.sha512`, and the edit has been publicly recorded on the site's Updates page.",
             "I reaffirm the principle that guides this entire work: a statistical anomaly indicates a priority for verification and is not, in "
             "itself, proof of fraud, error or irregularity; likewise, the absence of a flag does not replace checking the printed reports and the "
             "signed digital files of the voting machines.",
@@ -625,30 +627,30 @@ TX = {
                  "V4": "Variación atípica de la participación", "V5": "Ganancia por encima del techo de votos disponibles",
                  "V6": "Padrón alterado entre las vueltas"},
         "nivel": {"uf": "Estado", "municipio": "Municipio", "secao": "Sección"},
-        "nota_topo": "> 📌 **Nota de edición ({data}).** Este informe fue complementado con el **Anexo A — Variación de los votos para Presidente "
-                     "entre la 1.ª y la 2.ª vuelta**, al final del documento, con la nota del autor que justifica la edición. Las secciones 1 a 15 "
-                     "no fueron modificadas.\n",
-        "titulo": "## Anexo A — Variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta",
+        "nota_topo": "> 📌 **Nota de edición ({data}).** Este informe fue complementado con la **Adenda A — Variación de los votos para Presidente "
+                     "entre la 1.ª y la 2.ª vuelta**, al final del documento, con la nota del autor que justifica la edición. El resto del informe "
+                     "no se modificó.\n",
+        "titulo": "## Adenda A — Variación de los votos para Presidente entre la 1.ª y la 2.ª vuelta",
         "nota_t": "### Nota de edición — {data}",
         "nota": [
-            "Tras la emisión de este Informe Técnico, el {emissao}, la comparación entre los votos obtenidos por los finalistas a la Presidencia "
+            "Después de la 2.ª vuelta, la comparación entre los votos obtenidos por los finalistas a la Presidencia "
             "de la República en la 1.ª y en la 2.ª vuelta pasó a ocupar un lugar central en el debate público. Cifras sobre cuántos votos ganó o "
             "perdió cada candidato de una vuelta a otra —por estado, por municipio e incluso por sección electoral— fueron ampliamente difundidas "
             "en las redes sociales y en la prensa nacional e internacional, acompañadas de dudas y cuestionamientos legítimos de los electores.",
             "En mi condición de autor y responsable técnico de esta auditoría, consideré que un trabajo que se propone examinar, con independencia "
             "y transparencia, la consistencia estadística de los resultados oficiales no podía permanecer en silencio ante una cuestión de tanto "
             "interés público. Me sentí, por ello, en el deber de someter también esta comparación a pruebas estadísticas formales, realizadas con "
-            "el mismo rigor, los mismos fundamentos metodológicos y el mismo estándar de documentación adoptados en las quince pruebas originales. "
+            "el mismo rigor, los mismos fundamentos metodológicos y el mismo estándar de documentación adoptados en las demás pruebas de esta auditoría. "
             "El propósito es ofrecer a la sociedad una respuesta técnica, verificable e imparcial, capaz de distinguir la variación esperada entre "
             "las vueltas —derivada de la redistribución de los votos de los candidatos no clasificados, de los votos en blanco y nulos y del "
             "cambio en la participación— de aquello que realmente merece verificación documental.",
-            "Este Anexo A se basa exclusivamente en los datos oficiales de los Boletines de Urna de las dos vueltas, ya procesados por esta "
-            "auditoría. Las secciones 1 a 15 de este informe no fueron modificadas: sus resultados, criterios y conclusiones siguen siendo "
-            "plenamente válidos, y no fue necesario volver a ejecutar las quince pruebas originales, pues los datos de entrada y el núcleo "
-            "analítico (SHA-256 `{nucleo}`) son los mismos. El anexo fue producido por un script propio (`variacao_entre_turnos.py`), publicado "
-            "junto con este informe para que cualquier persona pueda reproducirlo íntegramente. Los hashes SHA-512 de este documento y de los "
-            "nuevos archivos de datos fueron actualizados en `manifesto_saida.sha512`, y la edición quedó registrada públicamente en la página de "
-            "Actualizaciones del sitio.",
+            "Esta Adenda A se basa exclusivamente en los datos oficiales de los Boletines de Urna de las dos vueltas, ya procesados por esta "
+            "auditoría. En esta ejecución, el motor de análisis recibió solo los Boletines de Urna y los logs de las urnas de la 2.ª vuelta; por "
+            "eso, el Anexo A del motor aparece como no aplicable, y las seis pruebas de variación entre las vueltas (V1 a V6) se presentan en esta "
+            "Adenda A. La adenda no modifica ninguna otra parte de este informe ni los resultados, criterios y conclusiones de las demás pruebas "
+            "(núcleo analítico SHA-256 `{nucleo}`). Fue producida por un script propio (`variacao_entre_turnos.py`), publicado junto con este "
+            "informe para que cualquier persona pueda reproducirla íntegramente. Los hashes SHA-512 de este documento y de los nuevos archivos de "
+            "datos fueron actualizados en `manifesto_saida.sha512`, y la edición quedó registrada públicamente en la página de Actualizaciones del sitio.",
             "Reafirmo el principio que orienta todo este trabajo: una anomalía estadística indica prioridad de verificación y no constituye, por "
             "sí sola, prueba de fraude, error o irregularidad; del mismo modo, la ausencia de señalización no sustituye la verificación de los "
             "boletines impresos y de los archivos digitales firmados de las urnas.",
@@ -660,7 +662,7 @@ TX = {
               "seis pruebas (V1 a V6) para identificar variaciones estadísticamente atípicas. Finalistas: Lula (n.º 13) y Flávio Bolsonaro (n.º 22). "
               "Cada sección electoral corresponde a una urna; las secciones agregadas aparecen bajo el número de la sección principal, como en el "
               "resto del informe.\n\n"
-              "Este anexo enumera solo los ítems con anomalía (🔴) o evento informativo (🟡). La variación de todos los estados y municipios está en "
+              "Esta adenda enumera solo los ítems con anomalía (🔴) o evento informativo (🟡). La variación de todos los estados y municipios está en "
               "`dados/variacao_turnos_ufs.csv` y `dados/variacao_turnos_municipios.csv`; la de todas las secciones puede consultarse en el sitio.",
         "a2_t": "### A.2 Variación nacional e identidad de los votos",
         "a2": "Los votos que un finalista gana en la 2.ª vuelta solo pueden provenir de cuatro fuentes: electores que votaron por los demás "
@@ -739,19 +741,19 @@ TX = {
                "hechos locales ocurridos entre las vueltas (apoyos políticos, cambio de local de votación, transporte, clima) pueden generar "
                "desviaciones legítimas.",
                "Los umbrales de efecto ({la} y {li} p.p.), de direccionamiento ({dir} p.p.), de techo ({teto}%) y de padrón ({cad}%) son premisas "
-               "explícitas de este anexo y pueden modificarse en el script que acompaña al informe.",
+               "explícitas de esta adenda y pueden modificarse en el script que acompaña al informe.",
                "Las pruebas V3, V4 y V5 no son independientes entre sí; señalizaciones simultáneas pueden tener la misma causa legítima.",
                "Como en el resto del informe, el análisis no examina los archivos firmados de las urnas (.bu, .rdv, .logjez), cuya verificación "
                "se recomienda para los ítems señalados."],
         "a7_t": "### A.7 Reproducibilidad y archivos",
-        "a7": "El anexo es reproducible a partir de los votos por sección publicados con el sitio (`site/data/secoes`), extraídos de los Boletines "
+        "a7": "La adenda es reproducible a partir de los votos por sección publicados con el sitio (`site/data/secoes`), extraídos de los Boletines "
               "de Urna oficiales por el motor v2.1.0, y de las listas de urnas del motor (`dados/busca_urnas.json`). Misma entrada, mismos archivos.\n\n"
               "**Comando de ejecución:** `python auditoria-eleicoes-2026-Brasil/variacao_entre_turnos.py --dados site/data --saida auditoria-eleicoes-2026-Brasil/resultados-2turno` (en la carpeta raíz del repositorio)\n\n"
               "**Script:** `variacao_entre_turnos.py` v{versao} — SHA-512 `{sha}`",
         "cab_arq": ["Archivo", "Contenido", "SHA-512"],
         "arq": {"sin": "Ítems 🔴 y 🟡 de todas las pruebas y niveles", "mun": "Todos los municipios: votos, variación y prueba V2",
                 "uf": "Todos los estados: votos, variación y prueba V1"},
-        "rodape": "*Anexo A generado por el script `variacao_entre_turnos.py` v{versao} el {data}. Una anomalía estadística no es prueba de fraude.*",
+        "rodape": "*Adenda A generada por el script `variacao_entre_turnos.py` v{versao} el {data}. Una anomalía estadística no es prueba de fraude.*",
     },
 }
 

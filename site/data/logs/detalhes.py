@@ -11,8 +11,9 @@ Lê também, no pacote do motor (auditoria-eleicoes-2026-Brasil/resultados-<turn
                                {"c": colunas, "l": [[uf, cod_mun, zona, seção, nível, categoria, medidas…]]}
   det/<UF>/<zona>.json        o que cada teste apurou em cada seção sinalizada da zona: urnas, marcos do dia e, por
                                teste, a hora dos votos (quando importa para o teste) ou os registros que o teste usou
-Os horários são os do relógio da urna, em segundos desde 0h do dia da votação (hora local). O teste L01 usa a lista
-voto a voto já publicada em site/data/votoshora (todas as seções do L01 estão lá). Só biblioteca padrão.
+Os horários são os do relógio da urna, em segundos desde 0h do dia da votação (hora local). No 1º turno, o teste L01 usa a
+lista voto a voto já publicada em site/data/votoshora (todas as seções do L01 estão lá); no 2º turno, os votos depois do
+fim oficial (19h de Brasília) vêm do resumo do log. Só biblioteca padrão.
 """
 import csv
 import gzip
@@ -207,6 +208,11 @@ def detalhe(r, sinais, m):
     def corte(ix, a, b):
         """as primeiras a e as últimas b posições de uma lista de índices."""
         return ix if len(ix) <= a + b else ix[:a] + ix[-b:]
+    # L01 no 2º turno: os votos gravados a partir do fim oficial local (19h de Brasília), tirados do resumo do log
+    # (no 1º turno o site usa a lista voto a voto já publicada em site/data/votoshora)
+    if "L01" in testes and turno == 2 and fim:
+        ix = [i for i in range(n) if t[i] >= fim]
+        D["L01"] = {"v": partes(corte(ix, MAX_LISTA - 50, 50)), "n": len(ix)}
     if "L02" in testes:
         runs, ini_r = [], None
         for i in range(1, n):

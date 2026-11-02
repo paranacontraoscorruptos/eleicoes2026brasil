@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sun, 01 Nov 2026 16:24:00 -0300</lastBuildDate>
+  <lastBuildDate>Sun, 01 Nov 2026 21:55:00 -0300</lastBuildDate>
+  <item>
+    <title>Relatório do 2º turno refeito: auditoria completa, com os logs das urnas</title>
+    <link>https://paranacontraoscorruptos.org/#/downloads</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-01-21</guid>
+    <pubDate>Sun, 01 Nov 2026 21:55:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>A auditoria do 2º turno foi rodada de novo com o motor v3.1.1: os 28 arquivos de boletins de urna e os 28 arquivos oficiais de correspondência (CESP), todos conferidos com o hash oficial do TSE, e os logs das urnas de todas as 499.177 seções votadas em urna eletrônica. O relatório técnico novo (PT, EN e ES) traz os 15 testes dos boletins de urna, os 14 testes dos logs (Anexo B) e, no Adendo A, os 6 testes da variação entre os turnos, com os mesmos resultados de antes. O TSE publicou uma versão mais nova do arquivo de correspondências do 2º turno, que inclui as urnas de contingência preparadas no dia da votação. Com ela, o teste 12 (troca de urna) passou de 399 para 51 seções com anomalia estatística, e as seções com anomalia estatística nos testes dos boletins passaram de 625 para 277 (sem contar as 2 urnas que fecharam 1 h ou mais depois do horário oficial, mostradas à parte no site). Os outros testes dos boletins não mudaram. Os números das páginas do site são atualizados em seguida.</description>
+  </item>
   <item>
     <title>Correção no motor (v3.1.1): testes L05, L06 e L10 do 1º turno</title>
     <link>https://paranacontraoscorruptos.org/#/logs</link>
