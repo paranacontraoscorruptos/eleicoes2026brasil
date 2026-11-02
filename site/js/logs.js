@@ -556,7 +556,65 @@
     },
   };
   // textos do 2º turno (casos e frases com números próprios) substituem os do 1º, grupo a grupo, quando existem
-  const TXT_DZ2 = {};
+  const TXT_DZ2 = {
+    PT: { g: {
+      log_bu: { t: "Log da urna diferente do boletim de urna",
+        a: (n, x) => `Em ${n} seções, o número de votos no log da urna não bate com o comparecimento do boletim de urna. Em 6 delas o log tem menos votos (${x.votos_a_menos} a menos, somando todas; em 3, a diferença é de 1 voto); em 1, o log tem mais votos do que o boletim.`,
+        d: [["ES", 9, 85, "Santa Maria de Jetibá (ES), zona 9, seção 85: 612 votos no log e 308 no boletim. O log da seção traz duas urnas com votos: a da seção (308 votos, o mesmo número do boletim) e uma urna com a carga da seção 112 da mesma zona (304 votos), as duas gravando votos entre 8:02 e 16:40. A seção também aparece no teste L06."],
+          ["MA", 47, 609, "São José de Ribamar (MA), zona 47, seção 609: 188 votos no log e 224 no boletim (36 a menos). O log começa às 10:27 e não tem a zerésima: o começo do dia não está no log."],
+          ["BA", 173, 235, "Ibotirama (BA), zona 173, seção 235: 204 votos no log e 217 no boletim (13 a menos). A seção usou 2 urnas; o 1º voto gravado no log é das 10:12."]] },
+      carga: { d: [["MS", 8, 486, "Campo Grande (MS), zona 8, seção 486, e Três Lagoas (MS), zona 51, seção 44."], ["PR", 43, 397, "Guarapuava (PR), zona 43, seção 397, e Carlópolis (PR), zona 56, seção 37."],
+        ["SP", 16, 436, "Atibaia (SP), zona 16, seção 436."]] },
+      relogio: { d: [["SP", 63, null, "Jaú (SP), zona 63: 44 seções, com 1 ajuste em cada uma."], ["ZZ", null, null, "Exterior: Miami (4 seções), Los Angeles (3) e Boston (2)."],
+        ["ZZ", 1, 840, "Miami (exterior), zona 1, seção 840: 2 ajustes na mesma seção."]] },
+      tentativas: { d: [["ES", 55, 364, "Vila Velha (ES), zona 55, seção 364: 389 tentativas em 275 votos, com 59 tentativas seguidas sem nenhum voto entre elas."],
+        ["DF", 6, 425, "Brasília (DF), zona 6, seção 425: 272 tentativas em 271 votos. A mesma seção aparece neste teste no 1º turno."], ["GO", 29, 95, "Iaciara (GO), zona 29, seção 95: 284 tentativas em 283 votos."],
+        [null, null, null, "Nessas seções, quase todas as tentativas são de “eleitor que já votou”. A urna recusou todas: nenhuma virou voto."]] },
+      desligada: { d: [["ZZ", 1, 840, "Miami (exterior), zona 1, seção 840: 90 votos entre 11:48 e 14:14 (hora local), depois do registro de urna desligada às 11:40 e antes do registro de urna ligada às 14:15."],
+        ["RJ", 245, 165, "Rio de Janeiro (RJ), zona 245, seção 165: 5 votos."], [null, null, null, "Teresina (PI) e Rio de Janeiro (RJ, zonas 214 e 162): 1 voto em cada seção."]] },
+      troca: { t: "Votos em duas urnas no mesmo período",
+        a: (n, x) => `Em ${n} seção, o log tem duas urnas que gravaram votos no mesmo período: ${x.votos} votos numa delas depois do 1º voto da outra.`,
+        d: [["ES", 9, 85, "Santa Maria de Jetibá (ES), zona 9, seção 85: uma das urnas é a da seção (308 votos) e a outra tem a carga da seção 112 da mesma zona (304 votos). O log da seção traz as duas; por isso ela também aparece no teste L14, com 612 votos no log e 308 no boletim."]] },
+    } },
+    EN: { g: {
+      log_bu: { t: "Machine log different from the tally sheet",
+        a: (n, x) => `In ${n} sections, the number of votes in the machine log does not match the turnout on the tally sheet. In 6 of them the log has fewer votes (${x.votos_a_menos} fewer, adding them all; in 3, the difference is 1 vote); in 1, the log has more votes than the tally sheet.`,
+        d: [["ES", 9, 85, "Santa Maria de Jetibá (ES), zone 9, section 85: 612 votes in the log and 308 on the tally sheet. The section's log has two machines with votes: the section's own (308 votes, the same number as the tally sheet) and a machine loaded for section 112 of the same zone (304 votes), both recording votes between 8:02 and 16:40. The section also appears in test L06."],
+          ["MA", 47, 609, "São José de Ribamar (MA), zone 47, section 609: 188 votes in the log and 224 on the tally sheet (36 fewer). The log starts at 10:27 and has no zero report: the start of the day is not in the log."],
+          ["BA", 173, 235, "Ibotirama (BA), zone 173, section 235: 204 votes in the log and 217 on the tally sheet (13 fewer). The section used 2 machines; the 1st vote recorded in the log is at 10:12."]] },
+      carga: { d: [["MS", 8, 486, "Campo Grande (MS), zone 8, section 486, and Três Lagoas (MS), zone 51, section 44."], ["PR", 43, 397, "Guarapuava (PR), zone 43, section 397, and Carlópolis (PR), zone 56, section 37."],
+        ["SP", 16, 436, "Atibaia (SP), zone 16, section 436."]] },
+      relogio: { d: [["SP", 63, null, "Jaú (SP), zone 63: 44 sections, with 1 adjustment in each."], ["ZZ", null, null, "Abroad: Miami (4 sections), Los Angeles (3) and Boston (2)."],
+        ["ZZ", 1, 840, "Miami (abroad), zone 1, section 840: 2 adjustments in the same section."]] },
+      tentativas: { d: [["ES", 55, 364, "Vila Velha (ES), zone 55, section 364: 389 attempts in 275 votes, with 59 attempts in a row without any vote between them."],
+        ["DF", 6, 425, "Brasília (DF), zone 6, section 425: 272 attempts in 271 votes. The same section appears in this test in round 1."], ["GO", 29, 95, "Iaciara (GO), zone 29, section 95: 284 attempts in 283 votes."],
+        [null, null, null, "In these sections, almost all attempts are “voter who has already voted”. The machine refused them all: none became a vote."]] },
+      desligada: { d: [["ZZ", 1, 840, "Miami (abroad), zone 1, section 840: 90 votes between 11:48 and 14:14 (local time), after the machine-off record at 11:40 and before the machine-on record at 14:15."],
+        ["RJ", 245, 165, "Rio de Janeiro (RJ), zone 245, section 165: 5 votes."], [null, null, null, "Teresina (PI) and Rio de Janeiro (RJ, zones 214 and 162): 1 vote in each section."]] },
+      troca: { t: "Votes on two machines in the same period",
+        a: (n, x) => `In ${n} section, the log has two machines that recorded votes in the same period: ${x.votos} votes on one of them after the 1st vote on the other.`,
+        d: [["ES", 9, 85, "Santa Maria de Jetibá (ES), zone 9, section 85: one machine is the section's own (308 votes) and the other is loaded for section 112 of the same zone (304 votes). The section's log has both; that is why it also appears in test L14, with 612 votes in the log and 308 on the tally sheet."]] },
+    } },
+    ES: { g: {
+      log_bu: { t: "Log de la urna distinto del boletín de urna",
+        a: (n, x) => `En ${n} secciones, el número de votos en el log de la urna no coincide con la comparecencia del boletín de urna. En 6 de ellas el log tiene menos votos (${x.votos_a_menos} menos, sumando todas; en 3, la diferencia es de 1 voto); en 1, el log tiene más votos que el boletín.`,
+        d: [["ES", 9, 85, "Santa Maria de Jetibá (ES), zona 9, sección 85: 612 votos en el log y 308 en el boletín. El log de la sección trae dos urnas con votos: la de la sección (308 votos, el mismo número del boletín) y una urna con la carga de la sección 112 de la misma zona (304 votos), las dos registrando votos entre las 8:02 y las 16:40. La sección también aparece en la prueba L06."],
+          ["MA", 47, 609, "São José de Ribamar (MA), zona 47, sección 609: 188 votos en el log y 224 en el boletín (36 menos). El log empieza a las 10:27 y no tiene la zerésima: el comienzo del día no está en el log."],
+          ["BA", 173, 235, "Ibotirama (BA), zona 173, sección 235: 204 votos en el log y 217 en el boletín (13 menos). La sección usó 2 urnas; el 1.er voto registrado en el log es de las 10:12."]] },
+      carga: { d: [["MS", 8, 486, "Campo Grande (MS), zona 8, sección 486, y Três Lagoas (MS), zona 51, sección 44."], ["PR", 43, 397, "Guarapuava (PR), zona 43, sección 397, y Carlópolis (PR), zona 56, sección 37."],
+        ["SP", 16, 436, "Atibaia (SP), zona 16, sección 436."]] },
+      relogio: { d: [["SP", 63, null, "Jaú (SP), zona 63: 44 secciones, con 1 ajuste en cada una."], ["ZZ", null, null, "Exterior: Miami (4 secciones), Los Ángeles (3) y Boston (2)."],
+        ["ZZ", 1, 840, "Miami (exterior), zona 1, sección 840: 2 ajustes en la misma sección."]] },
+      tentativas: { d: [["ES", 55, 364, "Vila Velha (ES), zona 55, sección 364: 389 intentos en 275 votos, con 59 intentos seguidos sin ningún voto entre ellos."],
+        ["DF", 6, 425, "Brasília (DF), zona 6, sección 425: 272 intentos en 271 votos. La misma sección aparece en esta prueba en la 1.ª vuelta."], ["GO", 29, 95, "Iaciara (GO), zona 29, sección 95: 284 intentos en 283 votos."],
+        [null, null, null, "En esas secciones, casi todos los intentos son de “elector que ya votó”. La urna los rechazó todos: ninguno se convirtió en voto."]] },
+      desligada: { d: [["ZZ", 1, 840, "Miami (exterior), zona 1, sección 840: 90 votos entre las 11:48 y las 14:14 (hora local), después del registro de urna apagada a las 11:40 y antes del registro de urna encendida a las 14:15."],
+        ["RJ", 245, 165, "Río de Janeiro (RJ), zona 245, sección 165: 5 votos."], [null, null, null, "Teresina (PI) y Río de Janeiro (RJ, zonas 214 y 162): 1 voto en cada sección."]] },
+      troca: { t: "Votos en dos urnas en el mismo período",
+        a: (n, x) => `En ${n} sección, el log tiene dos urnas que registraron votos en el mismo período: ${x.votos} votos en una de ellas después del 1.er voto de la otra.`,
+        d: [["ES", 9, 85, "Santa Maria de Jetibá (ES), zona 9, sección 85: una de las urnas es la de la sección (308 votos) y la otra tiene la carga de la sección 112 de la misma zona (304 votos). El log de la sección trae las dos; por eso también aparece en la prueba L14, con 612 votos en el log y 308 en el boletín."]] },
+    } },
+  };
   const LD = () => {
     const b = TXT_DZ[A.state.lang] || TXT_DZ.PT, o = LT === "2" && (TXT_DZ2[A.state.lang] || TXT_DZ2.PT);
     if (!o) return b;
@@ -1048,6 +1106,9 @@
       const E = L(), g = LG1();
       if (!g || !API()) return `<header class="page-head"><h1>${esc(E.titulo)}</h1><p class="lead">${esc(E.sub)}</p></header><p class="alert">${esc(E.erro)}</p>`;
       const f = (lg.f = lerFiltros(A.state.query));
+      // sem teste no endereço: o primeiro teste com seções neste turno (no 2º turno o L01 não tem nenhuma)
+      const qtdT = (id) => (g.testes[id].a || 0) + (g.testes[id].i || 0);
+      if (!A.state.query.get("teste") && !qtdT(f.teste)) f.teste = TESTES_L.find((id) => qtdT(id)) || f.teste;
       const G = g.geral, sinSec = Object.values(g.ufs).reduce((a, u) => a + u.secoes, 0);
       // liberados sem digital 1 h ou mais depois do horário oficial (complementar/votos_apos_horario.json, mesmo critério de votos_1h)
       const VH = (R().complementar || {}).votos_apos_horario, sd1h = VH && VH.turnos && VH.turnos[LT] ? VH.turnos[LT].sem_digital_1h : null;

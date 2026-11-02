@@ -1,7 +1,7 @@
 /* Simulador de anomalias — motor dos testes V1–V6 (variação entre turnos) e L01–L14 (logs das urnas).
    V1–V6: mesmas regras e parâmetros do motor da auditoria v2.2.0 (deslocamento logístico do grupo, z com fator de
    dispersão do grupo, Benjamini–Hochberg; teto de votos disponíveis; cadastro alterado).
-   L01–L14: critérios PRELIMINARES (os testes dos logs estão em andamento); comparação com a região pelo escore z robusto.
+   L01–L14: critérios SIMPLIFICADOS (os testes completos estão no Relatório Técnico, Anexo B); comparação com a região pelo escore z robusto.
    Tudo com dados fictícios gerados no aparelho, a partir de sementes fixas. */
 (function (raiz) {
   "use strict";

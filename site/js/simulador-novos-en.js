@@ -1,5 +1,5 @@
 /* Anomaly simulator — English texts for tests V1–V6 (change between rounds) and L01–L14 (voting machine logs).
-   The log tests are in progress: the criteria used here are preliminary. */
+   The log tests are completed for both rounds; the criteria used here are simplified. */
 (function () {
   "use strict";
   const S = window.SIM_TXT && window.SIM_TXT.EN;
@@ -14,11 +14,11 @@
     final_bloq: (f, t) => `Take at least ${t} test exams to unlock the final exam. You have taken ${f}.`,
     formula: (m, f) => `Final grade = 60% of the average of the 35 exams (${m}) + 40% of the final exam (${f}). Exams not taken count as zero.`,
   });
-  Object.assign(S.ui.tl, { metodo_v: "Method (same as in the Technical Report, Addendum A)", metodo_l: "Planned method (the test is in progress)" });
-  Object.assign(S.ui.niveis, { variacao: "From round 1 to round 2", log: "The machine log (in progress)" });
+  Object.assign(S.ui.tl, { metodo_v: "Method (same as in the Technical Report, Addendum A)", metodo_l: "Simplified method (the full test is in the Technical Report, Appendix B)" });
+  Object.assign(S.ui.niveis, { variacao: "From round 1 to round 2", log: "The machine log" });
   Object.assign(S.ui.niveis_d, {
     variacao: "Tests that compare round 1 and round 2 for President: how much each finalist gained and where the change departs from the pattern.",
-    log: "Tests that read the machine log, with the time of each vote and each event. The criteria are still preliminary: these tests are in progress.",
+    log: "Tests that read the machine log, with the time of each vote and each event. Here in the simulator the criteria are simplified; the full tests are in the Technical Report (Appendix B).",
   });
   Object.assign(S.ui.cat, {
     transferencia: "Transfer outside the expected range", comp_direcionado: "Atypical, directed turnout", comp_atipico: "Atypical turnout",
@@ -40,8 +40,8 @@
     if (/60% of the average of the 15 exams/.test(q[1])) q[1] = "Each exam is graded from 0 to 10, and 7 passes. The final grade is 60% of the average of the 35 exams plus 40% of the final exam, which opens after 15 exams. You can retake exams: the best grade counts.";
   });
   S.faqGeral.push(
-    ["What are the 35 tests?", "15 tests on the tally sheets (T01 to T15), 6 on the change from round 1 to round 2 (V1 to V6) and 14 on the machine logs (L01 to L14). The log tests are completed for round 1 (results on the Voting machine logs page); round 2 is in progress. Here in the simulator, the L test criteria are simplified."],
-    ["Why do the log tests have preliminary criteria?", "Because they are still being run: the logs of every machine are being downloaded from the TSE. The simulator uses the criteria planned today. When each test is completed and published, the criteria may be adjusted."],
+    ["What are the 35 tests?", "15 tests on the tally sheets (T01 to T15), 6 on the change from round 1 to round 2 (V1 to V6) and 14 on the machine logs (L01 to L14). The log tests are completed for both rounds (results on the Voting machine logs page). Here in the simulator, the L test criteria are simplified."],
+    ["Why are the log tests simpler here?", "The 14 log tests are completed for both rounds, and the full criterion of each one is in the Technical Report (Appendix B). Here in the simulator the rules are simplified, to show the idea of each test with a few numbers. The real results are on the Voting machine logs page."],
     ["Does the machine log show who someone voted for?", "No. The log records the time of each vote and of the machine's events (switching on, releasing the voter, fingerprint, closing), but not who the vote went to nor the voter's name."],
   );
 
@@ -312,7 +312,7 @@
 
   // ============================== L01 to L14 (preliminary criteria) ==============================
   const regKv = (r, f, fm) => [["This section", fm(r.v.regua.alvo)], ["Regional median", fm(r.v.med)], ["Robust z-score", f.n(r.v.z, 1)]];
-  const regTec = (r, f, fm, regra) => [["Region", `40 fictitious sections of the municipality and neighbours · median ${fm(r.v.med)}`], ["Robust z-score", `z = 0.6745 · (x − median) / MAD = ${f.n(r.v.z, 2)}`], ["Rule (preliminary)", regra], ["Decision", luz(r)]];
+  const regTec = (r, f, fm, regra) => [["Region", `40 fictitious sections of the municipality and neighbours · median ${fm(r.v.med)}`], ["Robust z-score", `z = 0.6745 · (x − median) / MAD = ${f.n(r.v.z, 2)}`], ["Rule (simplified)", regra], ["Decision", luz(r)]];
   const mn = (f) => (x) => `${f.n(x, 0)} min`, sg = (f) => (x) => `${f.n(x, 0)} s`, pc = (f) => (x) => `${f.n(x, 1)}%`;
 
   T.L01 = {
@@ -399,7 +399,7 @@
     },
     ficha: (s) => fichaL([`Longest run without fingerprint: ${s.seq}`, `Voters with biometrics: ${s.bio}%`, `Reader failure in the log: ${s.falha ? "yes" : "no"}`]),
     kv: (s) => [["Longest run", String(s.seq)], ["With biometrics", `${s.bio}%`], ["Reader failure", s.falha ? "yes" : "no"]],
-    tec: (s, r) => [["Eligible", `biometrics ${s.bio}% ≥ 50% → ${sim(s.bio >= 50)}`], ["Run", `${s.seq} ≥ 10 → ${sim(s.seq >= 10)}`], ["Failure recorded", sim(s.falha)], ["Decision (preliminary)", `run without failure → anomaly; with failure → informative → ${luz(r)}`]],
+    tec: (s, r) => [["Eligible", `biometrics ${s.bio}% ≥ 50% → ${sim(s.bio >= 50)}`], ["Run", `${s.seq} ≥ 10 → ${sim(s.seq >= 10)}`], ["Failure recorded", sim(s.falha)], ["Decision (simplified)", `run without failure → anomaly; with failure → informative → ${luz(r)}`]],
     m: [
       ["Long run", "Change the longest run to <b>12</b>.", "12 voters in a row without fingerprint, no reader failure: statistical anomaly."],
       ["Very long run", "Change the run to <b>40</b>.", "The longer, the rarer."],
@@ -434,7 +434,7 @@
     },
     ficha: (s) => fichaL([`Answer to “has everyone voted?”: ${s.resp === "sim" ? "YES" : "NO"}`, `Votes recorded after: ${s.depois}`, `The machine records the question in the log: ${s.registra ? "yes" : "no"}`]),
     kv: (s) => [["Answer", s.resp === "sim" ? "YES" : "NO"], ["Votes after", String(s.depois)]],
-    tec: (s, r) => [["Record", sim(s.registra)], ["Rule (preliminary)", "vote after YES → anomaly; after NO → informative"], ["Decision", luz(r)]],
+    tec: (s, r) => [["Record", sim(s.registra)], ["Rule (simplified)", "vote after YES → anomaly; after NO → informative"], ["Decision", luz(r)]],
     m: [
       ["One more vote", "Change the votes after the answer to <b>1</b>.", "Any vote after YES is flagged."],
       ["Many votes after", "Change to <b>15</b> votes.", "Voting continued after the poll worker said everyone had voted."],
@@ -470,7 +470,7 @@
     },
     ficha: (s) => fichaL([`Interruptions: ${s.quedas} · ${s.min} minutes stopped`, `Vote with a time inside an interruption: ${s.dentro ? "yes" : "no"}`]),
     kv: (s) => [["Interruptions", String(s.quedas)], ["Minutes stopped", String(s.min)], ["Vote during", s.dentro ? "yes" : "no"]],
-    tec: (s, r) => [["Rule (preliminary)", "vote during an interruption or 3+ restarts → anomaly; 1–2 interruptions → informative"], ["Decision", luz(r)]],
+    tec: (s, r) => [["Rule (simplified)", "vote during an interruption or 3+ restarts → anomaly; 1–2 interruptions → informative"], ["Decision", luz(r)]],
     m: [
       ["Vote in the dark", "Set <b>1</b> interruption and tick <b>A vote has a time inside an interruption</b>.", "A vote at a time when the machine was off: anomaly."],
       ["Many restarts", "Change to <b>3</b> restarts.", "3 or more restarts are flagged."],
@@ -506,7 +506,7 @@
     },
     ficha: (s) => fichaL([s.troca ? `Machine replaced: ${s.v1} votes on the original and ${s.v2} on the replacement` : `No replacement: ${s.v1} votes in the log`, `Turnout on the tally sheet: ${s.comp}`, s.troca ? `Votes on the original after the replacement: ${s.depois}` : ""].filter(Boolean)),
     kv: (s, r) => [["Sum of the logs", String(r.v.tot)], ["Tally sheet", String(s.comp)], ["Difference", String(r.v.dif)]],
-    tec: (s, r) => [["Sum", `${s.v1}${s.troca ? ` + ${s.v2}` : ""} = ${r.v.tot}; tally sheet ${s.comp}; difference ${r.v.dif}`], ["Rule (preliminary)", "sum ≠ tally sheet or vote on the original after replacement → anomaly; replacement recorded → informative"], ["Decision", luz(r)]],
+    tec: (s, r) => [["Sum", `${s.v1}${s.troca ? ` + ${s.v2}` : ""} = ${r.v.tot}; tally sheet ${s.comp}; difference ${r.v.dif}`], ["Rule (simplified)", "sum ≠ tally sheet or vote on the original after replacement → anomaly; replacement recorded → informative"], ["Decision", luz(r)]],
     m: [
       ["Larger sum", "Tick the replacement, <b>120</b> votes on the original and <b>130</b> on the replacement.", "250 votes in the logs and 240 on the tally sheet: anomaly."],
       ["Vote after the replacement", "Tick the replacement, 120 + 120 votes and <b>2</b> votes on the original after the replacement.", "The original machine should receive no votes after being replaced."],
@@ -605,7 +605,7 @@
     },
     ficha: (s, f) => fichaL([`1st closing attempt at ${f.hora(s.t1)} (local time)`, `Total attempts: ${s.n}`]),
     kv: (s, r, f) => [["1st attempt", f.hora(s.t1)], ["Attempts", String(s.n)]],
-    tec: (s, r, f) => [["Time", `${f.hora(s.t1)} < 16:58 → ${sim(s.t1 < 17 * 3600 - 120)}`], ["Rule (preliminary)", "before the official time → anomaly; 2+ attempts after → informative"], ["Decision", luz(r)]],
+    tec: (s, r, f) => [["Time", `${f.hora(s.t1)} < 16:58 → ${sim(s.t1 < 17 * 3600 - 120)}`], ["Rule (simplified)", "before the official time → anomaly; 2+ attempts after → informative"], ["Decision", luz(r)]],
     m: [
       ["Too early", "Change the 1st attempt to <b>16:30</b>.", "Trying to close before 5 pm is flagged."],
       ["At noon", "Change the 1st attempt to <b>12:10</b>.", "Long before the official time: anomaly."],
@@ -639,7 +639,7 @@
     },
     ficha: (s, f) => fichaL([s.tem ? `Zero report at ${f.hora(s.zer)}` : "No zero report in the log", `First vote at ${f.hora(s.v1)}`]),
     kv: (s, r, f) => [["Zero report", s.tem ? f.hora(s.zer) : "—"], ["1st vote", f.hora(s.v1)]],
-    tec: (s, r, f) => [["Order", s.tem ? `zero report ${f.hora(s.zer)} ≤ 1st vote ${f.hora(s.v1)} → ${sim(s.zer <= s.v1)}` : "no zero report"], ["Window", "between 06:00 and 08:00 → normal; outside → informative"], ["Decision (preliminary)", luz(r)]],
+    tec: (s, r, f) => [["Order", s.tem ? `zero report ${f.hora(s.zer)} ≤ 1st vote ${f.hora(s.v1)} → ${sim(s.zer <= s.v1)}` : "no zero report"], ["Window", "between 06:00 and 08:00 → normal; outside → informative"], ["Decision (simplified)", luz(r)]],
     m: [
       ["Late zero report", "Change the zero report to <b>08:20</b> and the first vote to 08:05.", "The zero report must come before any vote."],
       ["No zero report", "Untick <b>The machine printed the zero report</b>.", "Without a zero report, there is no proof the machine started empty."],
@@ -674,7 +674,7 @@
     },
     ficha: (s) => fichaL([`Clock ${Math.abs(s.dif)} min ${s.dif >= 0 ? "fast" : "slow"}`, `Adjustment in the log: ${({ nao: "none", fora: "outside voting", durante: "during voting" })[s.ajuste]}`]),
     kv: (s) => [["Difference", `${s.dif} min`], ["Adjustment", ({ nao: "none", fora: "outside", durante: "during" })[s.ajuste]]],
-    tec: (s, r) => [["Difference", `|${s.dif}| ≥ 15 → ${sim(Math.abs(s.dif) >= 15)}`], ["Rule (preliminary)", "adjustment during voting → anomaly; difference ≥ 15 min or adjustment outside → informative"], ["Decision", luz(r)]],
+    tec: (s, r) => [["Difference", `|${s.dif}| ≥ 15 → ${sim(Math.abs(s.dif) >= 15)}`], ["Rule (simplified)", "adjustment during voting → anomaly; difference ≥ 15 min or adjustment outside → informative"], ["Decision", luz(r)]],
     m: [
       ["Midday adjustment", "Choose <b>Adjustment during voting</b>.", "Changing the clock while voting is under way is flagged."],
       ["Adjustment and wrong clock", "Adjustment during voting and a difference of <b>−30</b> minutes.", "Still flagged."],
@@ -707,7 +707,7 @@
     },
     ficha: (s) => fichaL([`Version: ${s.versao === "ok" ? "official" : "another"} · load: ${s.carga === "ok" ? "expected" : "another"}`, `Model: ${s.modelo === "prev" ? "expected" : "another"} · log and tally sheet: ${s.bate ? "equal" : "different"}`]),
     kv: (s) => [["Version", s.versao === "ok" ? "official" : "another"], ["Load", s.carga === "ok" ? "expected" : "another"], ["Model", s.modelo === "prev" ? "expected" : "another"], ["Log × tally sheet", s.bate ? "equal" : "different"]],
-    tec: (s, r) => [["Version", sim(s.versao === "ok")], ["Load", sim(s.carga === "ok")], ["Log = tally sheet", sim(s.bate)], ["Expected model", sim(s.modelo === "prev")], ["Decision (preliminary)", luz(r)]],
+    tec: (s, r) => [["Version", sim(s.versao === "ok")], ["Load", sim(s.carga === "ok")], ["Log = tally sheet", sim(s.bate)], ["Expected model", sim(s.modelo === "prev")], ["Decision (simplified)", luz(r)]],
     m: [
       ["Different version", "Change the software version to <b>Another</b>.", "Software other than the official one is flagged."],
       ["Log and tally sheet differ", "Untick <b>Log and tally sheet with the same data</b>.", "The two files of the same machine must agree."],
@@ -774,7 +774,7 @@
     },
     ficha: (s) => fichaL([`Votes in the log: ${s.log} · turnout on the tally sheet: ${s.bu}`, s.corromp ? "Incomplete or corrupted log" : "Complete log"]),
     kv: (s) => [["Log", String(s.log)], ["Tally sheet", String(s.bu)], ["Difference", String(s.log - s.bu)]],
-    tec: (s, r) => [["Difference", `${s.log} − ${s.bu} = ${s.log - s.bu}`], ["File", s.corromp ? "incomplete" : "complete"], ["Rule (preliminary)", "any difference or incomplete log → anomaly"], ["Decision", luz(r)]],
+    tec: (s, r) => [["Difference", `${s.log} − ${s.bu} = ${s.log - s.bu}`], ["File", s.corromp ? "incomplete" : "complete"], ["Rule (simplified)", "any difference or incomplete log → anomaly"], ["Decision", luz(r)]],
     m: [
       ["More votes in the log", "Change the votes in the log to <b>245</b>.", "5 more votes in the log than on the tally sheet: anomaly."],
       ["Fewer votes in the log", "Change the votes in the log to <b>230</b>.", "It is also flagged when votes are missing from the log."],

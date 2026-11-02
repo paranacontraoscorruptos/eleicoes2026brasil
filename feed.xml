@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sun, 01 Nov 2026 22:10:00 -0300</lastBuildDate>
+  <lastBuildDate>Sun, 01 Nov 2026 22:50:00 -0300</lastBuildDate>
+  <item>
+    <title>Logs das urnas: resultados do 2º turno e auditoria completa</title>
+    <link>https://paranacontraoscorruptos.org/#/logs?t=2</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-01-23</guid>
+    <pubDate>Sun, 01 Nov 2026 22:50:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>A página Logs das urnas agora tem os 14 testes nos dois turnos: escolha o turno no alto da página. No 2º turno foram lidos os logs de 499.177 seções. Os números são de seções (urnas), não de votos: 16.050 seções diferentes com anomalia estatística em pelo menos um teste L e 144.196 seções com alguma sinalização (vermelho ou amarelo). Como o fim oficial do 2º turno foi às 19h de Brasília, só 11 seções gravaram votos depois do horário (1 voto em cada) e nenhuma 1 hora ou mais depois; por isso o teste L01 não marcou nenhuma seção. A página Apontamentos em destaque e a página de cada seção também têm o 2º turno. Com isso, os 35 testes da auditoria completa estão concluídos nos dois turnos.</description>
+  </item>
   <item>
     <title>Downloads liberados de novo</title>
     <link>https://paranacontraoscorruptos.org/#/downloads</link>

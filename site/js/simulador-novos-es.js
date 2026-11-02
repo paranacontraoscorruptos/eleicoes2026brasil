@@ -1,5 +1,5 @@
 /* Simulador de anomalías — textos en español de las pruebas V1–V6 (variación entre vueltas) y L01–L14 (logs de las urnas).
-   Las pruebas de los logs están en curso: los criterios usados aquí son preliminares. */
+   Las pruebas de los logs están concluidas en las dos vueltas; los criterios usados aquí son simplificados. */
 (function () {
   "use strict";
   const S = window.SIM_TXT && window.SIM_TXT.ES;
@@ -14,11 +14,11 @@
     final_bloq: (f, t) => `Haga al menos ${t} exámenes de pruebas para desbloquear el examen final. Usted hizo ${f}.`,
     formula: (m, f) => `Nota final = 60% de la media de los 35 exámenes (${m}) + 40% del examen final (${f}). Los exámenes no hechos cuentan cero.`,
   });
-  Object.assign(S.ui.tl, { metodo_v: "Método (igual al del Informe Técnico, Adenda A)", metodo_l: "Método previsto (la prueba está en curso)" });
-  Object.assign(S.ui.niveis, { variacao: "De la 1.ª a la 2.ª vuelta", log: "El log de la urna (en curso)" });
+  Object.assign(S.ui.tl, { metodo_v: "Método (igual al del Informe Técnico, Adenda A)", metodo_l: "Método simplificado (la prueba completa está en el Informe Técnico, Anexo B)" });
+  Object.assign(S.ui.niveis, { variacao: "De la 1.ª a la 2.ª vuelta", log: "El log de la urna" });
   Object.assign(S.ui.niveis_d, {
     variacao: "Pruebas que comparan la 1.ª y la 2.ª vuelta para Presidente: cuánto ganó cada finalista y dónde el cambio se aparta del patrón.",
-    log: "Pruebas que leen el log de la urna, con la hora de cada voto y de cada evento. Los criterios todavía son preliminares: estas pruebas están en curso.",
+    log: "Pruebas que leen el log de la urna, con la hora de cada voto y de cada evento. Aquí en el simulador los criterios son simplificados; las pruebas completas están en el Informe Técnico (Anexo B).",
   });
   Object.assign(S.ui.cat, {
     transferencia: "Transferencia fuera de lo esperado", comp_direcionado: "Comparecencia atípica y dirigida", comp_atipico: "Comparecencia atípica",
@@ -40,8 +40,8 @@
     if (/60% de la media de los 15 exámenes/.test(q[1])) q[1] = "Cada examen vale de 0 a 10, y se aprueba con 7. La nota final es el 60% de la media de los 35 exámenes más el 40% del examen final, que se abre después de 15 exámenes. Puede rehacer los exámenes: vale la mejor nota.";
   });
   S.faqGeral.push(
-    ["¿Cuáles son las 35 pruebas?", "Son 15 pruebas en los boletines de urna (T01 a T15), 6 en la variación de la 1.ª a la 2.ª vuelta (V1 a V6) y 14 en los logs de las urnas (L01 a L14). Las pruebas de los logs ya se concluyeron en la 1.ª vuelta (resultados en la página Logs de las urnas); la 2.ª vuelta está en curso. Aquí en el simulador, los criterios de las pruebas L son simplificados."],
-    ["¿Por qué las pruebas de los logs tienen criterio preliminar?", "Porque todavía se están haciendo: los logs de todas las urnas se están descargando del TSE. El simulador usa los criterios previstos hoy. Cuando cada prueba se concluya y se publique, los criterios pueden ajustarse."],
+    ["¿Cuáles son las 35 pruebas?", "Son 15 pruebas en los boletines de urna (T01 a T15), 6 en la variación de la 1.ª a la 2.ª vuelta (V1 a V6) y 14 en los logs de las urnas (L01 a L14). Las pruebas de los logs están concluidas en las dos vueltas (resultados en la página Logs de las urnas). Aquí en el simulador, los criterios de las pruebas L son simplificados."],
+    ["¿Por qué las pruebas de los logs aquí son más simples?", "Las 14 pruebas de los logs están concluidas en las dos vueltas, y el criterio completo de cada una está en el Informe Técnico (Anexo B). Aquí en el simulador las reglas son simplificadas, para mostrar la idea de cada prueba con pocos números. Los resultados reales están en la página Logs de las urnas."],
     ["¿El log de la urna muestra por quién votó la persona?", "No. El log registra la hora de cada voto y de los eventos de la urna (encender, habilitar al elector, huella, cerrar), pero no a quién fue el voto ni el nombre del elector."],
   );
 
@@ -312,7 +312,7 @@
 
   // ============================== L01 a L14 (criterios preliminares) ==============================
   const regKv = (r, f, fm) => [["Esta sección", fm(r.v.regua.alvo)], ["Mediana de la región", fm(r.v.med)], ["Puntaje z robusto", f.n(r.v.z, 1)]];
-  const regTec = (r, f, fm, regra) => [["Región", `40 secciones ficticias del municipio y vecinas · mediana ${fm(r.v.med)}`], ["Puntaje z robusto", `z = 0,6745 · (x − mediana) / MAD = ${f.n(r.v.z, 2)}`], ["Regla (preliminar)", regra], ["Decisión", luz(r)]];
+  const regTec = (r, f, fm, regra) => [["Región", `40 secciones ficticias del municipio y vecinas · mediana ${fm(r.v.med)}`], ["Puntaje z robusto", `z = 0,6745 · (x − mediana) / MAD = ${f.n(r.v.z, 2)}`], ["Regla (simplificada)", regra], ["Decisión", luz(r)]];
   const mn = (f) => (x) => `${f.n(x, 0)} min`, sg = (f) => (x) => `${f.n(x, 0)} s`, pc = (f) => (x) => `${f.n(x, 1)}%`;
 
   T.L01 = {
@@ -399,7 +399,7 @@
     },
     ficha: (s) => fichaL([`Mayor secuencia sin huella: ${s.seq}`, `Electores con biometría: ${s.bio}%`, `Falla del lector en el log: ${s.falha ? "sí" : "no"}`]),
     kv: (s) => [["Mayor secuencia", String(s.seq)], ["Con biometría", `${s.bio}%`], ["Falla del lector", s.falha ? "sí" : "no"]],
-    tec: (s, r) => [["Elegible", `biometría ${s.bio}% ≥ 50% → ${sim(s.bio >= 50)}`], ["Secuencia", `${s.seq} ≥ 10 → ${sim(s.seq >= 10)}`], ["Falla registrada", sim(s.falha)], ["Decisión (preliminar)", `secuencia sin falla → anomalía; con falla → informativo → ${luz(r)}`]],
+    tec: (s, r) => [["Elegible", `biometría ${s.bio}% ≥ 50% → ${sim(s.bio >= 50)}`], ["Secuencia", `${s.seq} ≥ 10 → ${sim(s.seq >= 10)}`], ["Falla registrada", sim(s.falha)], ["Decisión (simplificada)", `secuencia sin falla → anomalía; con falla → informativo → ${luz(r)}`]],
     m: [
       ["Secuencia larga", "Cambie la mayor secuencia a <b>12</b>.", "12 electores seguidos sin huella, sin falla del lector: anomalía estadística."],
       ["Secuencia muy larga", "Cambie la secuencia a <b>40</b>.", "Cuanto más larga, más rara."],
@@ -434,7 +434,7 @@
     },
     ficha: (s) => fichaL([`Respuesta a la pregunta “¿todos ya votaron?”: ${s.resp === "sim" ? "SÍ" : "NO"}`, `Votos registrados después: ${s.depois}`, `La urna registra la pregunta en el log: ${s.registra ? "sí" : "no"}`]),
     kv: (s) => [["Respuesta", s.resp === "sim" ? "SÍ" : "NO"], ["Votos después", String(s.depois)]],
-    tec: (s, r) => [["Registro", sim(s.registra)], ["Regla (preliminar)", "voto después de SÍ → anomalía; después de NO → informativo"], ["Decisión", luz(r)]],
+    tec: (s, r) => [["Registro", sim(s.registra)], ["Regla (simplificada)", "voto después de SÍ → anomalía; después de NO → informativo"], ["Decisión", luz(r)]],
     m: [
       ["Un voto más", "Cambie los votos después de la respuesta a <b>1</b>.", "Cualquier voto después del SÍ se señala."],
       ["Muchos votos después", "Cambie a <b>15</b> votos.", "La votación siguió después de que el miembro de mesa dijera que todos ya habían votado."],
@@ -470,7 +470,7 @@
     },
     ficha: (s) => fichaL([`Interrupciones: ${s.quedas} · ${s.min} minutos detenida`, `Voto con hora dentro de una interrupción: ${s.dentro ? "sí" : "no"}`]),
     kv: (s) => [["Interrupciones", String(s.quedas)], ["Minutos detenida", String(s.min)], ["Voto durante", s.dentro ? "sí" : "no"]],
-    tec: (s, r) => [["Regla (preliminar)", "voto durante la interrupción o 3+ reinicios → anomalía; 1–2 interrupciones → informativo"], ["Decisión", luz(r)]],
+    tec: (s, r) => [["Regla (simplificada)", "voto durante la interrupción o 3+ reinicios → anomalía; 1–2 interrupciones → informativo"], ["Decisión", luz(r)]],
     m: [
       ["Voto a oscuras", "Ponga <b>1</b> interrupción y marque <b>Hay un voto dentro de una interrupción</b>.", "Voto con hora en que la urna estaba apagada: anomalía."],
       ["Muchos reinicios", "Cambie a <b>3</b> reinicios.", "3 o más reinicios se señalan."],
@@ -506,7 +506,7 @@
     },
     ficha: (s) => fichaL([s.troca ? `Cambio de urna: ${s.v1} votos en la original y ${s.v2} en la sustituta` : `Sin cambio: ${s.v1} votos en el log`, `Comparecencia en el boletín: ${s.comp}`, s.troca ? `Votos en la original después del cambio: ${s.depois}` : ""].filter(Boolean)),
     kv: (s, r) => [["Suma de los logs", String(r.v.tot)], ["Boletín", String(s.comp)], ["Diferencia", String(r.v.dif)]],
-    tec: (s, r) => [["Suma", `${s.v1}${s.troca ? ` + ${s.v2}` : ""} = ${r.v.tot}; boletín ${s.comp}; diferencia ${r.v.dif}`], ["Regla (preliminar)", "suma ≠ boletín o voto en la original después del cambio → anomalía; cambio registrado → informativo"], ["Decisión", luz(r)]],
+    tec: (s, r) => [["Suma", `${s.v1}${s.troca ? ` + ${s.v2}` : ""} = ${r.v.tot}; boletín ${s.comp}; diferencia ${r.v.dif}`], ["Regla (simplificada)", "suma ≠ boletín o voto en la original después del cambio → anomalía; cambio registrado → informativo"], ["Decisión", luz(r)]],
     m: [
       ["Suma mayor", "Marque el cambio, <b>120</b> votos en la original y <b>130</b> en la sustituta.", "250 votos en los logs y 240 en el boletín: anomalía."],
       ["Voto después del cambio", "Marque el cambio, 120 + 120 votos y <b>2</b> votos en la original después del cambio.", "La urna original no debería recibir votos después de sustituida."],
@@ -605,7 +605,7 @@
     },
     ficha: (s, f) => fichaL([`1.er intento de cierre a las ${f.hora(s.t1)} (hora local)`, `Intentos en total: ${s.n}`]),
     kv: (s, r, f) => [["1.er intento", f.hora(s.t1)], ["Intentos", String(s.n)]],
-    tec: (s, r, f) => [["Horario", `${f.hora(s.t1)} < 16:58 → ${sim(s.t1 < 17 * 3600 - 120)}`], ["Regla (preliminar)", "antes del horario → anomalía; 2+ intentos después → informativo"], ["Decisión", luz(r)]],
+    tec: (s, r, f) => [["Horario", `${f.hora(s.t1)} < 16:58 → ${sim(s.t1 < 17 * 3600 - 120)}`], ["Regla (simplificada)", "antes del horario → anomalía; 2+ intentos después → informativo"], ["Decisión", luz(r)]],
     m: [
       ["Antes de hora", "Cambie el 1.er intento a <b>16:30</b>.", "Intentar cerrar antes de las 17 h se señala."],
       ["Al mediodía", "Cambie el 1.er intento a <b>12:10</b>.", "Mucho antes del horario: anomalía."],
@@ -639,7 +639,7 @@
     },
     ficha: (s, f) => fichaL([s.tem ? `Zerésima a las ${f.hora(s.zer)}` : "Sin zerésima en el log", `Primer voto a las ${f.hora(s.v1)}`]),
     kv: (s, r, f) => [["Zerésima", s.tem ? f.hora(s.zer) : "—"], ["1.er voto", f.hora(s.v1)]],
-    tec: (s, r, f) => [["Orden", s.tem ? `zerésima ${f.hora(s.zer)} ≤ 1.er voto ${f.hora(s.v1)} → ${sim(s.zer <= s.v1)}` : "sin zerésima"], ["Ventana", "entre las 06:00 y las 08:00 → normal; fuera → informativo"], ["Decisión (preliminar)", luz(r)]],
+    tec: (s, r, f) => [["Orden", s.tem ? `zerésima ${f.hora(s.zer)} ≤ 1.er voto ${f.hora(s.v1)} → ${sim(s.zer <= s.v1)}` : "sin zerésima"], ["Ventana", "entre las 06:00 y las 08:00 → normal; fuera → informativo"], ["Decisión (simplificada)", luz(r)]],
     m: [
       ["Zerésima tardía", "Cambie la zerésima a <b>08:20</b> y el primer voto a 08:05.", "La zerésima tiene que venir antes de cualquier voto."],
       ["Sin zerésima", "Desmarque <b>La urna imprimió la zerésima</b>.", "Sin zerésima, no hay prueba de que la urna empezó vacía."],
@@ -674,7 +674,7 @@
     },
     ficha: (s) => fichaL([`Reloj ${Math.abs(s.dif)} min ${s.dif >= 0 ? "adelantado" : "atrasado"}`, `Ajuste en el log: ${({ nao: "ninguno", fora: "fuera de la votación", durante: "durante la votación" })[s.ajuste]}`]),
     kv: (s) => [["Diferencia", `${s.dif} min`], ["Ajuste", ({ nao: "ninguno", fora: "fuera", durante: "durante" })[s.ajuste]]],
-    tec: (s, r) => [["Diferencia", `|${s.dif}| ≥ 15 → ${sim(Math.abs(s.dif) >= 15)}`], ["Regla (preliminar)", "ajuste durante la votación → anomalía; diferencia ≥ 15 min o ajuste fuera → informativo"], ["Decisión", luz(r)]],
+    tec: (s, r) => [["Diferencia", `|${s.dif}| ≥ 15 → ${sim(Math.abs(s.dif) >= 15)}`], ["Regla (simplificada)", "ajuste durante la votación → anomalía; diferencia ≥ 15 min o ajuste fuera → informativo"], ["Decisión", luz(r)]],
     m: [
       ["Ajuste a mitad del día", "Elija <b>Ajuste durante la votación</b>.", "Cambiar el reloj con la votación en curso se señala."],
       ["Ajuste y reloj equivocado", "Ajuste durante la votación y diferencia de <b>−30</b> minutos.", "Sigue señalándose."],
@@ -707,7 +707,7 @@
     },
     ficha: (s) => fichaL([`Versión: ${s.versao === "ok" ? "oficial" : "otra"} · carga: ${s.carga === "ok" ? "prevista" : "otra"}`, `Modelo: ${s.modelo === "prev" ? "previsto" : "otro"} · log y boletín: ${s.bate ? "iguales" : "distintos"}`]),
     kv: (s) => [["Versión", s.versao === "ok" ? "oficial" : "otra"], ["Carga", s.carga === "ok" ? "prevista" : "otra"], ["Modelo", s.modelo === "prev" ? "previsto" : "otro"], ["Log × boletín", s.bate ? "iguales" : "distintos"]],
-    tec: (s, r) => [["Versión", sim(s.versao === "ok")], ["Carga", sim(s.carga === "ok")], ["Log = boletín", sim(s.bate)], ["Modelo previsto", sim(s.modelo === "prev")], ["Decisión (preliminar)", luz(r)]],
+    tec: (s, r) => [["Versión", sim(s.versao === "ok")], ["Carga", sim(s.carga === "ok")], ["Log = boletín", sim(s.bate)], ["Modelo previsto", sim(s.modelo === "prev")], ["Decisión (simplificada)", luz(r)]],
     m: [
       ["Versión distinta", "Cambie la versión del programa a <b>Otra</b>.", "Un programa distinto del oficial se señala."],
       ["Log y boletín distintos", "Desmarque <b>Log y boletín con los mismos datos</b>.", "Los dos archivos de la misma urna tienen que concordar."],
@@ -774,7 +774,7 @@
     },
     ficha: (s) => fichaL([`Votos en el log: ${s.log} · comparecencia en el boletín: ${s.bu}`, s.corromp ? "Log incompleto o dañado" : "Log completo"]),
     kv: (s) => [["Log", String(s.log)], ["Boletín", String(s.bu)], ["Diferencia", String(s.log - s.bu)]],
-    tec: (s, r) => [["Diferencia", `${s.log} − ${s.bu} = ${s.log - s.bu}`], ["Archivo", s.corromp ? "incompleto" : "completo"], ["Regla (preliminar)", "cualquier diferencia o log incompleto → anomalía"], ["Decisión", luz(r)]],
+    tec: (s, r) => [["Diferencia", `${s.log} − ${s.bu} = ${s.log - s.bu}`], ["Archivo", s.corromp ? "incompleto" : "completo"], ["Regla (simplificada)", "cualquier diferencia o log incompleto → anomalía"], ["Decisión", luz(r)]],
     m: [
       ["Votos de más en el log", "Cambie los votos en el log a <b>245</b>.", "5 votos más en el log que en el boletín: anomalía."],
       ["Votos de menos en el log", "Cambie los votos en el log a <b>230</b>.", "También se señala cuando faltan votos en el log."],
