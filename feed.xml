@@ -7,7 +7,15 @@
   <atom:link href="https://paranacontraoscorruptos.org/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Novidades da auditoria estatística independente dos Boletins de Urna das Eleições 2026. Análise independente, não é site oficial do TSE.</description>
   <language>pt-BR</language>
-  <lastBuildDate>Sun, 01 Nov 2026 23:50:00 -0300</lastBuildDate>
+  <lastBuildDate>Mon, 02 Nov 2026 01:30:00 -0300</lastBuildDate>
+  <item>
+    <title>Site inteiro com a auditoria completa: números dos 35 testes em todas as páginas</title>
+    <link>https://paranacontraoscorruptos.org/#/turno/1</link>
+    <guid isPermaLink="false">auditoria-bu-2026-2026-11-02-25</guid>
+    <pubDate>Mon, 02 Nov 2026 01:30:00 -0300</pubDate>
+    <category>Dados</category>
+    <description>Todos os números do site agora seguem os Relatórios Técnicos da auditoria completa (35 testes: boletins de urna, variação entre os turnos e logs das urnas). Seções com anomalia em pelo menos um teste: 60.409 no 1º turno (12,10%; antes o site mostrava 1.491, só boletins de urna e sem o encerramento tardio) e 16.241 no 2º turno (3,25%; antes 277). Mudaram a página de cada turno (agora com a tabela dos 35 testes), estados e municípios, mapa, lista de seções, gráficos, consulta avançada, Atlas, kit de imprensa e páginas estáticas. Urnas que fecharam tarde no 1º turno: 43.075, como no Relatório Técnico (antes 43.605: a prévia arredondava os minutos; agora só contam minutos completos), com 2.157.678 votos depois do horário oficial; no 2º turno, 2. Seções convergentes do 1º turno: 350, como no relatório. Nenhum teste foi refeito: os números vêm dos arquivos publicados dos relatórios.</description>
+  </item>
   <item>
     <title>2º turno: testes dos boletins de urna atualizados pelo Relatório Técnico novo</title>
     <link>https://paranacontraoscorruptos.org/#/turno/2</link>

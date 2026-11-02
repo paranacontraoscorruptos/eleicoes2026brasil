@@ -1308,7 +1308,7 @@
     const T = X(), L = t();
     const Z = await pensar(T.think.zona, A.zona(p.uf, p.z));
     if (!Z) return escrever(`<p>${esc(L.lk_nozone)}</p>`, { q });
-    const tot = { 1: null, 2: null }, an = { 1: 0, 2: 0 }, inf = { 1: 0, 2: 0 };
+    const tot = { 1: null, 2: null }, an = { 1: new Set(), 2: new Set() }, inf = { 1: new Set(), 2: new Set() };
     const nums = Object.keys(Z.s);
     nums.forEach((s) => {
       const rec = Z.s[s], fl = rec[3] || {};
@@ -1317,9 +1317,12 @@
         if (!tot[n]) tot[n] = [0, 0, tv[5].map(() => 0)];
         tot[n][0] += tv[0]; tot[n][1] += tv[1]; tv[5].forEach((v, i) => { tot[n][2][i] = (tot[n][2][i] || 0) + v; });
         const f = fl[String(n)];
-        if (f && f.o.some((o) => o[1] === "a")) an[n]++; else if (f && f.o.length) inf[n]++;
+        if (f && f.o.some((o) => o[1] === "a")) an[n].add(+s); else if (f && f.o.length) inf[n].add(+s);
       });
     });
+    // anomalias dos testes L (logs das urnas) e V3–V6 (variação entre os turnos), de ocorrencias.json: 35 testes
+    try { (await ext().ocorrencias()).forEach((o) => { if (o[0] === p.uf && o[2] === p.z && o[5][0] !== "T" && o[6] === "a") { an[o[4]].add(o[3]); inf[o[4]].delete(o[3]); } }); } catch (e) { /* sem ocorrências */ }
+    [1, 2].forEach((n) => { an[n] = an[n].size; inf[n] = inf[n].size; });
     let h = cab(`${esc(p.uf)} · ${esc(L.th_zone)} ${p.z}`, esc(A.ufNome(p.uf)), `#/lista?uf=${p.uf}&z=${p.z}`);
     h += `<p>${esc(T.zone_lead(nf(nums.length), Z.mun.map((m) => A.titulo(m[1])).join(", ")))}</p>`;
     [2, 1].forEach((n) => { if (tot[n]) h += blocoTurno(n, tot[n][0], tot[n][1], tot[n][2]); });
@@ -1337,9 +1340,13 @@
     const d = await pensar(L.bot_think_sec, A.consultarSecao(p.uf, p.z, p.s));
     let extra = "";
     if (d.rec) {
-      const fl = d.rec[3] || {}, a = [2, 1].reduce((k, n) => k + ((fl[String(n)] && fl[String(n)].o.filter((o) => o[1] === "a").length) || 0), 0);
-      const algum = [2, 1].some((n) => fl[String(n)] && fl[String(n)].o.length);
-      extra = algum ? obsHtml([a ? T.ob_sec_a(a, nf(a)) : T.ob_sec_i]) + oferecer(T.of_pq, T.pq_q(d.uf, d.z, d.s)) : obsHtml([T.ob_sec_ok]) + oferecer(T.of_qr, null, "qr", true);
+      // testes L e V3–V6 com anomalia na seção (ocorrencias.json): entram na conta dos 35 testes
+      let lv = [];
+      try { lv = (await ext().ocorrencias()).filter((o) => o[0] === d.uf && o[2] === d.z && o[3] === d.s && o[5][0] !== "T" && o[6] === "a"); } catch (e) { lv = []; }
+      const fl = d.rec[3] || {}, a = [2, 1].reduce((k, n) => k + ((fl[String(n)] && fl[String(n)].o.filter((o) => o[1] === "a").length) || 0), 0) + lv.length;
+      const algum = lv.length || [2, 1].some((n) => fl[String(n)] && fl[String(n)].o.length);
+      const lvTxt = [...new Set(lv.map((o) => `${o[5]} (${L.round(o[4])})`))].join(", ");
+      extra = algum ? obsHtml([a ? T.ob_sec_a(a, nf(a)) : T.ob_sec_i].concat(lv.length ? [T.ob_sec_lv(lvTxt)] : [])) + oferecer(T.of_pq, T.pq_q(d.uf, d.z, d.s)) : obsHtml([T.ob_sec_ok]) + oferecer(T.of_qr, null, "qr", true);
     }
     return escrever(htmlSecao(d, extra), { q });
   }

@@ -407,7 +407,8 @@
     const base = new URL("site/data/", location.href).href;
     const ordem = R().ordem_votos, cands = {};
     ["1", "2"].forEach((n) => { cands[n] = R().turnos[n].presidente.candidatos.map((c) => [c.nr, c.nome, c.votos]); });
-    const testes = Object.keys(R().testes_txt.PT).sort().map((id) => [id, A.nomeTeste(id)]);
+    // os 35 testes: T01–T15, V1–V6 e L01–L14 (a tabela sinalizacoes tem as anomalias dos testes L e V3–V6)
+    const testes = Object.keys(R().testes_txt.PT).sort().concat(["V1", "V2", "V3", "V4", "V5", "V6"], Array.from({ length: 14 }, (_, i) => `L${String(i + 1).padStart(2, "0")}`)).map((id) => [id, A.nomeTeste(id)]);
     cq.pronto = pedir({ tipo: "iniciar", base, ordem, cands, testes }).then((m) => { cq.colunas = m.colunas; return m; });
     return cq.pronto;
   }
@@ -2432,7 +2433,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
     return r;
   }
   // painel de estado e de município com os dados publicados (sem o banco da consulta): votos de cada turno, comparação,
-  // resumo e seções com anomalia (testes 1 a 12)
+  // resumo e seções com anomalia (35 testes)
   const votosT = (n, arr) => { const o = {}; R().ordem_votos[n].forEach((nr, i) => { o["v" + nr] = (arr && arr[i]) || 0; }); return o; };
   function tsDe(t, sec, sn) {
     return [1, 2].filter((n) => t[n]).map((n) => {
@@ -2442,7 +2443,7 @@ curl -s ${base}SHA256SUMS.txt | head`;
     });
   }
   // sn (opcional): seções com anomalia por turno {1: {a, i}, 2: {a, i}}, as mesmas da tabela que abriu o painel;
-  // sem ele, o painel não mostra essa linha (cada tabela conta do seu jeito: Relatório Técnico ou lista com a prévia)
+  // sem ele, o painel não mostra essa linha (as tabelas contam pelos 35 testes, como os Relatórios Técnicos)
   async function fonteMun(uf, cod, sn) {
     const [U, muns] = await Promise.all([A.paginasExtra.dado(`site/data/ufs/${uf}.json`), A.municipios()]);
     const m = U.m[cod]; if (!m) throw new Error("municipio");

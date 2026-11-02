@@ -5,6 +5,8 @@ importScripts("vendor/sqljs/sql-wasm.js");
 
 const pronto = initSqlJs({ locateFile: (f) => "vendor/sqljs/" + f });
 let db = null, base = "", ordem = null, cands = [], muns = null, totalSecoes = 0;
+// seções com anomalia nos testes L (logs das urnas) e V3–V6 (variação entre os turnos), de ocorrencias.json: "uf|zona|secao|turno"
+let sin35 = new Set();
 
 const json = (p) => fetch(base + p).then((r) => { if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`); return r.json(); });
 const hora = (h) => { if (!h) return null; const s = String(h).padStart(6, "0"); return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4, 6)}`; };
@@ -47,6 +49,7 @@ async function iniciar(m) {
   muns = M;
   inserirVarios("INSERT INTO municipios VALUES (?,?,?)", Object.entries(M).flatMap(([uf, ms]) => Object.entries(ms).map(([cod, x]) => [uf, cod, x[0]])));
   inserirVarios("INSERT INTO sinalizacoes VALUES (?,?,?,?,?,?,?,?)", oc.o.map((r) => r.slice(0, 8)));
+  sin35 = new Set(oc.o.filter((r) => r[6] === "a" && r[5][0] !== "T").map((r) => `${r[0]}|${r[2]}|${r[3]}|${r[4]}`));
   db.run("CREATE INDEX i_sin ON sinalizacoes(uf, zona, secao)");
   return { colunas: colunas() };
 }
@@ -76,7 +79,7 @@ async function carregarUf(m) {
         ordem[t].forEach((nr, i) => { v[nr] = tv[5][i] || 0; });
         const validos = Object.keys(v).reduce((a, nr) => a + (nr === "95" || nr === "96" ? 0 : v[nr]), 0);
         const fl = rec[3] && rec[3][String(t)];
-        const sinal = fl && fl.o.some((o) => o[1] === "a") ? 1 : 0;
+        const sinal = (fl && fl.o.some((o) => o[1] === "a")) || sin35.has(`${uf}|${z}|${s}|${t}`) ? 1 : 0;
         const loc = localDe.get(`${z}|${s}`);
         st.run([uf, mun[0], mun[1], z, +s, t, loc == null ? null : loc, tv[0], tv[1], tv[0] - tv[1], hora(tv[2]), hora(tv[3]), tv[4] ? String(tv[4]) : null,
           validos, v["95"] || 0, v["96"] || 0, sinal].concat(cands.map((nr) => (ordem[t].includes(nr) ? v[nr] || 0 : null))));

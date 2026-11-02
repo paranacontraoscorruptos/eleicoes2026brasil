@@ -41,8 +41,9 @@
   const pct = (x, nd = 2) => new Intl.NumberFormat(t().locale, { style: "percent", minimumFractionDigits: nd, maximumFractionDigits: nd }).format(x);
   const ufNome = (uf) => { const v = window.UF_NOMES[uf]; return typeof v === "string" ? v : v[state.lang]; };
   const titulo = (s) => String(s).toLowerCase().replace(/(^|\s)(\S)/g, (m, a, b) => a + b.toUpperCase()).replace(/\b(De|Da|Do|Dos|Das|E)\b/g, (m) => m.toLowerCase());
-  const nomeTeste = (tid) => state.R.testes_txt[state.lang][tid].nome;
-  const numTeste = (tid) => parseInt(tid.slice(1), 10);
+  // T01–T15: nome do motor e número (3); V e L: nome dos 35 testes e o próprio código (V3, L01)
+  const nomeTeste = (tid) => (tid[0] === "T" ? state.R.testes_txt[state.lang][tid].nome : (window.APP.audNome ? window.APP.audNome(tid) : tid));
+  const numTeste = (tid) => (tid[0] === "T" ? parseInt(tid.slice(1), 10) : tid);
   // total de testes da auditoria completa e quantos já foram concluídos (lista em extras.js: APP.AUD)
   const nTestes = () => { if (window.APP && window.APP.audSync) window.APP.audSync(); const a = window.APP && window.APP.AUD; return a ? [a.feitos.length + a.faltam.length, a.feitos.length] : [35, 21]; };
   // auditoria completa (os 35 testes nos dois turnos): extras.js decide pelos dados publicados
@@ -72,8 +73,12 @@
 
   function status(r) { return r.sinal > 0 ? "red" : r.info > 0 ? "amber" : "green"; }
   function chip(cor, texto) { return `<span class="chip chip-${cor}"><span class="dot" aria-hidden="true"></span>${esc(texto)}</span>`; }
-  function chipStatus(r) { const c = status(r); return chip(c, { red: t().st_red, amber: t().st_amber, green: t().st_green }[c]); }
-  function tipoTeste(tid) { return ["T01", "T02", "T11", "T12"].includes(tid) ? t().det : ["T13", "T14", "T15"].includes(tid) ? t().agg : t().stat; }
+  function chipStatus(r) { if (r.na) return chip("na", t().st_na); const c = status(r); return chip(c, { red: t().st_red, amber: t().st_amber, green: t().st_green }[c]); }
+  function tipoTeste(tid) {
+    if (tid[0] === "L") return (window.T35[state.lang] || window.T35.PT).tipo_l;
+    if (tid[0] === "V") return tid === "V5" || tid === "V6" ? t().det : t().stat;
+    return ["T01", "T02", "T11", "T12"].includes(tid) ? t().det : ["T13", "T14", "T15"].includes(tid) ? t().agg : t().stat;
+  }
 
   // --- blocos reutilizáveis ------------------------------------------------------
   // Link para o Atlas; com pergunta, ela já chega feita
@@ -232,20 +237,45 @@
   const tpDl = (pares) => `<dl class="cq-p-dl tp-dl">${pares.filter(Boolean).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
   const tpBtn = (href, ic, txt, prim) => `<a class="btn btn-sm${prim ? " btn-primary" : " btn-ghost"}" href="${href}" data-ir>${icone(ic)} ${esc(txt)}</a>`;
   const tpVazio = () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null });
+  // os 35 testes de um turno: T do resumo do turno (Relatório Técnico); V e L da auditoria completa (aud35).
+  // V1 a V6 comparam o 1º e o 2º turno: no 1º turno não se aplicam (o resultado está no 2º turno)
+  function testes35(n) {
+    const R = state.R, A35 = R.aud35 && R.aud35[n], T = R.turnos[n].testes;
+    if (!A35) return T;
+    return T.concat(A35.testes.filter((x) => x.id[0] !== "T").map((x) => (x.na ? { id: x.id, na: 1, unidades: null, sinal: 0, info: 0, brutos: null }
+      : { id: x.id, unidades: x.u, sinal: x.a, info: x.i, brutos: null })));
+  }
+  const unTeste = (tid) => (tid[0] === "T" ? UN_T[tid] || "s" : tid[0] === "V" ? UN_V[tid] : "s");
+  function txtTeste(tid) {
+    const ZT = window.T35[state.lang] || window.T35.PT;
+    if (tid[0] === "T") return state.R.testes_txt[state.lang][tid] || {};
+    if (tid[0] === "V") { const z = ZT.V[tid] || []; return { nome: nomeTeste(tid), objetivo: z[0], criterio: z[2] }; }
+    const lx = window.APP.logsL && window.APP.logsL.txt(tid), z = (ZT.L && ZT.L[tid]) || [];
+    return { nome: nomeTeste(tid), objetivo: (lx && lx.objetivo) || z[0], criterio: (lx && lx.criterio) || z[2] };
+  }
+  // botões do painel de um teste: T (lista e gráfico), L (página dos logs e lista), V (comparar turnos e lista)
+  function acoesTeste(n, tid) {
+    const P = t().tp;
+    const secs = tpBtn(`#/lista?t=${n}&teste=${tid}&nivel=a`, "list", t().dz.ver_secs);
+    if (tid[0] === "L") return tpBtn(`#/logs?t=${n}&teste=${tid}&nivel=a`, "list", t().dz.ab.lg, true) + secs + tpBtn(`#/testes/${tid}`, "flask", P.ver_teste);
+    if (tid[0] === "V") return tpBtn("#/variacao", "swap", t().dz.ab.vr, true) + (n === "2" && UN_V[tid] === "secao" ? secs : "") + tpBtn(`#/testes/${tid}`, "flask", P.ver_teste);
+    return tpBtn(`#/testes/${tid}`, "flask", P.ver_teste, true) + tpBtn(`#/lista?t=${n}&teste=${tid}`, "list", P.ver_lista(numTeste(tid))) + tpBtn(`#/graficos/${tid}`, "chart", P.ver_graf);
+  }
   // painel de um teste num turno: o que ele conta (com a unidade), os números do Relatório Técnico e o que ele confere
   function painelTesteTurno(n, tid) {
-    const L = t(), R = state.R, x = R.turnos[n].testes.find((y) => y.id === tid), tx = R.testes_txt[state.lang][tid] || {}, P = L.tp;
-    const ZT = window.T35[state.lang] || window.T35.PT, uk = UN_T[tid] || "s", un = ZT.un_t[uk];
+    const L = t(), R = state.R, x = testes35(n).find((y) => y.id === tid), tx = txtTeste(tid), P = L.tp;
+    const ZT = window.T35[state.lang] || window.T35.PT, uk = unTeste(tid), un = ZT.un_t[uk];
     const cp = tid === "T11" && R.complementar && R.complementar.encerramento_tardio;
-    const notaT11 = cp ? (() => { const a = R.turnos["1"].testes.find((y) => y.id === "T11"), b = R.turnos["2"].testes.find((y) => y.id === "T11");
-      return `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_resumo(nf(cp.turnos[1].sinalizadas), nf(cp.turnos[2].sinalizadas), nf(a.sinal + cp.turnos[1].sinalizadas), nf(b.sinal + cp.turnos[2].sinalizadas)))}</p>`; })() : "";
-    const corpo = `<section class="tp-ap"><h3>${esc(P.tst_res(L.round(+n)))}</h3>${tpDl([[L.th_units, `${nf(x.unidades || 0)} <small>${esc(un)}</small>`],
-      [L.th_anom, `${nf(x.sinal)} <small>${esc(un)}</small>`], [L.th_info, `${nf(x.info)} <small>${esc(un)}</small>`], [L.th_raw, x.brutos == null ? "—" : nf(x.brutos)],
-      [L.th_rate, x.unidades ? pct(x.sinal / x.unidades, 3) : "—"], [L.th_status, chipStatus(x)]])}${ZT.un_x[uk] ? `<p class="small muted">${esc(ZT.un_x[uk])}</p>` : ""}</section>${notaT11}
+    const notaT11 = cp ? `<p class="note small enc-nota">${icone("help")} ${esc(L.ex.enc_resumo(nf(cp.turnos[1].sinalizadas), nf(cp.turnos[2].sinalizadas)))}</p>` : "";
+    const res = x.na ? `<p>${chipStatus(x)}</p><p class="small muted">${esc(L.st_na_x)}</p>`
+      : `${tpDl([[L.th_units, `${nf(x.unidades || 0)} <small>${esc(un)}</small>`],
+      [L.th_anom, `${nf(x.sinal)} <small>${esc(un)}</small>`], [L.th_info, `${nf(x.info)} <small>${esc(un)}</small>`], tid[0] === "T" ? [L.th_raw, x.brutos == null ? "—" : nf(x.brutos)] : null,
+      [L.th_rate, x.unidades ? pct(x.sinal / x.unidades, 3) : "—"], [L.th_status, chipStatus(x)]])}${ZT.un_x[uk] ? `<p class="small muted">${esc(ZT.un_x[uk])}</p>` : ""}`;
+    const corpo = `<section class="tp-ap"><h3>${esc(P.tst_res(L.round(+n)))}</h3>${res}</section>${notaT11}
       ${tx.objetivo ? `<h3>${esc(P.tst_obj)}</h3><p>${esc(tx.objetivo)}</p>` : ""}${tx.criterio ? `<h3>${esc(P.tst_crit)}</h3><p>${esc(tx.criterio)}</p>` : ""}`;
-    return { tipo: "info", e: {}, d: null, href: `#/testes/${tid}`, kick: `${L.round(+n)} · ${L.th_test} ${numTeste(tid)}`, tit: tx.nome || nomeTeste(tid), sub: tipoTeste(tid), corpo,
-      acoes: tpBtn(`#/testes/${tid}`, "flask", P.ver_teste, true) + tpBtn(`#/lista?t=${n}&teste=${tid}`, "list", P.ver_lista(numTeste(tid))) + tpBtn(`#/graficos/${tid}`, "chart", P.ver_graf),
-      dica: `<div class="cq-d-t">${esc(unTip(ZT, x.sinal, x.info, uk))}</div><div class="cq-d-t">${esc(L.th_status)}: ${esc({ red: L.st_red, amber: L.st_amber, green: L.st_green }[status(x)])}</div>` };
+    return { tipo: "info", e: {}, d: null, href: tid[0] === "L" ? `#/logs?t=${n}&teste=${tid}&nivel=a` : `#/testes/${tid}`, kick: `${L.round(+n)} · ${L.th_test} ${numTeste(tid)}`, tit: tx.nome || nomeTeste(tid), sub: tipoTeste(tid), corpo,
+      acoes: acoesTeste(n, tid),
+      dica: x.na ? `<div class="cq-d-t">${esc(L.st_na_x)}</div>` : `<div class="cq-d-t">${esc(unTip(ZT, x.sinal, x.info, uk))}</div><div class="cq-d-t">${esc(L.th_status)}: ${esc({ red: L.st_red, amber: L.st_amber, green: L.st_green }[status(x)])}</div>` };
   }
 
   // Ações da página: compartilhar, gerar imagem para redes (quando há cartão) e exportar (PDF, apresentação, Word, Excel…)
@@ -633,17 +663,18 @@
     const pres = barras(cands.map((c) => ({ rotulo: `${titulo(c.nome)} (${c.nr})`, valor: c.votos, texto: `${nf(c.votos)} · ${pct(c.votos / val)}`,
       dica: `${nf(c.votos)} · ${pct(c.votos / val)} ${L.valid}\n${titulo(c.nome)} (${c.nr})` })),
       { nota: `${esc(L.blank)}: ${nf(br.votos)} · ${esc(L.null_)}: ${nf(nu.votos)}. ${esc(L.r_pres_note(nf(P.comparecimento), nf(P.aptos), pct(P.comparecimento / P.aptos)))}` });
-    const ZT = window.T35[state.lang] || window.T35.PT, unT = (tid) => ZT.un_t[UN_T[tid] || "s"], CORES = ["red", "amber", "green"];
+    const ZT = window.T35[state.lang] || window.T35.PT, unT = (tid) => ZT.un_t[unTeste(tid)], CORES = ["red", "amber", "green", "na"], T35n = testes35(n);
+    const ou = (v, f) => (v == null ? "—" : f(v));
     const testes = tabelaTP({ id: `turno${n}-testes`, colunas: ["teste", "unidades", "sinal", "info", "brutos", "taxa", "situacao"],
       rot: [L.th_test, L.th_units, L.th_anom, L.th_info, L.th_raw, L.th_rate, L.th_status],
-      linhas: T.testes.map((x) => [x.id, x.unidades || 0, x.sinal, x.info, x.brutos, x.unidades ? x.sinal / x.unidades : null, CORES.indexOf(status(x))]),
-      fmt: [(id) => `<span class="lg-catc">${numTeste(id)}. ${esc(nomeTeste(id))}</span>`, (v) => nf(v), (v) => nf(v), (v) => nf(v), (v) => (v == null ? "—" : nf(v)),
-        (v) => (v == null ? "—" : pct(v, 3)), (v) => chip(CORES[v], [L.st_red, L.st_amber, L.st_green][v])],
+      linhas: T35n.map((x) => [x.id, x.na ? null : x.unidades || 0, x.na ? null : x.sinal, x.na ? null : x.info, x.brutos, !x.na && x.unidades ? x.sinal / x.unidades : null, x.na ? 3 : CORES.indexOf(status(x))]),
+      fmt: [(id) => `<span class="lg-catc">${numTeste(id)}. ${esc(nomeTeste(id))}</span>`, (v) => ou(v, nf), (v) => ou(v, nf), (v) => ou(v, nf), (v) => ou(v, nf),
+        (v) => ou(v, (y) => pct(y, 3)), (v) => chip(CORES[v], [L.st_red, L.st_amber, L.st_green, L.st_na][v])],
       cls: "num-cols", dicaLinha: true, ler: tpVazio, chave: (l) => `teste|${n}|${l[0]}`, fonte: (e, d, l) => Promise.resolve(painelTesteTurno(n, l[0])),
-      dicaExtra: (dd, r, gi) => `<div class="cq-d-t">${esc(L.th_units)}: ${nf(r.m.linhas[gi][1])} ${esc(unT(r.m.linhas[gi][0]))}</div>` },
+      dicaExtra: (dd, r, gi) => (r.m.linhas[gi][1] == null ? `<div class="cq-d-t">${esc(L.st_na_x)}</div>` : `<div class="cq-d-t">${esc(L.th_units)}: ${nf(r.m.linhas[gi][1])} ${esc(unT(r.m.linhas[gi][0]))}</div>`) },
     tabela([L.th_test, L.th_units, L.th_anom, L.th_info, L.th_raw, L.th_rate, L.th_status],
-      T.testes.map((x) => [`<a href="#/testes/${x.id}">${numTeste(x.id)}. ${esc(nomeTeste(x.id))}</a>`, nf(x.unidades || 0), nf(x.sinal), nf(x.info),
-        x.brutos == null ? "—" : nf(x.brutos), x.unidades ? pct(x.sinal / x.unidades, 3) : "—", chipStatus(x)]), "num-cols"));
+      T35n.map((x) => [`<a href="#/testes/${x.id}">${numTeste(x.id)}. ${esc(nomeTeste(x.id))}</a>`, x.na ? "—" : nf(x.unidades || 0), x.na ? "—" : nf(x.sinal), x.na ? "—" : nf(x.info),
+        x.brutos == null ? "—" : nf(x.brutos), !x.na && x.unidades ? pct(x.sinal / x.unidades, 3) : "—", chipStatus(x)]), "num-cols"));
     const ufs = T.uf.slice().sort((a, b) => b.sinal / b.secoes - a.sinal / a.secoes);
     const ufBar = barras(ufs.map((u) => ({ rotulo: u.uf, valor: u.sinal / u.secoes, texto: pct(u.sinal / u.secoes),
       dica: `${pct(u.sinal / u.secoes)}\n${ufNome(u.uf)}: ${nf(u.sinal)} / ${nf(u.secoes)} ${L.th_sections.toLowerCase()}` })));

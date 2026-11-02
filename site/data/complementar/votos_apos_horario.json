@@ -28,24 +28,24 @@
  ],
  "turnos": {
   "1": {
-   "secoes": 43605,
-   "votos_dia": 12719038,
-   "votos_apos": 2174517,
-   "pct_apos": 0.170966,
+   "secoes": 43075,
+   "votos_dia": 12566958,
+   "votos_apos": 2157678,
+   "pct_apos": 0.171695,
    "votos_1h": 779934,
    "secoes_1h": 38160,
    "sem_digital_1h": 92030,
-   "pct_1h": 0.06132,
+   "pct_1h": 0.062062,
    "faixas_votos_apos": {
     "101-200": 680,
-    "11-50": 24813,
+    "11-50": 24303,
     "51-100": 17285,
-    "1-10": 671,
-    "0": 156
+    "1-10": 655,
+    "0": 152
    },
    "ultimo_voto_horas_apos_fim": {
-    "-1": 156,
-    "0": 5289,
+    "-1": 152,
+    "0": 4763,
     "1": 30747,
     "2": 6215,
     "3": 1019,
@@ -53,16 +53,16 @@
     "5": 28,
     "6": 2
    },
-   "sem_digital_antes_pct": 0.133091,
-   "sem_digital_apos_pct": 0.118021,
+   "sem_digital_antes_pct": 0.133179,
+   "sem_digital_apos_pct": 0.118045,
    "liberacao_apos": {
-    "D": 1917872,
-    "S": 138952,
-    "N": 117686,
+    "D": 1902968,
+    "S": 137799,
+    "N": 116904,
     "?": 7
    },
-   "cpf_apos": 386003,
-   "ja_votou_apos": 7124
+   "cpf_apos": 382646,
+   "ja_votou_apos": 7085
   },
   "2": {
    "secoes": 2,

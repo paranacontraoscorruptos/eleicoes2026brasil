@@ -2640,3 +2640,5 @@ html.embed .aud-tarja, html.embed .aud-foot { display: none !important; }
 .dz-ufs b { font-variant-numeric: tabular-nums; }
 .dz-tst li { grid-template-columns: 44px 1fr auto; }
 .dz-tn { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* situação "não se aplica" (V1 a V6 no 1º turno) */
+.chip-na .dot { background: var(--line-2); }

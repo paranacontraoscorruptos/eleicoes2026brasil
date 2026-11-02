@@ -12,6 +12,7 @@ Usa somente os dados públicos do site (site/data/secoes/<UF>/<zona>.json) e as 
 - entram as seções com abertura, encerramento e comparecimento > 0.
 
 Sinal (anomalia, categoria "encerramento_tardio"): encerramento >= horário oficial local + ATRASO_ENCERRAMENTO_MIN.
+Minutos depois do horário: minutos completos (truncados, como no teste 11 do motor v3.1.1); 59 min 59 s não entram.
 
 Uso:  python3 encerramento_tardio.py [pasta site/data]   ->  encerramento_tardio.csv e encerramento_tardio.json
 """
@@ -34,6 +35,12 @@ def hora(h):
         return None
     s = str(int(h)).zfill(6)
     return int(s[:2]) + int(s[2:4]) / 60 + int(s[4:6]) / 3600
+
+
+def segundos(h):
+    """HHMMSS (inteiro) -> segundos desde 0h."""
+    s = str(int(h)).zfill(6)
+    return int(s[:2]) * 3600 + int(s[2:4]) * 60 + int(s[4:6])
 
 
 def hms(h):
@@ -61,7 +68,8 @@ def main():
     q = s.groupby(["turno", "uf", "cod_mun"])["h_ab"].transform(lambda v: v.quantile(0.10))
     s["offset"] = [min(FUSOS_UF.get(u, (0,)), key=lambda o: abs(h - HORA_INICIO_OFICIAL - o)) for u, h in zip(s["uf"], q)]
     s["fim_local"] = s["turno"].map(HORA_FIM_OFICIAL) + s["offset"]
-    s["min_apos"] = ((s["h_enc"] - s["fim_local"]) * 60).round().astype(int)
+    # minutos completos, em segundos inteiros (sem erro de arredondamento): 59 min 59 s = 59
+    s["min_apos"] = ((s["enc"].map(segundos) - s["fim_local"] * 3600) // 60).astype(int)
     s["enc_brasilia"] = s["h_enc"] - s["offset"]
     sinal = s[s["min_apos"] >= ATRASO_ENCERRAMENTO_MIN].sort_values(["turno", "min_apos", "uf", "zona", "secao"], ascending=[True, False, True, True, True])
 
