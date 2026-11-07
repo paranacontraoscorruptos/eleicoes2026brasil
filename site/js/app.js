@@ -89,6 +89,28 @@
     return `<aside class="bot-band"><span class="bot-band-ico" aria-hidden="true">${icone("globe")}</span><p><b>${esc(L.bot_cta_title)}</b></p><a class="btn btn-bot" href="#/atlas">${esc(L.bot_cta_btn)}</a></aside>`;
   }
 
+  // Redes sociais do Paraná contra os Corruptos: faixa no topo e bloco no rodapé (todas as páginas)
+  const REDES = [
+    ["whatsapp", "WhatsApp", "https://whatsapp.com/channel/0029VbEAb6wDuMRZRk6jsn2S", "canal"],
+    ["telegram", "Telegram", TELEGRAM, "grupo"],
+    ["facebook", "Facebook", "https://www.facebook.com/share/19sVgxHcax/", "pagina"],
+    ["instagram", "Instagram", "https://www.instagram.com/paranacontraoscorruptos/", "@paranacontraoscorruptos"],
+    ["youtube", "YouTube", "https://www.youtube.com/@Paran%C3%A1contraoscorruptos", "@Paranácontraoscorruptos"],
+    ["x", "X (Twitter)", "https://x.com/prcontracorrup", "@prcontracorrup"],
+    ["tiktok", "TikTok", "https://www.tiktok.com/@paranacontraoscorruptos", "@paranacontraoscorruptos"],
+  ];
+  function redes() {
+    const L = t(), F = window.APP.ferramentas, ico = (k) => (F && F.icoRede ? F.icoRede(k) : "");
+    return REDES.map(([k, nome, h, at]) => {
+      const sub = at[0] === "@" ? at : L.rs[at];
+      return `<a class="rs-btn" href="${h}" target="_blank" rel="noopener" title="${esc(`${nome} · ${sub}`)}" aria-label="${esc(`${nome} · ${sub} · ${L.rs.nova}`)}">${ico(k)}<span class="rs-t"><b>${esc(nome)}</b><small>${esc(sub)}</small></span></a>`;
+    }).join("");
+  }
+  function montarRedes() {
+    const L = t();
+    $("#rs-bar").innerHTML = `<div class="rs-in"><span class="rs-lbl">${esc(L.rs.t)}</span><nav class="rs-row" aria-label="${esc(L.rs.aria)}">${redes()}</nav></div>`;
+  }
+
   // Grupo do Telegram: chamada completa na página inicial, faixa curta no rodapé
   function telegram(compacto) {
     const L = t();
@@ -1323,6 +1345,7 @@
     $("#a11y-btn").innerHTML = icone("a11y"); $("#a11y-btn").setAttribute("aria-label", L.ax_open); $("#a11y-btn").title = L.ax_open;
     iconeTema();
     montarRodape();
+    montarRedes();
     lancadorAtlas();
     document.documentElement.lang = { PT: "pt-BR", EN: "en", ES: "es" }[state.lang];
   }
@@ -1344,7 +1367,7 @@
     const L = t(), R = state.R, A = R ? R.autor : null;
     const ext = (h, txt) => `<a href="${h}" target="_blank" rel="noopener">${esc(txt)}</a>`;
     $("#footer").innerHTML = `<div class="flag-stripe" aria-hidden="true"></div>
-      ${telegram(true)}
+      <section class="foot-rs" aria-labelledby="foot-rs-h"><h2 id="foot-rs-h">${esc(L.rs.t)}</h2><p>${esc(L.rs.sub)}</p><nav class="rs-grid" aria-label="${esc(L.rs.aria)}">${redes()}</nav></section>
       <div class="foot-in">
         <div class="foot-brand">
           <a class="brand" href="#/"><img class="brand-flag" src="site/img/bandeira.svg" alt="" width="38" height="27"><span class="brand-txt"><span class="fb-name">${esc(L.brand)}</span><span class="brand-sub">${esc(L.brand_sub)}</span></span></a>

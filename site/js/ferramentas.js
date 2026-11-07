@@ -1387,5 +1387,5 @@
     contar();
   });
 
-  A.ferramentas = { janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, avisosAtivar, avisosLigados, avisosSuporte, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca, imprimirPagina, contarTexto };
+  A.ferramentas = { icoRede, janela, copiarTexto, svgQr, urlAbs, linkarDoc, URL_DOC, compartilhar, gerarImagem, avisarErro, abrirBusca, painelA11y, instalar, avisosAtivar, avisosLigados, avisosSuporte, imagemCartao, cartaoAtual, buscarNoIndice, indiceBusca, imprimirPagina, contarTexto };
 })();

@@ -3275,3 +3275,11 @@ window.I18N.ES.hc = {
   lg_tip: "Logs de todas las urnas de las dos vueltas: cuántos se leyeron, votos con horario registrado y las pruebas L01 a L14.\nHaga clic para ver los detalles.",
   lg_top: "Pruebas con más anomalías (1.ª vuelta · 2.ª vuelta)", ab_testes: "Abrir Las 35 pruebas", ab_logs: "Abrir Logs de las urnas", ab_lista: "Ver las secciones marcadas",
 };
+
+// Redes sociais do Paraná contra os Corruptos (topo e rodapé)
+window.I18N.PT.rs = { t: "Siga o Paraná contra os Corruptos", aria: "Redes sociais do Paraná contra os Corruptos", nova: "abre em nova aba",
+  sub: "Novidades da auditoria, vídeos e avisos nas redes sociais.", canal: "Canal", grupo: "Grupo", pagina: "Página e grupo" };
+window.I18N.EN.rs = { t: "Follow Paraná contra os Corruptos", aria: "Paraná contra os Corruptos social media", nova: "opens in a new tab",
+  sub: "Audit news, videos and notices on social media.", canal: "Channel", grupo: "Group", pagina: "Page and group" };
+window.I18N.ES.rs = { t: "Siga a Paraná contra os Corruptos", aria: "Redes sociales de Paraná contra os Corruptos", nova: "se abre en una pestaña nueva",
+  sub: "Novedades de la auditoría, videos y avisos en las redes sociales.", canal: "Canal", grupo: "Grupo", pagina: "Página y grupo" };
