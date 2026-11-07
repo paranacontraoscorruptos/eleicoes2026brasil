@@ -1007,12 +1007,41 @@
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) { corpo.classList.add("cq-cheio"); return; }
     corpo.classList.remove("cq-cheio");
     const us = new Set();
-    $$(`${CONTA},.cq-barra,.cq-medidor,.cq-graf-b,.vh-dia,.et-fb`, corpo).forEach((x) => us.add(x.closest(PN_UNID) || x));
+    $$(`${CONTA},.cq-barra,.cq-medidor,.cq-graf-b,.vh-dia,.et-fb,.dz-bar,.pn-b`, corpo).forEach((x) => us.add(x.closest(PN_UNID) || x));
     $$(CONTA, corpo).forEach((x) => { x.textContent = x.dataset.cn != null ? nf(0) : x.dataset.cp != null ? pct(0, +x.dataset.cd || 0) : comSinal(0); });
     const obs = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) { obs.unobserve(en.target); contarBloco(en.target); } }),
       { root: corpo, rootMargin: "0px 0px -8% 0px", threshold: 0 });
     us.forEach((u) => obs.observe(u));
     pnObs = obs;
+  }
+  // painéis de texto pronto (cards da inicial e dos turnos): os números de dd e das listas viram contadores
+  // (só quando o texto bate com o formato de nf/pct/comSinal) e cada lista de testes ganha uma barra proporcional
+  const NUM_RE = /(?<![\w.,])([+\u2212]?)(\d(?:[\d.,]*\d)?)(\s?%)?(?![\w])/g;
+  function numSpan(sn, dg, pc) {
+    const tok = sn + dg + (pc || ""), q = dg.replace(/\D/g, ""); if (!q || q.length > 15) return null;
+    if (pc) { for (let d = 0; d <= 3; d++) { const x = +q / Math.pow(10, d) / 100; if (pct(x, d) === tok) return `<span data-cp="${x}" data-cd="${d}">${esc(tok)}</span>`; } return null; }
+    const v = +q;
+    if (sn) { const w = sn === "+" ? v : -v; return comSinal(w) === tok ? `<span data-cs="${w}">${esc(tok)}</span>` : null; }
+    return nf(v) === tok ? `<span data-cn="${v}">${esc(tok)}</span>` : null;
+  }
+  function contaAuto(corpo) {
+    $$("dd, .dz-ufs li > b", corpo).forEach((box) => {
+      const tw = document.createTreeWalker(box, NodeFilter.SHOW_TEXT), nos = [];
+      while (tw.nextNode()) if (!tw.currentNode.parentElement.closest(CONTA)) nos.push(tw.currentNode);
+      nos.forEach((no) => {
+        const tx = no.nodeValue; let ok = false, h = "", i0 = 0;
+        for (const m of tx.matchAll(NUM_RE)) { const r = numSpan(m[1], m[2], m[3]); if (!r) continue; ok = true; h += esc(tx.slice(i0, m.index)) + r; i0 = m.index + m[0].length; }
+        if (!ok) return;
+        h += esc(tx.slice(i0));
+        const tmp = document.createElement("span"); tmp.innerHTML = h;
+        no.replaceWith(...tmp.childNodes);
+      });
+    });
+    $$("ol.dz-tst", corpo).forEach((ol) => {
+      const lis = $$(":scope > li", ol), val = (li) => { if (li.dataset.v != null) return +li.dataset.v; const c = li.querySelector("b [data-cn], b [data-cs]"); return c ? Math.abs(+(c.dataset.cn != null ? c.dataset.cn : c.dataset.cs)) : 0; };
+      const mx = Math.max(1, ...lis.map(val));
+      lis.forEach((li, k) => { if (li.querySelector(".pn-b")) return; li.insertAdjacentHTML("beforeend", `<span class="pn-b" aria-hidden="true"><i style="--w:${(100 * val(li) / mx).toFixed(1)}%;--i:${k % 4}"></i></span>`); });
+    });
   }
   // turnos que o painel mostra: o turno escolhido na consulta (ou os dois)
   const turnosVer = (by, tf) => [1, 2].filter((n) => by[n] && (!tf || n === tf));
@@ -1253,6 +1282,7 @@
     const sub = el.querySelector(".cq-p-sub"); sub.textContent = c.sub; sub.hidden = !c.sub;
     const corpo = el.querySelector(".cq-p-body");
     corpo.innerHTML = c.corpo; corpo.scrollTop = 0;
+    if (r.contaAuto) contaAuto(corpo);
     if (r.animRolar) animarAoRolar(corpo); else animarPainel(corpo);
     // botão "Ver horário de cada voto" também no rodapé (primeiro, pulsando), quando a urna tem votos depois do horário
     const vb = r.guiaPainel && (r.botaoPainel ? r.botaoPainel(corpo) : corpo.querySelector("[data-vh-ver]")), ac = el.querySelector(".cq-p-acoes");
@@ -2261,6 +2291,31 @@ curl -s ${base}SHA256SUMS.txt | head`;
   // testes L com o 1º turno concluído (logs.js): quadradinho meio cheio
   const audMeio = (id) => id[0] === "L" && A.logsL && A.logsL.ok();
   const audQuadros = () => `<div class="aud-q" aria-hidden="true">${AUD.feitos.map((id) => `<span class="ok" title="${esc(`${id} · ${audNome(id)}`)}"></span>`).join("")}${AUD.faltam.map((id) => `<span${audMeio(id) ? ' class="meio"' : ""} title="${esc(`${id} · ${audNome(id)}${audMeio(id) ? ` · ${A.logsL.textos().aud_meio}` : ""}`)}"></span>`).join("")}</div>`;
+  // rodapé com a auditoria completa: quadradinhos com o número de cada teste, separados por grupo
+  const audQuadrosN = () => {
+    const G = t().rc_g || {}, H = t().hc || {};
+    return `<div class="aud-qn">${["T", "V", "L"].map((k) => { const ids = AUD.feitos.concat(AUD.faltam).filter((id) => id[0] === k);
+      return `<div class="aud-qg"><span class="aud-qk">${esc(G[k] || k)} <small>· ${ids.length} ${esc(H.testes || "")}</small></span><div class="aud-q aud-qx">${ids.map((id) => `<span class="${AUD.feitos.includes(id) ? "ok" : audMeio(id) ? "meio" : ""}" title="${esc(`${id} · ${audNome(id)}`)}">${esc(id)}</span>`).join("")}</div></div>`; }).join("")}</div>`;
+  };
+  // resumo ao lado: números de cada turno lidos do resumo.json (Relatórios Técnicos publicados)
+  function audResumo() {
+    const R = A.state.R, E = X(), L = t(), H = L.hc || {}, D = L.dz || {}, U = D.u || {};
+    if (!R || !R.aud35) return "";
+    const ns = ["1", "2"].filter((n) => R.aud35[n]); if (!ns.length) return "";
+    const lin = (rot, f) => `<tr><th scope="row">${esc(rot)}</th>${ns.map((n) => `<td>${f(n)}</td>`).join("")}</tr>`;
+    const nT = (n, fx) => R.aud35[n].testes.filter(fx).length;
+    const u = (v, un) => `${nf(v)} <small>${esc(un)}</small>`;
+    const rows = [
+      lin(D.th_secs, (n) => u(R.aud35[n].analisadas, U.secoes)),
+      lin(E.aud_r_anom, (n) => `${u(R.aud35[n].secoes, U.secoes)}`),
+      lin(H.ts_com, (n) => u(nT(n, (x) => !x.na && x.a > 0), H.testes)),
+      lin(H.ts_inf, (n) => u(nT(n, (x) => !x.na && !x.a && x.i > 0), H.testes)),
+      lin(H.ts_ok, (n) => u(nT(n, (x) => !x.na && !x.a && !x.i), H.testes)),
+      R.logs ? lin(E.aud_r_logs, (n) => (R.logs[n] ? u(R.logs[n].geral.secoes, H.urnas) : "—")) : "",
+    ].join("");
+    return `<div class="aud-res"><h4>${esc(E.aud_r_t)}</h4><table class="aud-rt"><thead><tr><td></td>${ns.map((n) => `<th scope="col">${esc(L.round(+n))}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>
+      <p class="small muted">${esc(E.aud_r_nota)}</p><a class="btn btn-sm" href="#/downloads">${icone("download")} ${esc(E.aud_r_dl)}</a></div>`;
+  }
   function audListas() {
     const E = X(), bloco = (ids, k, ok) => {
       const xs = ids.filter((id) => id[0] === k);
@@ -2349,11 +2404,11 @@ curl -s ${base}SHA256SUMS.txt | head`;
     if (fim) {
       const o = $("#aud-tarja"); if (o) o.remove();
       const ft = $("#footer"), ob = ft && $(".aud-foot", ft);
-      if (ft && ft.firstElementChild && (!ob || ob.dataset.lg !== lg || !ob.dataset.fim)) {
+      if (ft && ft.firstElementChild && (!ob || ob.dataset.lg !== lg || !ob.dataset.fim || (!ob.dataset.r && A.state.R))) {
         if (ob) ob.remove();
-        const bx = document.createElement("section");
-        bx.className = "aud-foot"; bx.dataset.lg = lg; bx.dataset.fim = "1";
-        bx.innerHTML = `<div class="aud-foot-in"><h3>${icone("check")} ${esc(E.aud_fim_t)}</h3><p>${esc(E.aud_fim_p(nf(n)))}</p>${audBarra()}${audQuadros()}<a class="btn btn-sm" href="#/testes">${icone("list")} ${esc(E.aud_ver)}</a></div>`;
+        const bx = document.createElement("section"), res = audResumo();
+        bx.className = "aud-foot"; bx.dataset.lg = lg; bx.dataset.fim = "1"; if (res) bx.dataset.r = "1";
+        bx.innerHTML = `<div class="aud-foot-in${res ? " aud-foot-2" : ""}"><div class="aud-foot-a"><h3>${icone("check")} ${esc(E.aud_fim_t)}</h3><p>${esc(E.aud_fim_p(nf(n)))}</p>${audBarra()}${audQuadrosN()}<a class="btn btn-sm" href="#/testes">${icone("list")} ${esc(E.aud_ver)}</a></div>${res}</div>`;
         const fs = $(".flag-stripe", ft); if (fs) fs.after(bx); else ft.prepend(bx);
       }
       return;

@@ -108,7 +108,12 @@
   }
   function montarRedes() {
     const L = t();
-    $("#rs-bar").innerHTML = `<div class="rs-in"><span class="rs-lbl">${esc(L.rs.t)}</span><nav class="rs-row" aria-label="${esc(L.rs.aria)}">${redes()}</nav></div>`;
+    const bar = $("#rs-bar");
+    bar.innerHTML = `<div class="rs-in"><span class="rs-lbl">${esc(L.rs.t)}</span><nav class="rs-row" aria-label="${esc(L.rs.aria)}">${redes()}</nav></div>`;
+    // faixa fixa no alto: o cabeçalho gruda logo abaixo dela (--rs-h = altura da faixa)
+    const med = () => document.documentElement.style.setProperty("--rs-h", `${bar.offsetHeight}px`);
+    med();
+    if (!bar.dataset.med) { bar.dataset.med = "1"; if ("ResizeObserver" in window) new ResizeObserver(med).observe(bar); else addEventListener("resize", med); }
   }
 
   // Grupo do Telegram: chamada completa na página inicial, faixa curta no rodapé
@@ -256,7 +261,8 @@
   }
   function tpExecutar() { tpFila.splice(0).forEach((f) => { try { f(); } catch (e) { console.error(e); } }); }
   // bloco de números (rótulo e valor) e botão dos painéis
-  const tpDl = (pares) => `<dl class="cq-p-dl tp-dl">${pares.filter(Boolean).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
+  // 3º item opcional: fração 0–1 para uma barra embaixo da linha (no painel, cresce ao abrir)
+  const tpDl = (pares) => `<dl class="cq-p-dl tp-dl">${pares.filter(Boolean).map(([k, v, w]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd>${w != null && isFinite(w) ? `<span class="pn-b" aria-hidden="true"><i style="--w:${(100 * Math.max(0, Math.min(1, w))).toFixed(1)}%"></i></span>` : ""}</div>`).join("")}</dl>`;
   const tpBtn = (href, ic, txt, prim) => `<a class="btn btn-sm${prim ? " btn-primary" : " btn-ghost"}" href="${href}" data-ir>${icone(ic)} ${esc(txt)}</a>`;
   const tpVazio = () => ({ uf: null, z: null, s: null, loc: null, t: null, cod: null, mun: null, teste: null, nivel: null, nr: null });
   // os 35 testes de um turno: T do resumo do turno (Relatório Técnico); V e L da auditoria completa (aud35).
@@ -457,10 +463,11 @@
   // painel do total: seções com anomalia por bloco de testes e os testes com mais seções
   function dzPainelTotal(n) {
     const L = t(), D = L.dz, A35 = dzA(n), rt = L.round(+n);
-    const pares = [[D.th_secs, nf(A35.analisadas)], [D.tot_bu, `${nf(A35.bu)} <small>${esc(D.u.secoes)}</small>`]];
-    if (A35.tardias) pares.push([D.tot_tard, `${nf(A35.tardias)} <small>${esc(D.u.secoes)}</small>`]);
-    if (A35.var != null) pares.push([D.tot_var, `${nf(A35.var)} <small>${esc(D.u.secoes)}</small>`]);
-    pares.push([D.tot_log, `${nf(A35.log)} <small>${esc(D.u.secoes)}</small>`], [D.tot_sem, `<b>${nf(A35.secoes)}</b> (${pct(A35.secoes / A35.analisadas)})`]);
+    const fr = (x) => x / (A35.analisadas || 1);
+    const pares = [[D.th_secs, nf(A35.analisadas)], [D.tot_bu, `${nf(A35.bu)} <small>${esc(D.u.secoes)}</small>`, fr(A35.bu)]];
+    if (A35.tardias) pares.push([D.tot_tard, `${nf(A35.tardias)} <small>${esc(D.u.secoes)}</small>`, fr(A35.tardias)]);
+    if (A35.var != null) pares.push([D.tot_var, `${nf(A35.var)} <small>${esc(D.u.secoes)}</small>`, fr(A35.var)]);
+    pares.push([D.tot_log, `${nf(A35.log)} <small>${esc(D.u.secoes)}</small>`, fr(A35.log)], [D.tot_sem, `<b>${nf(A35.secoes)}</b> (${pct(A35.secoes / A35.analisadas)})`, fr(A35.secoes)]);
     const ZT = window.T35[state.lang] || window.T35.PT;
     const top = A35.testes.filter((x) => x.a > 0).sort((a, b) => b.a - a.a).slice(0, 8);
     const nomeT = (x) => (window.APP.audNome ? window.APP.audNome(x.id) : x.id);
@@ -479,7 +486,7 @@
     if (!dzRes[n] || dzRes[n].lang !== state.lang) {
       dzRes[n] = { lang: state.lang, id: CP.novoId(), m: { colunas: ["k"], linhas: [["total"]].concat(itens.map((x) => [x.k])) }, idx: [], pag: 0, pp: 999, ord: null, sel: null, G: null,
         ler: tpVazio, fonte: (e, d, l, i) => Promise.resolve(i === 0 ? dzPainelTotal(n) : dzPainel(n, itens[i - 1])), fonteId: `dz${n}`, chave: (l, i) => `dz|${n}|${i}`,
-        rot: ["k"], semNum: true, animRolar: true, guiaPainel: false, box: document.createElement("div"), navRot: (k, q) => `${nf(k)} / ${nf(q)}` };
+        rot: ["k"], semNum: true, animRolar: true, contaAuto: true, guiaPainel: false, box: document.createElement("div"), navRot: (k, q) => `${nf(k)} / ${nf(q)}` };
       CP.ordenar(dzRes[n]);
     }
     CP.abrir(gi, dzRes[n]);
@@ -662,7 +669,7 @@
   }
   function hcPainelUn() {
     const L = t(), H = L.hc, X = L.vr, D = hcUnDados(), ZT = window.T35[state.lang] || window.T35.PT, tx = state.R.testes_txt[state.lang].T03 || {};
-    const lin = (n, u) => [n, `<b>${nf(u.secoes)}</b> <small>${esc(H.urnas)}</small> · ${esc(H.un_imp(nf(u.improv)))}`];
+    const lin = (n, u) => [n, `<b>${nf(u.secoes)}</b> <small>${esc(H.urnas)}</small> · ${esc(H.un_imp(nf(u.improv)))}`, u.secoes / ((D.l.secoes + D.f.secoes) || 1)];
     const pares = [lin(X.lula, D.l), lin(X.flavio, D.f), [H.un_lst, esc(H.un_tot(nf(D.l.secoes + D.f.secoes), nf(D.base)))]];
     if (D.t3) pares.push([H.un_t3a, `${nf(D.t3.a)} <small>${esc(ZT.un_t.sc)}</small>`], [H.un_t3i, `${nf(D.t3.i)} <small>${esc(ZT.un_t.sc)}</small>`]);
     const mx = D.ufs.length ? D.ufs[0].l + D.ufs[0].f : 1;
@@ -681,8 +688,8 @@
     const L = t(), H = L.hc, P = state.R.turnos[n].presidente;
     const val = P.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96"), tv = val.reduce((s, c) => s + c.votos, 0);
     const top = val.slice().sort((a, b) => b.votos - a.votos).slice(0, 2);
-    const pares = top.map((c) => [`${titulo(c.nome)} (${c.nr})`, `${nf(c.votos)} <small>${esc(H.votos)} (${pct(c.votos / tv)} ${esc(H.validos)})</small>`]);
-    pares.push([H.comp, `${nf(P.comparecimento)} <small>${esc(H.aptos(nf(P.aptos)))} (${pct(P.comparecimento / P.aptos)})</small>`]);
+    const pares = top.map((c) => [`${titulo(c.nome)} (${c.nr})`, `${nf(c.votos)} <small>${esc(H.votos)} (${pct(c.votos / tv)} ${esc(H.validos)})</small>`, c.votos / tv]);
+    pares.push([H.comp, `${nf(P.comparecimento)} <small>${esc(H.aptos(nf(P.aptos)))} (${pct(P.comparecimento / P.aptos)})</small>`, P.comparecimento / P.aptos]);
     return `<section class="tp-ap"><h3>${esc(H.pres)}</h3>${tpDl(pares)}</section>`;
   }
   function hcPainelTurno(n) {
@@ -697,8 +704,8 @@
       return `<li><b>${q} ${esc(H.testes)} · ${esc(L.rc_g[k])}</b> <small class="muted">${esc(H.rng[k])}</small><br><span class="small">${esc(H.fam_txt[k])}</span></li>`; }).join("")}</ul>`;
     const tur = ["1", "2"].filter((n) => A[n]).map((n) => {
       const ts = A[n].testes, rt = L.round(+n);
-      const pares = [[H.ts_com, `${ts.filter((x) => !x.na && x.a > 0).length} <small>${esc(H.testes)}</small>`], [H.ts_inf, `${ts.filter((x) => !x.na && !x.a && x.i > 0).length} <small>${esc(H.testes)}</small>`],
-        [H.ts_ok, `${ts.filter((x) => !x.na && !x.a && !x.i).length} <small>${esc(H.testes)}</small>`]];
+      const qn = (f) => ts.filter(f).length, nt = ts.length || 1, q1 = qn((x) => !x.na && x.a > 0), q2 = qn((x) => !x.na && !x.a && x.i > 0), q3 = qn((x) => !x.na && !x.a && !x.i);
+      const pares = [[H.ts_com, `${q1} <small>${esc(H.testes)}</small>`, q1 / nt], [H.ts_inf, `${q2} <small>${esc(H.testes)}</small>`, q2 / nt], [H.ts_ok, `${q3} <small>${esc(H.testes)}</small>`, q3 / nt]];
       const na = ts.filter((x) => x.na).length; if (na) pares.push([H.ts_na, `${na} <small>${esc(H.testes)}</small>`]);
       const top = ts.filter((x) => x.a > 0).sort((a, b) => b.a - a.a).slice(0, 5);
       return `<section class="tp-ap"><h3>${esc(H.ts_res(rt))}</h3>${tpDl(pares)}</section><h3>${esc(H.ts_top(rt))}</h3><ol class="dz-ufs dz-tst">${top.map((x) => { const uk = x.id[0] === "T" ? UN_T[x.id] || "s" : x.id[0] === "V" ? UN_V[x.id] : "s";
@@ -713,10 +720,10 @@
     const ns = ["1", "2"].filter((n) => G[n]);
     const tur = ns.map((n) => { const g = G[n].geral, rt = L.round(+n), s = esc(t().dz.u.secoes), v = esc(H.votos);
       return `<section class="tp-ap"><h3>${esc(rt)}</h3>${tpDl([[H.lg_lidos(rt), `${nf(g.secoes)} <small>${esc(H.urnas)}</small>`], [H.lg_votos, `${nf(g.votos)} <small>${v}</small>`],
-        [H.lg_sapos, `${nf(g.secoes_apos)} <small>${esc(H.urnas)}</small>`], [H.lg_vapos, `${nf(g.votos_apos)} <small>${v}</small>`], [H.lg_1h, `${nf(g.votos_1h)} <small>${v}</small>`]])}</section>`; }).join("");
+        [H.lg_sapos, `${nf(g.secoes_apos)} <small>${esc(H.urnas)}</small>`, g.secoes_apos / (g.secoes || 1)], [H.lg_vapos, `${nf(g.votos_apos)} <small>${v}</small>`, g.votos_apos / (g.votos || 1)], [H.lg_1h, `${nf(g.votos_1h)} <small>${v}</small>`, g.votos_1h / (g.votos || 1)]])}</section>`; }).join("");
     const ids = ns.length ? Object.keys(G[ns[0]].testes) : [];
     const top = ids.map((id) => [id, ns.map((n) => (G[n].testes[id] || { a: 0 }).a)]).sort((a, b) => b[1].reduce((s, x) => s + x, 0) - a[1].reduce((s, x) => s + x, 0)).slice(0, 6);
-    const lst = `<h3>${esc(H.lg_top)}</h3><ol class="dz-ufs dz-tst">${top.map(([id, a]) => `<li><span class="dz-uf">${id}</span><span class="dz-tn">${esc(nome(id))}</span><b>${a.map(nf).join(" · ")} <small>${esc(t().dz.u.secoes)}</small></b></li>`).join("")}</ol>`;
+    const lst = `<h3>${esc(H.lg_top)}</h3><ol class="dz-ufs dz-tst">${top.map(([id, a]) => `<li data-v="${a.reduce((s, x) => s + x, 0)}"><span class="dz-uf">${id}</span><span class="dz-tn">${esc(nome(id))}</span><b>${a.map(nf).join(" · ")} <small>${esc(t().dz.u.secoes)}</small></b></li>`).join("")}</ol>`;
     return { tipo: "info", e: {}, d: null, href: "#/logs", kick: L.explore_title, tit: H.lg[0], sub: H.lg[1], corpo: `${tur}${lst}<p class="small muted">${esc(H.fam_txt.L)}</p><p class="note small">${icone("help")} ${esc(L.dz.nota)}</p>`,
       acoes: tpBtn("#/logs", "list", H.ab_logs, true) + tpBtn("#/testes", "flask", H.ab_testes), dica: "" };
   }
@@ -727,7 +734,7 @@
     if (!hcRes[g] || hcRes[g].lang !== state.lang) {
       hcRes[g] = { lang: state.lang, id: CP.novoId(), m: { colunas: ["k"], linhas: fs.map((f, j) => [j]) }, idx: [], pag: 0, pp: 999, ord: null, sel: null, G: null,
         ler: tpVazio, fonte: (e, d, l, j) => Promise.resolve(fs[j]()), fonteId: `hc${g}`, chave: (l, j) => `hc|${g}|${j}`,
-        rot: ["k"], semNum: true, animRolar: true, guiaPainel: false, box: document.createElement("div"), navRot: (k, q) => `${nf(k)} / ${nf(q)}` };
+        rot: ["k"], semNum: true, animRolar: true, contaAuto: true, guiaPainel: false, box: document.createElement("div"), navRot: (k, q) => `${nf(k)} / ${nf(q)}` };
       CP.ordenar(hcRes[g]);
     }
     CP.abrir(i, hcRes[g]);
@@ -1367,7 +1374,7 @@
     const L = t(), R = state.R, A = R ? R.autor : null;
     const ext = (h, txt) => `<a href="${h}" target="_blank" rel="noopener">${esc(txt)}</a>`;
     $("#footer").innerHTML = `<div class="flag-stripe" aria-hidden="true"></div>
-      <section class="foot-rs" aria-labelledby="foot-rs-h"><h2 id="foot-rs-h">${esc(L.rs.t)}</h2><p>${esc(L.rs.sub)}</p><nav class="rs-grid" aria-label="${esc(L.rs.aria)}">${redes()}</nav></section>
+      <section class="foot-rs" aria-labelledby="foot-rs-h"><h2 id="foot-rs-h">${esc(L.rs.tf)}</h2><nav class="rs-row rs-ico" aria-label="${esc(L.rs.aria)}">${redes()}</nav></section>
       <div class="foot-in">
         <div class="foot-brand">
           <a class="brand" href="#/"><img class="brand-flag" src="site/img/bandeira.svg" alt="" width="38" height="27"><span class="brand-txt"><span class="fb-name">${esc(L.brand)}</span><span class="brand-sub">${esc(L.brand_sub)}</span></span></a>
