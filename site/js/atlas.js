@@ -333,6 +333,7 @@
     animar(d);
     await window.BOT.digitar(d, S.el.log, ATOMOS);
     const m = Object.assign({ r: "a", h }, meta || {});
+    const cvE = convAtual(); if (cvE) { cvE.escolha = S.escolha && S.escolha.length ? S.escolha : null; S.escolha = null; }
     registrar(m);
     // a página foi redesenhada enquanto escrevia (troca de idioma): mostra a conversa de novo
     if (!document.contains(d)) { const c = S.convs.find((x) => x.id === S.atual); if (c && S.el.log && document.contains(S.el.log)) mostrarConversa(c); return null; }
@@ -356,7 +357,7 @@
   // Uma resposta por vez
   async function ocupar(fn) {
     if (S.ocupado) return false;
-    S.ocupado = true; bloquear(true); S.pre = ""; S.parou = false;
+    S.ocupado = true; bloquear(true); S.pre = ""; S.parou = false; S.escolha = null;
     try { await fn(); } catch (e) {
       console.error(e);
       if (S.el.log && document.contains(S.el.log)) { const d = bolha("a", `<p class="alert">${esc(X().err)} (${esc(e.message)})</p>`); d.scrollIntoView({ block: "nearest" }); }
@@ -369,6 +370,37 @@
     if (S.ocupado) { S.el.inp.value = texto; ajustar(); return; }
     ocupar(async () => { usuario(texto); await responder(texto); });
   }
+
+  // --- resposta escrita a uma pergunta do Atlas com opções: vale como o botão --------------------------------------
+  const ESC_STOP = new Set(("o a os as e de do da dos das em no na nos nas um uma eu quero queria quis seria e esse essa este esta isso aquele aquela ser sim "
+    + "pode por favor pfv pls please mesmo the of in on el la los las del en y lo ese esa opcao option opcion municipio cidade city ciudad estado state uf").split(" "));
+  const ESC_ORD = { primeiro: 0, primeira: 0, first: 0, primero: 0, primera: 0, segundo: 1, segunda: 1, second: 1, terceiro: 2, terceira: 2, third: 2, tercero: 2, tercera: 2,
+    quarto: 3, quarta: 3, fourth: 3, cuarto: 3, cuarta: 3, ultimo: -1, ultima: -1, last: -1 };
+  function casarEscolha(texto, ops) {
+    const n = nz(texto); if (!n || !ops || !ops.length) return null;
+    const ex = ops.find((o) => nz(o.q) === n || nz(o.rot) === n); if (ex) return ex;
+    const tks = n.split(" ").filter((w) => !ESC_STOP.has(w)); if (!tks.length || tks.length > 6) return null;
+    if (tks.length === 1 && ops.length > 1) {
+      const w = tks[0], k = w in ESC_ORD ? ESC_ORD[w] : /^[1-9]$/.test(w) ? +w - 1 : null;
+      if (k != null) return ops[k < 0 ? ops.length - 1 : k] || null;
+    }
+    // palavras de cada opção, com o nome do estado no lugar da sigla (AM → amazonas, SP → sao paulo)
+    const palavras = (o) => { const tx = `${o.q} ${o.rot}`, ws = new Set(nz(tx).split(" "));
+      (tx.match(/\b[A-Z]{2}\b/g) || []).forEach((uf) => { const nm = A.ufNome(uf); if (nm) nz(nm).split(" ").forEach((w) => ws.add(w)); }); return ws; };
+    const hit = ops.filter((o) => { const ws = palavras(o); return tks.every((w) => ws.has(w)); });
+    return hit.length === 1 ? hit[0] : null;
+  }
+  // "quais são as redes sociais", "qual o Instagram de vocês", "link do canal no WhatsApp" (não é "compartilhar no WhatsApp")
+  const RE_RS_GERAL = /\b(redes? sociais?|rede social|social media|social networks?|redes? sociales?|red social)\b/;
+  const RE_RS_NOME = /\b(whatsapp|whats|zap|telegram|instagram|insta|facebook|face|youtube|tiktok|tik tok|twitter)\b/;
+  const RE_RS_PEDE = /\b(link|links|perfil|perfis|canal|grupo|pagina|arroba|seguir|siga|sigam|segue|sigo|contato|oficial|parana contra|corruptos|voces|vcs|voce|vc|tem|qual|quais|onde|cade|which|where|your|cual|cuales|donde|tienen)\b/;
+  const RE_RS_ACAO = /\b(compartilh\w*|share\w*|compart\w*|mand\w*|envi\w*|send\w*|post\w*|gera\w*|cri\w*|fa[zc]\w*|imagem|video|carrossel|story|stories|reels?)\b/;
+  function ehRedes(texto) {
+    const n = nz(texto); if (!n || RE_RS_ACAO.test(n)) return false;
+    return RE_RS_GERAL.test(n) || (RE_RS_NOME.test(n) && RE_RS_PEDE.test(n) && !/\b(secao|zona|urna|boletim|municipio|estado|turno|section|zone|ballot)\b/.test(n));
+  }
+  // assuntos sem nada a ver com a eleição de 2026 (contas soltas são pegas pelo MOTOR.calculo)
+  const RE_FORA = /\b(raiz quadrada|square root|raiz cuadrada|equacao|equation|ecuacion|derivada|logaritmo|fatorial|tabuada|piada|joke|chiste|receita de|recipe|receta|horoscopo|signo|previsao do tempo|weather|clima de hoje|futebol|soccer|futbol|campeonato|novela|filme|movie|pelicula|musica|song|cancion|quem descobriu|who discovered|quien descubrio)\b/;
 
   // --- entender a pergunta ------------------------------------------------------------------------------------
   const RE_DL = /\b(baixar|baixe|download|downloads|descargar|descargue|bajar)\b/;
@@ -409,6 +441,16 @@
   // op.etapa: parte de um pedido com várias tarefas · op.semAcao: só os dados (a ação vem depois)
   async function responder(texto, op) {
     op = op || {};
+    // o Atlas perguntou e deu opções (ex.: "Tabatinga (SP)" / "Tabatinga (AM)"): escrever "Amazonas" vale como clicar no botão
+    if (!op.etapa) {
+      const cv0 = convAtual(), es = cv0 && cv0.escolha;
+      if (es) {
+        cv0.escolha = null; guardarConversas();
+        const o = casarEscolha(texto, es);
+        if (o) { if (nz(o.q) !== nz(texto)) entendi(X().esc_ok(o.rot || o.q)); texto = o.q; }
+      }
+    }
+    if (ehRedes(texto)) return redesResp(texto);
     const c = motor().cortesia(texto);
     if (c && c.so) return cortesia(c);
     // "Oi, tudo bem? Resultado de Curitiba": a resposta começa devolvendo a saudação
@@ -420,8 +462,9 @@
     if (cmd) { const r = await comandoResp(cmd, op.etapa ? null : oferta, texto); if (r !== false) return r; }
     const so = oferta && oferta.midia && !op.etapa && nz(texto).match(RE_SO_MIDIA), dm = so && ultimaResposta();
     if (dm) return executar(acaoMidia(so[1]), dm, texto, "");
+    // contas de matemática e outros assuntos: fora do escopo do Atlas
     const calc = MT.calculo(texto);
-    if (calc) return calculoResp(calc, texto);
+    if (calc || RE_FORA.test(nz(texto))) return foraResp(texto);
     if (!op.etapa) { const ps = MT.etapas(texto); if (ps.length > 1) return plano(ps, texto); }
     if (RE_AJUDA.test(nz(texto))) return ajuda();
     // "o segundo da lista", "a anterior", "aquela seção"
@@ -484,6 +527,7 @@
   async function pedir(txt, exemplos) {
     S.parou = true;
     await pensar(X().think.guia);
+    S.escolha = (exemplos || []).map((q) => ({ q, rot: q }));
     return escrever(`<p>${esc(txt)}</p>` + chipsQ((exemplos || []).map((q) => perg(q))));
   }
 
@@ -521,12 +565,13 @@
       const sug = r.filter((x) => x.f > 0 && !x.e.ns).slice(0, 3), cl = esclarecer(E);
       await pensar([L.bot_think_qa[0], L.bot_think_qa[1], ...L.bot_think_none]);
       if (cl.length) {
+        S.escolha = cl.map((q) => ({ q, rot: q }));
         return escrever(`<p>${esc(umDe(T.cl_lead))}</p>` + chipsQ(cl.map((q) => perg(q)))
           + (sug.length ? `<p class="msg-rel">${esc(L.bot_maybe)}</p><div class="chips">${sug.map((x) => `<button type="button" class="chipq" data-at-id="${esc(x.e.i)}">${esc(M.rotulo(x.e))}</button>`).join("")}</div>` : ""), { q: texto });
       }
       return escrever(`<p>${esc(sug.length ? L.bot_maybe : umDe(T.fallback_v))}</p>`
         + (sug.length ? `<div class="chips">${sug.map((x) => `<button type="button" class="chipq" data-at-id="${esc(x.e.i)}">${esc(M.rotulo(x.e))}</button>`).join("")}</div>` : "")
-        + `<p class="msg-rel">${esc(T.fallback_fn)}</p>` + funcChips(["secao", "municipio", "estado", "downloads", "qr"]), { q: texto });
+        + `<p class="small muted">${esc(T.escopo)}</p><p class="msg-rel">${esc(T.fallback_fn)}</p>` + funcChips(["secao", "municipio", "estado", "downloads", "qr"]), { q: texto });
     }
     const outros = r.slice(1, 3).filter((x) => x.sc >= r[0].sc * 0.75).map((x) => x.e);
     await pensar(L.bot_think_qa);
@@ -1232,11 +1277,20 @@
     h += fonte(T.src_site);
     return escrever(h, { q });
   }
-  async function calculoResp(c, q) {
-    const T = X(), fmtN = (x) => new Intl.NumberFormat(t().locale, { maximumFractionDigits: 6 }).format(x);
-    await pensarRapido(T.think.calc);
-    const expr = c.seq.map((x) => (typeof x === "number" ? fmtN(x) : { "*": "×", "/": "÷", de: T.w_of }[x] || x)).join(" ").replace(/\( /g, "(").replace(/ \)/g, ")").replace(/ %/g, "%");
-    return escrever(cab(esc(T.ct_calc_t), "") + kv([[expr, `<b>${esc(fmtN(c.valor))}</b>`]]) + `<p class="small muted">${esc(T.ct_calc_note)}</p>`, { q, cmd: true });
+  // fora do escopo (contas soltas, outros assuntos): diz o que o Atlas responde e oferece as funções
+  async function foraResp(q) {
+    const T = X();
+    await pensarRapido(T.think.cv);
+    S.parou = true;
+    return escrever(`<p>${esc(T.fora)}</p><p class="msg-rel">${esc(T.fora_fn)}</p>` + funcChips(["secao", "municipio", "estado", "ranking", "downloads"]), { q });
+  }
+  // redes sociais do Paraná contra os Corruptos (as mesmas do topo e do rodapé do site)
+  async function redesResp(q) {
+    const T = X(), L = t(), F = A.ferramentas, RD = window.REDES_PCC || [];
+    await pensarRapido(T.think.cv);
+    const li = RD.map(([k, nome, h, at]) => { const sub = at[0] === "@" ? at : (L.rs && L.rs[at]) || at;
+      return `<li><a class="at-rs" href="${esc(h)}" target="_blank" rel="noopener">${F && F.icoRede ? F.icoRede(k) : ""}<span><b>${esc(nome)}</b> <small class="muted">${esc(sub)}</small></span></a></li>`; }).join("");
+    return escrever(cab(esc(T.rs_t), "") + `<p>${esc(T.rs_lead)}</p><ul class="at-rs-l">${li}</ul>`, { q });
   }
 
   // --- dados: município, estado, zona, seção, urna, Brasil -------------------------------------------------
@@ -1245,6 +1299,7 @@
     S.parou = true;
     listar(muns.map((m) => Object.assign({ tipo: "mun" }, m)));
     await pensar(T.think.mun.slice(0, 1));
+    S.escolha = muns.map((m) => ({ q: `${m.nome} ${m.uf}`, rot: `${m.nome} (${m.uf})` }));
     return escrever(`<p>${esc(T.mun_many)}</p>` + chipsQ(muns.map((m) => perg(`${m.nome} ${m.uf}`, `${m.nome} (${m.uf})`))), { q: texto });
   }
 
@@ -1436,6 +1491,7 @@
   async function faltando(txt, qs, extra) {
     S.parou = true;
     await pensar(X().think.guia);
+    S.escolha = qs.map((x) => (Array.isArray(x) ? { q: x[0], rot: x[1] } : { q: x, rot: x }));
     return escrever(`<p>${esc(txt)}</p>` + chipsQ(qs.map((x) => (Array.isArray(x) ? perg(x[0], x[1]) : perg(x)))) + (extra || ""));
   }
   function escopoTxt(uf, cod, nomeMun) {

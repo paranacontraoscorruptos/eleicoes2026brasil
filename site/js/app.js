@@ -99,6 +99,8 @@
     ["x", "X (Twitter)", "https://x.com/prcontracorrup", "@prcontracorrup"],
     ["tiktok", "TikTok", "https://www.tiktok.com/@paranacontraoscorruptos", "@paranacontraoscorruptos"],
   ];
+  // lista das redes também para o Atlas (resposta "quais são as redes sociais")
+  window.REDES_PCC = REDES;
   function redes() {
     const L = t(), F = window.APP.ferramentas, ico = (k) => (F && F.icoRede ? F.icoRede(k) : "");
     return REDES.map(([k, nome, h, at]) => {
