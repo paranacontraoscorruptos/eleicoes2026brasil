@@ -2642,3 +2642,38 @@ html.embed .aud-tarja, html.embed .aud-foot { display: none !important; }
 .dz-tn { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* situação "não se aplica" (V1 a V6 no 1º turno) */
 .chip-na .dot { background: var(--line-2); }
+
+/* --- inicial: cards verticais (Votos do 1º para o 2º turno, Urnas 100%) com painel ao clicar --- */
+.hc-par { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 0 0 40px; align-items: stretch; }
+.hc-card { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 24px; border-radius: calc(var(--radius) + 4px); border: 2px solid transparent;
+  background: linear-gradient(var(--surface), var(--surface)) padding-box, var(--gy) border-box; box-shadow: var(--glow-y); cursor: pointer; transition: transform .3s, box-shadow .3s; min-width: 0; }
+.hc-card:hover, .hc-card:focus-visible { transform: translateY(-3px); }
+.hc-card h2 { font: 700 clamp(1.3rem, 2.6vw, 1.7rem)/1.15 var(--display); margin: 0; }
+.hc-card .kicker { margin: 0; }
+.hc-txt { margin: 0; color: var(--ink-2); font-size: .95rem; }
+.hc-c { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border-radius: 12px; padding: 12px 14px; border-left: 4px solid var(--c); }
+.hc-c-n { display: flex; flex-direction: column; min-width: 0; }
+.hc-c-n small { color: var(--muted); font-size: .8rem; }
+.hc-c-v { margin-left: auto; font: 700 1.35rem var(--display); white-space: nowrap; color: var(--ink); }
+.hc-c-v small { font: 600 .75rem var(--font); color: var(--muted); }
+.hc-dl { display: grid; gap: 2px; margin: 0; }
+.hc-dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1px dashed var(--line); padding: 6px 0; font-size: .88rem; }
+.hc-dl dt { color: var(--ink-2); }
+.hc-dl dd { margin: 0; font-weight: 700; text-align: right; }
+.hc-dl small { font-weight: 500; color: var(--muted); }
+.hc-k { margin: 4px 0 0; font: 600 .74rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.hc-vs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.hc-vc { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; font-size: .78rem; text-align: center; background: var(--surface-2); border-top: 3px solid var(--green); color: var(--ink); }
+.hc-vc.mini-red { border-top-color: var(--red); } .hc-vc.mini-amber { border-top-color: var(--amber); }
+.hc-vc b { font: 700 .9rem var(--mono); }
+.hc-vc small { font-size: .66rem; color: var(--muted); line-height: 1.2; }
+.hc-ufs { margin: 0; }
+.hc-card .pc-go { margin-top: auto; }
+/* Explore a auditoria: linhas de números nos cards dos testes e dos logs */
+.page-card:has(.pc-fam) .pc-desc { flex: 0 0 auto; }
+.pc-fam { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.pc-fam > span { flex: 1; display: flex; flex-wrap: wrap; align-items: center; align-content: center; column-gap: 4px; background: var(--surface-2); border-radius: 10px; padding: 8px 10px; font-size: .84rem; color: var(--ink-2); }
+.pc-fam b { font: 700 1.05rem var(--display); color: var(--ink); }
+.pc-fam i { font: normal .72rem var(--mono); color: var(--muted); margin-left: 4px; white-space: nowrap; }
+.pages > .page-card[role="button"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 860px) { .hc-par { grid-template-columns: 1fr; } .hc-vs { grid-template-columns: repeat(3, minmax(0, 1fr)); } .hc-card { padding: 20px 18px; } }

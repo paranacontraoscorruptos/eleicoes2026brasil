@@ -505,18 +505,26 @@
       tile(T2.entrada.boletins, L.st_bol, L.tip_bol, "file"),
     ].join("");
     const comOcorr = (T) => T.testes.filter((x) => x.sinal > 0 || x.info > 0).length;
+    const H = L.hc, A5 = R.aud35 || {}, LG = R.logs || {};
+    const nA = (n) => (A5[n] ? A5[n].testes.filter((x) => !x.na && x.a > 0).length : 0);
+    const nL = (n) => (LG[n] ? Object.values(LG[n].testes).filter((x) => x.a > 0).length : 0);
+    const famRows = A5["2"] ? `<span class="pc-fam">${["T", "V", "L"].map((k) => `<span><b>${A5["2"].testes.filter((x) => x.id[0] === k).length}</b> ${esc(H.testes)} · ${esc(L.rc_g[k])} <i>${esc(H.rng[k])}</i></span>`).join("")}</span>` : "";
+    const lgN = ["1", "2"].filter((n) => LG[n]);
+    const lgRows = `<span class="pc-fam">${lgN.map((n) => `<span><b>${nf(LG[n].geral.secoes)}</b> ${esc(H.urnas)} · ${esc(H.lg_lidos(L.round(+n)))}</span>`).join("")}<span><b>${nf(lgN.reduce((s, n) => s + LG[n].geral.votos, 0))}</b> ${esc(H.lg_dois)}</span></span>`;
     const pag = [
-      { k: "r1", href: "#/turno/1", ic: "chart", m: metr35("1"), x: mini35("1"), tip: tip35("1") },
-      { k: "r2", href: "#/turno/2", ic: "chart", m: metr35("2"), x: mini35("2"), tip: tip35("2") },
-      { k: "tests", href: "#/testes", ic: "flask", m: audFim() ? L.m_tests_fim : L.m_tests, tip: (audFim() ? L.tip_tests_fim : L.tip_tests)(comOcorr(T1), comOcorr(T2)) },
-    ];
+      { k: "r1", ic: "chart", m: metr35("1"), x: mini35("1"), tip: tip35("1") },
+      { k: "r2", ic: "chart", m: metr35("2"), x: mini35("2"), tip: tip35("2") },
+      { k: "tests", ic: "flask", m: A5["2"] ? H.ts_m(nA("1"), nA("2")) : audFim() ? L.m_tests_fim : L.m_tests, x: famRows, tip: A5["2"] ? H.ts_tip : (audFim() ? L.tip_tests_fim : L.tip_tests)(comOcorr(T1), comOcorr(T2)) },
+      { k: "logs", ic: "list", tt: H.lg, m: H.lg_m(nL("1"), nL("2")), x: lgRows, tip: H.lg_tip },
+    ].filter((c) => c.k !== "logs" || LG["1"] || LG["2"]);
     const cards = pag.map((c, i) => {
-      const [tit, desc] = L.pg[c.k];
+      const [tit, desc] = c.tt || L.pg[c.k];
       const dentro = `<span class="pc-num" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><span class="pc-ico">${icone(c.ic)}</span>
         <span class="pc-title">${esc(tit)}</span><span class="pc-desc">${esc(desc)}</span>${c.x || ""}<span class="pc-metric">${esc(c.m)}</span>
-        <span class="pc-go">${esc(c.bot ? L.pg_ask : L.pg_open)} ${icone("arrow")}</span>`;
+        <span class="pc-go">${esc(H.go)} ${icone("arrow")}</span>`;
       const cls = `page-card spot tilt${c.y ? " y" : ""}`;
-      return `<a class="${cls}" href="${c.href}" data-tip="${esc(c.tip)}">${dentro}</a>`;
+      const dica = /\n/.test(c.tip) && c.k[0] !== "r" ? c.tip : `${c.tip}\n\n${H.go}.`;
+      return `<div class="${cls}" role="button" tabindex="0" data-hc="ex|${i}" data-tip="${esc(dica)}">${dentro}</div>`;
     }).join("");
     state.cartao = { kicker: L.round(2) + " · " + L.roundDate[2], titulo: L.hero_title,
       linhas: [[L.st_secoes, nf(T2.entrada.secoes)], [L.st_testes, txtTestes()], [L.st_sinal, `${nf(T2.secoes_sinalizadas)} (${pct(T2.secoes_sinalizadas / T2.entrada.secoes)})`],
@@ -552,8 +560,7 @@
     <section aria-labelledby="h-stats"><h2 id="h-stats">${esc(L.stats_title)}</h2><p class="sec-sub small">${esc(L.stats_sub)}</p>
       <div class="tiles tiles-3">${tiles}</div>${dzSecao("2")}
     </section>
-    ${window.APP.destaqueVariacao ? window.APP.destaqueVariacao(false) : ""}
-    ${destaqueUnanimidade()}
+    ${hcPar()}
     <section aria-labelledby="h-pages"><h2 id="h-pages">${esc(L.explore_title)}</h2><p class="sec-sub">${esc(L.explore_sub)}</p>
       <div class="pages">${cards}</div>
     </section>
@@ -575,16 +582,136 @@
     </section>`;
   }
 
-  // Destaque: urnas com 100% dos votos válidos para um só candidato a Presidente no 2º turno (só a contagem, sem juízo)
-  function destaqueUnanimidade() {
-    const L = t(), u = (nr) => (state.R.turnos["2"].unanimidade.find((x) => x.uf === "BR" && x.cargo === 1 && x.nr === nr) || { secoes: 0 }).secoes;
-    const num = (k, n, txt) => `<div class="un-n vr-${k}"><span class="un-v" data-count="${n}">${nf(n)}</span><span>${esc(txt)}</span></div>`;
-    return `<section class="vr-dest un-dest" aria-labelledby="un-h">
-      <div class="vr-dest-txt"><p class="kicker">${esc(L.un_kicker)}</p><h2 id="un-h">${esc(L.un_title)}</h2><p>${esc(L.un_txt)}</p>
-        <div class="btn-row"><a class="btn btn-primary" href="#/testes/T03">${icone("flask")} ${esc(L.un_btn)}</a><a class="btn btn-ghost" href="#/lista?t=2&teste=T03">${icone("list")} ${esc(L.un_btn2)}</a></div></div>
-      <div class="vr-dest-nums">${num("l", u("13"), L.un_lula)}${num("f", u("22"), L.un_flavio)}</div>
-    </section>`;
+  // --- cards da inicial com painel ao clicar (mesmo painel das tabelas: cqPagina), com o botão da página no rodapé ---
+  // dados: resumo.json (turnos.presidente, turnos["2"].unanimidade, variacao, aud35, logs), lidos dos Relatórios Técnicos
+  const hcV = (P, nr) => (P.candidatos.find((c) => c.nr === nr) || { votos: 0 }).votos;
+  const hcSn = (d) => (d > 0 ? "+" : d < 0 ? "−" : "") + nf(Math.abs(d));
+  function hcVarDados() {
+    const R = state.R, P1 = R.turnos["1"].presidente, P2 = R.turnos["2"].presidente;
+    const out = P1.candidatos.filter((c) => !["13", "22", "95", "96"].includes(c.nr));
+    return { L1: hcV(P1, "13"), L2: hcV(P2, "13"), F1: hcV(P1, "22"), F2: hcV(P2, "22"), BN1: hcV(P1, "95") + hcV(P1, "96"), BN2: hcV(P2, "95") + hcV(P2, "96"),
+      O1: out.reduce((s, c) => s + c.votos, 0), nO: out.length, C1: P1.comparecimento, C2: P2.comparecimento, Vt: R.variacao ? R.variacao.testes : null };
   }
+  const hcVids = ["V1", "V2", "V3", "V4", "V5", "V6"];
+  function hcCardVar() {
+    const L = t(), H = L.hc, X = L.vr, D = hcVarDados(), ZT = window.T35[state.lang] || window.T35.PT;
+    const cand = (k, nome, a, b) => `<div class="hc-c vr-${k}"><span class="vr-sw" aria-hidden="true"></span><span class="hc-c-n"><b>${esc(nome)}</b><small>${esc(H.de_para(nf(a), nf(b)))}</small></span><b class="hc-c-v">${hcSn(b - a)}</b></div>`;
+    const vs = D.Vt ? `<p class="hc-k">${esc(H.vr_sin)}</p><div class="hc-vs">${hcVids.map((id) => { const x = D.Vt[id], st = x.a > 0 ? "red" : x.i > 0 ? "amber" : "green";
+      return `<span class="hc-vc mini-${st}"><b>${id}</b><span>${nf(x.a)} 🔴</span><span>${nf(x.i)} 🟡</span><small>${esc(ZT.un_t[UN_V[id]])}</small></span>`; }).join("")}</div>` : "";
+    return `<div class="hc-card spot" role="button" tabindex="0" data-hc="vu|0" data-tip="${esc(H.vr_tip)}">
+      <p class="kicker">${esc(X.card_kicker)}</p><h2 id="vr-dest-h">${esc(X.dest_t)}</h2><p class="hc-txt">${esc(X.dest_txt)}</p>
+      ${cand("l", X.lula, D.L1, D.L2)}${cand("f", X.flavio, D.F1, D.F2)}
+      <dl class="hc-dl"><div><dt>${esc(H.comp)}</dt><dd>${hcSn(D.C2 - D.C1)} <small>${esc(H.votos)}</small></dd></div>
+        <div><dt>${esc(H.bn)}</dt><dd>${hcSn(D.BN2 - D.BN1)} <small>${esc(H.votos)}</small></dd></div>
+        <div><dt>${esc(H.outros(D.nO))}</dt><dd>${nf(D.O1)} <small>${esc(H.votos)}</small></dd></div></dl>
+      ${vs}<span class="pc-go">${esc(H.go)} ${icone("arrow")}</span></div>`;
+  }
+  function hcPainelVar() {
+    const L = t(), H = L.hc, X = L.vr, D = hcVarDados(), ZT = window.T35[state.lang] || window.T35.PT;
+    const lin = (n, a, b) => [n, `${nf(a)} → ${nf(b)} <small>${esc(H.votos)}</small> <b>(${hcSn(b - a)})</b>`];
+    const pares = [lin(X.lula, D.L1, D.L2), lin(X.flavio, D.F1, D.F2), lin(H.comp, D.C1, D.C2), lin(H.bn, D.BN1, D.BN2), [H.outros(D.nO), `${nf(D.O1)} <small>${esc(H.votos)}</small>`]];
+    const nome = (id) => (window.APP.audNome ? window.APP.audNome(id) : id);
+    const tst = D.Vt ? `<h3>${esc(H.vr_sin)}</h3><ol class="dz-ufs dz-tst">${hcVids.map((id) => { const x = D.Vt[id];
+      return `<li><span class="dz-uf">${id}</span><span class="dz-tn">${esc(nome(id))}</span><b>${nf(x.a)} 🔴 · ${nf(x.i)} 🟡 <small>${esc(ZT.un_t[UN_V[id]])}</small></b></li>`; }).join("")}</ol>` : "";
+    const corpo = `<section class="tp-ap"><h3>${esc(H.vr_res)}</h3>${tpDl(pares)}</section>${tst}<h3>${esc(H.vr_obj)}</h3><p>${esc(H.vr_obj_txt)}</p><p class="note small">${icone("help")} ${esc(L.dz.nota)}</p>`;
+    return { tipo: "info", e: {}, d: null, href: "#/variacao", kick: X.card_kicker, tit: X.dest_t, sub: X.dest_txt, corpo,
+      acoes: tpBtn("#/variacao", "swap", X.dest_btn, true) + tpBtn("#/testes", "flask", H.ab_testes), dica: "" };
+  }
+  function hcUnDados() {
+    const T2 = state.R.turnos["2"], un = T2.unanimidade.filter((x) => x.cargo === 1);
+    const br = (nr) => un.find((x) => x.uf === "BR" && x.nr === nr) || { secoes: 0, improv: 0 };
+    const ufs = {};
+    un.filter((x) => x.uf !== "BR").forEach((x) => { const o = (ufs[x.uf] = ufs[x.uf] || { uf: x.uf, l: 0, f: 0 }); if (x.nr === "13") o.l += x.secoes; else if (x.nr === "22") o.f += x.secoes; });
+    const lst = Object.values(ufs).sort((a, b) => b.l + b.f - (a.l + a.f) || a.uf.localeCompare(b.uf));
+    const t3 = (state.R.aud35 && state.R.aud35["2"] && state.R.aud35["2"].testes.find((x) => x.id === "T03")) || null;
+    return { l: br("13"), f: br("22"), ufs: lst, t3, base: T2.presidente.secoes };
+  }
+  function hcCardUn() {
+    const L = t(), H = L.hc, X = L.vr, D = hcUnDados(), ZT = window.T35[state.lang] || window.T35.PT;
+    const num = (k, u, txt) => `<div class="hc-c vr-${k}"><span class="vr-sw" aria-hidden="true"></span><span class="hc-c-n"><b>${esc(txt)}</b><small>${esc(H.un_imp(nf(u.improv)))}</small></span><b class="hc-c-v"><span data-count="${u.secoes}">${nf(u.secoes)}</span> <small>${esc(H.urnas)}</small></b></div>`;
+    const top = D.ufs.slice(0, 5), mx = top.length ? top[0].l + top[0].f : 1;
+    return `<div class="hc-card spot" role="button" tabindex="0" data-hc="vu|1" data-tip="${esc(H.un_tip)}">
+      <p class="kicker">${esc(L.un_kicker)}</p><h2 id="un-h">${esc(L.un_title)}</h2><p class="hc-txt">${esc(L.un_txt)}</p>
+      ${num("l", D.l, X.lula)}${num("f", D.f, X.flavio)}
+      <p class="hc-k">${esc(H.un_ufs)}</p><ol class="dz-ufs hc-ufs">${top.map((o) => `<li><span class="dz-uf" title="${esc(ufNome(o.uf) || o.uf)}">${esc(o.uf)}</span><span class="dz-bar"><i style="width:${Math.max(4, Math.round((100 * (o.l + o.f)) / mx))}%"></i></span><b>${nf(o.l + o.f)} <small>${esc(H.urnas)}</small></b></li>`).join("")}</ol>
+      <dl class="hc-dl"><div><dt>${esc(L.un_lst)}</dt><dd>${esc(H.un_tot(nf(D.l.secoes + D.f.secoes), nf(D.base)))}</dd></div>
+        ${D.t3 ? `<div><dt>${esc(H.un_t3a)}</dt><dd>${nf(D.t3.a)} <small>${esc(ZT.un_t.sc)}</small></dd></div><div><dt>${esc(H.un_t3i)}</dt><dd>${nf(D.t3.i)} <small>${esc(ZT.un_t.sc)}</small></dd></div>` : ""}</dl>
+      <span class="pc-go">${esc(H.go)} ${icone("arrow")}</span></div>`;
+  }
+  function hcPainelUn() {
+    const L = t(), H = L.hc, X = L.vr, D = hcUnDados(), ZT = window.T35[state.lang] || window.T35.PT, tx = state.R.testes_txt[state.lang].T03 || {};
+    const lin = (n, u) => [n, `<b>${nf(u.secoes)}</b> <small>${esc(H.urnas)}</small> · ${esc(H.un_imp(nf(u.improv)))}`];
+    const pares = [lin(X.lula, D.l), lin(X.flavio, D.f), [H.un_lst, esc(H.un_tot(nf(D.l.secoes + D.f.secoes), nf(D.base)))]];
+    if (D.t3) pares.push([H.un_t3a, `${nf(D.t3.a)} <small>${esc(ZT.un_t.sc)}</small>`], [H.un_t3i, `${nf(D.t3.i)} <small>${esc(ZT.un_t.sc)}</small>`]);
+    const mx = D.ufs.length ? D.ufs[0].l + D.ufs[0].f : 1;
+    const ufs = `<h3>${esc(H.un_ufs)}</h3><ol class="dz-ufs">${D.ufs.map((o) => `<li><span class="dz-uf" title="${esc(ufNome(o.uf) || o.uf)}">${esc(o.uf)}</span><span class="dz-bar"><i style="width:${Math.max(4, Math.round((100 * (o.l + o.f)) / mx))}%"></i></span><b>${nf(o.l + o.f)} <small>${esc(H.urnas)}${o.f ? ` (${esc(X.lula)} ${nf(o.l)} · ${esc(X.flavio)} ${nf(o.f)})` : ""}</small></b></li>`).join("")}</ol>`;
+    const corpo = `<section class="tp-ap"><h3>${esc(L.un_title)}</h3>${tpDl(pares)}<p class="small muted">${esc(H.un_elig)}</p></section>${ufs}
+      ${tx.objetivo ? `<h3>${esc(L.dz.obj)}</h3><p>${esc(tx.objetivo)}</p>` : ""}${tx.criterio ? `<h3>${esc(L.dz.crit)}</h3><p>${esc(tx.criterio)}</p>` : ""}${tx.limites ? `<p class="small muted">${esc(tx.limites)}</p>` : ""}
+      <p class="note small">${icone("help")} ${esc(L.dz.nota)}</p>`;
+    return { tipo: "info", e: {}, d: null, href: "#/testes/T03", kick: L.un_kicker, tit: L.un_title, sub: L.un_txt, corpo,
+      acoes: tpBtn("#/testes/T03", "flask", L.un_btn, true) + tpBtn("#/lista?t=2&teste=T03", "list", L.un_btn2), dica: "" };
+  }
+  function hcPar() {
+    return `<section class="hc-par" aria-labelledby="vr-dest-h">${hcCardVar()}${hcCardUn()}</section>`;
+  }
+  // Explore a auditoria: os turnos (painel do total + Presidente), os 35 testes e os logs das urnas
+  function hcPres(n) {
+    const L = t(), H = L.hc, P = state.R.turnos[n].presidente;
+    const val = P.candidatos.filter((c) => c.nr !== "95" && c.nr !== "96"), tv = val.reduce((s, c) => s + c.votos, 0);
+    const top = val.slice().sort((a, b) => b.votos - a.votos).slice(0, 2);
+    const pares = top.map((c) => [`${titulo(c.nome)} (${c.nr})`, `${nf(c.votos)} <small>${esc(H.votos)} (${pct(c.votos / tv)} ${esc(H.validos)})</small>`]);
+    pares.push([H.comp, `${nf(P.comparecimento)} <small>${esc(H.aptos(nf(P.aptos)))} (${pct(P.comparecimento / P.aptos)})</small>`]);
+    return `<section class="tp-ap"><h3>${esc(H.pres)}</h3>${tpDl(pares)}</section>`;
+  }
+  function hcPainelTurno(n) {
+    const L = t(), p = dzPainelTotal(n), [tit, desc] = L.pg[`r${n}`];
+    p.corpo = hcPres(n) + p.corpo; p.tit = tit; p.sub = desc; p.kick = L.explore_title; return p;
+  }
+  const hcFam = (A, k) => A.testes.filter((x) => x.id[0] === k);
+  function hcPainelTestes() {
+    const L = t(), H = L.hc, ZT = window.T35[state.lang] || window.T35.PT, A = state.R.aud35 || {};
+    const nome = (id) => (window.APP.audNome ? window.APP.audNome(id) : id);
+    const fam = `<h3>${esc(H.ts_fam)}</h3><ul class="plain hc-fl">${["T", "V", "L"].map((k) => { const q = (A["2"] || A["1"]).testes.filter((x) => x.id[0] === k).length;
+      return `<li><b>${q} ${esc(H.testes)} · ${esc(L.rc_g[k])}</b> <small class="muted">${esc(H.rng[k])}</small><br><span class="small">${esc(H.fam_txt[k])}</span></li>`; }).join("")}</ul>`;
+    const tur = ["1", "2"].filter((n) => A[n]).map((n) => {
+      const ts = A[n].testes, rt = L.round(+n);
+      const pares = [[H.ts_com, `${ts.filter((x) => !x.na && x.a > 0).length} <small>${esc(H.testes)}</small>`], [H.ts_inf, `${ts.filter((x) => !x.na && !x.a && x.i > 0).length} <small>${esc(H.testes)}</small>`],
+        [H.ts_ok, `${ts.filter((x) => !x.na && !x.a && !x.i).length} <small>${esc(H.testes)}</small>`]];
+      const na = ts.filter((x) => x.na).length; if (na) pares.push([H.ts_na, `${na} <small>${esc(H.testes)}</small>`]);
+      const top = ts.filter((x) => x.a > 0).sort((a, b) => b.a - a.a).slice(0, 5);
+      return `<section class="tp-ap"><h3>${esc(H.ts_res(rt))}</h3>${tpDl(pares)}</section><h3>${esc(H.ts_top(rt))}</h3><ol class="dz-ufs dz-tst">${top.map((x) => { const uk = x.id[0] === "T" ? UN_T[x.id] || "s" : x.id[0] === "V" ? UN_V[x.id] : "s";
+        return `<li><span class="dz-uf">${esc(x.id)}</span><span class="dz-tn">${esc(nome(x.id))}</span><b>${nf(x.a)} <small>${esc(ZT.un_t[uk])}</small></b></li>`; }).join("")}</ol>`;
+    }).join("");
+    const [tit, desc] = L.pg.tests;
+    return { tipo: "info", e: {}, d: null, href: "#/testes", kick: L.explore_title, tit, sub: desc, corpo: `${fam}${tur}<p class="note small">${icone("help")} ${esc(L.dz.nota)}</p>`,
+      acoes: tpBtn("#/testes", "flask", H.ab_testes, true) + tpBtn("#/lista", "list", H.ab_lista), dica: "" };
+  }
+  function hcPainelLogs() {
+    const L = t(), H = L.hc, G = state.R.logs || {}, nome = (id) => (window.APP.audNome ? window.APP.audNome(id) : id);
+    const ns = ["1", "2"].filter((n) => G[n]);
+    const tur = ns.map((n) => { const g = G[n].geral, rt = L.round(+n), s = esc(t().dz.u.secoes), v = esc(H.votos);
+      return `<section class="tp-ap"><h3>${esc(rt)}</h3>${tpDl([[H.lg_lidos(rt), `${nf(g.secoes)} <small>${esc(H.urnas)}</small>`], [H.lg_votos, `${nf(g.votos)} <small>${v}</small>`],
+        [H.lg_sapos, `${nf(g.secoes_apos)} <small>${esc(H.urnas)}</small>`], [H.lg_vapos, `${nf(g.votos_apos)} <small>${v}</small>`], [H.lg_1h, `${nf(g.votos_1h)} <small>${v}</small>`]])}</section>`; }).join("");
+    const ids = ns.length ? Object.keys(G[ns[0]].testes) : [];
+    const top = ids.map((id) => [id, ns.map((n) => (G[n].testes[id] || { a: 0 }).a)]).sort((a, b) => b[1].reduce((s, x) => s + x, 0) - a[1].reduce((s, x) => s + x, 0)).slice(0, 6);
+    const lst = `<h3>${esc(H.lg_top)}</h3><ol class="dz-ufs dz-tst">${top.map(([id, a]) => `<li><span class="dz-uf">${id}</span><span class="dz-tn">${esc(nome(id))}</span><b>${a.map(nf).join(" · ")} <small>${esc(t().dz.u.secoes)}</small></b></li>`).join("")}</ol>`;
+    return { tipo: "info", e: {}, d: null, href: "#/logs", kick: L.explore_title, tit: H.lg[0], sub: H.lg[1], corpo: `${tur}${lst}<p class="small muted">${esc(H.fam_txt.L)}</p><p class="note small">${icone("help")} ${esc(L.dz.nota)}</p>`,
+      acoes: tpBtn("#/logs", "list", H.ab_logs, true) + tpBtn("#/testes", "flask", H.ab_testes), dica: "" };
+  }
+  const HC = { vu: () => [hcPainelVar, hcPainelUn], ex: () => [() => hcPainelTurno("1"), () => hcPainelTurno("2"), hcPainelTestes, hcPainelLogs] };
+  const hcRes = {};
+  function hcAbrir(g, i) {
+    const CP = window.APP.cqPagina, fs = HC[g] && HC[g](); if (!CP || !fs || !fs[i]) return;
+    if (!hcRes[g] || hcRes[g].lang !== state.lang) {
+      hcRes[g] = { lang: state.lang, id: CP.novoId(), m: { colunas: ["k"], linhas: fs.map((f, j) => [j]) }, idx: [], pag: 0, pp: 999, ord: null, sel: null, G: null,
+        ler: tpVazio, fonte: (e, d, l, j) => Promise.resolve(fs[j]()), fonteId: `hc${g}`, chave: (l, j) => `hc|${g}|${j}`,
+        rot: ["k"], semNum: true, animRolar: true, guiaPainel: false, box: document.createElement("div"), navRot: (k, q) => `${nf(k)} / ${nf(q)}` };
+      CP.ordenar(hcRes[g]);
+    }
+    CP.abrir(i, hcRes[g]);
+  }
+  document.addEventListener("click", (e) => { const el = e.target.closest && e.target.closest("[data-hc]"); if (!el) return; e.preventDefault(); const [g, i] = el.dataset.hc.split("|"); hcAbrir(g, +i); });
+  document.addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const el = e.target.closest && e.target.closest("[data-hc]"); if (!el) return; e.preventDefault(); const [g, i] = el.dataset.hc.split("|"); hcAbrir(g, +i); });
 
   // Lente de análise no topo: curva normal, limiar do z robusto e pontos fora da curva (esquema ilustrativo)
   function lente() {
